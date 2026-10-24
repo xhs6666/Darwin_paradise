@@ -1,0 +1,12 @@
+﻿<Solution>
+  <Project Path="DarwinPark.Genetics.csproj" />
+  <Project Path="DarwinPark.Entities.csproj" />
+  <Project Path="DarwinPark.Core.csproj" />
+  <Project Path="Assembly-CSharp-Editor.csproj" />
+  <Project Path="DarwinPark.Planet.csproj" />
+  <Project Path="DarwinPark.UI.csproj" />
+  <Project Path="Assembly-CSharp.csproj" />
+  <Project Path="DarwinPark.AI.csproj" />
+  <Project Path="DarwinPark.Editor.csproj" />
+  <Project Path="DarwinPark.Environment.csproj" />
+</Solution>

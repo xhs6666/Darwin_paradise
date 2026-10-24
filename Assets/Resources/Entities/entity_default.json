@@ -1,0 +1,9 @@
+{
+  "entityName": "初代达尔文生物",
+  "genes": [
+    { "definitionId": "gene_growth", "value": 50, "tier": 0 },
+    { "definitionId": "gene_reproduction", "value": 50, "tier": 0 },
+    { "definitionId": "gene_nutrition", "value": 50, "tier": 0 },
+    { "definitionId": "gene_environment", "value": 50, "tier": 0 }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "id": "gene_growth",
+  "displayName": "生长基因",
+  "category": "Custom",
+  "isBaseGene": true,
+  "tier": 0,
+  "logicScriptId": "GrowthGeneLogic",
+  "attributeCurves": [
+    { "attributeId": "growthSpeed", "minValue": 1.0, "maxValue": 5.0 },
+    { "attributeId": "agingSpeed", "minValue": 1.0, "maxValue": 5.0 }
+  ],
+    "attributeLinkages": [
+    { 
+      "sourceAttributeId": "sys_age_mult", 
+      "targetAttributeId": "absorbEfficiency", 
+      "mode": "Multiply", 
+      "factor": 1.0 
+    },
+    { 
+      "sourceAttributeId": "growthSpeed", 
+      "targetAttributeId": "absorbEfficiency", 
+      "mode": "Add", 
+      "factor": 0.2 
+    }
+  ],
+  "states": [
+    { 
+      "stateId": "fast_growth", 
+      "displayName": "快速增长", 
+      "center": 20, 
+      "color": [0.9, 0.6, 0.2] 
+    },
+    { 
+      "stateId": "slow_growth", 
+      "displayName": "缓慢生长", 
+      "center": 80, 
+      "color": [0.4, 0.6, 0.9] 
+    }
+  ],
+  "suppressionRules": []
+}

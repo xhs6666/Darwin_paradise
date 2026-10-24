@@ -1,0 +1,47 @@
+{
+  "id": "gene_nutrition",
+  "displayName": "营养方式基因",
+  "category": "Nutrition",
+  "isBaseGene": true,
+  "tier": 0,
+  "logicScriptId": "NutritionGeneLogic",
+  "attributeCurves": [
+    { "attributeId": "absorbEfficiency", "minValue": 3.0, "maxValue": 10.0 },
+    { "attributeId": "baseStorage", "minValue": 30.0, "maxValue": 120.0 }
+  ],
+    "attributeLinkages": [
+    { 
+      "sourceAttributeId": "sys_age_mult", 
+      "targetAttributeId": "absorbEfficiency", 
+      "mode": "Multiply", 
+      "factor": 1.0 
+    },
+    { 
+      "sourceAttributeId": "absorbEfficiency", 
+      "targetAttributeId": "nutrientStorage", 
+      "mode": "Add", 
+      "factor": 5.0 
+    }
+  ],
+  "states": [
+    {
+      "stateId": "chemo",
+      "displayName": "化生自养",
+      "center": 20,
+      "color": [0.6, 0.4, 0.2]
+    },
+    {
+      "stateId": "photo",
+      "displayName": "阳光自养",
+      "center": 50,
+      "color": [0.3, 0.9, 0.3]
+    },
+    {
+      "stateId": "hetero",
+      "displayName": "异养",
+      "center": 80,
+      "color": [0.9, 0.3, 0.3]
+    }
+  ],
+  "suppressionRules": []
+}

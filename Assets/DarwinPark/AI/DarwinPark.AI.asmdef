@@ -1,0 +1,6 @@
+{
+  "name": "DarwinPark.AI",
+  "rootNamespace": "DarwinPark.AI",
+  "references": ["DarwinPark.Core", "DarwinPark.Genetics", "DarwinPark.Entities"],
+  "autoReferenced": true
+}

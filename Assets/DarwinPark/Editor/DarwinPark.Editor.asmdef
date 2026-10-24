@@ -1,0 +1,9 @@
+{
+  "name": "DarwinPark.Editor",
+  "rootNamespace": "DarwinPark.EditorTools",
+  "references": ["DarwinPark.Core", "DarwinPark.Genetics", "DarwinPark.Entities",
+                 "DarwinPark.AI", "DarwinPark.Planet", "DarwinPark.Environment",
+                 "DarwinPark.UI"],
+  "includePlatforms": ["Editor"],
+  "autoReferenced": true
+}

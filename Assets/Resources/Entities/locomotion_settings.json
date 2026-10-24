@@ -1,0 +1,12 @@
+{
+  "hungerThreshold": 8,
+  "attackReach": 0.5,
+  "attackInterval": 1,
+  "grazeDamage": 20,
+  "biteNutrition": 0.1,
+  "killNutrition": 10,
+  "wanderInterval": 6,
+  "wanderDistance": 20,
+  "wanderSpeedRatio": 0.4,
+  "steering": 12
+}

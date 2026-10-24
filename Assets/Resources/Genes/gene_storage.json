@@ -1,0 +1,31 @@
+{
+  "id": "gene_storage",
+  "displayName": "储存基因",
+  "category": "Custom",
+  "isBaseGene": false,
+  "tier": 0,
+  "logicScriptId": "StorageGeneLogic",
+  "attributeCurves": [
+    { "attributeId": "nutrientStorage", "minValue": 50.0, "maxValue": 300.0 },
+    { "attributeId": "conversionEfficiency", "minValue": 0.5, "maxValue": 1.0 }
+  ],
+    "attributeLinkages": [
+    { 
+      "sourceAttributeId": "nutrientStorage", 
+      "targetAttributeId": "repairEfficiency", 
+      "mode": "Add", 
+      "factor": 0.01 
+    },
+    { 
+      "sourceAttributeId": "sys_size", 
+      "targetAttributeId": "nutrientStorage", 
+      "mode": "Divide", 
+      "factor": 1.0 
+    }
+  ],
+  "states": [
+    { "stateId": "store_self", "displayName": "储存自身", "center": 50, "color": [0.9, 0.8, 0.3] },
+    { "stateId": "supply_repro", "displayName": "供给繁殖", "center": 80, "color": [0.9, 0.5, 0.8] }
+  ],
+  "suppressionRules": []
+}

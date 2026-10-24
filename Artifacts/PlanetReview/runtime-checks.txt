@@ -1,0 +1,7 @@
+PASS: no missing MonoBehaviour scripts in loaded scene
+PASS: closed welded sphere V=221186, E=663552, Euler=2
+PASS: BottomPanel active, rect=(x:-730.61, y:0.00, width:1461.21, height:210.00), canvas enabled=True
+PASS: shader DarwinPark/PlanetOcean
+PASS: shader DarwinPark/PlanetCloudVolume
+PASS: shader DarwinPark/PlanetScattering
+PASS: shader DarwinPark/URP_PlanetSurface

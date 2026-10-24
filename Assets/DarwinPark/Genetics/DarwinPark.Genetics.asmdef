@@ -1,0 +1,6 @@
+{
+  "name": "DarwinPark.Genetics",
+  "rootNamespace": "DarwinPark.Genetics",
+  "references": ["DarwinPark.Core"],
+  "autoReferenced": true
+}

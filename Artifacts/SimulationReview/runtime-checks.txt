@@ -1,0 +1,5 @@
+PASS: all ocean/cloud/atmosphere triangles face outward; four shaders supported/error-free
+PASS: closer orbit enabled; clouds hide near ground and restore at orbital distance
+PASS: seed slider/input synchronize draft; valid Apply works and int overflow is rejected
+PASS: 16x clock delta; equal simulated duration yields equal growth/metabolism; Pause clears delta
+PASS: hungry hunter damages stationary living prey, respects cooldown, chases tangentially without launching

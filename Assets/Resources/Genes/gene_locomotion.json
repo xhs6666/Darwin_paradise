@@ -1,0 +1,55 @@
+{
+  "id": "gene_locomotion",
+  "displayName": "行动基因",
+  "category": "Locomotion",
+  "isBaseGene": true,
+  "tier": 0,
+  "logicScriptId": "LocomotionGeneLogic",
+  "attributeCurves": [
+    { "attributeId": "moveSpeed", "minValue": 2.0, "maxValue": 15.0 },
+    { "attributeId": "senseRange", "minValue": 10.0, "maxValue": 50.0 },
+    { "attributeId": "jumpAbility", "minValue": 0.0, "maxValue": 10.0 },
+    { "attributeId": "attack", "minValue": 1.0, "maxValue": 20.0 } 
+  ],
+  "attributeLinkages": [
+    { 
+      "sourceAttributeId": "sys_size", 
+      "targetAttributeId": "moveSpeed", 
+      "mode": "Divide", 
+      "factor": 1.0 
+    },
+    { 
+      "sourceAttributeId": "moveSpeed", 
+      "targetAttributeId": "absorbEfficiency", 
+      "mode": "Add", 
+      "factor": 0.1 
+    },
+    { 
+      "sourceAttributeId": "sys_size", 
+      "targetAttributeId": "attack", 
+      "mode": "Multiply", 
+      "factor": 1.2 
+    },
+    { 
+      "sourceAttributeId": "gene_locomotion", 
+      "targetAttributeId": "absorbEfficiency", 
+      "mode": "Override", 
+      "factor": 0.0 
+    }
+  ],
+  "states": [
+    {
+      "stateId": "herbivore",
+      "displayName": "食草",
+      "center": 25,
+      "color": [0.4, 0.8, 0.3]
+    },
+    {
+      "stateId": "hunt",
+      "displayName": "捕猎",
+      "center": 75,
+      "color": [0.9, 0.2, 0.2]
+    }
+  ],
+  "suppressionRules": []
+}

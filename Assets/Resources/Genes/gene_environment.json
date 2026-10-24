@@ -1,0 +1,34 @@
+{
+  "id": "gene_environment",
+  "displayName": "环境适应基因",
+  "category": "Custom",
+  "isBaseGene": false,
+  "tier": 0,
+  "logicScriptId": "EnvironmentAdaptationGeneLogic",
+  "attributeCurves": [
+    { "attributeId": "environmentResistance", "minValue": 0.0, "maxValue": 100.0 }
+  ],
+  "attributeLinkages": [
+    {
+      "sourceAttributeId": "sys_size",
+      "targetAttributeId": "environmentResistance",
+      "mode": "Divide",
+      "factor": 1.0
+    }
+  ],
+  "states": [
+    {
+      "stateId": "cold_adapted",
+      "displayName": "耐寒",
+      "center": 20,
+      "color": [0.35, 0.65, 0.95]
+    },
+    {
+      "stateId": "heat_adapted",
+      "displayName": "耐热",
+      "center": 80,
+      "color": [0.95, 0.45, 0.2]
+    }
+  ],
+  "suppressionRules": []
+}

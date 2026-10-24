@@ -1,0 +1,32 @@
+{
+  "id": "gene_repair",
+  "displayName": "修复基因",
+  "category": "Custom",
+  "isBaseGene": false,
+  "tier": 0,
+  "logicScriptId": "RepairGeneLogic",
+  "attributeCurves": [
+    { "attributeId": "repairEfficiency", "minValue": 0.5, "maxValue": 3.5 },
+    { "attributeId": "repairCapability", "minValue": 10.0, "maxValue": 60.0 },
+    { "attributeId": "agingSpeed", "minValue": -0.1, "maxValue": -0.9 }
+  ],
+    "attributeLinkages": [
+    { 
+      "sourceAttributeId": "absorbEfficiency", 
+      "targetAttributeId": "repairEfficiency", 
+      "mode": "Add", 
+      "factor": 0.3 
+    },
+    { 
+      "sourceAttributeId": "sys_size", 
+      "targetAttributeId": "repairEfficiency", 
+      "mode": "Divide", 
+      "factor": 1.0 
+    }
+  ],
+  "states": [
+    { "stateId": "repair_life", "displayName": "修复生命值", "center": 50, "color": [0.4, 0.9, 0.6] },
+    { "stateId": "delay_aging", "displayName": "延缓衰老", "center": 85, "color": [0.2, 0.6, 0.9] }
+  ],
+  "suppressionRules": []
+}

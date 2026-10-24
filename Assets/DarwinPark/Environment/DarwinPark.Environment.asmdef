@@ -1,0 +1,18 @@
+{
+    "name": "DarwinPark.Environment",
+    "rootNamespace": "DarwinPark.Environment",
+    "references": [
+        "DarwinPark.Core",
+        "DarwinPark.Genetics",
+        "DarwinPark.Planet"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

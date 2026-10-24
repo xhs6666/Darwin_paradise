@@ -1,0 +1,28 @@
+{
+  "id": "gene_reproduction",
+  "displayName": "繁殖基因",
+  "category": "Reproduction",
+  "isBaseGene": true,
+  "tier": 0,
+  "logicScriptId": "ReproductionGeneLogic",
+  "attributeCurves": [
+    { "attributeId": "eggDefense", "minValue": 0.0, "maxValue": 50.0 },
+    { "attributeId": "hatchSpeed", "minValue": 0.2, "maxValue": 1.5 }
+  ],
+    "attributeLinkages": [
+    { 
+      "sourceAttributeId": "moveSpeed", 
+      "targetAttributeId": "hatchSpeed", 
+      "mode": "Add", 
+      "factor": 0.05 
+    }
+  ],
+  "states": [
+    { "stateId": "asexual", "displayName": "无性繁殖", "center": 20, "color": [0.2, 0.8, 0.4] },
+    { "stateId": "sexual", "displayName": "有性繁殖", "center": 80, "color": [0.9, 0.4, 0.6] }
+  ],
+  "suppressionRules": [
+    { "targetGeneId": "gene_growth", "coefficient": 1000.0 },
+    { "targetGeneId": "gene_repair", "coefficient": 1000.0 }
+  ]
+}

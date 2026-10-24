@@ -1,0 +1,7 @@
+PASS: legacy OreGenerator disabled, OreNode count=0, PlanetOreSystem ready
+PASS: mineral query/consumption uses PlanetOreSystem
+PASS: favorites opens/closes with an explicit empty state
+PASS: click arms placement; preview has no collider/entity; cancel restores camera input
+PASS: placement spawns exactly one default entity with genes; template genomes are independent
+PASS: drag preview is visual-only; drop spawns exactly one entity and releases input
+PASS: gene panel on MainCanvas; full-row hover/double-click hit targets; favorite/list/template buttons work
