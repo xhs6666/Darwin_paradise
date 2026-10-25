@@ -1,0 +1,2 @@
+PASS: move entity to another hemisphere, exit, advance orbit 5 frames; entity remains centred; cursor/control released
+PASS: land-only manual/AI movement blocked underwater; full inward gravity; no swim light or underwater jump; shallow damage 3.0, deep damage 10.0; real Update damages; pause and leaving water stop drowning

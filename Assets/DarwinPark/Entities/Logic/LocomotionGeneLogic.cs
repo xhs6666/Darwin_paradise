@@ -33,9 +33,25 @@ namespace DarwinPark.Entities.Logic
             float speed = _controller.GetAttribute("moveSpeed");
             var stats = _controller.GetComponent<EntityStats>();
             if (speed <= 0 || stats == null || !stats.TryGet("health", out float hp) || hp <= 0) return;
+            // ★ 修复（防Bug回归）：行动基因只有陆地推进，不能在水中继续追击/漫游充当游泳。
+            if(_controller.GetComponent<DarwinPark.Entities.Vitals.EntityEnvironmentHazard>()?.IsSubmerged == true)
+            { _target=null; return; }
             var evaluated = _controller.Evaluation?.Genes.Find(g => g.Gene.InstanceId == _gene.InstanceId);
             // ★ 修复（防Bug回归）：行为状态共用面板评估结果，失效基因不执行行动。
             var state = evaluated?.State;
+            // ★ 适配：手动控制期间 AI 不再抢写速度，只有玩家按攻击键才执行近距离进食。
+            var manual = _controller.GetComponent<EntityManualControl>();
+            if (manual != null && manual.IsControlled)
+            {
+                if (manual.CanMove && manual.AttackHeld && state != null && (state.StateId == "hunt" || state.StateId == "herbivore"))
+                {
+                    // ★ 修复（防Bug回归）：手动每次攻击按准星重新选取，不沿用 AI 的最近猎物缓存。
+                    bool graze=state.StateId=="herbivore";
+                    _target=manual.GetAttackTarget();
+                    if(_target!=null && (!graze || _target.Genes.GetAttribute("moveSpeed")<=0))TryBite(stats,graze);
+                }
+                return;
+            }
             if (stats.TryGet("nutrient", out float food) && food < _settings.hungerThreshold && state != null)
             {
                 bool graze = state.StateId == "herbivore";
@@ -45,25 +61,7 @@ namespace DarwinPark.Entities.Logic
                     if (_target != null)
                     {
                         Chase(_target.transform.position, speed, dt);
-                        var otherStats = _target.GetComponent<EntityStats>();
-                        var a = _controller.GetComponent<Collider>(); var b = _target.GetComponent<Collider>();
-                        // ★ 修复（防Bug回归）：按碰撞体表面距离判断接触，体型变化后仍能咬到目标。
-                        float gap = a != null && b != null ? Vector3.Distance(a.ClosestPoint(b.bounds.center), b.ClosestPoint(a.bounds.center)) : Vector3.Distance(_controller.transform.position,_target.transform.position);
-                        if (gap <= _settings.attackReach && _actionCooldown <= 0 && otherStats != null && otherStats.TryGet("health",out float health) && health > 0)
-                        {
-                            float damage = graze ? _settings.grazeDamage : _controller.GetAttribute("attack");
-                            if (damage > 0)
-                            {
-                                _actionCooldown = _settings.attackInterval;
-                                otherStats.Modify("health", -damage);
-                                stats.Modify("nutrient", damage * _settings.biteNutrition);
-                                if (health <= damage)
-                                {
-                                    stats.Modify("nutrient", _settings.killNutrition);
-                                    Object.Destroy(_target.gameObject); _target = null;
-                                }
-                            }
-                        }
+                        TryBite(stats, graze);
                         return;
                     }
                     // 没有猎物时继续搜索漫游，不能永久 return 原地饿死。
@@ -73,6 +71,22 @@ namespace DarwinPark.Entities.Logic
             _wanderTimer -= dt;
             if (_wanderTimer <= 0) { _wanderTimer = _settings.wanderInterval; _wanderDir = Random.onUnitSphere; }
             Chase(_controller.transform.position + _wanderDir * _settings.wanderDistance, speed * _settings.wanderSpeedRatio, dt);
+        }
+        private void TryBite(EntityStats stats, bool graze)
+        {
+            if (_target == null || _actionCooldown > 0) return;
+            var otherStats = _target.GetComponent<EntityStats>();
+            var a = _controller.GetComponent<Collider>(); var b = _target.GetComponent<Collider>();
+            float gap = a != null && b != null ? Vector3.Distance(a.ClosestPoint(b.bounds.center),b.ClosestPoint(a.bounds.center)) : Vector3.Distance(_controller.transform.position,_target.transform.position);
+            if (gap > _settings.attackReach || otherStats == null || !otherStats.TryGet("health",out float health) || health <= 0) return;
+            float damage = graze ? _settings.grazeDamage : _controller.GetAttribute("attack");
+            if (damage <= 0) return;
+            _actionCooldown = _settings.attackInterval;
+            // ★ 修复（防Bug回归）：按实际造成的伤害奖励，防止过量攻击刷收益；吃不下的部分进入储存。
+            float actualDamage = Mathf.Min(damage,health);
+            otherStats.Modify("health", -actualDamage);
+            stats.Feed(actualDamage * _settings.biteNutrition + (health <= damage ? _settings.killNutrition : 0));
+            if (health <= damage) { Object.Destroy(_target.gameObject); _target = null; }
         }
         private void FindTarget(bool graze)
         {

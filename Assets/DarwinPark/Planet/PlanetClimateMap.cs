@@ -17,7 +17,8 @@ namespace DarwinPark.Planet
 
         [Header("气候图")]
         [Tooltip("气候纹理分辨率。越高越清晰，但生成耗时按平方增长")]
-        public int mapResolution = 512;
+        // ★ 修复（防Bug回归）：近距离观察需要更密集的气候采样，避免 512 图在地面视角被放大成色块。
+        public int mapResolution = 1024;
 
         public Texture2D ClimateTexture { get; private set; }
         public bool IsReady { get; private set; }

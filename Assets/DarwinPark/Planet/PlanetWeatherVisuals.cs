@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Rendering;
+using DarwinPark.Core;
 
 namespace DarwinPark.Planet
 {
@@ -41,6 +42,9 @@ namespace DarwinPark.Planet
             if (data == null) return;
             Release();
             float sea = _builder.WaterRadius;
+            // ★ 适配：轨道相机必须停在海面以上，不能只靠海底碰撞体限制拉近。
+            var orbit=Camera.main != null ? Camera.main.GetComponent<OrbitCamera>() : null;
+            if(orbit != null) orbit.minimumSurfaceRadius=sea;
             // ★ 修复（防Bug回归）：云层以海平面为基准，否则一座山会将全球云层撑成远离地表的空心壳。
             float cloudBottom = sea + cloudClearance;
             float cloudTop = cloudBottom + cloudThickness;

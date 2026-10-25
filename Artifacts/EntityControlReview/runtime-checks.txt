@@ -1,0 +1,8 @@
+PASS: feeding fills satiety first (0+3=3, storage 0); 3+9 fills 10 then stores 2
+PASS: 320 face subdivisions, >600k welded vertices; climate 1024; surface shader error-free
+PASS: compact editable title; blank name rejected; renamed favorite label synchronized
+PASS: parameter panel 400x102, input and full-width slider do not overlap
+PASS: hidden locked cursor; non-blocking crosshair; left attack / Space jump; grounded jump survives movement; no air jump
+PASS: same-entity double-click; manual motion; AI yields; gene loss gates input; observation-only entity; exit restores orbit
+PASS: manual attack and cooldown; bite minus 1s running metabolism net +10.19; overkill rewards actual damage; overflow stored
+PASS: pause blocks movement; death exits entity view and releases control

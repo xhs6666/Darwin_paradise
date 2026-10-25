@@ -25,6 +25,11 @@ namespace DarwinPark.Entities.Vitals
         public float CurrentTemperature { get; private set; }
         public float CurrentHumidity { get; private set; }
         public bool IsDrowning { get; private set; }
+        // ★ 修复（防Bug回归）：AI 和手动行动共用实时水位判断，不能用上一帧的溺水伤害状态允许水中奔跑。
+        public bool IsSubmerged
+        {
+            get { FindPlanetBuilder(); return _planetBuilder != null && _planetBuilder.Data != null && _planetBuilder.IsSubmerged(transform.position); }
+        }
         /// <summary>0~1，环境已经“压不住”的程度。</summary>
         public float StressLevel { get; private set; }
 
@@ -163,7 +168,8 @@ namespace DarwinPark.Entities.Vitals
                 return;
             }
 
-            float severity = Mathf.Clamp01(depth / Mathf.Max(0.1f, _config.drowningSeverityDepth));
+            // ★ 修复（防Bug回归）：浅层浸没也有明确伤害，避免被自然修复掩盖，深水继续按深度增强。
+            float severity = Mathf.Max(_config.minimumDrowningSeverity,Mathf.Clamp01(depth / Mathf.Max(0.1f, _config.drowningSeverityDepth)));
             _lastDrowningSeverity = severity;
 
             // ★ 新增：溺水伤害。环境抵抗力不抵消溺水，避免耐热/耐寒基因意外获得水下呼吸。

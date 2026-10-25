@@ -4,12 +4,21 @@ using DarwinPark.Genetics;
 using DarwinPark.Planet;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.EventSystems;
 
 namespace DarwinPark.UI
 {
     /// <summary>★ 新增：点击/拖拽共用的地表拾取、纯视觉预览及独立基因组投放。</summary>
     public static class EntityPlacementUtility
     {
+        // ★ 修复（防Bug回归）：拖拽松手不能读取缓存的 pointerEnter，按释放坐标重做 UI 命中。
+        public static bool IsPointerOverUI(Vector2 screen)
+        {
+            if(EventSystem.current==null)return false;
+            var hits=new List<RaycastResult>();
+            EventSystem.current.RaycastAll(new PointerEventData(EventSystem.current){position=screen},hits);
+            return hits.Exists(h=>h.module is UnityEngine.UI.GraphicRaycaster);
+        }
         public static bool TryGetSurface(Camera camera, Vector2 screen, out Vector3 point, out Vector3 outward)
         {
             point = default; outward = Vector3.up;
@@ -17,11 +26,33 @@ namespace DarwinPark.UI
             var builder = Object.FindFirstObjectByType<PlanetTerrainMeshBuilder>();
             if (builder == null || builder.Data == null) return false;
             var collider = builder.GetComponent<MeshCollider>();
-            if (collider == null || !collider.Raycast(camera.ScreenPointToRay(screen), out var hit, camera.farClipPlane))
+            var ray=camera.ScreenPointToRay(screen);
+            if (collider == null || !collider.Raycast(ray, out var hit, camera.farClipPlane))
                 return false;
+            // ★ 修复（防Bug回归）：穿进星球后的背面不能作为可见的投放地面。
+            if(Vector3.Dot(hit.normal,-ray.direction)<=0)return false;
             point = hit.point;
             outward = (point - builder.transform.position).normalized;
             return true;
+        }
+
+        // ★ 新增：批量投放按球面邻域散开，每个位置重新查询真实地面，避免重叠或落进山体。
+        public static int SpawnBatch(Genome genome,Vector3 point,Vector3 outward,float height,int count,float spacing)
+        {
+            var builder=Object.FindFirstObjectByType<PlanetTerrainMeshBuilder>();
+            if(builder==null)return 0;
+            var ground=builder.GetComponent<MeshCollider>();if(ground==null)return 0;
+            var a=Vector3.Cross(outward,Mathf.Abs(outward.y)>.95f?Vector3.right:Vector3.up).normalized;
+            var b=Vector3.Cross(outward,a);int spawned=0;
+            float outer=ground.bounds.extents.magnitude+height;
+            for(int i=0;i<count;i++)
+            {
+                float radius=spacing*Mathf.Sqrt(i), angle=i*2.39996323f;
+                var dir=(point-builder.transform.position+a*(Mathf.Cos(angle)*radius)+b*(Mathf.Sin(angle)*radius)).normalized;
+                if(ground.Raycast(new Ray(builder.transform.position+dir*outer,-dir),out var hit,outer) &&
+                    Spawn(genome,hit.point+dir*height))spawned++;
+            }
+            return spawned;
         }
 
         public static Genome CopyGenome(Genome source)

@@ -15,6 +15,7 @@ namespace DarwinPark.UI
     {
         private GameObject _panel;
         private Text _titleText;
+        private InputField _nameInput;
         private Transform _contentParent;
         private DarwinEntity _currentEntity;
 
@@ -27,11 +28,18 @@ namespace DarwinPark.UI
         private GameObject _addGenePanel;
         private Transform _addGeneListParent;
 
-        private int _mutationPage = 0;
+
         private GameObject _mutationContainer;
-        private GameObject _pageCtrlRow;
-        private Text _mutationPageText;
+
+
         private List<GeneEvaluation> _allMutations = new List<GeneEvaluation>();
+        public float refreshInterval=.25f;
+        public Vector2 infoCornerOffset=new Vector2(12,-12), addCornerOffset=new Vector2(12,225);
+        private float _nextRefresh;
+        private Text _baseInfo;
+        private ScrollRect _scroll;
+        private string _structure;
+        private readonly List<System.Action> _rowRefresh=new List<System.Action>();
 
         private Dictionary<string, string> _attrNameMap = new Dictionary<string, string>()
         {
@@ -62,8 +70,9 @@ namespace DarwinPark.UI
         {
             _panel = UIFactory.NewRect("GenePanel", canvas, typeof(Image));
             var rt = _panel.GetComponent<RectTransform>();
-            rt.anchorMin = new Vector2(1, 0.5f); rt.anchorMax = new Vector2(1, 0.5f); rt.pivot = new Vector2(1, 0.5f);
-            rt.anchoredPosition = new Vector2(-40, 0); rt.sizeDelta = new Vector2(420, 700);
+            // ★ 适配：信息面板放在屏幕左上，添加面板放在左下并避开底部控制栏。
+            rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0,1);
+            rt.anchoredPosition = infoCornerOffset; rt.sizeDelta = new Vector2(420, 700);
             _panel.GetComponent<Image>().color = new Color(0.04f, 0.06f, 0.1f, 0.95f);
             // ★ 修复（防Bug回归）：面板背景必须挡住游戏射线与右键，避免编辑时拾取身后的星球。
             _panel.GetComponent<Image>().raycastTarget = true;
@@ -71,25 +80,33 @@ namespace DarwinPark.UI
             var titleBg = UIFactory.NewRect("TitleBg", _panel.transform, typeof(Image));
             var trt = titleBg.GetComponent<RectTransform>();
             trt.anchorMin = new Vector2(0, 1); trt.anchorMax = new Vector2(1, 1); trt.pivot = new Vector2(0.5f, 1);
-            trt.sizeDelta = new Vector2(0, 50);
+            // ★ 适配：标题只保留可编辑名称，压缩高度并给各按钮独立区域。
+            trt.sizeDelta = new Vector2(0, 38);
             titleBg.GetComponent<Image>().color = new Color(0.1f, 0.2f, 0.3f, 0.9f);
 
             _favBtn = UIFactory.NewRect("FavBtn", titleBg.transform, typeof(Image), typeof(Button)).GetComponent<Button>();
             var frt = _favBtn.GetComponent<RectTransform>();
             frt.anchorMin = new Vector2(0, 0.5f); frt.anchorMax = new Vector2(0, 0.5f); frt.pivot = new Vector2(0, 0.5f);
-            frt.anchoredPosition = new Vector2(10, 0); frt.sizeDelta = new Vector2(30, 30);
+            frt.anchoredPosition = new Vector2(8, 0); frt.sizeDelta = new Vector2(28, 28);
             _favBtn.GetComponent<Image>().color = new Color(0.15f, 0.25f, 0.35f, 0.9f);
             _favBtnText = UIFactory.NewText("Star", _favBtn.transform, "☆", 20, TextAnchor.MiddleCenter);
             UIFactory.Stretch(_favBtnText.rectTransform);
             _favBtn.onClick.AddListener(OnFavoriteClicked);
 
-            _titleText = UIFactory.NewText("Title", titleBg.transform, "实体信息", 18, TextAnchor.MiddleCenter);
-            UIFactory.Stretch(_titleText.rectTransform, 50, 0);
+            var nameGO = UIFactory.NewRect("NameInput", titleBg.transform, typeof(Image), typeof(InputField));
+            var nrt = nameGO.GetComponent<RectTransform>();
+            nrt.anchorMin = Vector2.zero; nrt.anchorMax = Vector2.one;
+            nrt.offsetMin = new Vector2(44, 5); nrt.offsetMax = new Vector2(-126, -5);
+            nameGO.GetComponent<Image>().color = new Color(.07f,.13f,.19f,.8f);
+            _nameInput = nameGO.GetComponent<InputField>(); _nameInput.characterLimit = 24;
+            _titleText = UIFactory.NewText("Text", nameGO.transform, "", 16);
+            UIFactory.Stretch(_titleText.rectTransform, 6, 1); _nameInput.textComponent = _titleText;
+            _nameInput.onEndEdit.AddListener(RenameCurrentEntity);
 
             var saveTplGO = UIFactory.NewRect("SaveTplBtn", titleBg.transform, typeof(Image), typeof(Button));
             var strt = saveTplGO.GetComponent<RectTransform>();
             strt.anchorMin = new Vector2(1, 0.5f); strt.anchorMax = new Vector2(1, 0.5f); strt.pivot = new Vector2(1, 0.5f);
-            strt.anchoredPosition = new Vector2(-50, 0); strt.sizeDelta = new Vector2(80, 30);
+            strt.anchoredPosition = new Vector2(-40, 0); strt.sizeDelta = new Vector2(74, 28);
             saveTplGO.GetComponent<Image>().color = new Color(0.2f, 0.5f, 0.3f, 0.9f);
             var saveBtn = saveTplGO.GetComponent<Button>();
             var saveTxt = UIFactory.NewText("Txt", saveTplGO.transform, "存为模板", 14, TextAnchor.MiddleCenter);
@@ -99,17 +116,16 @@ namespace DarwinPark.UI
             // ★ 修复（防Bug回归）：面板挡住世界输入后提供显式关闭入口。
             var closePanel = UIFactory.NewButton("ClosePanel", titleBg.transform, "×", () =>
             {
-                _panel.SetActive(false); _tooltipPanel.SetActive(false);
-                _treePanel.SetActive(false); _addGenePanel.SetActive(false);
-            }, new Vector2(30, 30));
+                HideEntityInfo();
+            }, new Vector2(26, 28));
             var closeRect = closePanel.GetComponent<RectTransform>();
             closeRect.anchorMin = closeRect.anchorMax = new Vector2(1, .5f);
-            closeRect.pivot = new Vector2(1, .5f); closeRect.anchoredPosition = new Vector2(-10, 0);
+            closeRect.pivot = new Vector2(1, .5f); closeRect.anchoredPosition = new Vector2(-8, 0);
 
             var scrollGO = UIFactory.NewRect("ScrollView", _panel.transform, typeof(ScrollRect));
             var srt = scrollGO.GetComponent<RectTransform>();
             srt.anchorMin = Vector2.zero; srt.anchorMax = Vector2.one;
-            srt.offsetMin = new Vector2(10, 10); srt.offsetMax = new Vector2(-10, -60);
+            srt.offsetMin = new Vector2(10, 10); srt.offsetMax = new Vector2(-10, -46);
 
             var viewport = UIFactory.NewRect("Viewport", scrollGO.transform, typeof(Image), typeof(Mask));
             UIFactory.Stretch(viewport.GetComponent<RectTransform>());
@@ -126,6 +142,7 @@ namespace DarwinPark.UI
             _contentParent = contentGO.transform;
 
             var scroll = scrollGO.GetComponent<ScrollRect>();
+            _scroll=scroll;scroll.scrollSensitivity=25;
             scroll.content = crt; scroll.viewport = viewport.GetComponent<RectTransform>(); scroll.horizontal = false; scroll.vertical = true;
 
             _tooltipPanel = UIFactory.NewRect("Tooltip", canvas, typeof(Image));
@@ -149,7 +166,8 @@ namespace DarwinPark.UI
 
             _addGenePanel = UIFactory.NewRect("AddGenePanel", canvas, typeof(Image));
             var agprt = _addGenePanel.GetComponent<RectTransform>();
-            agprt.anchorMin = new Vector2(0.5f, 0.5f); agprt.anchorMax = new Vector2(0.5f, 0.5f); agprt.pivot = new Vector2(0.5f, 0.5f);
+            agprt.anchorMin=agprt.anchorMax=agprt.pivot=Vector2.zero;
+            agprt.anchoredPosition=addCornerOffset;
             agprt.sizeDelta = new Vector2(350, 450);
             _addGenePanel.GetComponent<Image>().color = new Color(0.02f, 0.04f, 0.08f, 0.98f);
             var agTitle = UIFactory.NewText("Title", _addGenePanel.transform, "选择要添加/复制的基因", 18, TextAnchor.MiddleCenter);
@@ -185,6 +203,16 @@ namespace DarwinPark.UI
             }
         }
 
+        // ★ 新增：名称文本框失焦/回车提交，空名称回退，收藏列表同步显示新名字。
+        public void RenameCurrentEntity(string value)
+        {
+            if (_currentEntity == null) return;
+            string name = (value ?? "").Trim();
+            if (!string.IsNullOrEmpty(name)) _currentEntity.DisplayName = name;
+            _nameInput.SetTextWithoutNotify(_currentEntity.DisplayName);
+            EntityFavoritesManager.Instance?.NotifyEntityRenamed();
+        }
+
         private void UpdateFavBtnVisual()
         {
             if (_currentEntity == null) return;
@@ -196,16 +224,27 @@ namespace DarwinPark.UI
         private void Update()
         {
             if (!EnsurePanel()) return;
+            // ★ 适配：小窗口同时打开两个面板时压缩高度，保持左上/左下且不覆盖底栏。
+            float canvasHeight=(_panel.transform.parent as RectTransform).rect.height;
+            var addRect=_addGenePanel.GetComponent<RectTransform>();
+            addRect.sizeDelta=new Vector2(350,Mathf.Min(450,Mathf.Max(150,canvasHeight*.35f)));
+            var panelRect=_panel.GetComponent<RectTransform>();
+            panelRect.sizeDelta=new Vector2(420,Mathf.Min(700,Mathf.Max(160,canvasHeight-addCornerOffset.y-24-(_addGenePanel.activeSelf?addRect.sizeDelta.y+16:0))));
+            // ★ 修复（防Bug回归）：可见时刷新数值，关闭/实体销毁时所有附属面板一并关闭。
+            if(_panel.activeSelf && _currentEntity==null)HideEntityInfo();
+            if(!_panel.activeSelf){_addGenePanel.SetActive(false);_treePanel.SetActive(false);_tooltipPanel.SetActive(false);}
+            if(Time.unscaledTime>=_nextRefresh){_nextRefresh=Time.unscaledTime+refreshInterval;RefreshDisplayedInfo();}
             // ★ 适配：投放模式的右键由独立工具取消，不能同时打开实体面板。
             if (EntityPlacementTool.Instance != null && EntityPlacementTool.Instance.IsPlacing) return;
             // ★ 修复（防Bug回归）：UI 上的右键必须属于 UI，收藏定位和基因编辑不应关闭面板或穿透拾取。
             bool pointerOverUI = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
-            if (!pointerOverUI && Input.GetMouseButtonDown(1))
+            bool entityView = Camera.main != null && Camera.main.GetComponent<OrbitCamera>() is OrbitCamera orbit && orbit.EntityViewActive;
+            if (!entityView && !pointerOverUI && Input.GetMouseButtonDown(1))
             {
                 if (TryPickEntity(out var entity)) ShowEntityInfo(entity);
-                else { _panel?.SetActive(false); _tooltipPanel.SetActive(false); }
+                else HideEntityInfo();
             }
-            if (Input.GetKeyDown(KeyCode.Escape)) { _panel?.SetActive(false); _treePanel.SetActive(false); _addGenePanel.SetActive(false); }
+            if (Input.GetKeyDown(KeyCode.Escape)) HideEntityInfo();
 
             if (_tooltipPanel.activeSelf)
             {
@@ -228,21 +267,34 @@ namespace DarwinPark.UI
             return entity != null;
         }
 
-        public void ShowEntityInfo(DarwinEntity entity)
+        public void HideEntityInfo()
         {
-            if (entity == null || !EnsurePanel()) return;
-            _currentEntity = entity;
-            var genes = entity.GetComponent<EntityGeneController>();
-            if (genes == null || genes.Evaluation == null) { _panel?.SetActive(false); return; }
-
-            _panel.SetActive(true);
-            _panel.transform.SetAsLastSibling();
-            _tooltipPanel.SetActive(false);
+            if(_panel!=null)_panel.SetActive(false);
+            if(_addGenePanel!=null)_addGenePanel.SetActive(false);
+            if(_treePanel!=null)_treePanel.SetActive(false);
+            if(_tooltipPanel!=null)_tooltipPanel.SetActive(false);
+            _currentEntity=null;
+        }
+        private string StructureKey(EntityGeneController genes)=>string.Join("|",genes.Genome.Genes.ConvertAll(g=>g.InstanceId+":"+g.DefinitionId));
+        public void RefreshDisplayedInfo()
+        {
+            if(_panel==null || !_panel.activeSelf || _currentEntity==null)return;
+            var genes=_currentEntity.GetComponent<EntityGeneController>();if(genes?.Evaluation==null)return;
+            if(_baseInfo!=null)_baseInfo.text=BuildBaseInfo(_currentEntity);
+            if(!_nameInput.isFocused)_nameInput.SetTextWithoutNotify(_currentEntity.DisplayName);
             UpdateFavBtnVisual();
-            _titleText.text = $"【{entity.DisplayName}】信息";
+            if(_structure!=StructureKey(genes))
+            {
+                foreach(var input in _panel.GetComponentsInChildren<InputField>())if(input.isFocused)return;
+                float position=_scroll.verticalNormalizedPosition;ShowEntityInfo(_currentEntity);Canvas.ForceUpdateCanvases();_scroll.verticalNormalizedPosition=position;
+                return;
+            }
+            foreach(var refresh in _rowRefresh)refresh();
+        }
 
-            foreach (Transform child in _contentParent) Destroy(child.gameObject);
-
+        private string BuildBaseInfo(DarwinEntity entity)
+        {
+            var genes=entity.GetComponent<EntityGeneController>();
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("<color=#6EE7FF><b>【基础信息】</b></color>");
             var stats = entity.GetComponent<EntityStats>();
@@ -280,8 +332,33 @@ namespace DarwinPark.UI
 
             sb.AppendLine("<color=#3A5A7E>──────────────────────────────</color>");
 
+            return sb.ToString();
+        }
+
+        public void ShowEntityInfo(DarwinEntity entity)
+        {
+            if (entity == null || !EnsurePanel()) return;
+            if(_currentEntity!=entity){_addGenePanel.SetActive(false);_treePanel.SetActive(false);}
+            // ★ 修复（防Bug回归）：切换对象前提交旧输入，避免失焦事件把旧名字写到新实体。
+            if (_nameInput != null && _nameInput.isFocused) _nameInput.DeactivateInputField();
+            _currentEntity = entity;
+            var genes = entity.GetComponent<EntityGeneController>();
+            if (genes == null || genes.Evaluation == null) { _panel?.SetActive(false); return; }
+            _rowRefresh.Clear();_structure=StructureKey(genes);
+
+            _panel.SetActive(true);
+            _panel.transform.SetAsLastSibling();
+            _tooltipPanel.SetActive(false);
+            UpdateFavBtnVisual();
+            _nameInput.SetTextWithoutNotify(entity.DisplayName);
+
+            foreach (Transform child in _contentParent){child.gameObject.SetActive(false);Destroy(child.gameObject);}
+
+            string baseInfo=BuildBaseInfo(entity);
+
             // ★ 修改：高度回调至 100，因为去掉了生命阶段
-            var baseInfoText = UIFactory.NewText("BaseInfo", _contentParent, sb.ToString(), 14, TextAnchor.UpperLeft);
+            var baseInfoText = UIFactory.NewText("BaseInfo", _contentParent, baseInfo, 14, TextAnchor.UpperLeft);
+            _baseInfo=baseInfoText;
             // ★ 适配：新增环境状态行，按 9 行文本预留高度，避免内容被截断。
             baseInfoText.gameObject.AddComponent<LayoutElement>().preferredHeight = 175;
 
@@ -328,20 +405,11 @@ namespace DarwinPark.UI
                 _allMutations.Add(eval);
             }
 
-            _mutationPage = 0;
+
             _mutationContainer = UIFactory.NewRect("MutContainer", _contentParent);
             var mvl = _mutationContainer.AddComponent<VerticalLayoutGroup>();
             mvl.spacing = 5; mvl.childControlHeight = true; mvl.childControlWidth = true; mvl.childForceExpandHeight = false;
             var mFitter = _mutationContainer.AddComponent<ContentSizeFitter>(); mFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-            _pageCtrlRow = UIFactory.NewRect("PageCtrl", _contentParent);
-            _pageCtrlRow.AddComponent<LayoutElement>().preferredHeight = 30;
-            var hlg = _pageCtrlRow.AddComponent<HorizontalLayoutGroup>();
-            hlg.childAlignment = TextAnchor.MiddleCenter;
-            var prevBtn = UIFactory.NewButton("Prev", _pageCtrlRow.transform, "<", () => { if (_mutationPage > 0) { _mutationPage--; RefreshMutations(); } }, new Vector2(40, 25));
-            _mutationPageText = UIFactory.NewText("PageTxt", _pageCtrlRow.transform, "1 / 1", 14, TextAnchor.MiddleCenter).GetComponent<Text>();
-            _mutationPageText.rectTransform.sizeDelta = new Vector2(50, 25);
-            var nextBtn = UIFactory.NewButton("Next", _pageCtrlRow.transform, ">", () => { if (_mutationPage < Mathf.CeilToInt(_allMutations.Count / 4f) - 1) { _mutationPage++; RefreshMutations(); } }, new Vector2(40, 25));
 
             RefreshMutations();
         }
@@ -355,24 +423,13 @@ namespace DarwinPark.UI
             {
                 var noMut = UIFactory.NewText("NoMut", _mutationContainer.transform, "<color=#888888>暂无变异基因</color>", 14, TextAnchor.UpperLeft);
                 noMut.gameObject.AddComponent<LayoutElement>().preferredHeight = 20;
-                if (_pageCtrlRow != null) _pageCtrlRow.SetActive(false);
                 return;
             }
-            if (_pageCtrlRow != null) _pageCtrlRow.SetActive(true);
 
-            int pageSize = 4;
-            int startIdx = _mutationPage * pageSize;
-            int endIdx = Mathf.Min(startIdx + pageSize, _allMutations.Count);
-
-            for (int i = startIdx; i < endIdx; i++)
-            {
-                CreateGeneRow(_allMutations[i], _currentEntity.GetComponent<EntityGeneController>(), _mutationContainer.transform);
-            }
-
-            int maxPage = Mathf.CeilToInt(_allMutations.Count / (float)pageSize);
-            _mutationPageText.text = $"{_mutationPage + 1} / {maxPage}";
+            // ★ 修复（防Bug回归）：一次列出所有变异基因，由现有 ScrollRect 滚轮浏览，不再按四条分页。
+            foreach(var mutation in _allMutations)
+                CreateGeneRow(mutation,_currentEntity.GetComponent<EntityGeneController>(),_mutationContainer.transform);
         }
-
         private void CreateGeneRow(GeneEvaluation eval, EntityGeneController controller, Transform parent)
         {
             if (eval == null || eval.Definition == null) return;
@@ -402,6 +459,10 @@ namespace DarwinPark.UI
             // ★ 修复（防Bug回归）：标题文字不接收射线时整行无点击面，只剩 12 像素色块能触发提示/双击。
             var rowHit = row1.AddComponent<Image>(); rowHit.color = Color.clear; rowHit.raycastTarget = true;
             var trigger = row1.AddComponent<EventTrigger>();
+            // ★ 修复（防Bug回归）：EventTrigger 会截获滚轮，必须显式转交父 ScrollRect，悬停基因行也能滚动。
+            var entryScroll=new EventTrigger.Entry{eventID=EventTriggerType.Scroll};
+            entryScroll.callback.AddListener(data=>row1.GetComponentInParent<ScrollRect>()?.OnScroll((PointerEventData)data));
+            trigger.triggers.Add(entryScroll);
             var entryEnter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
             entryEnter.callback.AddListener((data) => ShowGeneTooltip(eval));
             trigger.triggers.Add(entryEnter);
@@ -459,11 +520,21 @@ namespace DarwinPark.UI
                 }
                 else inputField.text = eval.Gene.Value.ToString("F1");
             });
+            // ★ 修复（防Bug回归）：就地更新显示节点，避免周期重建抢走输入焦点或重置滚动位置。
+            _rowRefresh.Add(()=>{
+                if(geneBlock==null || controller==null)return;
+                var live=controller.Evaluation?.Genes.Find(g=>g.Gene.InstanceId==eval.Gene.InstanceId);if(live==null)return;
+                nameTxt.text=$"<b>{live.Definition.DisplayName}</b> "+(live.IsActive?"<color=#06D6A0>生效中</color>":"<color=#FF6B6B>失效</color>");
+                stateTxt.text=" | 状态: "+(live.State?.DisplayName??"无状态");
+                if(!inputField.isFocused)inputField.SetTextWithoutNotify(live.Gene.Value.ToString("F1"));
+                if(live.State!=null)colorGO.GetComponent<Image>().color=live.State.GetDisplayColor(live.Gene.Value);
+            });
         }
 
         private void ShowGeneTooltip(GeneEvaluation eval)
         {
             if (eval == null) return;
+            eval=_currentEntity?.Genes.Evaluation?.Genes.Find(g=>g.Gene.InstanceId==eval.Gene.InstanceId)??eval;
             _tooltipPanel.SetActive(true);
             _tooltipPanel.transform.SetAsLastSibling();
             StringBuilder sb = new StringBuilder();

@@ -108,6 +108,8 @@ namespace DarwinPark.EditorTools
                 Check(health<100,"捕食者不能攻击无行动基因的存活目标");
                 float afterFirst=health; logic.OnUpdate(.1f); second.GetComponent<EntityStats>().TryGet("health",out health);
                 Check(health==afterFirst,"攻击冷却未限制连续攻击");
+                // ★ 适配：新进食收益会吃饱；追击回归需重新设置饥饿前提。
+                first.GetComponent<EntityStats>().Modify("nutrient",-10);
                 second.transform.position=first.transform.position+Vector3.right*8;
                 Physics.SyncTransforms(); logic.OnUpdate(1.1f);
                 Check(Vector3.Dot(first.GetComponent<Rigidbody>().linearVelocity,Vector3.right)>0,"未向猎物追击");

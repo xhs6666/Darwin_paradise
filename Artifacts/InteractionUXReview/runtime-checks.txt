@@ -1,0 +1,4 @@
+PASS: parameter button left click opens; slider release keeps draft panel; Apply commits; cancel closes
+PASS: slot right click sets count=3; two world clicks spawn 3+3 independent entities and keep placing; cancel releases input
+PASS: top-left info / bottom-left add panel; all genes in vertical scroll; live health/gene values without recreating text or resetting scroll; close hides child panels
+PASS: aim ignores own collider; only aimed A damaged; aim switches to B after cooldown; empty aim misses; solid obstacle blocks

@@ -492,6 +492,8 @@ GameObject:
   - component: {fileID: 1476497593}
   - component: {fileID: 1476497594}
   - component: {fileID: 1476497595}
+  - component: {fileID: 1476497596}
+  - component: {fileID: 1476497597}
   m_Layer: 0
   m_Name: GameRoot
   m_TagString: Untagged
@@ -641,7 +643,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44f3862e8a103454ba6d34c4c33d99e7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: DarwinPark.Planet::DarwinPark.Planet.PlanetTerrainMeshBuilder
-  subdivisions: 192
+  subdivisions: 320
   radius: 300
   seed: 42
   heightScale: 45
@@ -677,6 +679,9 @@ MonoBehaviour:
   oceanFloorRatio: 0.22
   erosion:
     seamBlendCells: 6
+    seamSmoothCells: 10
+    seamSmoothIterations: 8
+    seamSmoothStrength: 0.75
     enableHydraulic: 1
     hydraulicIterations: 300
     hydraulicStrength: 0.08
@@ -890,7 +895,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2cbb655cc6c2d6f4ab0909ab574281c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: DarwinPark.Planet::DarwinPark.Planet.PlanetClimateMap
-  mapResolution: 512
+  mapResolution: 1024
 --- !u!114 &1476497594
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -978,3 +983,58 @@ MonoBehaviour:
   previewHeight: 3
   hintPosition: {x: 0, y: 225}
   placementHint: 选择地表：左键放置，右键或 ESC 取消
+
+--- !u!114 &1476497596
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1476497585}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72e5949e7fbc40f98bd8648c08dd33e2, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: DarwinPark.UI::DarwinPark.UI.EntityViewController
+  doubleClickInterval: 0.35
+  followDistance: 8
+  followHeight: 4
+  aimHeight: 0.5
+  minFollowDistance: 3
+  maxFollowDistance: 25
+  cameraClearance: 0.5
+  lookSensitivity: 3
+  zoomSensitivity: 4
+  forwardKey: 119
+  backKey: 115
+  leftKey: 97
+  rightKey: 100
+  attackKey: 32
+  exitKey: 27
+  pickMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+--- !u!114 &1476497597
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1476497585}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba698951fc82452faa3a818dab1161de, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: DarwinPark.UI::DarwinPark.UI.EntityPossessionInput
+  forwardKey: 119
+  backKey: 115
+  leftKey: 97
+  rightKey: 100
+  jumpKey: 32
+  attackMouseButton: 0
+  lookSensitivity: 3
+  zoomSensitivity: 4
+  minPitch: 5
+  maxPitch: 70
+  crosshairSize: 18
+  crosshairThickness: 2

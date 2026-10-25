@@ -165,6 +165,10 @@ namespace DarwinPark.Planet
             ApplyErosion(cfg, data.FaceHeights, sub);
             MergeSeamVertices(data.FaceHeights, sub);
 
+            // ★ 适配：跨面采样邻域平滑坡度，再合并边缘消除浮点误差；世界场与碰撞共用修正后的数据。
+            PlanetSeamContinuity.Smooth(data,cfg.erosion);
+            MergeSeamVertices(data.FaceHeights,sub);
+
             BuildMesh(data);
             // ★ 适配：焊接接缝共享索引，消除裂缝与两套法线。
             PlanetMeshTopology.Weld(data);
@@ -301,7 +305,9 @@ namespace DarwinPark.Planet
                 Vector3 p0 = data.Vertices[first_i00].normalized;
                 Vector3 p1 = data.Vertices[first_i10].normalized;
                 Vector3 p2 = data.Vertices[first_i11].normalized;
-                Vector3 calcNormal = Vector3.Cross(p1 - p0, p2 - p0).normalized;
+                // ★ 修复（防Bug回归）：高细分三角形叉积小于 Vector3.Normalize 的阈值，会归零并令三个面绕序反向。
+                // 判正负无需单位化，保留原始叉积让碰撞射线和近景遮挡在六面都有效。
+                Vector3 calcNormal = Vector3.Cross(p1 - p0, p2 - p0);
                 bool flip = Vector3.Dot(calcNormal, FaceNormals[face]) < 0;
 
                 for (int y = 0; y < sub; y++)

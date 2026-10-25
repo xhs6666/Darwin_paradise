@@ -12,6 +12,8 @@ namespace DarwinPark.Core
         public float minDistance = 305f;
         [Header("近距离观察")]
         public float surfaceClearance = 3f;
+        // ★ 适配：独立海面生成后下发真实半径，海床不能成为轨道相机的最近边界。
+        [HideInInspector] public float minimumSurfaceRadius;
 
         [Header("聚焦")]
         [Tooltip("聚焦实体时，相机在实体地表之上额外保持的高度")]
@@ -20,6 +22,10 @@ namespace DarwinPark.Core
         [Header("速度控制")]
         public float baseRotateSpeed = 300f; // 基础旋转速度
         public float zoomSpeed = 2000f;      // 缩放速度
+        [Header("左键拖动")]
+        public float dragSpeedMultiplier=.2f, shiftDragMultiplier=4f, dragThresholdPixels=6f;
+        private bool _leftDragStarted;
+        private Vector2 _leftDragOrigin;
 
         private float x = 45f;
         private float y = 25f;
@@ -29,6 +35,8 @@ namespace DarwinPark.Core
         private bool _isFocusing = false;
 
         public static bool IsDraggingUI = false;
+        // ★ 适配：实体跟随组件接管镜头时，保留轨道状态但停止本组件写相机位置。
+        public bool EntityViewActive { get; set; }
 
         void Start()
         {
@@ -46,13 +54,18 @@ namespace DarwinPark.Core
 
         void LateUpdate()
         {
+            if (EntityViewActive) return;
             if (target == null) return;
 
             // ★ 修复：鼠标在 UI 上时不再旋转/缩放，右键收藏条目不会带动星球。
             bool pointerOverUI = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
 
-            // 鼠标拖拽旋转
-            if (!IsDraggingUI && !pointerOverUI && Input.GetMouseButton(1))
+            // ★ 修复（防Bug回归）：仅从世界开始的左键拖动旋转；点击和 UI 拖动不抢占相机。
+            if(Input.GetMouseButtonDown(0))
+            {_leftDragStarted=!IsDraggingUI && !pointerOverUI;_leftDragOrigin=Input.mousePosition;}
+            if(Input.GetMouseButtonUp(0) || IsDraggingUI) _leftDragStarted=false;
+            if (_leftDragStarted && !pointerOverUI && Input.GetMouseButton(0) &&
+                Vector2.Distance(_leftDragOrigin,(Vector2)Input.mousePosition)>dragThresholdPixels)
             {
                 _isFocusing = false; // 打断聚焦动画
 
@@ -61,8 +74,9 @@ namespace DarwinPark.Core
                 float distRatio = Mathf.InverseLerp(minDistance, maxDistance, distance);
                 float sensitivity = Mathf.Lerp(0.05f, 1.0f, distRatio);
 
-                x += Input.GetAxis("Mouse X") * baseRotateSpeed * sensitivity * 0.02f;
-                y -= Input.GetAxis("Mouse Y") * baseRotateSpeed * sensitivity * 0.02f;
+                float multiplier=dragSpeedMultiplier*((Input.GetKey(KeyCode.LeftShift)||Input.GetKey(KeyCode.RightShift))?shiftDragMultiplier:1);
+                x += Input.GetAxis("Mouse X") * baseRotateSpeed * sensitivity * 0.02f * multiplier;
+                y -= Input.GetAxis("Mouse Y") * baseRotateSpeed * sensitivity * 0.02f * multiplier;
                 y = Mathf.Clamp(y, -85f, 85f);
             }
 
@@ -80,7 +94,10 @@ namespace DarwinPark.Core
             {
                 // 聚焦飞行逻辑
                 transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 5f);
-                transform.position = Vector3.Lerp(transform.position, targetPosition, Time.deltaTime * 5f);
+                // ★ 修复（防Bug回归）：对侧聚焦不能沿穿过星球的直线飞行，按旋转圆弧和半径插值。
+                float focusRadius = Mathf.Lerp(Vector3.Distance(transform.position,target.position),
+                    Vector3.Distance(targetPosition,target.position),Time.deltaTime*5f);
+                transform.position = target.position + transform.rotation * Vector3.back * focusRadius;
 
                 Vector3 euler = transform.rotation.eulerAngles;
                 x = euler.y;
@@ -101,19 +118,22 @@ namespace DarwinPark.Core
 
         private void KeepAboveSurface()
         {
+            if (target == null) return;
             var collider = target.GetComponent<MeshCollider>();
-            if (collider == null) return;
             Vector3 direction = (transform.position - target.position).normalized;
-            Vector3 outside = target.position + direction * maxDistance;
-            if (collider.Raycast(new Ray(outside, -direction), out var hit, maxDistance))
+            if(direction.sqrMagnitude<.5f) direction=-(transform.forward);
+            float safe = Mathf.Max(minDistance,minimumSurfaceRadius+surfaceClearance);
+            // ★ 修复（防Bug回归）：探测起点必须在整个碰撞体外，且检查实际位置而非过渡中的缓存 distance。
+            if(collider != null)
             {
-                float safe = Vector3.Distance(hit.point, target.position) + surfaceClearance;
-                if (distance < safe)
-                {
-                    distance = safe; targetDistance = Mathf.Max(targetDistance, safe);
-                    transform.position = target.position + direction * safe;
-                }
+                float outsideRadius=Mathf.Max(maxDistance,collider.bounds.extents.magnitude+surfaceClearance);
+                Vector3 outside=target.position+direction*outsideRadius;
+                if(collider.Raycast(new Ray(outside,-direction),out var hit,outsideRadius))
+                    safe=Mathf.Max(safe,Vector3.Distance(hit.point,target.position)+surfaceClearance);
             }
+            distance=Mathf.Max(Vector3.Distance(transform.position,target.position),safe);
+            targetDistance=Mathf.Max(targetDistance,safe);
+            transform.position=target.position+direction*distance;
         }
 
         private void UpdateCameraPos(bool immediate)
@@ -124,6 +144,19 @@ namespace DarwinPark.Core
 
             transform.rotation = rotation;
             transform.position = position;
+        }
+
+        // ★ 修复（防Bug回归）：退出操控需要同步轨道角度和距离，否则下一帧会被旧轨道状态拉回原处。
+        public void ReturnToEntity(Vector3 worldPosition)
+        {
+            FocusOn(worldPosition);
+            if(target == null) return;
+            transform.SetPositionAndRotation(targetPosition,targetRotation);
+            Vector3 euler=targetRotation.eulerAngles;
+            x=euler.y; y=euler.x>180?euler.x-360:euler.x;
+            distance=targetDistance=Vector3.Distance(targetPosition,target.position);
+            _isFocusing=false;
+            KeepAboveSurface();
         }
 
         // 平滑聚焦到目标实体

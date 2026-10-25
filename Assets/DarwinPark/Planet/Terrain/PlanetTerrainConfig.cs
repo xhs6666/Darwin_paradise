@@ -22,6 +22,9 @@ namespace DarwinPark.Planet
     {
         // ★ 修复（防Bug回归）：侵蚀边界平滑回到全局连续高度场。
         public int seamBlendCells = 6;
+        // ★ 适配：高度焊接之后还要修正交界坡度，防止保留一条贯穿大陆的细长折痕。
+        public int seamSmoothCells = 10, seamSmoothIterations = 8;
+        [Range(0f,1f)] public float seamSmoothStrength = .75f;
         public bool enableHydraulic = true;
         // ★ 修复：旧版每面只有 40 个水滴，对 128 细分（1.6 万格/面）几乎等于没侵蚀。
         // 提高到 300 个水滴，同时保持低强度，才能刻出可见的沟谷而不削平山脊。

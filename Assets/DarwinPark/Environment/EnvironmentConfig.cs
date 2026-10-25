@@ -44,7 +44,9 @@ namespace DarwinPark.Environment
 
         [Header("溺水")]
         [Tooltip("身体中心低于水面多少米开始溺水")]
-        public float drowningDepthThreshold = 0.8f;
+        public float drowningDepthThreshold = 0.1f;
+        [Tooltip("浸没后的最低溺水严重度，避免近水面伤害被修复掩盖")]
+        [Range(0f,1f)] public float minimumDrowningSeverity = 0.3f;
         [Tooltip("水深达到该值后溺水伤害达到最大倍率")]
         public float drowningSeverityDepth = 4f;
         [Tooltip("溺水时每秒损失的饱食度")]

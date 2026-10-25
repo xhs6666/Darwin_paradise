@@ -352,8 +352,9 @@ namespace DarwinPark.UI
             UIFactory.Stretch(txt.rectTransform, 2, 5);
             txt.raycastTarget = false;
 
-            var rch = btnGO.GetComponent<RightClickHandler>();
-            rch.OnRightClick += () => ToggleParamPopup(iconId, fallbackName);
+            // ★ 修复（防Bug回归）：参数左键打开，右键只取消，不再把滑条释放冒泡到覆盖层的关闭按钮。
+            btnGO.GetComponent<Button>().onClick.AddListener(() => ToggleParamPopup(iconId, fallbackName));
+            btnGO.GetComponent<RightClickHandler>().OnRightClick += DestroyMenus;
         }
 
         private void ToggleParamPopup(string paramId, string paramName)
@@ -363,11 +364,10 @@ namespace DarwinPark.UI
 
             var root = ServiceLocator.Get<UIRoot>("需要 UIRoot").MainCanvas.transform;
 
-            _activeParamMenu = UIFactory.NewRect("ParamMenuOverlay", root, typeof(Image), typeof(Button), typeof(RightClickHandler));
+            _activeParamMenu = UIFactory.NewRect("ParamMenuOverlay", root, typeof(Image), typeof(RightClickHandler));
             var oRt = _activeParamMenu.GetComponent<RectTransform>();
             oRt.anchorMin = Vector2.zero; oRt.anchorMax = Vector2.one; oRt.offsetMin = Vector2.zero; oRt.offsetMax = Vector2.zero;
             _activeParamMenu.GetComponent<Image>().color = new Color(0, 0, 0, 0.01f);
-            _activeParamMenu.GetComponent<Button>().onClick.AddListener(DestroyMenus);
             _activeParamMenu.GetComponent<RightClickHandler>().OnRightClick += DestroyMenus;
 
             var menu = UIFactory.NewRect("ParamMenuContent", _activeParamMenu.transform, typeof(Image));
@@ -388,7 +388,9 @@ namespace DarwinPark.UI
             trt.anchoredPosition = new Vector2(0, -8); trt.sizeDelta = new Vector2(0, 20);
 
             // ★ 适配：参数草稿、文本输入与 Shift 应用由独立编辑器管理，种子不再落入空分支。
-            menu.AddComponent<PlanetParameterEditor>().Initialize(paramId, paramName);
+            var editor=menu.AddComponent<PlanetParameterEditor>();
+            editor.Initialize(paramId, paramName);
+            editor.CancelRequested=DestroyMenus;
         }
         private void DestroyMenus()
         {

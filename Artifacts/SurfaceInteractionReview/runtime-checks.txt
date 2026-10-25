@@ -1,0 +1,5 @@
+PASS: every high-resolution terrain triangle faces outward
+PASS: 96 close-up directions stay above sea/terrain; no hemisphere flip; centre picks visible front surface
+PASS: opposite-side focus follows an exterior arc without crossing the planet
+PASS: pointer -1 with stale slot hover still drops exactly one entity; click confirmation works; UI drop rejects; input released
+PASS: seam crease curvature 0.040000 -> 0.000977; actual mean edge curvature 0.000766

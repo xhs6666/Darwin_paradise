@@ -94,6 +94,9 @@
 | YYYY-MM-DD | 示例：UI 打开后鼠标仍被锁定 | 输入脚本每帧强制锁鼠标 | `PlayerController.cs` | 覆盖 UI 打开时统一屏蔽输入 |
 | YYYY-MM-DD | 示例：组件报 Broken PPtr | 引用 ID 与组件块 ID 不一致 | `Scene.unity` | 加引用前确认组件块真实存在 |
 | YYYY-MM-DD | 示例：新增脚本编译报 CS0103 | 手写 meta GUID 位数错误 | `Xxx.cs.meta` | 用 GUID 生成器并校验 32 位 |
+| 2026-10-25 | 捕食收入低于行动代谢且饱食溢出丢失 | 伤害营养倍率过低、运动消耗过大，进食直接夹到饱食上限 | LocomotionSettings.cs、locomotion_settings.json、LocomotionGeneLogic.cs、EntityStats.cs、EntityVitals.cs | 实际伤害结算、溢出储存；检查跑动代谢后的净收益与过量伤害 |
+| 2026-10-25 | 实体标题冗长、参数面板留白过多 | 只读标题及旧版固定布局 | GeneInspectorUI.cs、EntityFavoritesManager.cs、PlanetParameterEditor.cs | 紧凑名称输入、空值回退、收藏同步；检查输入与滑条不重叠 |
+| 2026-10-25 | 新增手动操控可能与 AI/轨道相机争抢输入 | 原行为与镜头没有控制权切换接口 | EntityViewController.cs、EntityManualControl.cs、OrbitCamera.cs、SimulationPauseHotkey.cs | 进入/退出成对恢复；失效基因、暂停、死亡和 UI 焦点回归 |
 | 2026-10-24 | 大陆沿海生成大面积沙漠 | 气候图只用高度近似湿度，纬度用像素 y 线性近似，且未计算海岸距离 | `PlanetClimateMap.cs`、`PlanetClimateSystem.cs`、`PlanetClimateConfig.cs` | 湿度 = 纬度带 + 海岸距离 + 内陆干燥度；沿海设置湿度下限 |
 | 2026-10-24 | 气候图层全白 | 星球未挂 `PlanetClimateMap`，Shader 采样默认灰图；温度编码范围两端不一致 | `SampleScene.unity`、`PlanetClimateMap.cs`、`PlanetURP.shader` | 场景挂载气候图组件；`_ClimateReady` 未就绪时程序化兜底；编码范围由配置下发 |
 | 2026-10-24 | 地形几乎看不到山脉、盆地 | 脊状噪声 `1-|2m-1|` 对负值平方放大；盆地只有窄带；侵蚀配置未接入 | `PlanetTerrainGenerator.cs`、`PlanetTerrainMeshBuilder.cs` | 分层雕刻 + 浸蚀 + 6 面接缝顶点平均；所有雕刻幅度配置化 |
@@ -122,9 +125,15 @@
 
 | 2026-10-25 | 种子菜单只有 0.0、镜头无法近看、云气壳出现直线缺块 | 种子无处理分支；最近距离固定 430；用变形角点决定整面绕序，天气壳没有真实地表深度截断 | `PlanetParameterEditor.cs`、`SimulationControlPanel.cs`、`OrbitCamera.cs`、`PlanetTerrainGenerator.cs`、`PlanetWeatherVisuals.cs`、天气与地表 Shader、`SampleScene.unity` | 参数草稿用 Shift 提交；种子整数校验；按球面确定绕序并逐三角校验；深度积分及近看自动关云 |
 | 2026-10-25 | 捕食者不追猎、倍率只加速日期 | 捕猎排除不动活物且无猎物直接停机；实体 Update 与突变协程使用真实秒数 | `LocomotionGeneLogic.cs`、`LocomotionSettings.cs`、`EntityGeneController.cs`、`SimulationClock.cs`、`EntityVitals.cs`、`EntityEnvironmentHazard.cs`、`NutritionGeneLogic.cs`、`GrowthGeneLogic.cs` | 最近活物目标、碰撞体接触距离、无猎物搜索；统一模拟步长，按模拟时间突变，阶段变化重算属性；1×/16×等模拟时长回归 |
+| 2026-10-25 | 近景地表模糊、实体视角键鼠不符合操控需求 | 几何与气候采样不足，只有低频颜色；旧控制未锁鼠标且空格攻击 | PlanetTerrainMeshBuilder.cs、PlanetClimateMap.cs、PlanetURP.shader、PlanetNearSurfaceDetail.hlsl、EntityPossessionInput.cs、EntityJumpMotor.cs、EntityViewController.cs、EntityManualControl.cs、SampleScene.unity | 三维近景细节与导数抗闪烁、焊接球面回归；成对恢复鼠标；着地跳跃保留合法上升、防连跳；捕食先补饱食后储存 |
+| 2026-10-25 | 进入控制时镜头跳转、曲面接触可能穿透 | 鼠标居中位移被读取为转向，切向速度重写可能打断物理接触修正 | EntityPossessionInput.cs、EntityJumpMotor.cs | 捕获前两帧不读鼠标位移；真实 MeshCollider 脚底接触兜底，正常跳跃仍保留 |
+| 2026-10-25 | 提高细分后部分区域无法投放、最近镜头穿入星球，六面交界仍有直线折痕 | 微小叉积 normalized 归零导致三个面绕序反转；相机只限海床且聚焦走直线；侵蚀按面独立处理坡度、拖拽读旧 UI 缓存 | PlanetTerrainGenerator.cs、PlanetSeamContinuity.cs、PlanetTerrainConfig.cs、OrbitCamera.cs、PlanetWeatherVisuals.cs、EntityPlacementUtility.cs、EntityPlacementTool.cs、EntitySpawnerUI.cs、SampleScene.unity | 用原始叉积判绕序并逐三角验证；96 方向近景与正面拾取；真实海面边界及球外圆弧；球面跨面坡度处理；指针 -1 过期 UI 缓存与点击投放回归 |
+| 2026-10-25 | Esc 后镜头留在旧位置找不到实体；无游泳能力也能在水中移动且不掉血 | 退出恢复进入前镜头且轨道缓存未同步；通用行动在水中推进、重力无条件乘 0.1，浸没阈值偏深且自然修复抵消伤害 | OrbitCamera.cs、EntityViewController.cs、EntityManualControl.cs、EntityJumpMotor.cs、LocomotionGeneLogic.cs、PlanetGravity.cs、EntityEnvironmentHazard.cs、EntityVitals.cs、EnvironmentConfig.cs、environment_default.json | 退出对准当前位置并推进后续轨道帧验证；AI/手动共同限制水中行动；浅深水扣血、暂停/离水及自然修复检查；阈值和最低严重度配置化 |
+| 2026-10-25 | 滑条松手关窗导致 Shift 无法应用；放置一次就退出；信息长期不变、添加窗残留；攻击被自身遮挡并锁定旧目标 | 覆盖层 Button 收到冒泡点击；投放成功即取消；只在打开时构建文本且关闭路径分散；手动复用 AI 目标缓存 | SimulationControlPanel.cs、PlanetParameterEditor.cs、OrbitCamera.cs、EntityPlacementTool.cs、EntitySpawnerUI.cs、EntityPlacementUtility.cs、PlacementQuantityPopup.cs、GeneInspectorUI.cs、EntityViewController.cs、EntityPossessionInput.cs、EntityManualControl.cs、EntityAttackAim.cs、LocomotionGeneLogic.cs | 草稿拖动与应用/取消回归；连续批次及独立基因副本；实时刷新不丢焦点与滚动位置；EventTrigger 转交滚轮；准星 A/B 切换、排除自身、落空和遮挡检查 |
 > 台账是团队资产：修复前先检索是否有同类历史记录，修复后必须补登一行。
 
 ---
+
 
 ## 规则 5：新增代码必须新建独立脚本（禁止在旧脚本上堆叠新功能）
 

@@ -12,6 +12,7 @@ namespace DarwinPark.UI
     {
         public int seedSliderMin = 0, seedSliderMax = 1000000;
         public float temperatureMin = -30, temperatureMax = 60;
+        public System.Action CancelRequested;
         private string _id;
         private InputField _input;
         private Slider _slider;
@@ -21,42 +22,53 @@ namespace DarwinPark.UI
         {
             _id = id; _builder = Object.FindFirstObjectByType<PlanetTerrainMeshBuilder>();
             bool seed = id.Contains("seed"), temp = id.Contains("temp");
-            GetComponent<RectTransform>().sizeDelta = new Vector2(480, 150);
+            // ★ 适配：压缩空白，标题、编辑行和状态行各占一行。
+            GetComponent<RectTransform>().sizeDelta = new Vector2(400, 102);
             transform.Find("Title").GetComponent<Text>().text = "设定" + label + (seed ? "" : "（全年平均）");
             string initial = seed ? (_builder != null ? _builder.seed : 0).ToString() :
                 (temp ? ClimateDataHub.BaseTemperature : ClimateDataHub.BaseHumidity).ToString("F1", CultureInfo.InvariantCulture);
             var inputGO = UIFactory.NewRect("ValueInput", transform, typeof(Image), typeof(InputField));
             var irt = inputGO.GetComponent<RectTransform>();
             irt.anchorMin = irt.anchorMax = new Vector2(0, 0); irt.pivot = Vector2.zero;
-            irt.anchoredPosition = new Vector2(20, 65); irt.sizeDelta = new Vector2(150, 32);
+            irt.anchoredPosition = new Vector2(12, 38); irt.sizeDelta = new Vector2(112, 28);
             inputGO.GetComponent<Image>().color = new Color(.12f,.18f,.24f);
             _input = inputGO.GetComponent<InputField>();
-            var text = UIFactory.NewText("Text", inputGO.transform, initial, 18);
+            var text = UIFactory.NewText("Text", inputGO.transform, initial, 16);
             UIFactory.Stretch(text.rectTransform, 8, 2); _input.textComponent = text;
             _input.contentType = seed ? InputField.ContentType.IntegerNumber : InputField.ContentType.DecimalNumber;
             _input.text = initial;
             float min = seed ? seedSliderMin : temp ? temperatureMin : 0;
             float max = seed ? seedSliderMax : temp ? temperatureMax : 100;
             float.TryParse(initial, NumberStyles.Float, CultureInfo.InvariantCulture, out float current);
-            _slider = UIFactory.NewSlider("Parameter", transform, "", min, max, current, 270, out _);
+            _slider = UIFactory.NewSlider("Parameter", transform, "", min, max, current, 252, out _);
             var row = _slider.transform.parent.GetComponent<RectTransform>();
             row.anchorMin = row.anchorMax = Vector2.zero; row.pivot = Vector2.zero;
-            row.anchoredPosition = new Vector2(180, 65);
+            row.anchoredPosition = new Vector2(136, 36);
+            var sliderRect = _slider.GetComponent<RectTransform>();
+            sliderRect.offsetMin = new Vector2(4,4); sliderRect.offsetMax = new Vector2(-4,-4);
             _slider.wholeNumbers = seed;
-            _slider.onValueChanged.AddListener(v => _input.SetTextWithoutNotify(v.ToString(seed ? "F0" : "F1", CultureInfo.InvariantCulture)));
+            _slider.onValueChanged.AddListener(v => {
+                _input.SetTextWithoutNotify(v.ToString(seed ? "F0" : "F1", CultureInfo.InvariantCulture));
+                // ★ 修复（防Bug回归）：应用后再次改值必须恢复待提交状态，不能仍显示“已应用”。
+                if (_status != null) _status.text = "待应用（Shift）";
+            });
             _input.onValueChanged.AddListener(v => {
+                if (_status != null) _status.text = "待应用（Shift）";
                 if (float.TryParse(v, NumberStyles.Float, CultureInfo.InvariantCulture, out float f) && !float.IsNaN(f) && !float.IsInfinity(f))
                     _slider.SetValueWithoutNotify(f);
             });
-            var apply = UIFactory.NewButton("Apply", transform, "应用（Shift）", Apply, new Vector2(150,32));
+            var apply = UIFactory.NewButton("Apply", transform, "应用（Shift）", Apply, new Vector2(112,25));
+            apply.GetComponentInChildren<Text>().fontSize = 14;
             var art = apply.GetComponent<RectTransform>(); art.anchorMin = art.anchorMax = Vector2.zero;
-            art.pivot = Vector2.zero; art.anchoredPosition = new Vector2(300,20);
-            _status = UIFactory.NewText("Status", transform, "修改后按 Shift 应用", 13);
+            art.pivot = Vector2.zero; art.anchoredPosition = new Vector2(276,7);
+            _status = UIFactory.NewText("Status", transform, "修改后按 Shift 应用", 12);
             var srt = _status.rectTransform; srt.anchorMin = srt.anchorMax = Vector2.zero;
-            srt.pivot = Vector2.zero; srt.anchoredPosition = new Vector2(20,20); srt.sizeDelta = new Vector2(275,35);
+            srt.pivot = Vector2.zero; srt.anchoredPosition = new Vector2(12,7); srt.sizeDelta = new Vector2(255,25);
         }
         private void Update()
         {
+            // ★ 修复（防Bug回归）：右键取消独立处理，拖动滑条或点击内容不会销毁未提交草稿。
+            if(Input.GetMouseButtonDown(1)){CancelRequested?.Invoke();return;}
             if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift)) Apply();
         }
         private void OnGUI()

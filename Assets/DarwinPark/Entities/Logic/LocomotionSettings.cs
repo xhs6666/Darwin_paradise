@@ -8,7 +8,8 @@ namespace DarwinPark.Entities.Logic
     public sealed class LocomotionSettings
     {
         public float hungerThreshold = 8, attackReach = .5f, attackInterval = 1;
-        public float grazeDamage = 20, biteNutrition = .1f, killNutrition = 10;
+        // ★ 适配：正常近距离猎食的收益须覆盖代谢与移动消耗。
+        public float grazeDamage = 20, biteNutrition = .65f, killNutrition = 12;
         public float wanderInterval = 6, wanderDistance = 20, wanderSpeedRatio = .4f, steering = 12;
         private static LocomotionSettings _cached;
         public static LocomotionSettings Load()

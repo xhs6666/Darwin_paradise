@@ -113,6 +113,9 @@ namespace DarwinPark.UI
             vlg.childControlWidth = true;
         }
 
+        // ★ 适配：实体改名后，已经打开的收藏列表不能保留旧标签。
+        public void NotifyEntityRenamed() { if (_listPanel != null && _listPanel.activeSelf) RefreshList(); }
+
         private void RefreshList()
         {
             if (_contentParent == null) return;
@@ -159,6 +162,8 @@ namespace DarwinPark.UI
         private void LocateEntity(DarwinEntity entity)
         {
             if (entity == null) return;
+            // ★ 适配：收藏定位应切回轨道相机，不能被仍在运行的跟随视角覆盖。
+            EntityViewController.Instance?.ExitView();
             var cam = Camera.main != null ? Camera.main.GetComponent<OrbitCamera>() : null;
             if (cam == null)
             {

@@ -12,7 +12,8 @@ namespace DarwinPark.Entities.Vitals
 
         [Header("代谢设置")]
         public float baseMetabolism = 1.0f;
-        public float moveMetabolism = 0.5f;
+        // ★ 修复（防Bug回归）：原移动消耗每秒约为一口猎食收益的数倍，改为可持续的运动代谢。
+        public float moveMetabolism = 0.06f;
 
         private void Awake()
         {
@@ -80,7 +81,9 @@ namespace DarwinPark.Entities.Vitals
             float repairCapability = _genes.GetAttribute("repairCapability");
             if (_stats.TryGet("health", out var hp) && _stats.TryGet("nutrient", out var nut2))
             {
-                if (hp < 100f && hp > repairCapability && nut2 > 5f && repairEfficiency > 0f)
+                // ★ 修复（防Bug回归）：缺氧溺水期间暂停自然修复，避免持续伤害被同帧修复抵消成“不掉血”。
+                if (hp < 100f && hp > repairCapability && nut2 > 5f && repairEfficiency > 0f &&
+                    GetComponent<EntityEnvironmentHazard>()?.IsDrowning != true)
                 {
                     float hpToRepair = repairEfficiency * dt;
                     _stats.Modify("health", hpToRepair);

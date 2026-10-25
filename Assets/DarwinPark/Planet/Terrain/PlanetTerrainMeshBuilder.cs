@@ -7,7 +7,8 @@ namespace DarwinPark.Planet
     public class PlanetTerrainMeshBuilder : MonoBehaviour
     {
         [Header("基础配置")]
-        public int subdivisions = 256;
+        // ★ 修复（防Bug回归）：提高实体视角下的几何采样，配合近景片元细节而非只放大低频颜色。
+        public int subdivisions = 320;
         public float radius = 300f;
         public int seed = 42;
 

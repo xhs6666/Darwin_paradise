@@ -62,36 +62,27 @@ namespace DarwinPark.Entities
             float moveSpeed = genes != null ? genes.GetAttribute("moveSpeed") : 0f;
             bool isInWater = IsUnderWater(transform.position);
 
-            // 只要有行动基因，在水里就发光
-            _swimLight.enabled = isInWater && moveSpeed > 0;
+            // ★ 修复（防Bug回归）：行动基因不等于游泳，不能为所有入水实体开启游泳光效。
+            _swimLight.enabled = false;
 
             Vector3 dirToCenter = planet.position - transform.position;
             float distance = dirToCenter.magnitude;
             dirToCenter.Normalize();
 
-            // ★ 游泳逻辑：如果在水下，重力减小
             // ★ 修复：引力不能无限随高度衰减。旧版 (R/d)^2 在 600 距离只剩 1/4，
             // 被攻击顶飞的实体越飞越慢、看起来“卡在天上”。设置下限并在高空补一个向心加速度。
             float gravityMultiplier = Mathf.Clamp(Mathf.Pow(planetRadius / Mathf.Max(distance, planetRadius), 2f), 0.45f, 1f);
-            float finalGravity = isInWater ? baseGravity * 0.1f : baseGravity; // 水中重力变小
+            // ★ 修复（防Bug回归）：取消无条件的水中减重，否则陆生实体长时间悬在水面且达不到溺水深度。
+            float finalGravity = baseGravity;
             float highAltitudeAssist = 0f;
             if (!isInWater && distance > planetRadius + 60f)
                 highAltitudeAssist = Mathf.Min(20f, (distance - planetRadius - 60f) * 0.25f);
             _rb.AddForce(dirToCenter * (finalGravity * gravityMultiplier + highAltitudeAssist), ForceMode.Acceleration);
 
-            // 防止掉出海底
+            // ★ 修复（防Bug回归）：入水清除陆地行动惯性，保留向内下沉；海底由真实地形碰撞体承托。
             if (isInWater)
             {
-                float localDist = (transform.position - planet.position).magnitude;
-                var builder = planet.GetComponent<DarwinPark.Planet.PlanetTerrainMeshBuilder>();
-                if (builder != null)
-                {
-                    float seaFloor = builder.radius; // 最底部
-                    if (localDist < seaFloor + 2f)
-                    {
-                        _rb.linearVelocity = Vector3.zero; // 停在海底
-                    }
-                }
+                _rb.linearVelocity=dirToCenter*Mathf.Max(0,Vector3.Dot(_rb.linearVelocity,dirToCenter));
             }
 
             if (Physics.Raycast(transform.position, dirToCenter, out RaycastHit hit, 20f))

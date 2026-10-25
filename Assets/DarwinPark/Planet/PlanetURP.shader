@@ -5,6 +5,9 @@ Shader "DarwinPark/URP_PlanetSurface"
         // ★ 新增：图三风格地形配色与高度阈值独立配置，气候图层仍使用真实气候数据。
         _DetailScale ("Surface detail scale", Float) = 85
         _DetailStrength ("Surface detail strength", Range(0,1)) = 0.35
+        _NearDetailDensity ("Near detail per metre", Float) = 4
+        _NearDetailStrength ("Near detail contrast", Range(0,1)) = 0.45
+        _NearDetailFade ("Near detail fade metres", Vector) = (20,100,0,0)
         _LowlandColor ("Lowland", Color) = (0.43, 0.68, 0.30, 1)
         _HillColor ("Foothills", Color) = (0.72, 0.72, 0.39, 1)
         _RockColor ("Mountain rock", Color) = (0.60, 0.32, 0.16, 1)
@@ -35,6 +38,7 @@ Shader "DarwinPark/URP_PlanetSurface"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 
             #include "Terrain/PlanetSurfaceDetail.hlsl"
+            #include "Terrain/PlanetNearSurfaceDetail.hlsl"
 
             struct Attributes { float4 positionOS : POSITION; float3 normalOS : NORMAL; };
             struct Varyings { float4 positionCS : SV_POSITION; float3 normalWS : TEXCOORD0; float3 viewDirWS : TEXCOORD1; float3 positionWS : TEXCOORD2; float3 positionOS : TEXCOORD3; };
@@ -42,6 +46,8 @@ Shader "DarwinPark/URP_PlanetSurface"
             CBUFFER_START(UnityPerMaterial)
                 float4 _LowlandColor, _HillColor, _RockColor, _PeakColor, _ElevationBands;
                 float _DetailScale, _DetailStrength;
+                float _NearDetailDensity, _NearDetailStrength;
+                float4 _NearDetailFade;
                 float _SeaLevel; 
                 float _PlanetRadius;
                 float _HeightScale;
@@ -163,6 +169,10 @@ Shader "DarwinPark/URP_PlanetSurface"
                     surfaceColor = lerp(float3(0.02, 0.02, 0.02), float3(1.0, 0.85, 0.0), oreAmount);
                 }
 
+                // ★ 适配：近看时叠加米级地表纹理；矿量等数据图层不添加颜色噪声。
+                if (_LayerMode < .5 && heightRatio >= seaLevel)
+                    surfaceColor = ApplyNearSurfaceDetail(surfaceColor,input.positionOS,length(input.viewDirWS),
+                        _NearDetailDensity,_NearDetailStrength,_NearDetailFade.xy);
                 Light mainLight = GetMainLight();
                 float ndl = saturate(dot(normalWS, mainLight.direction));
                 

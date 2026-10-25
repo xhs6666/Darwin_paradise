@@ -45,6 +45,16 @@ namespace DarwinPark.Entities.Stats
 
         public bool TryGet(string id, out float value) => _stats.TryGetValue(id, out value);
 
+        /// <summary>★ 新增：进食先补饱食度，溢出进入储存；猎食收益不因饱食度上限而丢失。</summary>
+        public void Feed(float amount)
+        {
+            if (amount <= 0 || !TryGet("nutrient", out float before)) return;
+            Modify("nutrient", amount);
+            TryGet("nutrient", out float after);
+            float overflow = Mathf.Max(0, amount - (after - before));
+            if (overflow > 0) Modify("storedNutrient", overflow);
+        }
+
         public void Modify(string id, float delta)
         {
             Modify(id, delta, true);
