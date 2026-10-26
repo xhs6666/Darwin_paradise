@@ -35,7 +35,11 @@ namespace DarwinPark.Entities
 
         private Dictionary<GeneInstance, IGeneLogic> _activeLogics = new();
         private bool _isRecalculating = false;
-        private float _growthTimer;
+        private int _mutatedStages;
+        public int StageMutationChecks {get;private set;}
+        // ★ 适配：恢复已抽过的阶段，读档不能重抽出生/成年变异。
+        public int MutatedStageMask=>_mutatedStages;
+        public void RestoreStageState(AgeState age,int mask,int checks){CurrentAge=age;_mutatedStages=mask;StageMutationChecks=checks;}
 
         private void Awake()
         {
@@ -59,15 +63,13 @@ namespace DarwinPark.Entities
             {
                 float step = Mathf.Min(remaining, .1f);
                 remaining -= step;
+                // ★ 适配：寿命由单一组件推进，基因复制/失效/重新挂载不会重置或重复推进年龄。
+                var life=GetComponent<EntityLifeCycle>();
+                if(life==null && GetComponent<EntityStats>()!=null)life=gameObject.AddComponent<EntityLifeCycle>();
+                life?.Advance(step);
+                if(life!=null && life.HasDied)return;
                 var logicsCopy = new List<IGeneLogic>(_activeLogics.Values);
                 foreach (var logic in logicsCopy) logic.OnUpdate(step);
-                if (IsGestating) continue;
-                _growthTimer += step;
-                while (_growthTimer >= Mathf.Max(.1f, growthInterval))
-                {
-                    _growthTimer -= Mathf.Max(.1f, growthInterval);
-                    GrowthTick();
-                }
             }
         }
 
@@ -196,8 +198,11 @@ namespace DarwinPark.Entities
             return 0f;
         }
 
-        private void GrowthTick()
+        public void TryStageMutation(AgeState stage)
         {
+                // ★ 修复（防Bug回归）：只在出生/成年/老年首次进入时抽一次，普通帧和定时刷新不能变异。
+                int bit=1<<(int)stage;if((_mutatedStages&bit)!=0)return;
+                _mutatedStages|=bit;StageMutationChecks++;
                 // 基因变异与刷新。
                 // ★ 修复：环境压力不仅提高“定向选择”概率，也提高本次变异的总体发生率
                 //（最高 +25%），否则玩家很难观察到适应基因被优先突变。
@@ -205,12 +210,10 @@ namespace DarwinPark.Entities
                     mutationChance + EnvironmentMutationChance * 0.25f);
                 if (UnityEngine.Random.value < effectiveMutationChance)
                 {
-                    var settings = new GeneMutationSettings
-                    {
-                        AdaptationGeneId = EnvironmentGeneId,
-                        AdaptationMutationChance = EnvironmentMutationChance,
-                        AdaptationTargetValue = EnvironmentAdaptationTarget
-                    };
+                    var settings = GeneMutationSettings.CreateDefault();
+                    settings.AdaptationGeneId = EnvironmentGeneId;
+                    settings.AdaptationMutationChance = EnvironmentMutationChance;
+                    settings.AdaptationTargetValue = EnvironmentAdaptationTarget;
                     GeneMutator.Mutate(Genome, settings);
                 }
                 Recalculate();

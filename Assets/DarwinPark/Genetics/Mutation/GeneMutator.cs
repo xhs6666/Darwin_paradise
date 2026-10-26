@@ -23,57 +23,36 @@ namespace DarwinPark.Genetics.Mutation
             GeneInstance gene = null;
 
             // ★ 新增：环境压力会提高环境适应基因的变异概率。
-            // 如果基因组里还没有该基因，压力变异直接插入一个新基因。
             bool preferAdaptation = !string.IsNullOrEmpty(settings.AdaptationGeneId)
                 && settings.AdaptationMutationChance > 0f
                 && Random.value < settings.AdaptationMutationChance;
-            if (preferAdaptation)
-            {
-                gene = genome.Genes.Find(g => g.DefinitionId == settings.AdaptationGeneId);
-                if (gene == null)
-                {
-                    // 直接按压力方向创建，而不是先插入一个中性值。
-                    float initialValue = settings.AdaptationTargetValue >= 0f
-                        ? settings.AdaptationTargetValue
-                        : 50f;
-                    var added = GeneInstance.Create(settings.AdaptationGeneId, initialValue, 0);
-                    genome.Add(added);
-                    return MutationResult.Ok(MutationType.Insertion,
-                        $"环境压力插入 {settings.AdaptationGeneId}", added);
-                }
-            }
-
+            // ★ 修复（防Bug回归）：环境压力仅偏向已有基因，不再绕过 90/5/5 概率插入新类型。
+            if(preferAdaptation)gene=genome.Genes.Find(g=>g.DefinitionId==settings.AdaptationGeneId);
             if (gene == null)
             {
                 int index = Random.Range(0, genome.Genes.Count);
                 gene = genome.Genes[index];
             }
 
-            float roll = Random.value;
+            float total=Mathf.Max(0,settings.ErrorWeight)+Mathf.Max(0,settings.DuplicateWeight)+Mathf.Max(0,settings.DeletionWeight);
+            if(total<=0)return MutationResult.Fail("变异权重之和必须大于零");
+            float roll = Random.value*total;
 
-            // 压力选中的适应基因只做“定向数值漂移”，避免立即被缺失/复制噪声淹没。
-            if (preferAdaptation)
+            if (roll < settings.ErrorWeight) // ★ 修复：默认 90% 数值出错，实际读取配置权重
             {
-                float direction = settings.AdaptationTargetValue >= 0f
-                    ? Mathf.Sign(settings.AdaptationTargetValue - gene.Value)
-                    : Mathf.Sign(Random.Range(-1f, 1f));
-                if (Mathf.Approximately(direction, 0f)) direction = 1f;
-
-                float delta = Random.Range(5f, 15f) * direction;
-                gene.Value = Mathf.Clamp(gene.Value + delta, 0f, 100f);
-                return MutationResult.Ok(MutationType.Error,
-                    $"{gene.DefinitionId} 在环境压力下偏移到 {gene.Value:F1}");
-            }
-            if (roll < 0.6f) // 40% 出错
-            {
-                float delta = Random.Range(-15f, 15f);
+                // ★ 适配：数值出错分支可沿工具配置的侧向出错关系迁移，仍保持90/5/5类型权重。
+                string errorTarget=GeneTreeStorage.Successor(gene.DefinitionId,"error");
+                if(errorTarget!=null) gene.DefinitionId=errorTarget;
+                float delta = Random.Range(-settings.MaxErrorDelta, settings.MaxErrorDelta);
+                if(preferAdaptation && settings.AdaptationTargetValue>=0 && gene.DefinitionId==settings.AdaptationGeneId)
+                    delta=Mathf.Abs(delta)*Mathf.Sign(settings.AdaptationTargetValue-gene.Value);
                 gene.Value = Mathf.Clamp(gene.Value + delta, 0f, 100f);
                 return MutationResult.Ok(MutationType.Error, $"{gene.DefinitionId} 偏移到 {gene.Value:F1}");
             }
-            else if (roll < 0.8f) // 30% 复制变异
+            else if (roll < settings.ErrorWeight+settings.DuplicateWeight) // 默认 5% 复制
             {
                 var copy = GeneInstance.Create(gene.DefinitionId, gene.Value, gene.Tier);
-                copy.CopyStrength = Random.Range(0.5f, 1.5f);
+                copy.CopyStrength = Random.Range(settings.DuplicateMinStrength, settings.DuplicateMaxStrength);
 
                 var def = GeneDatabase.Get(gene.DefinitionId);
                 var currentState = def?.ResolveState(gene.Value, gene.MissingStateIds);
@@ -93,10 +72,13 @@ namespace DarwinPark.Genetics.Mutation
                     }
                 }
 
+                // ★ 适配：复制的新基因优先使用配置的向下进化关系。
+                string next=GeneTreeStorage.Successor(gene.DefinitionId,"evolution");
+                if(next!=null)copy.DefinitionId=next;
                 genome.Add(copy);
                 return MutationResult.Ok(MutationType.Duplicate, $"复制出了 {copy.DefinitionId}");
             }
-            else // 30% 缺失
+            else // 默认 5% 缺失
             {
                 // ★ 新增：基础基因保护逻辑
                 string[] coreGenes = { "gene_growth", "gene_reproduction", "gene_nutrition" };

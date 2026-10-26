@@ -223,6 +223,8 @@ namespace DarwinPark.UI
 
         private void Update()
         {
+            // ★ 适配：覆盖菜单拥有输入时不处理世界操作。
+            if (DarwinPark.Core.GameInputGate.Blocked) return;
             if (!EnsurePanel()) return;
             // ★ 适配：小窗口同时打开两个面板时压缩高度，保持左上/左下且不覆盖底栏。
             float canvasHeight=(_panel.transform.parent as RectTransform).rect.height;
@@ -244,7 +246,12 @@ namespace DarwinPark.UI
                 if (TryPickEntity(out var entity)) ShowEntityInfo(entity);
                 else HideEntityInfo();
             }
-            if (Input.GetKeyDown(KeyCode.Escape)) HideEntityInfo();
+            // ★ 修复（防Bug回归）：Esc 优先收起添加子窗口，保留正在查看的实体，避免一次取消丢失编辑上下文。
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                if (_addGenePanel.activeSelf) _addGenePanel.SetActive(false);
+                else HideEntityInfo();
+            }
 
             if (_tooltipPanel.activeSelf)
             {
@@ -624,6 +631,8 @@ namespace DarwinPark.UI
         private void ShowAddGeneMenu()
         {
             if (_currentEntity == null) return;
+            // ★ 适配：再次点击添加按钮收起。
+            if(_addGenePanel.activeSelf){_addGenePanel.SetActive(false);return;}
             _addGenePanel.SetActive(true);
             _addGenePanel.transform.SetAsLastSibling();
 

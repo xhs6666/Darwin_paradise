@@ -1,0 +1,11 @@
+{
+  "ErrorWeight": 0.90,
+  "DuplicateWeight": 0.05,
+  "DeletionWeight": 0.05,
+  "InsertionWeight": 0.0,
+  "MaxErrorDelta": 15,
+  "ErrorBiasPower": 3,
+  "MaxInteractionDistance": 25,
+  "DuplicateMinStrength": 0.5,
+  "DuplicateMaxStrength": 1.5
+}

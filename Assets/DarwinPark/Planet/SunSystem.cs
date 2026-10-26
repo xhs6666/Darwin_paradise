@@ -23,6 +23,8 @@ namespace DarwinPark.Planet
 
         // ★ 修复：确保这里是带下划线的 _angle
         private float _angle = 45f;
+        // ★ 适配：太阳公转相位成对保存/恢复，避免读档昼夜跳变。
+        public float OrbitAngle {get=>_angle;set=>_angle=Mathf.Repeat(value,360); }
 
         void Start()
         {

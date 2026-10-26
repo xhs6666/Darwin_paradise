@@ -84,16 +84,8 @@ namespace DarwinPark.GameRoot
             // 8. 初始化基因计算
             genes.Recalculate();
 
-            var newStats = go.GetComponent<EntityStats>();
-            if (newStats != null)
-            {
-                // 强制营养为 10（不满足繁殖的 80），强迫它们去吃食物长大
-                //newStats.Modify("nutrient", -90f);
-
-                // 如果出生就带有生长基因，强制将其归零为幼年（初始值 10）
-                var growth = genes.Genome.Genes.Find(g => g.DefinitionId == "gene_growth");
-                if (growth != null) growth.Value = 10f;
-            }
+            // ★ 修复（防Bug回归）：幼年是生命阶段，不能把遗传的生长基因值强制改成 10。
+            if(go.GetComponent<EntityLifeCycle>()==null)go.AddComponent<EntityLifeCycle>();
 
             return entity;
         }

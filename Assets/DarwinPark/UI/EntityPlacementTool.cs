@@ -19,17 +19,20 @@ namespace DarwinPark.UI
         public int PlacementCount { get; private set; }=1;
         public float batchSpacing=2f;
         private Genome _genome;
+        private GameObject _prefab;
         private GameObject _preview, _hint;
         private int _beginFrame;
         private void Awake() { Instance = this; }
 
         public void BeginPlacement(GameObject prefab, Genome genome, int count=1)
         {
+            // ★ 适配：再次点击同一槽位退出；切换模板直接进入新投放。
+            if(IsPlacing && _prefab==prefab && ReferenceEquals(_genome,genome)){CancelPlacement();return;}
             // ★ 适配：开始投放时退出实体控制，避免两个模式争用键鼠与相机。
             EntityViewController.Instance?.ExitView();
             CancelPlacement();
             if (prefab == null) { Log.Error(Log.Tag.UI, "默认实体预制体未配置，无法投放"); return; }
-            _genome = genome; IsPlacing = true; OrbitCamera.IsDraggingUI = true; _beginFrame = Time.frameCount;
+            _genome = genome;_prefab=prefab; IsPlacing = true; OrbitCamera.IsDraggingUI = true; _beginFrame = Time.frameCount;
             PlacementCount=Mathf.Max(1,count);
             _preview = EntityPlacementUtility.CreatePreview(prefab);
             _preview?.SetActive(false);
@@ -46,6 +49,8 @@ namespace DarwinPark.UI
 
         private void Update()
         {
+            // ★ 适配：覆盖菜单拥有输入时不处理世界操作。
+            if (DarwinPark.Core.GameInputGate.Blocked) return;
             if (!IsPlacing || Time.frameCount == _beginFrame) return;
             if (Input.GetKeyDown(KeyCode.Escape) || Input.GetMouseButtonDown(1)) { CancelPlacement(); return; }
             // ★ 适配：与拖拽共用实时坐标检测，避免上一帧 UI 命中阻断地表确认。
@@ -75,7 +80,7 @@ namespace DarwinPark.UI
         public void CancelPlacement()
         {
             if (IsPlacing) OrbitCamera.IsDraggingUI = false;
-            IsPlacing = false; _genome = null;
+            IsPlacing = false; _genome = null;_prefab=null;
             EntityPlacementUtility.DestroyPreview(_preview); _preview = null;
             if (_hint != null) Destroy(_hint); _hint = null;
         }

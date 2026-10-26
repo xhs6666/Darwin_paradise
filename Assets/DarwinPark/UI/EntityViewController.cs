@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 namespace DarwinPark.UI
 {
-    /// <summary>★ 新增：双击实体进入第三人称视角；输入、跟随和退出恢复独立于轨道相机。</summary>
+    /// <summary>★ 新增：双击实体进入锁定第一人称视角；输入、跟随和退出恢复独立于轨道相机。</summary>
     [DefaultExecutionOrder(200)]
     [RequireComponent(typeof(EntityPossessionInput))]
     public sealed class EntityViewController : MonoBehaviour
@@ -33,14 +33,18 @@ namespace DarwinPark.UI
         private GameObject _bar;
         private Text _hint;
         private EntityPossessionInput _input;
-        private void Awake() { Instance = this; _input = GetComponent<EntityPossessionInput>(); }
+        private EntityFirstPersonCamera _firstPerson;
+        private void Awake() { Instance = this; _input = GetComponent<EntityPossessionInput>(); _firstPerson = gameObject.AddComponent<EntityFirstPersonCamera>(); }
         private void Update()
         {
             if (_active && (Target == null || !Target.isActiveAndEnabled ||
                 (Target.GetComponent<EntityStats>() is EntityStats stats && stats.TryGet("health",out float hp) && hp <= 0)))
             { ExitView(); return; }
+            if (GameInputGate.Blocked) return;
             bool typing = IsTyping();
-            if (_active && Input.GetKeyDown(exitKey)) { ExitView(); return; }
+            // ★ 适配：有暂停菜单时 Esc 专用于暂停，Tab 退出实体操控，防止锁鼠标后无法返回轨道视角。
+            var viewExitKey = WorldRuntimeGate.Managed && exitKey == KeyCode.Escape ? KeyCode.Tab : exitKey;
+            if (_active && Input.GetKeyDown(viewExitKey)) { ExitView(); return; }
             bool overUI = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
             bool placing = OrbitCamera.IsDraggingUI || (EntityPlacementTool.Instance != null && EntityPlacementTool.Instance.IsPlacing);
             if (!_active && !typing && !overUI && !placing && Input.GetMouseButtonDown(0))
@@ -57,7 +61,7 @@ namespace DarwinPark.UI
             _forward = Vector3.ProjectOnPlane(_forward,up).normalized;
             if (_forward.sqrMagnitude < .01f) _forward = Vector3.ProjectOnPlane(Vector3.forward,up).normalized;
             _input.Tick(blocked,up,ref _forward,ref _height,ref _distance,minFollowDistance,maxFollowDistance);
-            if (_hint != null) _hint.text = Target.DisplayName + (_manual.CanMove ? "  WASD 移动 · 左键攻击 · 空格跳跃 · 鼠标转向 · Esc 返回" : "  观察模式（无有效行动基因）· Esc 返回");
+            if (_hint != null) _hint.text = Target.DisplayName + (_manual.CanMove ? "  WASD 移动 · 左键攻击 · 空格跳跃 · 鼠标转向" : "  观察模式（无有效行动基因）") + (WorldRuntimeGate.Managed ? " · Tab 返回星球 · Esc 暂停" : " · Esc 返回");
         }
         // ★ 新增：同一实体的双击才切换，UI/空白点击不会沿用上一次命中。
         public void RegisterClick(DarwinEntity entity, float time)
@@ -83,6 +87,8 @@ namespace DarwinPark.UI
             // ★ 适配：清理旧输入框焦点，进入时立即锁鼠标并生成准星。
             EventSystem.current?.SetSelectedGameObject(null);
             _input.Begin(_manual,_planet,_height,_distance);
+            // ★ 适配：锁定眼位，不再用偏肩追随镜头。
+            _firstPerson.Begin(entity, camera);
             BuildBar(); return true;
         }
         private void LateUpdate()
@@ -90,20 +96,15 @@ namespace DarwinPark.UI
             if (!_active || Target == null || _camera == null || _planet == null) return;
             Vector3 up = (Target.transform.position-_planet.position).normalized;
             Vector3 forward = Vector3.ProjectOnPlane(_forward,up).normalized;
-            // ★ 修复（防Bug回归）：镜头偏肩、准星前移，避免自身模型长期挡在准星中央。
-            Vector3 aim = Target.transform.position+up*aimHeight+forward*aimForwardOffset;
-            Vector3 desired = Target.transform.position-forward*_distance+up*_height+Vector3.Cross(up,forward)*shoulderOffset;
-            // ★ 修复（防Bug回归）：跟随镜头也要对真实地形做遮挡检测，不能钻入山体。
-            Vector3 offset = desired-aim;
-            if (_terrain != null && _terrain.Raycast(new Ray(aim,offset.normalized),out var hit,offset.magnitude))
-                desired = hit.point+hit.normal*cameraClearance;
-            _camera.transform.SetPositionAndRotation(desired,Quaternion.LookRotation(aim-desired,up));
+            // ★ 适配：最终相机和攻击射线由同一个眼位/朝向生成。
+            _firstPerson.Apply(up,forward,_input.Pitch,_manual);
         }
         public void ExitView()
         {
             if (!_active) return;
             _active = false;
             _input?.End();
+            _firstPerson?.End();
             if (_manual != null) _manual.Release();
             if (_orbit != null) _orbit.EntityViewActive = false;
             // ★ 修复（防Bug回归）：操控后实体已经离开出生处，退出应对准其当前位置，不能恢复旧镜头而丢失实体。

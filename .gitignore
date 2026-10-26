@@ -105,3 +105,10 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+
+# Local player data and generated development output
+/save/
+/mods/
+/Artifacts/
+/Assets/_Recovery/
+/Assets/_Recovery.meta

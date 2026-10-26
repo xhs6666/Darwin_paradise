@@ -178,3 +178,10 @@
 - [ ] 遵守规则 5：新功能为独立脚本，旧脚本仅修复或最小适配
 - [ ] 编译 0 error、0 warning 新增，场景组件挂载确认无误
 | 2026-10-24 | 多轮修复后气候/地形/控制栏/攻击悬空仍有回归 | 山脉按理论噪声范围归一化；大种子逐层倍频丢精度；像元中心被强行复制；HUD 超时放弃且根节点重启未注册；移动削弱下落速度，追击力按渲染帧累积；适应基因被错误豁免 | `PlanetTerrainGenerator.cs`、`FBMNoise.cs`、`PlanetClimateModel.cs`、`PlanetClimateConfig.cs`、`PlanetClimateSystem.cs`、`PlanetURP.shader`、`SimulationControlPanel.cs`、`UIRoot.cs`、`LocomotionGeneLogic.cs`、`EntitySurfaceAnchor.cs`、`EntityGeneController.cs`、`EntityEnvironmentHazard.cs`、`GeneValueResolver.cs`、`EnvironmentConfig.cs`、`SampleScene.unity` | 实测噪声范围；所有基因环境抑制含面板显示；温度由多条件叠加；真实气候决定雪地；HUD 持续重试；保留下落速度并限制追击速度；按用户本次要求取消适应基因豁免 |
+
+| 2026-10-26 | 控制实体短点击攻击丢失、老年不死、阶段外变异及幼体重叠 | 攻击仅查持续按住且冷却消费请求；寿命依赖可失效的生长逻辑；定时突变与三维出生偏移 | EntityPossessionInput.cs、LocomotionGeneLogic.cs、EntityLifeCycle.cs、EntityGeneController.cs、GeneMutator.cs、OffspringPlacement.cs、ReproductionGeneLogic.cs、GeneInspectorUI.cs | 短点击锁存至冷却结束，失焦/退出清除；独立寿终；阶段去重抽签；90/5/5 配置；真实地表随机散布；7～30 游戏日；添加窗再次点击/Esc 关闭 |
+
+| 2026-10-26 | 偏肩俯视时准星偏离近身目标；新增覆盖菜单存在游戏输入穿透风险 | 旧镜头以实体前方为注视点且仍允许滚轮拉远，菜单没有统一接管游戏输入 | EntityFirstPersonCamera.cs、EntityViewController.cs、EntityPossessionInput.cs、GameInputGate.cs、GameMainMenu.cs | 锁定眼位、隐藏自身且退出恢复、最终视线与攻击射线同源；覆盖菜单暂停模拟并关闭 HUD 射线；实际近身攻击回归通过 |
+| 2026-10-26 | 基因树编辑与运行配置可能脱节、切换节点丢失数值 | 原系统仅读 Resources，没有布局/关系持久化与表单提交路径 | GeneTreeStorage.cs、GeneTreeWorkbench.cs、GeneValueForm.cs、GeneDatabase.cs、GeneMutator.cs | JSON 与布局关系同目录保存；保存/切换时提交数值；重复 id、悬空关系、进化环与非法数值拦截；四类关系运行映射和文件往返验收 |
+
+| 2026-10-26 | 主菜单直接进入临时世界、F10/操控退出与暂停冲突、加载耗时计入日期 | 主菜单没有世界会话入口，启动同步生成且没有存档读写闭环；Esc 被多处消费 | GameMainMenu.cs、WorldSessionManager.cs、WorldSaveStore.cs、MainMenuBackground.cs、GamePaths.cs、SimulationClock.cs、EntityViewController.cs、SampleScene.unity | 菜单提前门控生成；数字/文字种子与默认现实时间命名；save 原子写入/备份及完整读档；mods/Default 默认工具目录；Esc 暂停三按钮、F10 无动作、Tab 退出操控；后台生成/阶段进度、加载后下一帧开始计时；实机存档往返、坏档保护与预录背景播放检查 |

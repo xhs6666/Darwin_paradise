@@ -67,12 +67,15 @@ namespace DarwinPark.UI
         }
         private void Update()
         {
+            // ★ 适配：工具中的 Shift/回车不能提交背景游戏面板。
+            if(DarwinPark.Core.GameInputGate.Blocked)return;
             // ★ 修复（防Bug回归）：右键取消独立处理，拖动滑条或点击内容不会销毁未提交草稿。
-            if(Input.GetMouseButtonDown(1)){CancelRequested?.Invoke();return;}
+            if(Input.GetMouseButtonDown(1)||Input.GetKeyDown(KeyCode.Escape)){CancelRequested?.Invoke();return;}
             if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift)) Apply();
         }
         private void OnGUI()
         {
+            if(DarwinPark.Core.GameInputGate.Blocked)return;
             // ★ 修复（防Bug回归）：输入框聚焦或按键在低帧率内快速按下/抬起时，逐个键盘事件也要接收 Shift。
             var key = Event.current;
             if (key.type == EventType.KeyDown && (key.shift || key.keyCode == KeyCode.LeftShift || key.keyCode == KeyCode.RightShift))

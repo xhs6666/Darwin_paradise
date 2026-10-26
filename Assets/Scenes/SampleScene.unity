@@ -223,8 +223,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a79441f348de89743a2939f4d699eac1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   m_RenderShadows: 1
   m_RequiresDepthTextureOption: 2
   m_RequiresOpaqueTextureOption: 2
@@ -267,7 +267,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6cd228853727b14eb1831b1c2d2dd6a, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: DarwinPark.Core::DarwinPark.Core.OrbitCamera
   target: {fileID: 1607441747}
   distance: 800
@@ -386,8 +386,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -415,7 +415,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2adea0a40339c674d89daf987f7697d0, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: DarwinPark.Planet::DarwinPark.Planet.SunSystem
   planet: {fileID: 1607441747}
   rotationSpeed: 15
@@ -452,8 +452,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   m_IsGlobal: 1
   priority: 0
   blendDistance: 0
@@ -482,6 +482,10 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
+  - component: {fileID: 987650101}
+  - component: {fileID: 987650102}
+  - component: {fileID: 987650103}
+  - component: {fileID: 987650104}
   - component: {fileID: 1476497586}
   - component: {fileID: 1476497592}
   - component: {fileID: 1476497591}
@@ -526,7 +530,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 84a5cc0ae58c0bf4abc4157be7b1b35f, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: DarwinPark.UI::DarwinPark.UI.GeneInspectorUI
 --- !u!114 &1476497588
 MonoBehaviour:
@@ -538,7 +542,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e35fce5cec0a05848904226cdee61b8c, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: DarwinPark.UI::DarwinPark.UI.SimulationControlPanel
   EntityPrefab: {fileID: 2182643932841101760, guid: 78a02baf69bdd584982ec1ea86d7161f, type: 3}
 --- !u!114 &1476497589
@@ -551,7 +555,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bc072a27b8e6a98468a04bb8a959583d, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: DarwinPark.Core::DarwinPark.Core.UIRoot
 --- !u!114 &1476497590
 MonoBehaviour:
@@ -563,7 +567,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 911e56ef12d0a9843b510841b4b32fad, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: DarwinPark.Environment::DarwinPark.Environment.EnvironmentSystem
   ConfigId: environment_default
 --- !u!114 &1476497591
@@ -576,7 +580,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d5726ddd0482c4d4d990ebb6ce2306dc, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: DarwinPark.Core::DarwinPark.Core.SimulationClock
   _startRunning: 1
   _timeScale: 1
@@ -590,7 +594,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c46ff410161046846a73780419889fd2, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::DarwinPark.GameRoot.GameBootstrap
   entityPrefab: {fileID: 2182643932841101760, guid: 78a02baf69bdd584982ec1ea86d7161f, type: 3}
 --- !u!114 &1476497593
@@ -603,7 +607,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 30a99de0c21aeb0439c3a5a394b7c0f2, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: DarwinPark.UI::DarwinPark.UI.EntityFavoritesManager
 --- !u!1 &1607441742
 GameObject:
@@ -641,7 +645,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 44f3862e8a103454ba6d34c4c33d99e7, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: DarwinPark.Planet::DarwinPark.Planet.PlanetTerrainMeshBuilder
   subdivisions: 320
   radius: 300
@@ -773,7 +777,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bf2ecca358de47043a45cba432948430, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: DarwinPark.Planet::DarwinPark.Planet.PlanetVisuals
   starRadius: 1500
   starCount: 3000
@@ -809,7 +813,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 52cd35cf338cc7a45a98fbea5b57d150, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: DarwinPark.Planet::DarwinPark.Planet.PlanetClimateSystem
   planetRadius: 300
   config:
@@ -877,7 +881,7 @@ MonoBehaviour:
   m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: eb2c03e0f958c9d4e8f656c31a050ee3, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: DarwinPark.Planet::DarwinPark.Planet.OreGenerator
   oreCount: 150
   minSize: 1.5
@@ -893,7 +897,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2cbb655cc6c2d6f4ab0909ab574281c2, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: DarwinPark.Planet::DarwinPark.Planet.PlanetClimateMap
   mapResolution: 1024
 --- !u!114 &1476497594
@@ -906,7 +910,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 857c64ca5c1f49789a51a89b9ab2244c, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: DarwinPark.Core::DarwinPark.Core.SimulationPauseHotkey
   pauseKey: 32
 --- !u!1660057539 &9223372036854775807
@@ -929,7 +933,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5dc41f7c99254e1cb7d5eb5a2a6c3246, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: DarwinPark.Planet::DarwinPark.Planet.PlanetWeatherVisuals
   oceanShader: {fileID: 4800000, guid: cb1f9486b4ed43dbab215818f52fb173, type: 3}
   cloudShader: {fileID: 4800000, guid: 4b23ee2e2cc749559261d95b3b94664d, type: 3}
@@ -960,7 +964,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3c933888127c8dc4393d2c49bac1ff17, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: DarwinPark.Planet::DarwinPark.Planet.PlanetOreSystem
   mapResolution: 512
   baseOreChance: 0.55
@@ -977,7 +981,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a3d85d09aeb64c38b98a9bd1f9012eea, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: DarwinPark.UI::DarwinPark.UI.EntityPlacementTool
   spawnHeight: 8
   previewHeight: 3
@@ -1038,3 +1042,57 @@ MonoBehaviour:
   maxPitch: 70
   crosshairSize: 18
   crosshairThickness: 2
+--- !u!114 &987650101
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1476497585}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d518af06f87e475bb1b678e08327d008, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+--- !u!114 &987650102
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1476497585}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 20911d4f31a34a86ac0e256fba57294f, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+
+--- !u!114 &987650103
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1476497585}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 772caf5591260194db3d4a016900af74, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: DarwinPark.UI::DarwinPark.UI.WorldSessionManager
+  autoSaveInterval: 120
+--- !u!114 &987650104
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1476497585}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c736a5549379442c8a2be97301be6e64, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: DarwinPark.UI::DarwinPark.UI.MainMenuBackground
+  videoFile: Menu/earth-orbit.mp4
+  posterFile: Menu/earth-orbit.jpg
+  videoWidth: 1280
+  videoHeight: 720

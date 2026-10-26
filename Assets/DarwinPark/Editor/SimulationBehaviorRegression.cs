@@ -87,9 +87,8 @@ namespace DarwinPark.EditorTools
                 Check(Mathf.Abs(clock.GameDeltaTime-one*16)<.001f,"统一时钟倍率错误");
                 var a=first.GetComponent<EntityGeneController>(); var b=second.GetComponent<EntityGeneController>();
                 for(int i=0;i<16;i++) a.AdvanceSimulation(.1f); b.AdvanceSimulation(1.6f);
-                var field=typeof(GrowthGeneLogic).GetField("_ageProgress",Private);
-                float progressA=(float)field.GetValue(a.GetLogic(a.Genome.Genes[0]));
-                float progressB=(float)field.GetValue(b.GetLogic(b.Genome.Genes[0]));
+                float progressA=a.GetComponent<EntityLifeCycle>().Progress;
+                float progressB=b.GetComponent<EntityLifeCycle>().Progress;
                 Check(progressA>0 && Mathf.Abs(progressA-progressB)<.0001,"成长在相同模拟时长下不一致");
                 var va=first.AddComponent<EntityVitals>(); var vb=second.AddComponent<EntityVitals>(); va.enabled=vb.enabled=false;
                 SetDelta(clock,.1f); for(int i=0;i<16;i++) typeof(EntityVitals).GetMethod("Update",Private).Invoke(va,null);

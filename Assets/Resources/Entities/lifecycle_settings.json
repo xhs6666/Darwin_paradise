@@ -1,0 +1,20 @@
+{
+  "adultProgress": 30,
+  "elderProgress": 80,
+  "deathProgress": 100,
+  "growthProgressScale": 0.2,
+  "agingProgressScale": 0.1,
+  "minimumAgingSpeed": 1,
+  "secondsPerDay": 10,
+  "minimumGestationDays": 7,
+  "maximumGestationDays": 30,
+  "baseGestationDays": 30,
+  "cooldownDays": 15,
+  "nutrientCost": 20,
+  "mateSearchRadius": 20,
+  "gestationNutrientDrain": 3,
+  "stationaryBirthMinRadius": 2,
+  "stationaryBirthMaxRadius": 8,
+  "movingBirthRadius": 2,
+  "birthHeight": 1
+}

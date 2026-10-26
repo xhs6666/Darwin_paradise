@@ -72,7 +72,8 @@ namespace DarwinPark.Planet
         public PlanetTerrainData Data { get; private set; }
         private Mesh _mesh;
 
-        private void Start() => Build();
+        // ★ 适配：有世界选择流程时延迟生成，避免菜单出现前阻塞。
+        private void Start(){if(!WorldRuntimeGate.Managed)Build();}
 
         [Range(0.2f, 0.8f)]
         [Tooltip("陆地占比：0.2=海洋多，0.8=陆地多。海平面取大陆噪声的对应分位值")]
@@ -97,7 +98,8 @@ namespace DarwinPark.Planet
             return (worldPosition - transform.position).magnitude < WaterRadius - Mathf.Max(0f, depthMargin);
         }
 
-        public void Build()
+        // ★ 适配：纯参数快照供后台计算；网格上传留在主线程。
+        public PlanetTerrainConfig CaptureConfiguration()
         {
             // 1. 构建配置对象（所有地貌参数从 Inspector/配置传入，避免写死在生成器）
             var cfg = new PlanetTerrainConfig
@@ -145,8 +147,13 @@ namespace DarwinPark.Planet
             cfg.detailNoise.amplitude = detailAmplitude;
             cfg.detailNoise.octaves = detailOctaves;
 
-            // 2. 调用生成器，获取数据
-            Data = PlanetTerrainGenerator.Generate(cfg, seaLevelRatio, continentRatio);
+            return cfg;
+        }
+        public void Build()=>ApplyGeneratedData(PlanetTerrainGenerator.Generate(CaptureConfiguration(),seaLevelRatio,continentRatio));
+        // ★ 适配：后台计算完成后一次接入原网格/碰撞/天气装配链路。
+        public void ApplyGeneratedData(PlanetTerrainData data)
+        {
+            Data=data;
             if (Data == null)
             {
                 Log.Error(Log.Tag.Planet, "地形生成失败：生成器返回空数据");

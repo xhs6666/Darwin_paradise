@@ -37,7 +37,7 @@ namespace DarwinPark.EditorTools
             if(moving)genome.Add(GeneInstance.Create("gene_locomotion",75,0));
             Check(EntityPlacementUtility.Spawn(genome,position),"生成测试实体失败");
             var entity=EntityRegistry.All.First(e=>!before.Contains(e));
-            entity.GetComponent<EntityGeneController>().enabled=false;
+            entity.GetComponent<EntityGeneController>().mutationChance=0;entity.GetComponent<EntityGeneController>().enabled=false;
             entity.GetComponent<EntityVitals>().enabled=false;
             return entity;
         }

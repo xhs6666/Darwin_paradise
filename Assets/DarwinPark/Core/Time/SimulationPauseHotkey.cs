@@ -23,6 +23,8 @@ namespace DarwinPark.Core
 
         private void Update()
         {
+            // ★ 适配：覆盖菜单拥有输入时不处理世界操作。
+            if (DarwinPark.Core.GameInputGate.Blocked) return;
             if (_clock == null) return;
             // ★ 适配：实体视角的空格用于主动攻击，不能同时触发全局暂停。
             if (Camera.main != null && Camera.main.GetComponent<OrbitCamera>() is OrbitCamera orbit && orbit.EntityViewActive) return;

@@ -61,11 +61,12 @@ namespace DarwinPark.Planet
             Invoke(nameof(InitialGenerate), 0.25f);
         }
 
-        private void InitialGenerate() => GenerateClimateMap();
+        private void InitialGenerate(){if(!WorldRuntimeGate.Managed || WorldRuntimeGate.Ready)GenerateClimateMap();}
         public void MarkDirty() => _isDirty = true;
 
         private void Update()
         {
+            if(WorldRuntimeGate.Managed&&!WorldRuntimeGate.Ready)return;
             if (!_isDirty) return;
             // ★ 修复：滑条拖动时限制重建频率。气候生成包含风程步进，比旧版更重，
             // 因此间隔提高到 0.6s，避免拖滑条时每帧卡顿。
@@ -107,6 +108,12 @@ namespace DarwinPark.Planet
             var model = new PlanetClimateModel(data, cfg, _terrainBuilder.seed);
             var result = model.Generate(res, baseTempOffset, baseHumidityOffset);
 
+            ApplyGeneratedClimate(result);
+        }
+        // ★ 适配：气候纯数据可后台计算，纹理与材质必须主线程上传。
+        public void ApplyGeneratedClimate(PlanetClimateResult result)
+        {
+            int res=result.Resolution;_isDirty=false;_lastGenerateTime=Time.unscaledTime;
             _pixels = result.Pixels;
             _heightMap = result.Height;
             _temperatureMap = result.Temperature;

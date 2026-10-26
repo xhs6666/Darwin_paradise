@@ -37,7 +37,7 @@ namespace DarwinPark.EditorTools
             var before=EntityRegistry.All.ToArray();var genome=new Genome();
             genome.Add(GeneInstance.Create("gene_growth",10,0));if(moving)genome.Add(GeneInstance.Create("gene_locomotion",75,0));
             EntityPlacementUtility.Spawn(genome,position);var e=EntityRegistry.All.First(x=>!before.Contains(x));
-            e.GetComponent<EntityGeneController>().enabled=false;e.GetComponent<EntityVitals>().enabled=false;e.GetComponent<EntityEnvironmentHazard>().enabled=false;
+            e.GetComponent<EntityGeneController>().mutationChance=0;e.GetComponent<EntityGeneController>().enabled=false;e.GetComponent<EntityVitals>().enabled=false;e.GetComponent<EntityEnvironmentHazard>().enabled=false;
             e.GetComponent<Rigidbody>().interpolation=RigidbodyInterpolation.None;return e;
         }
         private static void Run(SimulationControlPanel control)

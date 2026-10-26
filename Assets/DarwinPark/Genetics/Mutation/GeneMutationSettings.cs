@@ -6,10 +6,17 @@ namespace DarwinPark.Genetics.Mutation
     [Serializable]
     public class GeneMutationSettings
     {
-        public float ErrorWeight = 0.60f;
-        public float DuplicateWeight = 0.15f;
-        public float DeletionWeight = 0.10f;
-        public float InsertionWeight = 0.15f;
+        // ★ 修复（防Bug回归）：成功触发变异后的类型权重，数值 90%、复制 5%、缺失 5%，不再随机插入。
+        public float ErrorWeight = 0.90f;
+        public float DuplicateWeight = 0.05f;
+        public float DeletionWeight = 0.05f;
+        public float InsertionWeight = 0f;
+        public static GeneMutationSettings CreateDefault()
+        {
+            var json=Resources.Load<TextAsset>("Entities/mutation_settings");
+            if(json==null){Debug.LogError("缺少 Entities/mutation_settings，使用 90/5/5 默认权重");return new GeneMutationSettings();}
+            return JsonUtility.FromJson<GeneMutationSettings>(json.text);
+        }
 
         public float MaxErrorDelta = 15f;
         public float ErrorBiasPower = 3f;

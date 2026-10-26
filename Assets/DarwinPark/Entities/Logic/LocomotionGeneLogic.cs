@@ -43,12 +43,17 @@ namespace DarwinPark.Entities.Logic
             var manual = _controller.GetComponent<EntityManualControl>();
             if (manual != null && manual.IsControlled)
             {
-                if (manual.CanMove && manual.AttackHeld && state != null && (state.StateId == "hunt" || state.StateId == "herbivore"))
+                // ★ 修复（防Bug回归）：瞬时左键请求保留到基因逻辑消费，不能只依赖两个 Update 之间是否仍按住。
+                // ★ 修复（防Bug回归）：冷却期间不消费短点击，留到可攻击的模拟步，避免点击被无声丢弃。
+                if (_actionCooldown > 0) return;
+                bool requested=manual.ConsumeAttack() || manual.AttackHeld;
+                if (manual.CanMove && requested && state != null)
                 {
                     // ★ 修复（防Bug回归）：手动每次攻击按准星重新选取，不沿用 AI 的最近猎物缓存。
                     bool graze=state.StateId=="herbivore";
                     _target=manual.GetAttackTarget();
-                    if(_target!=null && (!graze || _target.Genes.GetAttribute("moveSpeed")<=0))TryBite(stats,graze);
+                    // 玩家主动攻击不应被 AI 的食性筛选拒绝；没有行动能力仍无法攻击。
+                    if(_target!=null)TryBite(stats,graze);
                 }
                 return;
             }

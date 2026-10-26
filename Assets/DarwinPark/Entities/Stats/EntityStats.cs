@@ -43,6 +43,11 @@ namespace DarwinPark.Entities.Stats
             }
         }
 
+        // ★ 适配：数值与上限成对持久化，恢复时不触发受击闪烁或进食副作用。
+        public List<DarwinPark.Entities.StatSaveValue> CaptureValues()
+        {var values=new List<DarwinPark.Entities.StatSaveValue>();foreach(var pair in _stats)values.Add(new DarwinPark.Entities.StatSaveValue{id=pair.Key,value=pair.Value,max=_maxStats.TryGetValue(pair.Key,out var max)?max:100});return values;}
+        public void RestoreValues(List<DarwinPark.Entities.StatSaveValue> values)
+        {foreach(var value in values){_stats[value.id]=value.value;_maxStats[value.id]=value.max;}}
         public bool TryGet(string id, out float value) => _stats.TryGetValue(id, out value);
 
         /// <summary>★ 新增：进食先补饱食度，溢出进入储存；猎食收益不因饱食度上限而丢失。</summary>

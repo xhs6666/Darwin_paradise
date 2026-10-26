@@ -105,6 +105,18 @@ namespace DarwinPark.Planet
             }
         }
 
+        // ★ 适配：矿脉消耗与再生状态必须存档，不能只按种子重建资源。
+        public float[] CaptureAmounts(){if(_oreMapPixels==null)return null;var values=new float[_oreMapPixels.Length];for(int i=0;i<values.Length;i++)values[i]=_oreMapPixels[i].r;return values;}
+        public float RegenTimer {get=>_regenTimer;set=>_regenTimer=value;}
+        public void RestoreAmounts(float[] values,int resolution)
+        {
+            if(values==null||values.Length!=resolution*resolution)throw new System.IO.InvalidDataException("矿脉存档尺寸无效");
+            if(OreMapTexture!=null)Destroy(OreMapTexture);mapResolution=resolution;
+            OreMapTexture=new Texture2D(resolution,resolution,TextureFormat.RGBA32,false,true){wrapModeU=TextureWrapMode.Repeat,wrapModeV=TextureWrapMode.Clamp,filterMode=FilterMode.Bilinear};
+            _oreMapPixels=new Color[values.Length];for(int i=0;i<values.Length;i++)_oreMapPixels[i]=new Color(values[i],0,0,1);
+            OreMapTexture.SetPixels(_oreMapPixels);OreMapTexture.Apply();
+        }
+        public void ResetWorld(){if(OreMapTexture!=null)Destroy(OreMapTexture);_regenTimer=0;GenerateOreMap();}
         /// <summary>
         /// 世界坐标转 UV
         /// </summary>

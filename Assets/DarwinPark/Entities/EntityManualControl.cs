@@ -17,9 +17,14 @@ namespace DarwinPark.Entities
         private Transform _planet;
         private EntityJumpMotor _jump;
         private Ray? _aimRay;
+        private bool _attackQueued;
         public float aimRayDistance=200f;
+        public float aimRadius=.35f;
+        public void QueueAttack(){if(CanMove && IsControlled)_attackQueued=true;}
+        public bool ConsumeAttack(){bool pending=_attackQueued;_attackQueued=false;return pending;}
+        public void ClearAttack(){_attackQueued=false;AttackHeld=false;}
         public void SetAim(Ray ray){_aimRay=ray;}
-        public DarwinEntity GetAttackTarget()=>_aimRay.HasValue?EntityAttackAim.Pick(gameObject,_aimRay.Value,aimRayDistance):null;
+        public DarwinEntity GetAttackTarget()=>_aimRay.HasValue?EntityAttackAim.Pick(gameObject,_aimRay.Value,aimRayDistance,aimRadius):null;
         public bool CanMove => _genes != null && _genes.GetAttribute("moveSpeed") > 0 &&
             _genes.Evaluation != null && _genes.Evaluation.Genes.Exists(g => g.IsActive && _genes.GetLogic(g.Gene) is LocomotionGeneLogic);
         private void Awake() { _body = GetComponent<Rigidbody>(); _genes = GetComponent<EntityGeneController>(); }
@@ -30,7 +35,7 @@ namespace DarwinPark.Entities
         }
         public void Release()
         {
-            SetInput(Vector3.zero, false); IsControlled = false; _aimRay=null;
+            SetInput(Vector3.zero, false);ClearAttack(); IsControlled = false; _aimRay=null;
             _jump?.Cancel();
             if (_body != null && !_body.isKinematic && _planet != null)
             {

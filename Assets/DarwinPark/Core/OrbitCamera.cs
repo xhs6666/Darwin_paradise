@@ -38,6 +38,9 @@ namespace DarwinPark.Core
         // ★ 适配：实体跟随组件接管镜头时，保留轨道状态但停止本组件写相机位置。
         public bool EntityViewActive { get; set; }
 
+        // ★ 适配：读档同步轨道缓存，恢复位置后不会在下一帧跳回旧镜头。
+        public void RestoreView(Vector3 position,Quaternion rotation,float savedDistance)
+        {transform.SetPositionAndRotation(position,rotation);distance=targetDistance=savedDistance;x=rotation.eulerAngles.y;y=Mathf.DeltaAngle(0,rotation.eulerAngles.x);_isFocusing=false;}
         void Start()
         {
             if (target == null) target = GameObject.Find("Planet")?.transform;
@@ -54,6 +57,8 @@ namespace DarwinPark.Core
 
         void LateUpdate()
         {
+            // ★ 适配：覆盖菜单拥有输入时不处理世界操作。
+            if (DarwinPark.Core.GameInputGate.Blocked) return;
             if (EntityViewActive) return;
             if (target == null) return;
 

@@ -14,7 +14,8 @@ namespace DarwinPark.Genetics
             if (_initialized) return;
             _definitions = new Dictionary<string, GeneDefinition>();
 
-            var assets = Resources.LoadAll<TextAsset>("Genes");
+            // ★ 适配：自定义工具配置覆盖内置同 id 基因，失败明确告警并回退。
+            var assets = System.Linq.Enumerable.ToArray(GeneTreeStorage.RuntimeAssets());
             if (assets == null || assets.Length == 0)
             {
                 Debug.LogError("[GeneDatabase] 致命错误：Resources/Genes 下找不到任何 JSON 文件！");
@@ -104,6 +105,8 @@ namespace DarwinPark.Genetics
                         def.Linkages.AddRange(json.attributeLinkages);
                     }
 
+                    // ★ 适配：红/绿关系转为运行中的抑制/促进系数。
+                    GeneTreeStorage.ApplyInfluences(def);
                     _definitions[json.id] = def;
                 }
                 catch (Exception e)

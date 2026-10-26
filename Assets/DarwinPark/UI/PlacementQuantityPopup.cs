@@ -13,7 +13,7 @@ namespace DarwinPark.UI
         private int _openedFrame;
         public static void Show(EntitySpawnerUI source)
         {
-            if(_current!=null){_current.gameObject.SetActive(false);Destroy(_current.gameObject);}
+            if(_current!=null){bool same=_current._source==source;_current.gameObject.SetActive(false);Destroy(_current.gameObject);if(same)return;}
             EntityPlacementTool.Instance?.CancelPlacement();
             if(!ServiceLocator.TryGet<UIRoot>(out var root))return;
             var go=UIFactory.NewRect("PlacementQuantity",root.MainCanvas.transform,typeof(Image));
@@ -41,6 +41,8 @@ namespace DarwinPark.UI
         private void Close(){gameObject.SetActive(false);Destroy(gameObject);}
         private void Update()
         {
+            // ★ 适配：工具中的 Shift/回车不能提交背景游戏面板。
+            if(DarwinPark.Core.GameInputGate.Blocked)return;
             if(Time.frameCount==_openedFrame)return;
             if(Input.GetMouseButtonDown(1)||Input.GetKeyDown(KeyCode.Escape))Close();
             else if(Input.GetKeyDown(KeyCode.Return)||Input.GetKeyDown(KeyCode.KeypadEnter))Apply();

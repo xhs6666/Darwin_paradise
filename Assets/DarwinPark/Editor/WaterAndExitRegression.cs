@@ -38,7 +38,7 @@ namespace DarwinPark.EditorTools
             genome.Add(GeneInstance.Create("gene_growth",10,0));genome.Add(GeneInstance.Create("gene_locomotion",75,0));
             clock.Pause();EntityPlacementUtility.Spawn(genome,b.transform.position+Vector3.up*(b.WaterRadius+10));
             var entity=EntityRegistry.All.First(e=>!before.Contains(e));
-            entity.GetComponent<EntityGeneController>().enabled=false;entity.GetComponent<EntityVitals>().enabled=false;
+            entity.GetComponent<EntityGeneController>().mutationChance=0;entity.GetComponent<EntityGeneController>().enabled=false;entity.GetComponent<EntityVitals>().enabled=false;
             var hazard=entity.GetComponent<EntityEnvironmentHazard>();hazard.enabled=false;
             // ★ 适配：等实际 Start 完成后再测重力，避免测试假初始化掩盖生命周期问题。
             double ready=EditorApplication.timeSinceStartup+.5;

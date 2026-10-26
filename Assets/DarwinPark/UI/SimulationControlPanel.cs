@@ -26,6 +26,7 @@ namespace DarwinPark.UI
 
         private GameObject _activeSpeedMenu;
         private GameObject _activeParamMenu;
+        private string _activeParamId;
         private GameObject _bottomPanel;
         private readonly Vector3[] _panelCorners = new Vector3[4];
 
@@ -359,15 +360,18 @@ namespace DarwinPark.UI
 
         private void ToggleParamPopup(string paramId, string paramName)
         {
-            if (_activeParamMenu != null) { Destroy(_activeParamMenu); _activeParamMenu = null; return; }
+            if (_activeParamMenu != null && _activeParamId==paramId) { DestroyMenus(); return; }
             DestroyMenus();
 
             var root = ServiceLocator.Get<UIRoot>("需要 UIRoot").MainCanvas.transform;
 
+            _activeParamId=paramId;
             _activeParamMenu = UIFactory.NewRect("ParamMenuOverlay", root, typeof(Image), typeof(RightClickHandler));
             var oRt = _activeParamMenu.GetComponent<RectTransform>();
             oRt.anchorMin = Vector2.zero; oRt.anchorMax = Vector2.one; oRt.offsetMin = Vector2.zero; oRt.offsetMax = Vector2.zero;
             _activeParamMenu.GetComponent<Image>().color = new Color(0, 0, 0, 0.01f);
+            // ★ 修复（防Bug回归）：透明根节点不挡住原按钮，允许再次点击关闭。
+            _activeParamMenu.GetComponent<Image>().raycastTarget=false;
             _activeParamMenu.GetComponent<RightClickHandler>().OnRightClick += DestroyMenus;
 
             var menu = UIFactory.NewRect("ParamMenuContent", _activeParamMenu.transform, typeof(Image));
@@ -397,7 +401,7 @@ namespace DarwinPark.UI
             if (_activeSpeedMenu != null) Destroy(_activeSpeedMenu);
             if (_activeParamMenu != null) Destroy(_activeParamMenu);
             _activeSpeedMenu = null;
-            _activeParamMenu = null;
+            _activeParamMenu = null;_activeParamId=null;
         }
 
 
@@ -445,6 +449,7 @@ namespace DarwinPark.UI
 
         private void Update()
         {
+            if(Input.GetKeyDown(KeyCode.Escape))DestroyMenus();
             // ★ 修复：万一底部栏被外部脚本/场景切换销毁，自动重建，而不是永久消失。
             if (_uiBuilt && _bottomPanel == null && _uiRoot != null)
             {
