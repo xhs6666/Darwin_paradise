@@ -11,6 +11,7 @@ namespace DarwinPark.Genetics
         public GeneStateDefinition State;
         public float SuppressionAmount;
         public float EffectiveStrength;
+        public Dictionary<string,float> AttributeContributions=new Dictionary<string,float>();
         public bool IsActive => EffectiveStrength >= 10f; // 生效阈值改为 10
     }
 
@@ -27,7 +28,7 @@ namespace DarwinPark.Genetics
         /// 环境适应突变仍可发生。可选豁免参数仅供显式需要豁免的调用使用。
         /// </summary>
         public static GenomeEvaluation Resolve(Genome genome, bool isGestating = false,
-            float globalSuppression = 0f, string suppressExemptGeneId = null)
+            float globalSuppression = 0f, string suppressExemptGeneId = null,IReadOnlyDictionary<string,float> additionalSuppression=null)
         {
             var result = new GenomeEvaluation();
             if (genome == null) return result;
@@ -56,7 +57,6 @@ namespace DarwinPark.Genetics
             }
 
             // 2. 逐基因计算属性
-            var attributeSums = new Dictionary<string, float>();
 
             foreach (var gene in genome.Genes)
             {
@@ -65,6 +65,8 @@ namespace DarwinPark.Genetics
                 if (def == null) continue;
 
                 suppressions.TryGetValue(gene, out var sup);
+                // ★ 适配：角色表达抑制只影响有效值与属性，不改写遗传值。
+                if(additionalSuppression!=null&&additionalSuppression.TryGetValue(gene.DefinitionId,out float extra))sup+=Mathf.Max(0,extra);
                 bool exempt = !string.IsNullOrEmpty(suppressExemptGeneId)
                     && gene.DefinitionId == suppressExemptGeneId;
                 float global = exempt ? 0f : Mathf.Max(0f, globalSuppression);
@@ -81,23 +83,10 @@ namespace DarwinPark.Genetics
                 };
                 result.Genes.Add(eval);
 
-                if (effectiveValue < 10f) continue; // 低于10失效
-
-                float t = effectiveValue / 100f;
-
-                // 3. 根据属性曲线计算具体数值
-                foreach (var curve in def.AttributeCurves)
-                {
-                    float attrValue = Mathf.Lerp(curve.minValue, curve.maxValue, t) * gene.CopyStrength;
-
-                    if (!attributeSums.ContainsKey(curve.attributeId))
-                        attributeSums[curve.attributeId] = 0;
-
-                    attributeSums[curve.attributeId] += attrValue;
-                }
             }
 
-            result.Attributes = attributeSums;
+            // ★ 修复（防Bug回归）：同时记录每个表达真正贡献的属性，失效基因和被同谱系替代的共有属性不能冒用实体总值。
+            result.Attributes = GeneAttributeInheritance.Accumulate(result.Genes);
             return result;
         }
     }

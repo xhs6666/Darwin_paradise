@@ -1,0 +1,32 @@
+{
+  "id": "gene_viviparous",
+  "displayName": "胎生基因",
+  "category": "Reproduction",
+  "parentGeneId": "gene_sexual",
+  "baseGeneId": "gene_reproduction",
+  "isBaseGene": false,
+  "tier": 2,
+  "logicScriptId": "ReproductionGeneLogic",
+  "aiModuleId": "",
+  "attributeCurves": [
+    {
+      "attributeId": "gestationEfficiency",
+      "minValue": 0.8,
+      "maxValue": 1.4
+    }
+  ],
+  "states": [
+    {
+      "stateId": "sexual",
+      "displayName": "胎生",
+      "center": 50,
+      "color": [
+        0.9,
+        0.5,
+        0.6
+      ]
+    }
+  ],
+  "attributeLinkages": [],
+  "suppressionRules": []
+}

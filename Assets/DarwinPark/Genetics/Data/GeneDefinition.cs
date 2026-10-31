@@ -73,6 +73,8 @@ namespace DarwinPark.Genetics
         public string AiModuleId;
 
         // ★ 核心：属性曲线列表
+        // ★ 适配：标签授予实体可用状态，不替换基因自身的食性/倾向状态。
+        public List<string> EntityStateTags = new List<string>();
         public List<AttributeCurve> AttributeCurves = new List<AttributeCurve>();
         public List<AttributeLinkage> Linkages = new List<AttributeLinkage>(); // ★ 新增
         public List<GeneStateDefinition> States = new List<GeneStateDefinition>();

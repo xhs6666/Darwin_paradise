@@ -13,6 +13,7 @@ namespace DarwinPark.Entities
         private Rigidbody _rb;
         private Collider _col;
         private Light _swimLight;
+        private PhysicsMaterial _surfaceMaterial;
 
         void Start()
         {
@@ -42,11 +43,14 @@ namespace DarwinPark.Entities
                 mat.staticFriction = 1.0f;
                 mat.bounciness = 0f;
                 _col.material = mat;
+                _surfaceMaterial=mat;
             }
         }
 
         void FixedUpdate()
         {
+            // ★ 适配：附着寄生体由宿主跟随控制，不能向运动学刚体施力或清速度。
+            if(_rb==null||_rb.isKinematic)return;
 
             // ★ 新增：如果游戏暂停，强制清除速度并停止物理计算
             if (ServiceLocator.TryGet<SimulationClock>(out var clock) && !clock.IsRunning)
@@ -60,6 +64,14 @@ namespace DarwinPark.Entities
 
             var genes = GetComponent<EntityGeneController>();
             float moveSpeed = genes != null ? genes.GetAttribute("moveSpeed") : 0f;
+            // ★ 修复（防Bug回归）：原地面静摩擦为 1，会吞掉每步较小的漫游速度，导致有行动能力仍原地不动；仅移动时降低本实体材质摩擦。
+            if(_surfaceMaterial!=null)
+            {
+                var motion=DarwinPark.Entities.Logic.LocomotionSettings.Load();var radial=(transform.position-planet.position).normalized;
+                bool moving=moveSpeed>0&&Vector3.ProjectOnPlane(_rb.linearVelocity,radial).sqrMagnitude>motion.frictionMotionThreshold*motion.frictionMotionThreshold;
+                _surfaceMaterial.staticFriction=_surfaceMaterial.dynamicFriction=moving?motion.movingFriction:motion.stationaryFriction;
+                _surfaceMaterial.frictionCombine=PhysicsMaterialCombine.Minimum;
+            }
             bool isInWater = IsUnderWater(transform.position);
 
             // ★ 修复（防Bug回归）：行动基因不等于游泳，不能为所有入水实体开启游泳光效。
@@ -117,5 +129,6 @@ namespace DarwinPark.Entities
             // 旧码使用 seaLevelRatio 估算，海陆比例变化后会把陆地误判为水下。
             return builder.IsSubmerged(pos);
         }
+        private void OnDestroy(){if(_surfaceMaterial!=null)Destroy(_surfaceMaterial);}
     }
 }

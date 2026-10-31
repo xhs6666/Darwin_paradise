@@ -45,6 +45,13 @@ namespace DarwinPark.UI
 
         public bool IsFavorite(DarwinEntity entity) => _favorites.Contains(entity);
 
+        // ★ 适配：离开世界清除引用和旧列表，避免下一世界继承失效收藏。
+        public void ClearWorld()
+        {
+            _favorites.Clear();
+            if(_listPanel!=null){RefreshList();_listPanel.SetActive(false);}
+        }
+
         public void ToggleFavorite(DarwinEntity entity)
         {
             if (entity == null) return;
@@ -88,15 +95,17 @@ namespace DarwinPark.UI
             rt.pivot = new Vector2(0, 0.5f);
             rt.anchoredPosition = new Vector2(20, 0);
             rt.sizeDelta = new Vector2(200, 400);
-            _listPanel.GetComponent<UnityEngine.UI.Image>().color = new Color(0.05f, 0.08f, 0.12f, 0.85f);
+            // ★ 适配：保留屏幕左侧悬浮位置，换成参考图的细边框面板。
+            UIVisualTheme.Paint(_listPanel.GetComponent<UnityEngine.UI.Image>());
 
-            var title = UIFactory.NewText("Title", _listPanel.transform, "⭐ 收藏列表", 16, TextAnchor.MiddleCenter);
+            var title = UIFactory.NewText("Title", _listPanel.transform, "收藏列表", 16, TextAnchor.MiddleCenter);
             var trt = title.rectTransform;
             trt.anchorMin = new Vector2(0, 1);
             trt.anchorMax = new Vector2(1, 1);
             trt.pivot = new Vector2(0.5f, 1);
             trt.sizeDelta = new Vector2(0, 40);
             trt.anchoredPosition = new Vector2(0, -5);
+            UIVisualTheme.AddIcon(title.transform,"star",new Vector2(22,22),new Vector2(22,0),new Vector2(0,.5f)).color=UIVisualTheme.Muted;
 
             var contentGO = UIFactory.NewRect("Content", _listPanel.transform);
             _contentParent = contentGO.GetComponent<RectTransform>();

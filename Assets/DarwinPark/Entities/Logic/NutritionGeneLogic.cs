@@ -18,53 +18,8 @@ namespace DarwinPark.Entities.Logic
 
         public void OnUpdate(float dt)
         {
-            var stats = _controller.GetComponent<EntityStats>();
-            if (stats == null) return;
-
-            float absorbEfficiency = _controller.GetAttribute("absorbEfficiency");
-            if (absorbEfficiency <= 0.01f) return;
-
-            var def = GeneDatabase.Get(_gene.DefinitionId);
-            var state = def?.ResolveState(_gene.Value, _gene.MissingStateIds);
-
-            if (state != null)
-            {
-                if (state.StateId == "photo") // 阳光自养
-                {
-                    stats.Modify("nutrient", absorbEfficiency * 0.5f * dt);
-                }
-                else if (state.StateId == "chemo") // 化生自养
-                {
-                    // ★ 修复：传入两个参数
-                    TryAbsorbFromOre(stats, absorbEfficiency, dt);
-                }
-                else if (state.StateId == "hetero")
-                {
-                    return;
-                }
-            }
-        }
-
-        // ★ 修复：补全方法定义，接收 absorbEfficiency 参数
-        private void TryAbsorbFromOre(EntityStats stats, float absorbEfficiency, float dt)
-        {
-            if (PlanetOreSystem.Instance == null) return;
-
-            // 检查脚下这片土地有没有矿
-            float availableOre = PlanetOreSystem.Instance.GetOreAmount(_controller.transform.position);
-
-            if (availableOre > 0.1f)
-            {
-                // 开采量 = 基础速度 * 效率
-                // ★ 修复（防Bug回归）：采矿与其它营养模式使用同一模拟步长。
-                float extractAmount = 10f * absorbEfficiency * dt;
-                float actualExtracted = PlanetOreSystem.Instance.ConsumeOre(_controller.transform.position, extractAmount);
-
-                if (actualExtracted > 0)
-                {
-                    stats.Modify("nutrient", actualExtracted);
-                }
-            }
+            // ★ 适配：生产由独立收支模块结算，避免直接夹掉溢出营养或复制基因重复结算。
+            Ecology.EcologyEnergyBudget.Produce(_controller,_gene,dt);
         }
 
         public string GetTooltipInfo()

@@ -19,6 +19,7 @@ namespace DarwinPark.UI
         // ★ 适配：单击原来没有处理器；把新点击投放交互交给独立工具，原拖拽继续有效。
         public void OnPointerClick(PointerEventData data)
         {
+            if(!WorldAuthority.CanEdit)return;
             // ★ 新增：数量配置属于当前默认/模板槽位，右键设置后可连续左键投放。
             if(data.button==PointerEventData.InputButton.Right){PlacementQuantityPopup.Show(this);return;}
             if (data.button != PointerEventData.InputButton.Left || data.dragging) return;
@@ -28,6 +29,7 @@ namespace DarwinPark.UI
         }
         public void OnBeginDrag(PointerEventData data)
         {
+            if(!WorldAuthority.CanEdit)return;
             if (data.button != PointerEventData.InputButton.Left || entityPrefab == null) return;
             // ★ 适配：拖拽投放同样先释放手动控制。
             EntityViewController.Instance?.ExitView();

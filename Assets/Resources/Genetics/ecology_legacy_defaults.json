@@ -1,0 +1,10 @@
+{
+  "genes": [
+    { "geneId": "gene_growth", "suppressionRules": [] },
+    { "geneId": "gene_nutrition", "suppressionRules": [] },
+    { "geneId": "gene_reproduction", "suppressionRules": [
+      { "targetGeneId": "gene_growth", "coefficient": 1000 },
+      { "targetGeneId": "gene_repair", "coefficient": 1000 }
+    ] }
+  ]
+}

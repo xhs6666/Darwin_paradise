@@ -34,6 +34,7 @@ namespace DarwinPark.Entities.Stats
                 if (eval.IsActive && !string.IsNullOrEmpty(eval.Definition.Id))
                 {
                     finalAttrs[eval.Definition.Id] = 1f;
+                    if(GeneAttributeInheritance.Applies(eval.Definition))foreach(var ancestor in GeneAttributeInheritance.Lineage(eval.Definition))finalAttrs[ancestor.Id]=1;
                 }
             }
 
@@ -42,8 +43,10 @@ namespace DarwinPark.Entities.Stats
             foreach (var eval in activeGenes)
             {
                 if (!eval.IsActive || eval.Definition.Linkages == null) continue;
-                activeLinkages.AddRange(eval.Definition.Linkages);
+                if(!GeneAttributeInheritance.Applies(eval.Definition))activeLinkages.AddRange(eval.Definition.Linkages);
             }
+            // ★ 修复（防Bug回归）：行动谱系继承的体型联动只执行一次，不能因行动、领地、种群共存反复除体型或叠加攻击。
+            activeLinkages.AddRange(activeGenes.Where(g=>g.IsActive&&GeneAttributeInheritance.Applies(g.Definition)).SelectMany(g=>GeneAttributeInheritance.Lineage(g.Definition)).GroupBy(d=>d.Id).SelectMany(g=>g.First().Linkages).Distinct());
 
             // ================= 3. 按优先级执行联动 =================
             // 优先级：Add (加算) -> Multiply/Divide (乘除) -> Override (覆盖归零/锁定)

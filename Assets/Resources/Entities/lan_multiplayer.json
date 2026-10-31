@@ -1,0 +1,20 @@
+{
+  "version":1,
+  "port":47777,
+  "maximumMembers":8,
+  "maximumPacketBytes":67108864,
+  "maximumQueuedPackets":128,
+  "maximumCommandsPerSecond":80,
+  "snapshotInterval":0.25,
+  "inputInterval":0.05,
+  "inputTimeout":1,
+  "connectionTimeout":12,
+  "maximumRtsSelection":100,
+  "maximumGenomeGenes":128,
+  "maximumGeneDefinitions":256,
+  "maximumTimeScale":16,
+  "oreSnapshotInterval":2,
+  "rtsArrivalDistance":2,
+  "rtsFormationSpacing":2,
+  "rtsPickRadius":6
+}

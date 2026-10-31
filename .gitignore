@@ -109,6 +109,7 @@ InitTestScene*.unity*
 # Local player data and generated development output
 /save/
 /mods/
+/templates/
 /Artifacts/
 /Assets/_Recovery/
 /Assets/_Recovery.meta

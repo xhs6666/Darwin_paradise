@@ -34,6 +34,10 @@ namespace DarwinPark.Entities.Logic
         public void OnUpdate(float dt)
         {
             if(dt<=0)return;
+            // ★ 适配：蚁群王后走独立孕育流程，其余分工不得运行普通繁殖逻辑。
+            if(Ecology.AntColonyReproduction.BlocksOrdinary(_controller))return;
+            // ★ 适配：基础、性别特化和卵生复制可共存，但只由最高阶有效繁殖基因推进一次孕育。
+            if(!GeneBehaviorAuthority.IsPrimary<ReproductionGeneLogic>(_controller,_gene))return;
             var stats = _controller.GetComponent<EntityStats>();
             if (stats == null) return;
 
@@ -42,15 +46,16 @@ namespace DarwinPark.Entities.Logic
             if (_controller.IsGestating)
             {
                 _gestationTimer -= dt;
-                stats.Modify("nutrient", -_settings.gestationNutrientDrain * dt);
+                // ★ 适配：孕育额外营养开销与生态收支共用配置，避免长孕育必然饿死。
+                stats.Modify("nutrient", -Ecology.EcologyBalanceSettings.Current.gestationFoodPerSecond * dt);
 
                 if (_gestationTimer <= 0f)
                 {
                     if(!SpawnOffspring())return;
                     _controller.IsGestating = false;
                     _controller.Recalculate();
-                    _cooldownTimer = _settings.cooldownDays*_settings.secondsPerDay;
-                    stats.Modify("nutrient", -50f);
+                    _cooldownTimer = Ecology.EcologyReproductionTiming.CooldownSeconds(_controller);
+                    stats.Modify("nutrient", -Ecology.EcologyBalanceSettings.Current.birthFoodCost);
                     _partnerGenome = null;
                 }
                 return;
@@ -71,7 +76,8 @@ namespace DarwinPark.Entities.Logic
 
             // ★ 核心修改：根据体型计算所需营养和时间
             float size = 1f;
-            if (stats.TryGet("size", out var s)) size = Mathf.Max(0.5f, s);
+            // ★ 适配：实际扣款与提前储粮采用同一体型下限，微型实体不会准备不足的繁殖预算。
+            if (stats.TryGet("size", out var s)) size = Mathf.Max(Ecology.EcologyBalanceSettings.Current.minimumReproductionSize, s);
             float requiredNutrient = _settings.nutrientCost * size;
 
             // ★ 检查条件：必须是储存营养 (storedNutrient) 足够
@@ -87,7 +93,7 @@ namespace DarwinPark.Entities.Logic
                 return;
             }
 
-            var repDef = GeneDatabase.Get("gene_reproduction");
+            var repDef = GeneDatabase.Get(_gene.DefinitionId);
             var repState = repDef?.ResolveState(_gene.Value, _gene.MissingStateIds);
 
             if (repState != null && repState.StateId == "asexual")
@@ -144,10 +150,8 @@ namespace DarwinPark.Entities.Logic
         // ★ 修复（防Bug回归）：体型/生长影响仍保留，但总孕育时长必须处于 7～30 个游戏日。
         public float CalculateGestationTime(float size)
         {
-            var growth=_controller.Genome.Genes.Find(g=>g.DefinitionId=="gene_growth");
-            float speedFactor=Mathf.Clamp(growth?.Value??50,10,90)/50;
-            float days=Mathf.Clamp(_settings.baseGestationDays/speedFactor*size,_settings.minimumGestationDays,_settings.maximumGestationDays);
-            return days*_settings.secondsPerDay;
+            // ★ 修复（防Bug回归）：原计时读取遗传原值，基因抑制对繁殖周期没有效果。
+            return Ecology.EcologyReproductionTiming.GestationSeconds(_controller,size);
         }
 
         private DarwinEntity FindMate()
@@ -161,10 +165,10 @@ namespace DarwinPark.Entities.Logic
                 var otherGeneCtrl = other.GetComponent<EntityGeneController>();
                 if (otherGeneCtrl == null) continue;
 
-                var otherRepGene = otherGeneCtrl.Genome.Genes.Find(g => g.DefinitionId == "gene_reproduction");
+                var otherRepGene = otherGeneCtrl.Genome.Genes.FirstOrDefault(g => otherGeneCtrl.GetLogic(g) is ReproductionGeneLogic&&GeneBehaviorAuthority.IsPrimary<ReproductionGeneLogic>(otherGeneCtrl,g));
                 if (otherRepGene == null) continue;
 
-                var repDef = GeneDatabase.Get("gene_reproduction");
+                var repDef = GeneDatabase.Get(otherRepGene.DefinitionId);
                 var otherState = repDef?.ResolveState(otherRepGene.Value, otherRepGene.MissingStateIds);
                 if (otherState == null || otherState.StateId != "sexual") continue;
 
@@ -206,7 +210,8 @@ namespace DarwinPark.Entities.Logic
 
             if (DarwinEntity.Spawner != null)
             {
-                DarwinEntity.Spawner.Invoke(childGenome, spawnPos, "");
+                // ★ 适配：卵生后代的孵化状态独立于母体孕育，不会把卵直接当作已出生幼体。
+                Ecology.EcologyReproduction.Spawn(_controller,childGenome,spawnPos);
             }
             Debug.Log($"[繁殖] {_controller.gameObject.name} 孕育完成，产下了后代！");
 

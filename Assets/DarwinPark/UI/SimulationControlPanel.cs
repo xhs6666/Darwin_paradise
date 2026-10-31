@@ -76,6 +76,7 @@ namespace DarwinPark.UI
             root.MainCanvas.sortingOrder = Mathf.Max(root.MainCanvas.sortingOrder, 200);
 
             BuildUI(root.MainCanvas.transform);
+            // ★ 修复（防Bug回归）：不再安装免费补给UI；能量块仅由实际生态转换或营养利用基因消耗营养吐出。
             // ★ 修复（防Bug回归）：只在构建完成后标记成功，避免异常后留下半成品。
             _uiBuilt = true;
 
@@ -120,7 +121,8 @@ namespace DarwinPark.UI
             prt.pivot = new Vector2(0.5f, 0);
             prt.anchoredPosition = Vector2.zero;
             prt.sizeDelta = new Vector2(0, 210f);
-            bottomPanel.GetComponent<Image>().color = new Color(0.055f, 0.085f, 0.14f, 0.97f);
+            // ★ 适配：栏体保留全宽底部原矩形，只替换皮肤与分隔线。
+            UIVisualTheme.Paint(bottomPanel.GetComponent<Image>());
 
             // ★ 新增：顶部高亮线。旧版控制栏是深蓝黑，叠在黑色太空背景上几乎“隐形”，
             // 容易被误认为消失；加一条 2px 的青线，任何背景下都能看出栏体位置。
@@ -130,7 +132,7 @@ namespace DarwinPark.UI
             tlrt.anchorMax = new Vector2(1, 1);
             tlrt.pivot = new Vector2(0.5f, 1);
             tlrt.sizeDelta = new Vector2(0, 2);
-            topLine.GetComponent<Image>().color = new Color(0.2f, 0.75f, 0.95f, 0.85f);
+            topLine.GetComponent<Image>().color = UIVisualTheme.Border;
             topLine.GetComponent<Image>().raycastTarget = false;
 
             var tabBar = UIFactory.NewRect("TabBar", bottomPanel.transform);
@@ -180,7 +182,7 @@ namespace DarwinPark.UI
             var btnGO = UIFactory.NewRect(iconId, parent, typeof(Image), typeof(Button));
             var btn = btnGO.GetComponent<Button>();
             var bg = btnGO.GetComponent<Image>();
-            bg.color = new Color(0.15f, 0.25f, 0.35f, 0.8f);
+            UIVisualTheme.StyleButton(btn);
             var rt = btnGO.GetComponent<RectTransform>();
             rt.sizeDelta = new Vector2(60, 30);
 
@@ -209,12 +211,13 @@ namespace DarwinPark.UI
 
         private void SwitchPage(int targetPage)
         {
+            if(!WorldAuthority.CanEdit&&targetPage==1)targetPage=0;
             _currentPage = Mathf.Clamp(targetPage, 0, 1);
             _page1Container.SetActive(_currentPage == 0);
             _page2Container.SetActive(_currentPage == 1);
 
-            _tabPrevBtn.image.color = _currentPage == 0 ? new Color(0.2f, 0.6f, 0.8f, 0.8f) : new Color(0.15f, 0.25f, 0.35f, 0.8f);
-            _tabNextBtn.image.color = _currentPage == 1 ? new Color(0.2f, 0.6f, 0.8f, 0.8f) : new Color(0.15f, 0.25f, 0.35f, 0.8f);
+            UIVisualTheme.Paint(_tabPrevBtn.image,_currentPage==0?"selected":"button");
+            UIVisualTheme.Paint(_tabNextBtn.image,_currentPage==1?"selected":"button");
         }
 
         // ==========================================
@@ -247,7 +250,7 @@ namespace DarwinPark.UI
             brt.anchoredPosition = new Vector2(0, 0);
 
             var bg = btnGO.GetComponent<Image>();
-            bg.color = new Color(0.1f, 0.2f, 0.3f, 0.8f);
+            UIVisualTheme.Paint(bg,"button");
 
             btnGO.GetComponent<Button>().onClick.AddListener(() => _clock?.Toggle());
 
@@ -256,6 +259,7 @@ namespace DarwinPark.UI
             _playIcon = iconGO.GetComponent<Image>();
             _playIcon.sprite = _iconPause;
             _playIcon.preserveAspect = true;
+            _playIcon.color=UIVisualTheme.Accent;_playIcon.raycastTarget=false;
 
             // ★ 适配：没有图标资源时用文字兜底，保证播放/暂停按钮始终可辨认。
             if (_iconPause == null && _iconPlay == null)
@@ -279,13 +283,14 @@ namespace DarwinPark.UI
 
         private void ToggleSpeedMenu(RectTransform targetBtn)
         {
+            if(!WorldAuthority.CanEdit)return;
             if (_activeSpeedMenu != null) { Destroy(_activeSpeedMenu); _activeSpeedMenu = null; return; }
             DestroyMenus();
 
             var root = ServiceLocator.Get<UIRoot>("需要 UIRoot").MainCanvas.transform;
             _activeSpeedMenu = UIFactory.NewRect("SpeedMenu", root, typeof(Image));
             var mrt = _activeSpeedMenu.GetComponent<RectTransform>();
-            _activeSpeedMenu.GetComponent<Image>().color = new Color(0.05f, 0.08f, 0.12f, 0.95f);
+            UIVisualTheme.Paint(_activeSpeedMenu.GetComponent<Image>());
 
             Vector3[] corners = new Vector3[4];
             targetBtn.GetWorldCorners(corners);
@@ -335,7 +340,7 @@ namespace DarwinPark.UI
         {
             var btnGO = UIFactory.NewRect(iconId, parent, typeof(Image), typeof(Button), typeof(RightClickHandler));
             var bg = btnGO.GetComponent<Image>();
-            bg.color = new Color(0.15f, 0.25f, 0.35f, 0.8f);
+            UIVisualTheme.Paint(bg,"button");
 
             var sprite = UIIconRegistry.Get(iconId);
             if (sprite != null)
@@ -346,6 +351,7 @@ namespace DarwinPark.UI
                 var iconImg = iconGO.GetComponent<Image>();
                 iconImg.sprite = sprite;
                 iconImg.preserveAspect = true;
+                iconImg.color=UIVisualTheme.Muted;
                 iconImg.raycastTarget = false;
             }
 
@@ -360,6 +366,7 @@ namespace DarwinPark.UI
 
         private void ToggleParamPopup(string paramId, string paramName)
         {
+            if(!WorldAuthority.CanEdit)return;
             if (_activeParamMenu != null && _activeParamId==paramId) { DestroyMenus(); return; }
             DestroyMenus();
 
@@ -376,7 +383,7 @@ namespace DarwinPark.UI
 
             var menu = UIFactory.NewRect("ParamMenuContent", _activeParamMenu.transform, typeof(Image));
             var mrt = menu.GetComponent<RectTransform>();
-            menu.GetComponent<Image>().color = new Color(0.08f, 0.1f, 0.15f, 0.95f);
+            UIVisualTheme.Paint(menu.GetComponent<Image>());
             menu.GetComponent<Image>().raycastTarget = true;
 
             mrt.anchorMin = new Vector2(0.5f, 0);
@@ -386,7 +393,7 @@ namespace DarwinPark.UI
             mrt.sizeDelta = new Vector2(420, 90);
 
             var title = UIFactory.NewText("Title", menu.transform, "设定" + paramName + " (全年平均)", 16, TextAnchor.MiddleCenter);
-            title.color = new Color(0.8f, 0.9f, 1f);
+            title.color = UIVisualTheme.Text;
             var trt = title.rectTransform;
             trt.anchorMin = new Vector2(0, 1); trt.anchorMax = new Vector2(1, 1); trt.pivot = new Vector2(0.5f, 1);
             trt.anchoredPosition = new Vector2(0, -8); trt.sizeDelta = new Vector2(0, 20);
@@ -444,11 +451,15 @@ namespace DarwinPark.UI
             rt.pivot = new Vector2(0, 0.5f);
             rt.offsetMin = new Vector2(xOffset, 0);
             rt.offsetMax = new Vector2(xOffset + 2, 0);
-            div.GetComponent<Image>().color = new Color(0.3f, 0.5f, 0.7f, 0.3f);
+            div.GetComponent<Image>().color = UIVisualTheme.Border;
         }
 
         private void Update()
         {
+            // ★ 适配：普通成员看不到创造页，作弊权限撤回后立即关闭修改弹窗。
+            if(_uiBuilt&&_tabNextBtn!=null){_tabNextBtn.interactable=WorldAuthority.CanEdit;if(!WorldAuthority.CanEdit){if(_currentPage==1)SwitchPage(0);DestroyMenus();}
+                var play=_bottomPanel?.transform.Find("ContentArea/Page1/TimeSec/PlayBtn")?.GetComponent<Button>();if(play!=null)play.interactable=WorldAuthority.CanEdit;
+                var parameters=_bottomPanel?.transform.Find("ContentArea/Page1/ParamSec");if(parameters!=null)parameters.gameObject.SetActive(WorldAuthority.CanEdit);}
             if(Input.GetKeyDown(KeyCode.Escape))DestroyMenus();
             // ★ 修复：万一底部栏被外部脚本/场景切换销毁，自动重建，而不是永久消失。
             if (_uiBuilt && _bottomPanel == null && _uiRoot != null)
@@ -560,9 +571,14 @@ namespace DarwinPark.UI
                 uniqueLayerIds.Add("layer_climate");
             }
 
-            foreach (var id in uniqueLayerIds)
+            // ★ 修复（防Bug回归）：补图标后 Resources 的扫描顺序会改变，显式保留旧版矿脉/地形/气候位置。
+            var orderedIds=new List<string>();
+            foreach(var layer in UIVisualTheme.Data.layerButtons)if(uniqueLayerIds.Contains(layer.id))orderedIds.Add(layer.id);
+            foreach(var id in uniqueLayerIds)if(!orderedIds.Contains(id))orderedIds.Add(id);
+            foreach (var id in orderedIds)
             {
-                string displayName = id.Replace("layer_", "");
+                string displayName=id.Replace("layer_", "");
+                foreach(var layer in UIVisualTheme.Data.layerButtons)if(layer.id==id)displayName=layer.label;
                 CreateLayerIcon(parent.transform, id, displayName);
             }
         }
@@ -571,19 +587,19 @@ namespace DarwinPark.UI
         {
             var btnGO = UIFactory.NewRect(iconId, parent, typeof(Image), typeof(Button));
             var img = btnGO.GetComponent<Image>();
+            // ★ 适配：图标与按钮背景分离，选中时只更新面板表面，避免把线条图标当底色染暗。
+            UIVisualTheme.Paint(img,"button");
             var sprite = UIIconRegistry.Get(iconId);
 
             if (sprite != null)
             {
-                img.sprite = sprite;
-                img.color = Color.white;
+                UIVisualTheme.AddIcon(btnGO.transform,iconId,new Vector2(30,30),new Vector2(0,6),new Vector2(.5f,.5f)).color=UIVisualTheme.Muted;
             }
-            else
-            {
-                img.color = new Color(0.2f, 0.3f, 0.4f, 0.8f);
-                var txt = UIFactory.NewText("Txt", btnGO.transform, fallbackText, 12, TextAnchor.MiddleCenter);
-                UIFactory.Stretch(txt.rectTransform);
-            }
+            var txt = UIFactory.NewText("Txt", btnGO.transform, fallbackText, 12, TextAnchor.LowerCenter);
+            UIFactory.Stretch(txt.rectTransform,2,4);
+            // ★ 适配：新按钮使用网格的下方空位，原三个按钮仍由原三列布局定位。
+            if(iconId=="layer_population")
+            {var element=btnGO.AddComponent<LayoutElement>();element.ignoreLayout=true;var rt=btnGO.GetComponent<RectTransform>();rt.anchorMin=rt.anchorMax=new Vector2(.5f,.5f);rt.sizeDelta=new Vector2(60,44);rt.anchoredPosition=new Vector2(0,-62);}
 
             // 绑定点击事件
             btnGO.GetComponent<Button>().onClick.AddListener(() => OnLayerClicked(iconId));
@@ -597,6 +613,8 @@ namespace DarwinPark.UI
                 layerId = "default";
             }
             _currentSelectedLayer = layerId;
+            // ★ 适配：新图层独立绘制种群范围，原三个图层的按钮坐标与 Shader 模式保持不变。
+            PopulationRangeLayer.SetVisible(layerId=="layer_population");
 
             Debug.Log($"[Layer] 切换到图层: {layerId}");
 
@@ -607,9 +625,9 @@ namespace DarwinPark.UI
                 if (img.gameObject.name.StartsWith("layer_"))
                 {
                     if (img.gameObject.name == layerId && layerId != "default")
-                        img.color = new Color(0.2f, 0.8f, 1f); // 亮青色
+                        UIVisualTheme.Paint(img,"selected");
                     else
-                        img.color = new Color(0.2f, 0.3f, 0.4f, 0.8f); // 暗色
+                        UIVisualTheme.Paint(img,"button");
                 }
             }
 

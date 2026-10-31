@@ -1,0 +1,22 @@
+{
+  "id": "gene_nutrient_utilization",
+  "displayName": "营养利用基因",
+  "category": "Nutrition",
+  "parentGeneId": "gene_storage",
+  "baseGeneId": "",
+  "isBaseGene": false,
+  "tier": 1,
+  "logicScriptId": "EnergyBlockGeneLogic",
+  "entityStateTagVersion": 1,
+  "entityStateTags": [],
+  "ecologyBalanceVersion": 1,
+  "attributeCurves": [
+    {"attributeId":"energy_block_absorption","minValue":3,"maxValue":9},
+    {"attributeId":"energy_block_release","minValue":2,"maxValue":8}
+  ],
+  "attributeLinkages": [],
+  "states": [
+    {"stateId":"energy_exchange","displayName":"能量块转化","center":50,"color":[1,0.83,0.28]}
+  ],
+  "suppressionRules": []
+}

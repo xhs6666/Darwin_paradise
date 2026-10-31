@@ -3,6 +3,7 @@ using DarwinPark.Genetics;
 using DarwinPark.Entities.Stats;
 using DarwinPark.Planet;
 using UnityEngine;
+using DarwinPark.Entities.Ecology;
 
 namespace DarwinPark.Entities.Logic
 {
@@ -17,7 +18,7 @@ namespace DarwinPark.Entities.Logic
         private Vector3 _wanderDir;
         private DarwinEntity _target;
 
-        public void Initialize(EntityGeneController controller, GeneInstance gene)
+        public virtual void Initialize(EntityGeneController controller, GeneInstance gene)
         {
             _controller = controller; _gene = gene; _rb = controller.GetComponent<Rigidbody>();
             _planet = Object.FindFirstObjectByType<PlanetTerrainMeshBuilder>();
@@ -25,6 +26,8 @@ namespace DarwinPark.Entities.Logic
         }
         public void OnUpdate(float dt)
         {
+            // ★ 适配：社会谱系和复制行动基因只保留一个行为写入者；寄生/孵化自行控制移动。
+            if(!GeneBehaviorAuthority.IsPrimary<LocomotionGeneLogic>(_controller,_gene)||EcologyMotion.Immobilized(_controller))return;
             // ★ 修复（防Bug回归）：模板 Awake 可能早于工厂补挂刚体，首次缓存为空时必须能自愈。
             if (_rb == null) _rb = _controller.GetComponent<Rigidbody>();
             if (_planet == null) _planet = Object.FindFirstObjectByType<PlanetTerrainMeshBuilder>();
@@ -57,7 +60,13 @@ namespace DarwinPark.Entities.Logic
                 }
                 return;
             }
-            if (stats.TryGet("nutrient", out float food) && food < _settings.hungerThreshold && state != null)
+            if(EcologyMotion.Directive(_controller,out var destination,out var commandTarget,out float multiplier))
+            {
+                _target=commandTarget;Chase(destination,speed*multiplier,dt);
+                if(_target!=null)TryBite(stats,false);return;
+            }
+            // ★ 适配：由生态预算决定是否需补充繁殖储备，仓储充足后避免过度捕食。
+            if (EcologyEnergyBudget.WantsFood(_controller,stats,_settings.hungerThreshold) && state != null)
             {
                 bool graze = state.StateId == "herbivore";
                 if (state.StateId == "hunt" || graze)
@@ -80,6 +89,8 @@ namespace DarwinPark.Entities.Logic
         private void TryBite(EntityStats stats, bool graze)
         {
             if (_target == null || _actionCooldown > 0) return;
+            // ★ 修复（防Bug回归）：手动攻击、群体命令和缓存猎物同样不得捕食更大体型。
+            if(!PredationSizePolicy.Allows(_controller,_target)){_target=null;return;}
             var otherStats = _target.GetComponent<EntityStats>();
             var a = _controller.GetComponent<Collider>(); var b = _target.GetComponent<Collider>();
             float gap = a != null && b != null ? Vector3.Distance(a.ClosestPoint(b.bounds.center),b.ClosestPoint(a.bounds.center)) : Vector3.Distance(_controller.transform.position,_target.transform.position);
@@ -88,10 +99,16 @@ namespace DarwinPark.Entities.Logic
             if (damage <= 0) return;
             _actionCooldown = _settings.attackInterval;
             // ★ 修复（防Bug回归）：按实际造成的伤害奖励，防止过量攻击刷收益；吃不下的部分进入储存。
-            float actualDamage = Mathf.Min(damage,health);
-            otherStats.Modify("health", -actualDamage);
-            stats.Feed(actualDamage * _settings.biteNutrition + (health <= damage ? _settings.killNutrition : 0));
-            if (health <= damage) { Object.Destroy(_target.gameObject); _target = null; }
+            float actualDamage = EntityCombat.Ensure(_target.gameObject).Receive(_controller.GetComponent<DarwinEntity>(),damage);
+            otherStats.TryGet("health",out float remainingHealth);
+            // ★ 适配：士兵只造成伤害并留下运输尸体，不再运行普通进食或群体分红。
+            if(Ecology.AntColonyCombat.SettleSoldierAttack(_controller,_target,remainingHealth<=0))
+            // ★ 修复（防Bug回归）：尸体已成为独立资源，立即注销死者，避免同帧存档仍保存可重复恢复的原实体。
+            {if(remainingHealth<=0){_target.gameObject.SetActive(false);Object.Destroy(_target.gameObject);_target=null;}return;}
+            float reward=actualDamage*_settings.biteNutrition+(remainingHealth<=0?_settings.killNutrition:0);
+            var population=_controller.GetComponent<PopulationBehavior>();
+            if(remainingHealth<=0&&population!=null&&population.Active)population.ShareReward(reward);else stats.Feed(reward);
+            if (remainingHealth<=0) { Object.Destroy(_target.gameObject); _target = null; }
         }
         private void FindTarget(bool graze)
         {
@@ -99,8 +116,10 @@ namespace DarwinPark.Entities.Logic
             // 以感知属性选最近目标，并保持目标至离开感知范围，避免每帧来回切换。
             float range = _controller.GetAttribute("senseRange");
             bool Valid(DarwinEntity e) => e != null && e.gameObject != _controller.gameObject && e.isActiveAndEnabled &&
+                (e.transform.position-_controller.transform.position).sqrMagnitude<=range*range&&
                 e.GetComponent<EntityStats>() is EntityStats s && s.TryGet("health", out float hp) && hp > 0 &&
                 (!graze || e.Genes.GetAttribute("moveSpeed") <= 0) &&
+                EcologyMotion.CanHunt(_controller,e)&&EcologyMotion.Detectable(e,_controller.transform.position,range,_controller.GetComponent<DarwinEntity>())&&
                 (e.transform.position-_controller.transform.position).sqrMagnitude <= range*range;
             if (Valid(_target)) return;
             _target = null; float best = float.MaxValue;
@@ -117,13 +136,13 @@ namespace DarwinPark.Entities.Logic
             Vector3 toward = Vector3.ProjectOnPlane(position-_controller.transform.position, radial);
             float scale = ServiceLocator.TryGet<SimulationClock>(out var clock) ? clock.TimeScale : 1;
             // ★ 修复（防Bug回归）：物理仍按真实步长运行，切向速度按倍率转换；限制到目标剩余距离避免高速越过。
-            float physicalSpeed = Mathf.Min(speed * scale, toward.magnitude / Mathf.Max(Time.deltaTime, .001f));
+            float physicalSpeed = Mathf.Min(EntityMovementLimits.Speed(speed) * scale, toward.magnitude / Mathf.Max(Time.deltaTime, .001f));
             Vector3 desired = toward.normalized * physicalSpeed;
             Vector3 velocity = _rb.linearVelocity;
             float inward = Mathf.Min(0,Vector3.Dot(velocity,radial));
             Vector3 tangent = Vector3.Lerp(Vector3.ProjectOnPlane(velocity,radial),desired,1-Mathf.Exp(-_settings.steering*dt));
-            _rb.linearVelocity = tangent + radial * inward;
+            _rb.linearVelocity = Vector3.ClampMagnitude(tangent,_settings.maximumMoveSpeed*scale) + radial * inward;
         }
-        public string GetTooltipInfo() => _target != null ? "正在追击：" + _target.DisplayName : "感知范围内搜索食物；饥饿时进食";
+        public virtual string GetTooltipInfo() => _target != null ? "正在追击：" + _target.DisplayName : "感知范围内搜索食物；饥饿时进食";
     }
 }

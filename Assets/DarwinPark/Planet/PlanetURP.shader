@@ -151,7 +151,8 @@ Shader "DarwinPark/URP_PlanetSurface"
                     } else {
                         // 气候图尚未生成时的程序化兜底：连续色带，绝不能输出全白。
                         float latAbs = abs(normalize(input.positionOS).y);
-                        float temp = lerp(32.0, -35.0, pow(1.0 - latAbs, 1.2));
+                        // ★ 修复（防Bug回归）：浮点归一化的微小越界会让分数次pow收到负底数，发布版Shader编译也会告警。
+                        float temp = lerp(32.0, -35.0, pow(saturate(1.0 - latAbs), 1.2));
                         temp -= saturate((heightRatio - seaLevel) / max(0.01, _MaxHeight - seaLevel)) * 25.0;
                         float hum = lerp(80.0, 40.0, latAbs);
                         float cold = 1.0 - smoothstep(-8.0, 6.0, temp);

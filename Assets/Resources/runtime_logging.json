@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "enabled": true,
+  "directoryName": "logs",
+  "maximumFileBytes": 4194304,
+  "retainedFiles": 20,
+  "queuedEntries": 4096,
+  "maximumEntryCharacters": 16384,
+  "flushIntervalMilliseconds": 500,
+  "shutdownTimeoutMilliseconds": 3000
+}

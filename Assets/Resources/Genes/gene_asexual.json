@@ -1,0 +1,26 @@
+{
+  "id": "gene_asexual",
+  "displayName": "无性繁殖基因",
+  "category": "Reproduction",
+  "parentGeneId": "gene_reproduction",
+  "baseGeneId": "gene_reproduction",
+  "isBaseGene": false,
+  "tier": 1,
+  "logicScriptId": "ReproductionGeneLogic",
+  "aiModuleId": "",
+  "attributeCurves": [],
+  "states": [
+    {
+      "stateId": "asexual",
+      "displayName": "无性繁殖",
+      "center": 20,
+      "color": [
+        0.2,
+        0.8,
+        0.4
+      ]
+    }
+  ],
+  "attributeLinkages": [],
+  "suppressionRules": []
+}

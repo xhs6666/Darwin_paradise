@@ -19,17 +19,19 @@ namespace DarwinPark.UI
             var go=UIFactory.NewRect("PlacementQuantity",root.MainCanvas.transform,typeof(Image));
             var rt=go.GetComponent<RectTransform>();rt.anchorMin=rt.anchorMax=new Vector2(.5f,0);
             rt.pivot=new Vector2(.5f,0);rt.anchoredPosition=new Vector2(0,225);rt.sizeDelta=new Vector2(360,110);
-            go.GetComponent<Image>().color=new Color(.06f,.1f,.15f,.98f);
+            // ★ 适配：放置数量弹窗沿用原位置与输入规则，共享深色面板皮肤。
+            UIVisualTheme.Paint(go.GetComponent<Image>());
             _current=go.AddComponent<PlacementQuantityPopup>();_current._source=source;_current._openedFrame=Time.frameCount;
             var title=UIFactory.NewText("Title",go.transform,$"每次放置数量（1～{source.maxPlacementCount}）",15,TextAnchor.UpperCenter);
             UIFactory.Stretch(title.rectTransform,8,6);title.raycastTarget=false;
             var field=UIFactory.NewRect("Count",go.transform,typeof(Image),typeof(InputField));
             var fr=field.GetComponent<RectTransform>();fr.sizeDelta=new Vector2(95,30);fr.anchoredPosition=new Vector2(-85,-5);
-            field.GetComponent<Image>().color=new Color(.12f,.2f,.28f);
+            UIVisualTheme.Paint(field.GetComponent<Image>(),"field");
             var input=field.GetComponent<InputField>();_current._input=input;
             var text=UIFactory.NewText("Text",field.transform,"",16,TextAnchor.MiddleCenter);UIFactory.Stretch(text.rectTransform,5,2);
             input.textComponent=text;input.contentType=InputField.ContentType.IntegerNumber;input.text=source.placementCount.ToString();
             var apply=UIFactory.NewButton("Apply",go.transform,"确定",_current.Apply,new Vector2(95,30));
+            UIVisualTheme.StyleButton(apply,true);
             apply.GetComponent<RectTransform>().anchoredPosition=new Vector2(70,-5);
             var hint=UIFactory.NewText("Hint",go.transform,"回车确定 · 右键取消",12,TextAnchor.LowerCenter);UIFactory.Stretch(hint.rectTransform,8,4);hint.raycastTarget=false;
         }

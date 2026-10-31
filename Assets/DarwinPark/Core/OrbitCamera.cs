@@ -66,10 +66,12 @@ namespace DarwinPark.Core
             bool pointerOverUI = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
 
             // ★ 修复（防Bug回归）：仅从世界开始的左键拖动旋转；点击和 UI 拖动不抢占相机。
-            if(Input.GetMouseButtonDown(0))
+            // ★ 适配：RTS左键属于框选，改用中键旋转，避免选框同时拖动相机。
+            int dragButton=WorldAuthority.RtsMode?2:0;
+            if(Input.GetMouseButtonDown(dragButton))
             {_leftDragStarted=!IsDraggingUI && !pointerOverUI;_leftDragOrigin=Input.mousePosition;}
-            if(Input.GetMouseButtonUp(0) || IsDraggingUI) _leftDragStarted=false;
-            if (_leftDragStarted && !pointerOverUI && Input.GetMouseButton(0) &&
+            if(Input.GetMouseButtonUp(dragButton) || IsDraggingUI) _leftDragStarted=false;
+            if (_leftDragStarted && !pointerOverUI && Input.GetMouseButton(dragButton) &&
                 Vector2.Distance(_leftDragOrigin,(Vector2)Input.mousePosition)>dragThresholdPixels)
             {
                 _isFocusing = false; // 打断聚焦动画

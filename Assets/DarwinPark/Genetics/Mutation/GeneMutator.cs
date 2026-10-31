@@ -41,8 +41,8 @@ namespace DarwinPark.Genetics.Mutation
             if (roll < settings.ErrorWeight) // ★ 修复：默认 90% 数值出错，实际读取配置权重
             {
                 // ★ 适配：数值出错分支可沿工具配置的侧向出错关系迁移，仍保持90/5/5类型权重。
-                string errorTarget=GeneTreeStorage.Successor(gene.DefinitionId,"error");
-                if(errorTarget!=null) gene.DefinitionId=errorTarget;
+                string errorTarget=GeneTreeStorage.Successor(gene.DefinitionId,"error",gene.Value,genome);
+                if(errorTarget!=null){gene.DefinitionId=errorTarget;gene.Tier=GeneDatabase.Get(errorTarget).Tier;}
                 float delta = Random.Range(-settings.MaxErrorDelta, settings.MaxErrorDelta);
                 if(preferAdaptation && settings.AdaptationTargetValue>=0 && gene.DefinitionId==settings.AdaptationGeneId)
                     delta=Mathf.Abs(delta)*Mathf.Sign(settings.AdaptationTargetValue-gene.Value);
@@ -73,8 +73,8 @@ namespace DarwinPark.Genetics.Mutation
                 }
 
                 // ★ 适配：复制的新基因优先使用配置的向下进化关系。
-                string next=GeneTreeStorage.Successor(gene.DefinitionId,"evolution");
-                if(next!=null)copy.DefinitionId=next;
+                string next=GeneTreeStorage.Successor(gene.DefinitionId,"evolution",gene.Value,genome);
+                if(next!=null){copy.DefinitionId=next;copy.Tier=GeneDatabase.Get(next).Tier;}
                 genome.Add(copy);
                 return MutationResult.Ok(MutationType.Duplicate, $"复制出了 {copy.DefinitionId}");
             }

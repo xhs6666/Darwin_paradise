@@ -1,0 +1,58 @@
+{
+  "id": "gene_territory",
+  "displayName": "领地基因",
+  "category": "Locomotion",
+  "parentGeneId": "gene_locomotion",
+  "baseGeneId": "gene_locomotion",
+  "isBaseGene": false,
+  "tier": 1,
+  "logicScriptId": "TerritoryGeneLogic",
+  "aiModuleId": "",
+  "entityStateTagVersion": 1,
+  "entityStateTags": [
+    "patrol"
+  ],
+  "attributeCurves": [
+    {
+      "attributeId": "territory_radius",
+      "minValue": 20,
+      "maxValue": 60
+    },
+    {
+      "attributeId": "defend_bonus",
+      "minValue": 5,
+      "maxValue": 25
+    }
+  ],
+  "states": [
+    {
+      "stateId": "patrol",
+      "displayName": "巡逻倾向",
+      "center": 20,
+      "color": [
+        0.2,
+        0.8,
+        0.2
+      ]
+    },
+    {
+      "stateId": "defend",
+      "displayName": "警戒倾向",
+      "center": 80,
+      "color": [
+        0.8,
+        0.2,
+        0.2
+      ]
+    }
+  ],
+  "attributeLinkages": [
+    {
+      "sourceAttributeId": "gene_territory",
+      "targetAttributeId": "absorbEfficiency",
+      "mode": "Override",
+      "factor": 0
+    }
+  ],
+  "suppressionRules": []
+}

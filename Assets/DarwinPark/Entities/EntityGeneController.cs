@@ -34,6 +34,7 @@ namespace DarwinPark.Entities
         public AgeState CurrentAge { get; set; } = AgeState.Infant;
 
         private Dictionary<GeneInstance, IGeneLogic> _activeLogics = new();
+        private readonly List<IGeneLogic> _simulationLogics=new List<IGeneLogic>();
         private bool _isRecalculating = false;
         private int _mutatedStages;
         public int StageMutationChecks {get;private set;}
@@ -56,7 +57,10 @@ namespace DarwinPark.Entities
 
         public void AdvanceSimulation(float dt)
         {
-            if (dt <= 0f) return;
+            // ★ 适配：联机生态只在管理员进程推进，副本不能发生独立变异或出生。
+            if (dt <= 0f||WorldAuthority.IsReplica) return;
+            // ★ 适配：卵孵化前不执行出生变异和普通基因行为，孵化后从幼年开始。
+            var egg=GetComponent<Ecology.EggIncubation>();if(egg!=null&&egg.Incubating){egg.Advance(dt);return;}
             if (_isRecalculating) return;
             float remaining = dt;
             while (remaining > 0f)
@@ -68,20 +72,27 @@ namespace DarwinPark.Entities
                 if(life==null && GetComponent<EntityStats>()!=null)life=gameObject.AddComponent<EntityLifeCycle>();
                 life?.Advance(step);
                 if(life!=null && life.HasDied)return;
-                var logicsCopy = new List<IGeneLogic>(_activeLogics.Values);
-                foreach (var logic in logicsCopy) logic.OnUpdate(step);
+                // ★ 适配：反击记忆随模拟步长推进，暂停或倍率切换不会消耗真实秒数。
+                Ecology.CombatIntent.AdvanceFor(this,step);
+                // ★ 适配：独立状态机先按配置选择意图，所有复制行动基因随后共用一个行为写入者。
+                GetComponent<Ecology.EntityStateController>()?.Advance(step);
+                // ★ 修复（防Bug回归）：仍使用逻辑快照防止重算时修改集合，但复用缓冲区，避免每个实体每个子步分配新列表。
+                _simulationLogics.Clear();_simulationLogics.AddRange(_activeLogics.Values);
+                foreach (var logic in _simulationLogics) logic.OnUpdate(step);
             }
         }
 
         public void Recalculate()
         {
             if (_isRecalculating) return;
+            // ★ 适配：固定分工先还原出生遗传快照，编辑和阶段变异不能改写士兵/工匠基因。
+            GetComponent<Ecology.AntColonyMember>()?.EnforceGenome();
             _isRecalculating = true;
 
             var currentGenes = new HashSet<GeneInstance>(Genome.Genes);
 
             // ★ 修复（防Bug回归）：环境不适应时所有基因受抑；突变作用于遗传值，表达受抑仍可变异。
-            Evaluation = GeneValueResolver.Resolve(Genome, IsGestating, EnvironmentGeneSuppression);
+            Evaluation = GeneValueResolver.Resolve(Genome, IsGestating, EnvironmentGeneSuppression,additionalSuppression:Ecology.AntColonyMember.ExpressionSuppression(this));
 
             var stats = GetComponent<EntityStats>();
             float size = 1f;
@@ -102,12 +113,14 @@ namespace DarwinPark.Entities
                 var eval = Evaluation.Genes.Find(g => g.Gene.InstanceId == kvp.Key.InstanceId);
 
                 // 如果基因不在了，或者未启用，或者被抑制到失效 (!eval.IsActive)
-                if (!currentGenes.Contains(kvp.Key) || !kvp.Key.Enabled || eval == null || !eval.IsActive)
+                if (!currentGenes.Contains(kvp.Key) || !kvp.Key.Enabled || eval == null || !eval.IsActive ||
+                    kvp.Value.GetType().Name != eval.Definition.LogicScriptId)
                 {
                     toRemove.Add(kvp.Key);
                 }
             }
-            foreach (var g in toRemove) _activeLogics.Remove(g);
+            // ★ 修复（防Bug回归）：出错变异会原地更换 DefinitionId，旧逻辑必须释放并重建，不能继续执行旧行动/旧事件。
+            foreach (var g in toRemove){if(_activeLogics[g] is IDisposable disposable)disposable.Dispose();_activeLogics.Remove(g);}
 
             OnEvaluationChanged?.Invoke(Evaluation);
 
@@ -133,6 +146,8 @@ namespace DarwinPark.Entities
             }
 
             _isRecalculating = false;
+            // ★ 适配：标签新增/移除、出错换基因或受抑后同步更新实体状态授权。
+            Ecology.EntityStateController.Rebind(this);
         }
 
         /// <summary>
@@ -162,6 +177,13 @@ namespace DarwinPark.Entities
         {
             if (gene != null && _activeLogics.TryGetValue(gene, out var logic)) return logic;
             return null;
+        }
+
+        private void OnDestroy()
+        {
+            // ★ 适配：纯 C# 逻辑在移除/销毁时释放；仅停用控制器冻结测试时仍保留可查询的评估与逻辑。
+            foreach(var logic in _activeLogics.Values)if(logic is IDisposable disposable)disposable.Dispose();
+            _activeLogics.Clear();
         }
 
         public void LoadGenesFromJson(string jsonId)
@@ -194,7 +216,7 @@ namespace DarwinPark.Entities
 
         public float GetAttribute(string id)
         {
-            if (Evaluation != null && Evaluation.Attributes.TryGetValue(id, out var v)) return v;
+            if (Evaluation != null && Evaluation.Attributes.TryGetValue(id, out var v)) return Ecology.EcologyMotion.ResolveAttribute(this,id,v);
             return 0f;
         }
 
@@ -208,7 +230,7 @@ namespace DarwinPark.Entities
                 //（最高 +25%），否则玩家很难观察到适应基因被优先突变。
                 float effectiveMutationChance = Mathf.Clamp01(
                     mutationChance + EnvironmentMutationChance * 0.25f);
-                if (UnityEngine.Random.value < effectiveMutationChance)
+                if (GetComponent<Ecology.AntColonyMember>()?.Frozen!=true&&UnityEngine.Random.value < effectiveMutationChance)
                 {
                     var settings = GeneMutationSettings.CreateDefault();
                     settings.AdaptationGeneId = EnvironmentGeneId;

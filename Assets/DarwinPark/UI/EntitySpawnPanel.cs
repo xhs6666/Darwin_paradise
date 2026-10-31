@@ -67,6 +67,8 @@ namespace DarwinPark.UI
             grid.childAlignment = TextAnchor.MiddleCenter;
 
             _templateGridParent = templateSec.transform;
+            // ★ 适配：全星球随机投放由独立栏负责，保留原有默认、收藏与模板放置入口。
+            RandomSpawnPanel.Attach(transform);
         }
 
         private void CreateSpawnSlot(Transform parent, string label, GameObject prefab, Genome customGenome)
@@ -75,7 +77,8 @@ namespace DarwinPark.UI
             var rt = slotGO.GetComponent<RectTransform>();
             rt.sizeDelta = new Vector2(70, 70);
 
-            slotGO.GetComponent<Image>().color = new Color(0.15f, 0.25f, 0.35f, 0.8f);
+            // ★ 适配：仅替换槽位表面，保留底栏第二页布局。
+            UIVisualTheme.Paint(slotGO.GetComponent<Image>(),"button");
             var spawner = slotGO.GetComponent<EntitySpawnerUI>();
             spawner.entityPrefab = prefab;
             spawner.CustomGenome = customGenome;
@@ -89,7 +92,7 @@ namespace DarwinPark.UI
             var favBtnGO = UIFactory.NewRect("FavBtn", parent, typeof(Image), typeof(Button));
             var frt = favBtnGO.GetComponent<RectTransform>();
             frt.sizeDelta = new Vector2(70, 70);
-            favBtnGO.GetComponent<Image>().color = new Color(0.2f, 0.5f, 0.3f, 0.9f);
+            UIVisualTheme.StyleButton(favBtnGO.GetComponent<Button>());
 
             var favBtn = favBtnGO.GetComponent<Button>();
             favBtn.onClick.AddListener(() => {
@@ -100,8 +103,9 @@ namespace DarwinPark.UI
                 else Log.Error(Log.Tag.UI, "收藏列表不可用：场景缺少 EntityFavoritesManager");
             });
 
-            var favTxt = UIFactory.NewText("Txt", favBtnGO.transform, "收藏\n列表", 12, TextAnchor.MiddleCenter);
-            UIFactory.Stretch(favTxt.rectTransform);
+            var favTxt = UIFactory.NewText("Txt", favBtnGO.transform, "收藏列表", 12, TextAnchor.LowerCenter);
+            UIFactory.Stretch(favTxt.rectTransform,2,6);
+            UIVisualTheme.AddIcon(favBtnGO.transform,"star",new Vector2(28,28),new Vector2(0,9),new Vector2(.5f,.5f)).color=UIVisualTheme.Muted;
         }
 
         private void RefreshTemplates()
@@ -119,7 +123,8 @@ namespace DarwinPark.UI
                 else
                 {
                     var emptyGO = UIFactory.NewRect("EmptyTpl", _templateGridParent, typeof(Image));
-                    emptyGO.GetComponent<Image>().color = new Color(0.1f, 0.1f, 0.1f, 0.3f);
+                    UIVisualTheme.Paint(emptyGO.GetComponent<Image>(),"button");
+                    emptyGO.GetComponent<Image>().color=new Color(1,1,1,.4f);
                 }
             }
         }
@@ -128,16 +133,13 @@ namespace DarwinPark.UI
         {
             var btnGO = UIFactory.NewRect("Tpl_" + tpl.templateName, _templateGridParent, typeof(Image), typeof(Button), typeof(EntitySpawnerUI));
             var img = btnGO.GetComponent<Image>();
+            UIVisualTheme.Paint(img,"button");
 
             var sprite = UIIconRegistry.Get(tpl.iconId);
             if (sprite != null)
             {
-                img.sprite = sprite;
-                img.color = Color.white;
-            }
-            else
-            {
-                img.color = new Color(0.2f, 0.35f, 0.5f, 0.9f);
+                // ★ 适配：模板图标不充当按钮底图，悬停皮肤切换不会覆盖或拉伸图标。
+                UIVisualTheme.AddIcon(btnGO.transform,tpl.iconId,new Vector2(34,34),Vector2.zero,new Vector2(.5f,.5f));
             }
 
             var textGO = UIFactory.NewText("Tooltip", btnGO.transform, tpl.templateName, 12, TextAnchor.MiddleCenter);
@@ -177,7 +179,7 @@ namespace DarwinPark.UI
             rt.pivot = new Vector2(0, 0.5f);
             rt.offsetMin = new Vector2(xOffset, 0);
             rt.offsetMax = new Vector2(xOffset + 2, 0);
-            div.GetComponent<Image>().color = new Color(0.3f, 0.5f, 0.7f, 0.3f);
+            div.GetComponent<Image>().color = UIVisualTheme.Border;
         }
     }
 }

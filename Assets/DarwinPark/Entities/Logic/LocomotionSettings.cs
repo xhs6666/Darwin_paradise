@@ -11,6 +11,8 @@ namespace DarwinPark.Entities.Logic
         // ★ 适配：正常近距离猎食的收益须覆盖代谢与移动消耗。
         public float grazeDamage = 20, biteNutrition = .65f, killNutrition = 12;
         public float wanderInterval = 6, wanderDistance = 20, wanderSpeedRatio = .4f, steering = 12;
+        public float maximumMoveSpeed=12,maximumJumpSpeed=8,minimumMovementSize=.25f,jumpSizeExponent=.5f;
+        public float stationaryFriction=1,movingFriction=0,frictionMotionThreshold=.01f;
         private static LocomotionSettings _cached;
         public static LocomotionSettings Load()
         {

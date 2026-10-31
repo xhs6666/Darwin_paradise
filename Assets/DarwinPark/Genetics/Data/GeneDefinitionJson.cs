@@ -15,6 +15,11 @@ namespace DarwinPark.Genetics
         public int tier;
         public string logicScriptId = ""; // 基因逻辑脚本
         public string aiModuleId = "";
+        // ★ 适配：标签引用独立实体状态注册表；空列表可显式关闭能力，版本字段区分旧档缺字段。
+        public int entityStateTagVersion;
+        public List<string> entityStateTags = new List<string>();
+        // ★ 适配：区分旧默认抑制矩阵与用户明确保存的生态配置，避免升级覆盖自定义调参。
+        public int ecologyBalanceVersion;
 
         // ★ 核心修复：添加属性曲线字段
         public List<AttributeCurveJson> attributeCurves = new List<AttributeCurveJson>();

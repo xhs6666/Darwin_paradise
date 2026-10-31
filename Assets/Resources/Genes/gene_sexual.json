@@ -1,0 +1,26 @@
+{
+  "id": "gene_sexual",
+  "displayName": "有性繁殖基因",
+  "category": "Reproduction",
+  "parentGeneId": "gene_reproduction",
+  "baseGeneId": "gene_reproduction",
+  "isBaseGene": false,
+  "tier": 1,
+  "logicScriptId": "ReproductionGeneLogic",
+  "aiModuleId": "",
+  "attributeCurves": [],
+  "states": [
+    {
+      "stateId": "sexual",
+      "displayName": "有性繁殖",
+      "center": 80,
+      "color": [
+        0.9,
+        0.4,
+        0.6
+      ]
+    }
+  ],
+  "attributeLinkages": [],
+  "suppressionRules": []
+}

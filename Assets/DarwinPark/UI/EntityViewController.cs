@@ -30,11 +30,11 @@ namespace DarwinPark.UI
         private float _distance, _height, _lastClickTime = -10;
         private DarwinEntity _lastClicked;
         private bool _active;
-        private GameObject _bar;
-        private Text _hint;
         private EntityPossessionInput _input;
         private EntityFirstPersonCamera _firstPerson;
-        private void Awake() { Instance = this; _input = GetComponent<EntityPossessionInput>(); _firstPerson = gameObject.AddComponent<EntityFirstPersonCamera>(); }
+        private void Awake() { Instance = this; _input = GetComponent<EntityPossessionInput>(); _firstPerson = gameObject.AddComponent<EntityFirstPersonCamera>();
+            // ★ 适配：无界面的Q输入独立接入，不再安装免费生成补给的按钮工具。
+            if(GetComponent<EnergyBlockInput>()==null)gameObject.AddComponent<EnergyBlockInput>(); }
         private void Update()
         {
             if (_active && (Target == null || !Target.isActiveAndEnabled ||
@@ -47,7 +47,7 @@ namespace DarwinPark.UI
             if (_active && Input.GetKeyDown(viewExitKey)) { ExitView(); return; }
             bool overUI = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
             bool placing = OrbitCamera.IsDraggingUI || (EntityPlacementTool.Instance != null && EntityPlacementTool.Instance.IsPlacing);
-            if (!_active && !typing && !overUI && !placing && Input.GetMouseButtonDown(0))
+            if (!_active && !WorldAuthority.RtsMode && !typing && !overUI && !placing && Input.GetMouseButtonDown(0))
             {
                 var camera = Camera.main;
                 if (camera != null && Physics.Raycast(camera.ScreenPointToRay(Input.mousePosition),out var hit,camera.farClipPlane,pickMask,QueryTriggerInteraction.Ignore))
@@ -61,7 +61,6 @@ namespace DarwinPark.UI
             _forward = Vector3.ProjectOnPlane(_forward,up).normalized;
             if (_forward.sqrMagnitude < .01f) _forward = Vector3.ProjectOnPlane(Vector3.forward,up).normalized;
             _input.Tick(blocked,up,ref _forward,ref _height,ref _distance,minFollowDistance,maxFollowDistance);
-            if (_hint != null) _hint.text = Target.DisplayName + (_manual.CanMove ? "  WASD 移动 · 左键攻击 · 空格跳跃 · 鼠标转向" : "  观察模式（无有效行动基因）") + (WorldRuntimeGate.Managed ? " · Tab 返回星球 · Esc 暂停" : " · Esc 返回");
         }
         // ★ 新增：同一实体的双击才切换，UI/空白点击不会沿用上一次命中。
         public void RegisterClick(DarwinEntity entity, float time)
@@ -73,6 +72,8 @@ namespace DarwinPark.UI
         public bool EnterView(DarwinEntity entity)
         {
             if (entity == null || !entity.isActiveAndEnabled) return false;
+            // ★ 适配：联机选择先经服务端分配，成员不能借双击切换到其他玩家实体。
+            if(LanSession.Instance?.AllowView(entity)==false)return false;
             var camera = Camera.main; var orbit = camera != null ? camera.GetComponent<OrbitCamera>() : null;
             if (orbit == null || orbit.target == null) { Log.Error(Log.Tag.UI,"实体视角需要主相机与星球轨道目标"); return false; }
             if (entity.GetComponent<Rigidbody>() == null || entity.GetComponent<EntityGeneController>() == null) return false;
@@ -89,7 +90,8 @@ namespace DarwinPark.UI
             _input.Begin(_manual,_planet,_height,_distance);
             // ★ 适配：锁定眼位，不再用偏肩追随镜头。
             _firstPerson.Begin(entity, camera);
-            BuildBar(); return true;
+            // ★ 修复（防Bug回归）：按用户要求不创建操控提示栏或按钮，仅保留键盘操作。
+            return true;
         }
         private void LateUpdate()
         {
@@ -111,22 +113,6 @@ namespace DarwinPark.UI
             if (_orbit != null && Target != null) _orbit.ReturnToEntity(Target.transform.position);
             else if (_camera != null) _camera.transform.SetPositionAndRotation(_savedPosition,_savedRotation);
             Target = null; _manual = null; _lastClicked = null;
-            if (_bar != null) { _bar.SetActive(false); Destroy(_bar); _bar = null; }
-        }
-        private void BuildBar()
-        {
-            if (!ServiceLocator.TryGet<UIRoot>(out var root) || root.MainCanvas == null) return;
-            _bar = UIFactory.NewRect("EntityViewBar",root.MainCanvas.transform,typeof(Image));
-            _bar.GetComponent<Image>().color = new Color(.04f,.09f,.14f,.9f);
-            _bar.GetComponent<Image>().raycastTarget = false;
-            var rt = _bar.GetComponent<RectTransform>(); rt.anchorMin = rt.anchorMax = new Vector2(.5f,0);
-            rt.pivot = new Vector2(.5f,0); rt.anchoredPosition = new Vector2(0,220); rt.sizeDelta = new Vector2(690,32);
-            _hint = UIFactory.NewText("Hint",_bar.transform,"实体视角",13);
-            UIFactory.Stretch(_hint.rectTransform,8,2); _hint.rectTransform.offsetMax = new Vector2(-95,-2);
-            var exit = UIFactory.NewButton("Exit",_bar.transform,"返回星球",ExitView,new Vector2(85,26));
-            exit.GetComponentInChildren<Text>().fontSize = 13;
-            var ert = exit.GetComponent<RectTransform>(); ert.anchorMin = ert.anchorMax = new Vector2(1,.5f);
-            ert.pivot = new Vector2(1,.5f); ert.anchoredPosition = new Vector2(-3,0);
         }
         private static bool IsTyping()
         {

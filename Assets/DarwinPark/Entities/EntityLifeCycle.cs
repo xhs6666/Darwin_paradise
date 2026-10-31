@@ -16,6 +16,8 @@ namespace DarwinPark.Entities
         private void Start()=>InitializeBirth();
         public void InitializeBirth()
         {
+            // ★ 适配：卵未孵化时不消耗出生阶段抽签，也不提前衰老。
+            if(GetComponent<Ecology.EggIncubation>()?.Incubating==true)return;
             if(_born)return;_born=true;
             _genes.CurrentAge=AgeState.Infant;
             _genes.TryStageMutation(AgeState.Infant);_genes.Recalculate();
@@ -43,6 +45,8 @@ namespace DarwinPark.Entities
         }
         // ★ 适配：读档直接恢复寿命，不运行出生初始化。
         public void RestoreProgress(float progress){Progress=progress;HasDied=false;_born=true;}
+        // ★ 适配：读档的卵尚未出生，孵化时仍应执行一次出生阶段初始化。
+        public void WaitForHatch(){_born=false;}
         private void EnterStage(AgeState stage)
         {_genes.CurrentAge=stage;_genes.TryStageMutation(stage);_genes.Recalculate();}
     }

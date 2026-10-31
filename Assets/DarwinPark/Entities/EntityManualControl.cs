@@ -25,7 +25,7 @@ namespace DarwinPark.Entities
         public void ClearAttack(){_attackQueued=false;AttackHeld=false;}
         public void SetAim(Ray ray){_aimRay=ray;}
         public DarwinEntity GetAttackTarget()=>_aimRay.HasValue?EntityAttackAim.Pick(gameObject,_aimRay.Value,aimRayDistance,aimRadius):null;
-        public bool CanMove => _genes != null && _genes.GetAttribute("moveSpeed") > 0 &&
+        public bool CanMove => _genes != null && !Ecology.EcologyMotion.Immobilized(_genes) && _genes.GetAttribute("moveSpeed") > 0 &&
             _genes.Evaluation != null && _genes.Evaluation.Genes.Exists(g => g.IsActive && _genes.GetLogic(g.Gene) is LocomotionGeneLogic);
         private void Awake() { _body = GetComponent<Rigidbody>(); _genes = GetComponent<EntityGeneController>(); }
         public void BeginControl(Transform planet) { _planet = planet; _jump = GetComponent<EntityJumpMotor>(); IsControlled = true; SetInput(Vector3.zero, false); }

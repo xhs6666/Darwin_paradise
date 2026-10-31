@@ -1,0 +1,7 @@
+{
+  "targetGeneId": "gene_nutrient_utilization",
+  "previousParentGeneId": "gene_nutrition",
+  "previousKind": "evolution",
+  "parentGeneId": "gene_storage",
+  "kind": "error"
+}

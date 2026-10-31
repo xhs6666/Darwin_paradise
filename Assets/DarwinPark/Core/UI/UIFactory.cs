@@ -17,6 +17,12 @@ namespace DarwinPark.Core
             get
             {
                 if (_font != null) return _font;
+                // ★ 适配：中文界面优先使用系统无衬线字体，避免默认字体缺字和图标字符兜底。
+                var installed=Font.GetOSInstalledFontNames();
+                foreach(var name in UIVisualTheme.Data.fontNames)
+                    if(Array.Exists(installed,f=>string.Equals(f,name,StringComparison.OrdinalIgnoreCase)))
+                    {_font=Font.CreateDynamicFontFromOSFont(name,16);break;}
+                if (_font != null) return _font;
                 _font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
                 if (_font == null) _font = Resources.GetBuiltinResource<Font>("Arial.ttf");
                 if (_font == null) Log.Error(Log.Tag.UI, "找不到内置字体，UI 文本将不可见");
@@ -36,6 +42,9 @@ namespace DarwinPark.Core
                 go = new GameObject(name, all);
             }
             go.transform.SetParent(parent, false);
+            // ★ 适配：默认按钮与输入背景统一主题，业务脚本仍拥有原有位置和大小。
+            if(go.TryGetComponent<Button>(out var button)) UIVisualTheme.StyleButton(button);
+            else if(go.GetComponent<InputField>()!=null) UIVisualTheme.Paint(go.GetComponent<Image>(),"field");
             return go;
         }
 
@@ -54,7 +63,7 @@ namespace DarwinPark.Core
             t.fontSize = fontSize;
             t.text = content;
             t.alignment = align;
-            t.color = Color.white;
+            t.color = UIVisualTheme.Text;
             t.raycastTarget = false; // 规则附录：文本默认不参与射线
             t.horizontalOverflow = HorizontalWrapMode.Wrap;
             t.verticalOverflow = VerticalWrapMode.Truncate;
@@ -65,7 +74,6 @@ namespace DarwinPark.Core
             Action onClick, Vector2 size)
         {
             var go = NewRect(name, parent, typeof(Image), typeof(Button));
-            go.GetComponent<Image>().color = new Color(0.2f, 0.55f, 0.3f);
             var rt = go.GetComponent<RectTransform>();
             rt.sizeDelta = size;
 
@@ -77,6 +85,7 @@ namespace DarwinPark.Core
                 var txt = NewText("Label", go.transform, label, 18, TextAnchor.MiddleCenter);
                 Stretch(txt.rectTransform);
             }
+            UIVisualTheme.StyleButton(btn);
             return btn;
         }
 
@@ -114,18 +123,22 @@ namespace DarwinPark.Core
         private static void BuildSliderVisuals(Transform parent, Slider slider)
         {
             var bg = NewRect("Background", parent, typeof(Image));
-            Stretch(bg.GetComponent<RectTransform>());
-            bg.GetComponent<Image>().color = new Color(1, 1, 1, 0.15f);
+            var bgRect=bg.GetComponent<RectTransform>();
+            bgRect.anchorMin=new Vector2(0,.5f);bgRect.anchorMax=new Vector2(1,.5f);bgRect.sizeDelta=new Vector2(0,8);
+            UIVisualTheme.Paint(bg.GetComponent<Image>(),"track");
+            bg.GetComponent<Image>().raycastTarget=false;
 
             var fillArea = NewRect("FillArea", parent);
-            Stretch(fillArea.GetComponent<RectTransform>(), 0, 10);
+            var areaRect=fillArea.GetComponent<RectTransform>();
+            areaRect.anchorMin=new Vector2(0,.5f);areaRect.anchorMax=new Vector2(1,.5f);areaRect.sizeDelta=new Vector2(-16,8);
 
             var fill = NewRect("Fill", fillArea.transform, typeof(Image));
             Stretch(fill.GetComponent<RectTransform>());
-            fill.GetComponent<Image>().color = new Color(0.3f, 0.75f, 0.4f);
+            UIVisualTheme.Paint(fill.GetComponent<Image>(),"fill");fill.GetComponent<Image>().raycastTarget=false;
 
             var handle = NewRect("Handle", parent, typeof(Image));
-            handle.GetComponent<Image>().color = Color.white;
+            UIVisualTheme.Paint(handle.GetComponent<Image>(),"thumb");
+            handle.GetComponent<RectTransform>().anchorMin=handle.GetComponent<RectTransform>().anchorMax=new Vector2(.5f,.5f);
             handle.GetComponent<RectTransform>().sizeDelta = new Vector2(16, 16);
 
             slider.fillRect = fill.GetComponent<RectTransform>();

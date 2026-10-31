@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DarwinPark.Core;
 using DarwinPark.Entities;
 using DarwinPark.Genetics;
 using DarwinPark.Planet;
@@ -39,6 +40,9 @@ namespace DarwinPark.UI
         // ★ 新增：批量投放按球面邻域散开，每个位置重新查询真实地面，避免重叠或落进山体。
         public static int SpawnBatch(Genome genome,Vector3 point,Vector3 outward,float height,int count,float spacing)
         {
+            // ★ 适配：普通成员不能通过拖拽或调用放置入口绕过权限；作弊客户端交给房主生成。
+            if(!WorldAuthority.CanEdit)return 0;
+            if(LanSession.Instance?.IsClient==true)return LanEditActions.Submit(new LanCommand{kind="batch",genome=genome,point=point,value=height,count=count,scale=spacing})?count:0;
             var builder=Object.FindFirstObjectByType<PlanetTerrainMeshBuilder>();
             if(builder==null)return 0;
             var ground=builder.GetComponent<MeshCollider>();if(ground==null)return 0;
@@ -72,14 +76,14 @@ namespace DarwinPark.UI
 
         public static bool Spawn(Genome genome, Vector3 position)
         {
+            if(!WorldAuthority.CanEdit)return false;
             if (DarwinEntity.Spawner == null)
             {
                 Debug.LogError("[EntityPlacement] 生成器未初始化，请检查 GameBootstrap。");
                 return false;
             }
             // 同一模板的多次投放必须复制遗传数据，避免一个实体突变改写模板及同批个体。
-            DarwinEntity.Spawner.Invoke(CopyGenome(genome), position, "");
-            return true;
+            return LanEditActions.Spawn(genome,position);
         }
 
         public static GameObject CreatePreview(GameObject prefab)

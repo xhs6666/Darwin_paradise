@@ -1,0 +1,39 @@
+{
+  "requirements": [
+    {
+      "source": "gene_storage",
+      "target": "gene_nutrient_utilization",
+      "kind": "error",
+      "minValue": 0,
+      "maxValue": 100,
+      "requiredGenes": []
+    },
+    {
+      "source": "gene_locomotion",
+      "target": "gene_territory",
+      "kind": "error",
+      "minValue": 40,
+      "maxValue": 60,
+      "requiredGenes": []
+    },
+    {
+      "source": "gene_territory",
+      "target": "gene_population",
+      "kind": "evolution",
+      "minValue": 80,
+      "minExclusive": true,
+      "maxValue": 100,
+      "requiredGenes": [
+        "gene_territory"
+      ]
+    },
+    {
+      "source": "gene_oviparous",
+      "target": "gene_parasitic",
+      "kind": "error",
+      "minValue": 0,
+      "maxValue": 100,
+      "requiredGenes": []
+    }
+  ]
+}

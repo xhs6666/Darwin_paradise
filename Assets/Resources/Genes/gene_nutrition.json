@@ -5,6 +5,7 @@
   "isBaseGene": true,
   "tier": 0,
   "logicScriptId": "NutritionGeneLogic",
+  "ecologyBalanceVersion": 1,
   "attributeCurves": [
     { "attributeId": "absorbEfficiency", "minValue": 3.0, "maxValue": 10.0 },
     { "attributeId": "baseStorage", "minValue": 30.0, "maxValue": 120.0 }
@@ -43,5 +44,7 @@
       "color": [0.9, 0.3, 0.3]
     }
   ],
-  "suppressionRules": []
+  "suppressionRules": [
+    { "targetGeneId": "gene_reproduction", "coefficient": -250.0 }
+  ]
 }

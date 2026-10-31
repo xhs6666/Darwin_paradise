@@ -1,0 +1,60 @@
+{
+  "id": "gene_parasitic",
+  "displayName": "寄生基因",
+  "category": "Reproduction",
+  "parentGeneId": "gene_oviparous",
+  "baseGeneId": "gene_reproduction",
+  "isBaseGene": false,
+  "tier": 3,
+  "logicScriptId": "ParasiticGeneLogic",
+  "aiModuleId": "",
+  "attributeCurves": [
+    {
+      "attributeId": "host_drain_rate",
+      "minValue": 0.2,
+      "maxValue": 2.5
+    },
+    {
+      "attributeId": "hide_from_host",
+      "minValue": 0.1,
+      "maxValue": 0.85
+    }
+  ],
+  "states": [
+    {
+      "stateId": "ecto",
+      "displayName": "体外寄生",
+      "center": 30,
+      "color": [
+        0.6,
+        0.3,
+        0.8
+      ]
+    },
+    {
+      "stateId": "endo",
+      "displayName": "体内寄生",
+      "center": 70,
+      "color": [
+        0.4,
+        0.2,
+        0.6
+      ]
+    }
+  ],
+  "attributeLinkages": [
+    {
+      "sourceAttributeId": "gene_parasitic",
+      "targetAttributeId": "moveSpeed",
+      "mode": "Override",
+      "factor": 0
+    },
+    {
+      "sourceAttributeId": "gene_parasitic",
+      "targetAttributeId": "absorbEfficiency",
+      "mode": "Override",
+      "factor": 0
+    }
+  ],
+  "suppressionRules": []
+}

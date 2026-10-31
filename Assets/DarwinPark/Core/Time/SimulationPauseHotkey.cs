@@ -13,6 +13,7 @@ namespace DarwinPark.Core
     {
         [Header("热键")]
         public KeyCode pauseKey = KeyCode.Space;
+        public KeyCode viewPauseKey = KeyCode.P;
 
         private SimulationClock _clock;
 
@@ -26,12 +27,17 @@ namespace DarwinPark.Core
             // ★ 适配：覆盖菜单拥有输入时不处理世界操作。
             if (DarwinPark.Core.GameInputGate.Blocked) return;
             if (_clock == null) return;
-            // ★ 适配：实体视角的空格用于主动攻击，不能同时触发全局暂停。
-            if (Camera.main != null && Camera.main.GetComponent<OrbitCamera>() is OrbitCamera orbit && orbit.EntityViewActive) return;
-            if (!Input.GetKeyDown(pauseKey)) return;
-            if (IsTypingInInputField()) return;
+            // ★ 修复（防Bug回归）：操控视角空格留给跳跃，P 仍能启动/暂停，不能把全部时间控制一起禁掉。
+            bool view=Camera.main!=null&&Camera.main.GetComponent<OrbitCamera>() is OrbitCamera orbit&&orbit.EntityViewActive;
+            if(Input.GetKeyDown(viewPauseKey))HandlePauseKey(viewPauseKey,view,IsTypingInInputField());
+            else if(Input.GetKeyDown(pauseKey))HandlePauseKey(pauseKey,view,IsTypingInInputField());
+        }
 
-            _clock.Toggle();
+        public bool HandlePauseKey(KeyCode key,bool entityView,bool typing)
+        {
+            if(GameInputGate.Blocked||!WorldAuthority.CanEdit||typing||key!=viewPauseKey&&(entityView||key!=pauseKey))return false;
+            if(_clock==null&&!ServiceLocator.TryGet<SimulationClock>(out _clock))return false;
+            _clock.Toggle();return true;
         }
 
         private bool IsTypingInInputField()

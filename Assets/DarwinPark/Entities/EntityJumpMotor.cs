@@ -33,7 +33,10 @@ namespace DarwinPark.Entities
             if (!_ground.Raycast(new Ray(bounds.center, -up), out var hit, support + groundTolerance) ||
                 Vector3.Dot(hit.normal, up) < minimumGroundDot) return false;
             // ★ 修复（防Bug回归）：现有星球重力使用物理秒，跳跃冲量保持同一单位，倍率不能把小人射过高空约束。
-            _body.linearVelocity = Vector3.ProjectOnPlane(_body.linearVelocity, up) + up * jumpSpeed;
+            // ★ 修复（防Bug回归）：旧跳跃使用固定冲量，完全绕过跳跃基因与体型；实际起跳也执行与面板相同的能力上限。
+            var genes=GetComponent<EntityGeneController>();float ability=genes!=null?genes.GetAttribute("jumpAbility"):0;
+            float launch=Mathf.Min(jumpSpeed,ability);if(launch<=0)return false;
+            _body.linearVelocity = Vector3.ProjectOnPlane(_body.linearVelocity, up) + up * launch;
             IsJumping = true;
             return true;
         }

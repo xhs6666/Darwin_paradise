@@ -26,6 +26,7 @@ namespace DarwinPark.UI
 
         public void BeginPlacement(GameObject prefab, Genome genome, int count=1)
         {
+            if(!WorldAuthority.CanEdit)return;
             // ★ 适配：再次点击同一槽位退出；切换模板直接进入新投放。
             if(IsPlacing && _prefab==prefab && ReferenceEquals(_genome,genome)){CancelPlacement();return;}
             // ★ 适配：开始投放时退出实体控制，避免两个模式争用键鼠与相机。
@@ -71,7 +72,7 @@ namespace DarwinPark.UI
         // ★ 修复（防Bug回归）：确认投放共用实时 UI/正面射线判定，失败可重新选位置，成功保持连续模式。
         public bool TryPlaceAt(Vector2 screen)
         {
-            if(!IsPlacing || EntityPlacementUtility.IsPointerOverUI(screen) ||
+            if(!WorldAuthority.CanEdit||!IsPlacing || EntityPlacementUtility.IsPointerOverUI(screen) ||
                 !EntityPlacementUtility.TryGetSurface(Camera.main,screen,out var point,out var outward))return false;
             // ★ 新增：成功后保留当前模板与预览，支持连续点放；只有右键/Esc 取消。
             return EntityPlacementUtility.SpawnBatch(_genome,point,outward,spawnHeight,PlacementCount,batchSpacing)>0;

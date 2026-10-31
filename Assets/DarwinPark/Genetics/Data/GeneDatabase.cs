@@ -44,6 +44,8 @@ namespace DarwinPark.Genetics
                         Tier = json.tier,
                         LogicScriptId = json.logicScriptId,
                         AiModuleId = json.aiModuleId,
+                        // ★ 适配：统一迁移和校验标签后交给独立状态组件使用。
+                        EntityStateTags = GeneEntityStateTags.Read(asset.text),
                         AttributeCurves = new List<AttributeCurve>(),
                         Linkages = new List<AttributeLinkage>(), // ★ 确保这里初始化了
                         States = new List<GeneStateDefinition>(),
@@ -116,6 +118,8 @@ namespace DarwinPark.Genetics
             }
 
             _initialized = true;
+            // ★ 适配：定义全部装载后再解析谱系，旧世界中的重复行动曲线也使用同一继承规则。
+            GeneAttributeInheritance.Prepare(_definitions);
             Debug.Log($"[GeneDatabase] 初始化完成，共加载 {_definitions.Count} 个基因。");
         }
 
@@ -138,6 +142,6 @@ namespace DarwinPark.Genetics
             return null;
         }
 
-        public static void Reload() => _initialized = false;
+        public static void Reload() { _initialized = false; EntityStateRegistry.ReloadConfigured(); }
     }
 }

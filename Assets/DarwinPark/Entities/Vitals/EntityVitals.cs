@@ -39,30 +39,13 @@ namespace DarwinPark.Entities.Vitals
 
         private void AdvanceVitals(float dt)
         {
+            // ★ 适配：卵不进行自主觅食/运动代谢，但保留生命值与可被攻击破坏的碰撞体。
+            if(GetComponent<DarwinPark.Entities.Ecology.EggIncubation>()?.Incubating==true)
+            {if(_stats.TryGet("health",out var eggHealth)&&eggHealth<=0)Destroy(gameObject);return;}
             // 1. 营养吸收与消耗
-            float absorbEfficiency = _genes.GetAttribute("absorbEfficiency");
-            float moveSpeed = _genes.GetAttribute("moveSpeed");
-
-            float gained = 2f * absorbEfficiency * dt;
-            float consumed = baseMetabolism * dt;
-            if (moveSpeed > 0 && GetComponent<Rigidbody>().linearVelocity.magnitude > 1f)
-                consumed += (moveSpeed * moveMetabolism) * dt;
-
-            if (_stats.TryGet("nutrient", out var currentNutrient))
-            {
-                // ★ 核心机制 1：获取营养，如果饱食度满了，溢出部分存入储存营养
-                if (gained > 0)
-                {
-                    _stats.Modify("nutrient", gained);
-                    // ★ 修复（防Bug回归）：饱食度上限是属性配置的 10，不能用写死的 100 计算仓储溢出。
-                    _stats.TryGet("nutrient", out float afterGain);
-                    float actualGained = afterGain - currentNutrient;
-                    float overflow = gained - actualGained;
-                    if (overflow > 0) _stats.Modify("storedNutrient", overflow);
-                }
-
-                _stats.Modify("nutrient", -consumed);
-            }
+            // ★ 修复（防Bug回归）：营养基因已结算生产，此处重复凭空产粮会掩盖生态收支；这里只计算消耗。
+            float consumed = Ecology.EcologyEnergyBudget.Consumption(_genes,baseMetabolism,moveMetabolism)*dt;
+            _stats.Modify("nutrient", -consumed);
 
             // 核心机制 2：饱食度低于 4 时，自动从仓库提取
             if (_stats.TryGet("nutrient", out var hunger) && _stats.TryGet("storedNutrient", out var stored))

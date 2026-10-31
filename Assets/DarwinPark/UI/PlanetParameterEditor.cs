@@ -31,7 +31,8 @@ namespace DarwinPark.UI
             var irt = inputGO.GetComponent<RectTransform>();
             irt.anchorMin = irt.anchorMax = new Vector2(0, 0); irt.pivot = Vector2.zero;
             irt.anchoredPosition = new Vector2(12, 38); irt.sizeDelta = new Vector2(112, 28);
-            inputGO.GetComponent<Image>().color = new Color(.12f,.18f,.24f);
+            // ★ 适配：参数输入沿用原位置与应用流程，只换共用输入框皮肤。
+            UIVisualTheme.Paint(inputGO.GetComponent<Image>(),"field");
             _input = inputGO.GetComponent<InputField>();
             var text = UIFactory.NewText("Text", inputGO.transform, initial, 16);
             UIFactory.Stretch(text.rectTransform, 8, 2); _input.textComponent = text;
@@ -58,6 +59,7 @@ namespace DarwinPark.UI
                     _slider.SetValueWithoutNotify(f);
             });
             var apply = UIFactory.NewButton("Apply", transform, "应用（Shift）", Apply, new Vector2(112,25));
+            UIVisualTheme.StyleButton(apply,true);
             apply.GetComponentInChildren<Text>().fontSize = 14;
             var art = apply.GetComponent<RectTransform>(); art.anchorMin = art.anchorMax = Vector2.zero;
             art.pivot = Vector2.zero; art.anchoredPosition = new Vector2(276,7);
@@ -83,6 +85,9 @@ namespace DarwinPark.UI
         }
         public void Apply()
         {
+            if(!WorldAuthority.CanEdit)return;
+            if(LanSession.Instance?.IsClient==true)
+            {if(float.TryParse(_input.text,NumberStyles.Float,CultureInfo.InvariantCulture,out float requested))LanEditActions.Parameter(_id,requested);return;}
             if (_id.Contains("seed"))
             {
                 if (!int.TryParse(_input.text, out int seed)) { _status.text = "请输入有效的 32 位整数种子"; return; }

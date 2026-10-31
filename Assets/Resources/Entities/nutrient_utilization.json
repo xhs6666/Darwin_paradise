@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "geneId": "gene_nutrient_utilization",
+  "nutrientAttribute": "nutrient",
+  "reserveAttribute": "storedNutrient",
+  "absorptionAttribute": "energy_block_absorption",
+  "releaseAttribute": "energy_block_release",
+  "feedThreshold": 7,
+  "feedRadius": 6,
+  "searchRadius": 40,
+  "releaseDistance": 8,
+  "minimumFoodAfterRelease": 0
+}

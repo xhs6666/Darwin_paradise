@@ -1,0 +1,59 @@
+{
+  "id": "gene_population",
+  "displayName": "种群基因",
+  "category": "Locomotion",
+  "parentGeneId": "gene_territory",
+  "baseGeneId": "gene_locomotion",
+  "isBaseGene": false,
+  "tier": 2,
+  "logicScriptId": "PopulationGeneLogic",
+  "aiModuleId": "",
+  "attributeCurves": [
+    {
+      "attributeId": "leadership_aura",
+      "minValue": 10,
+      "maxValue": 50
+    },
+    {
+      "attributeId": "coordination",
+      "minValue": 0.1,
+      "maxValue": 1.5
+    }
+  ],
+  "states": [
+    {
+      "stateId": "ant",
+      "displayName": "蚁群",
+      "center": 20,
+      "color": [
+        0.8,
+        0.6,
+        0.2
+      ]
+    },
+    {
+      "stateId": "wolf",
+      "displayName": "狼群",
+      "center": 80,
+      "color": [
+        0.4,
+        0.4,
+        0.5
+      ]
+    }
+  ],
+  "attributeLinkages": [
+    {
+      "sourceAttributeId": "gene_population",
+      "targetAttributeId": "absorbEfficiency",
+      "mode": "Override",
+      "factor": 0
+    }
+  ],
+  "suppressionRules": [
+    {
+      "targetGeneId": "gene_territory",
+      "coefficient": 1000
+    }
+  ]
+}

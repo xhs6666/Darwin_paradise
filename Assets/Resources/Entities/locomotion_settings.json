@@ -1,5 +1,5 @@
 {
-  "hungerThreshold": 8,
+  "hungerThreshold": 4,
   "attackReach": 0.5,
   "attackInterval": 1,
   "grazeDamage": 20,
@@ -7,6 +7,13 @@
   "killNutrition": 12,
   "wanderInterval": 6,
   "wanderDistance": 20,
-  "wanderSpeedRatio": 0.4,
-  "steering": 12
+  "wanderSpeedRatio": 0.35,
+  "steering": 12,
+  "maximumMoveSpeed": 12,
+  "maximumJumpSpeed": 8,
+  "minimumMovementSize": 0.25,
+  "jumpSizeExponent": 0.5,
+  "stationaryFriction": 1,
+  "movingFriction": 0,
+  "frictionMotionThreshold": 0.01
 }

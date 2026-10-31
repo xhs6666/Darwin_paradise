@@ -10,6 +10,8 @@ namespace DarwinPark.UI
     {
         public KeyCode forwardKey = KeyCode.W, backKey = KeyCode.S, leftKey = KeyCode.A, rightKey = KeyCode.D;
         public KeyCode jumpKey = KeyCode.Space;
+        public KeyCode cursorKey = KeyCode.LeftAlt;
+        public bool CursorReleased {get;private set;}
         [Range(0, 2)] public int attackMouseButton = 0;
         public float lookSensitivity = 3, zoomSensitivity = 4, minPitch = -80, maxPitch = 80;
         public float crosshairSize = 18, crosshairThickness = 2;
@@ -28,7 +30,7 @@ namespace DarwinPark.UI
             _jump = manual.GetComponent<EntityJumpMotor>() ?? manual.gameObject.AddComponent<EntityJumpMotor>();
             _jump.Bind(planet);
             _pitch = 0; // ★ 修复（防Bug回归）：第一人称进入时平视，滚轮不能改变眼位。
-            _savedLock = Cursor.lockState; _savedVisible = Cursor.visible; _active = true;
+            _savedLock = Cursor.lockState; _savedVisible = Cursor.visible; _active = true;CursorReleased=false;
             SetCaptured(true);
             if (ServiceLocator.TryGet<UIRoot>(out var root) && root.MainCanvas != null)
             {
@@ -49,11 +51,14 @@ namespace DarwinPark.UI
         public void Tick(bool blocked, Vector3 up, ref Vector3 forward, ref float height, ref float distance, float minDistance, float maxDistance)
         {
             if (!_active) return;
-            blocked |= !Application.isFocused || GameInputGate.Blocked;
+            // ★ 修复（防Bug回归）：Alt 是按住释放、松开恢复；不能沿用切换开关造成松键后仍无法操控。
+            SetCursorReleased(Input.GetKey(cursorKey)||Input.GetKey(KeyCode.RightAlt));
+            bool running=!ServiceLocator.TryGet<SimulationClock>(out var clock)||clock.IsRunning;
+            blocked |= !Application.isFocused || GameInputGate.Blocked || CursorReleased;
             SetCaptured(!blocked);
-            if (_crosshair != null) _crosshair.SetActive(!blocked);
-            _acceptAttack=!blocked;
-            if (blocked) { _manual.SetInput(Vector3.zero, false);_manual.ClearAttack(); return; }
+            if (_crosshair != null) _crosshair.SetActive(!blocked&&running);
+            _acceptAttack=!blocked&&running&&Time.frameCount>_captureFrame+1;
+            if (blocked||!running) { _manual.SetInput(Vector3.zero, false);_manual.ClearAttack(); return; }
             // ★ 修复（防Bug回归）：刚锁鼠标时的居中位移不代表玩家转向，跳过捕获后的前两帧。
             if (Time.frameCount > _captureFrame + 1)
             {
@@ -63,15 +68,14 @@ namespace DarwinPark.UI
             // ★ 修复（防Bug回归）：锁定第一人称，禁用滚轮拉远。
             float y = (Input.GetKey(forwardKey) ? 1 : 0) - (Input.GetKey(backKey) ? 1 : 0);
             float x = (Input.GetKey(rightKey) ? 1 : 0) - (Input.GetKey(leftKey) ? 1 : 0);
-            bool running = !ServiceLocator.TryGet<SimulationClock>(out var clock) || clock.IsRunning;
-            _acceptAttack=running;
-            if(running && Input.GetMouseButtonDown(attackMouseButton))_manual.QueueAttack();
+            if(_acceptAttack && Input.GetMouseButtonDown(attackMouseButton))_manual.QueueAttack();
             if(!running)_manual.ClearAttack();
             // ★ 适配：准星始终对应真实相机中心射线，自身碰撞体由独立选取器排除。
             if(Camera.main!=null)_manual.SetAim(Camera.main.ViewportPointToRay(new Vector3(.5f,.5f,0)));
-            _manual.SetInput(forward * y + Vector3.Cross(up, forward) * x, running && Input.GetMouseButton(attackMouseButton));
+            _manual.SetInput(forward * y + Vector3.Cross(up, forward) * x, _acceptAttack && Input.GetMouseButton(attackMouseButton));
             if (running && Input.GetKeyDown(jumpKey)) _jump.TryJump(_manual.CanMove);
         }
+        public void SetCursorReleased(bool held){if(!_active||CursorReleased==held)return;CursorReleased=held;_manual?.SetInput(Vector3.zero,false);_manual?.ClearAttack();SetCaptured(!held);}
         private void OnGUI()
         {
             // ★ 修复（防Bug回归）：低帧率时按下/松开可能发生在同一帧，补收事件并锁存一次攻击。

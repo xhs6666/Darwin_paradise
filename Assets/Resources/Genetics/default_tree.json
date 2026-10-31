@@ -1,0 +1,172 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "id": "gene_nutrient_utilization",
+      "position": {"x": 250, "y": 810},
+      "error": true
+    },
+    {
+      "id": "gene_growth",
+      "position": {
+        "x": 30,
+        "y": 620
+      },
+      "error": false
+    },
+    {
+      "id": "gene_nutrition",
+      "position": {
+        "x": 250,
+        "y": 620
+      },
+      "error": false
+    },
+    {
+      "id": "gene_environment",
+      "position": {
+        "x": 470,
+        "y": 620
+      },
+      "error": false
+    },
+    {
+      "id": "gene_storage",
+      "position": {
+        "x": 30,
+        "y": 710
+      },
+      "error": false
+    },
+    {
+      "id": "gene_repair",
+      "position": {
+        "x": 250,
+        "y": 710
+      },
+      "error": false
+    },
+    {
+      "id": "gene_locomotion",
+      "position": {
+        "x": 30,
+        "y": 30
+      },
+      "error": false
+    },
+    {
+      "id": "gene_territory",
+      "position": {
+        "x": 250,
+        "y": 30
+      },
+      "error": true
+    },
+    {
+      "id": "gene_population",
+      "position": {
+        "x": 480,
+        "y": 30
+      },
+      "error": false
+    },
+    {
+      "id": "gene_reproduction",
+      "position": {
+        "x": 30,
+        "y": 260
+      },
+      "error": false
+    },
+    {
+      "id": "gene_asexual",
+      "position": {
+        "x": 250,
+        "y": 200
+      },
+      "error": false
+    },
+    {
+      "id": "gene_sexual",
+      "position": {
+        "x": 250,
+        "y": 320
+      },
+      "error": false
+    },
+    {
+      "id": "gene_oviparous",
+      "position": {
+        "x": 480,
+        "y": 300
+      },
+      "error": false
+    },
+    {
+      "id": "gene_viviparous",
+      "position": {
+        "x": 480,
+        "y": 420
+      },
+      "error": false
+    },
+    {
+      "id": "gene_parasitic",
+      "position": {
+        "x": 710,
+        "y": 300
+      },
+      "error": true
+    }
+  ],
+  "edges": [
+    {
+      "from": "gene_storage",
+      "to": "gene_nutrient_utilization",
+      "kind": "error",
+      "value": 100
+    },
+    {
+      "from": "gene_locomotion",
+      "to": "gene_territory",
+      "kind": "error",
+      "value": 100
+    },
+    {
+      "from": "gene_territory",
+      "to": "gene_population",
+      "kind": "evolution",
+      "value": 100
+    },
+    {
+      "from": "gene_reproduction",
+      "to": "gene_asexual",
+      "kind": "evolution",
+      "value": 100
+    },
+    {
+      "from": "gene_reproduction",
+      "to": "gene_sexual",
+      "kind": "evolution",
+      "value": 100
+    },
+    {
+      "from": "gene_sexual",
+      "to": "gene_oviparous",
+      "kind": "evolution",
+      "value": 100
+    },
+    {
+      "from": "gene_sexual",
+      "to": "gene_viviparous",
+      "kind": "evolution",
+      "value": 100
+    },
+    {
+      "from": "gene_oviparous",
+      "to": "gene_parasitic",
+      "kind": "error",
+      "value": 100
+    }
+  ]
+}

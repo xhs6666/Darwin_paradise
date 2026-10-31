@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "defaultStateId": "idle",
+  "states": [
+    { "id": "idle", "displayName": "自由活动", "behavior": "None", "priority": 0, "entryAny": [], "transitions": [] },
+    {
+      "id": "patrol", "displayName": "巡逻", "behavior": "TerritoryPatrol", "priority": 10,
+      "entryAny": [{ "all": [
+        { "kind": "stat", "attributeId": "nutrient", "comparison": "gt", "value": 5 },
+        { "kind": "nearby_gene_state", "geneId": "gene_locomotion", "geneStateId": "hunt", "rangeAttributeId": "senseRange", "comparison": "absent" }
+      ] }],
+      "transitions": [{ "to": "hunt", "any": [
+        { "all": [{ "kind": "nearby_gene_state", "geneId": "gene_locomotion", "geneStateId": "hunt", "rangeAttributeId": "senseRange", "comparison": "present" }] },
+        { "all": [{ "kind": "stat", "attributeId": "nutrient", "comparison": "lte", "value": 5 }] }
+      ] }]
+    },
+    {
+      "id": "hunt", "displayName": "捕猎", "behavior": "Hunt", "priority": 20, "targetRangeAttributeId": "senseRange",
+      "entryAny": [
+        { "all": [{ "kind": "nearby_gene_state", "geneId": "gene_locomotion", "geneStateId": "hunt", "rangeAttributeId": "senseRange", "comparison": "present" }] },
+        { "all": [{ "kind": "stat", "attributeId": "nutrient", "comparison": "lte", "value": 5 }] }
+      ],
+      "transitions": [{ "to": "patrol", "any": [{ "all": [
+        { "kind": "stat", "attributeId": "nutrient", "comparison": "gt", "value": 5 },
+        { "kind": "nearby_gene_state", "geneId": "gene_locomotion", "geneStateId": "hunt", "rangeAttributeId": "senseRange", "comparison": "absent" }
+      ] }] }]
+    }
+  ]
+}

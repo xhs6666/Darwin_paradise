@@ -1,0 +1,117 @@
+{
+  "fontNames": [
+    "Microsoft YaHei UI",
+    "Microsoft YaHei",
+    "Noto Sans CJK SC",
+    "Arial"
+  ],
+  "accent": "#4EE5B5",
+  "text": "#EDF4F8",
+  "muted": "#99AFBF",
+  "ink": "#03211E",
+  "border": "#294A5B",
+  "panel": "#091720",
+  "surface": "#10212D",
+  "danger": "#EF7979",
+  "favorite": "#F3C76C",
+  "layerButtons": [
+    {
+      "id": "layer_ore",
+      "label": "矿脉"
+    },
+    {
+      "id": "layer_terrain",
+      "label": "地形"
+    },
+    {
+      "id": "layer_climate",
+      "label": "气候"
+    },
+    {
+      "id": "layer_population",
+      "label": "种群"
+    }
+  ],
+  "summaryStats": [
+    {
+      "id": "health",
+      "label": "生命",
+      "format": "F0",
+      "bar": true
+    },
+    {
+      "id": "nutrient",
+      "label": "饱食度",
+      "format": "F1",
+      "bar": true
+    },
+    {
+      "id": "size",
+      "label": "体型",
+      "format": "F2",
+      "bar": false
+    }
+  ],
+  "geneIcons": [
+    {
+      "id": "gene_growth",
+      "icon": "leaf"
+    },
+    {
+      "id": "gene_reproduction",
+      "icon": "dna"
+    },
+    {
+      "id": "gene_nutrition",
+      "icon": "sun"
+    },
+    {
+      "id": "gene_nutrient_utilization",
+      "icon": "storage"
+    },
+    {
+      "id": "gene_environment",
+      "icon": "mountain"
+    },
+    {
+      "id": "gene_locomotion",
+      "icon": "run"
+    },
+    {
+      "id": "gene_storage",
+      "icon": "storage"
+    },
+    {
+      "id": "gene_repair",
+      "icon": "repair"
+    },
+    {
+      "id": "gene_asexual",
+      "icon": "bubbles"
+    },
+    {
+      "id": "gene_sexual",
+      "icon": "butterfly"
+    },
+    {
+      "id": "gene_territory",
+      "icon": "pin"
+    },
+    {
+      "id": "gene_oviparous",
+      "icon": "egg"
+    },
+    {
+      "id": "gene_viviparous",
+      "icon": "baby"
+    },
+    {
+      "id": "gene_population",
+      "icon": "people"
+    },
+    {
+      "id": "gene_parasitic",
+      "icon": "sun"
+    }
+  ]
+}

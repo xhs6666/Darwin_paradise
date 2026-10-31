@@ -7,6 +7,7 @@ namespace DarwinPark.Genetics
         public static Dictionary<string,string> Catalog;
         public static GeneTreeDocument Tree;
         [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.SubsystemRegistration)]
-        public static void Clear(){Catalog=null;Tree=null;}
+        // ★ 适配：离开世界必须一起释放状态规则快照，下一世界不能串用上个世界的规则。
+        public static void Clear(){Catalog=null;Tree=null;EntityStateRegistry.Clear();}
     }
 }

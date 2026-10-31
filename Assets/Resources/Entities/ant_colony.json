@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "patrolRetaliationOnly": true,
+  "roles": [
+    {"role":"Soldier","label":"士兵","birthWeight":35,"attackMultiplier":1,"moveMultiplier":1,"frozenGenome":true,"suppressedGenes":["gene_reproduction","gene_asexual","gene_sexual","gene_oviparous","gene_viviparous","gene_nutrition"]},
+    {"role":"Worker","label":"工匠","birthWeight":60,"attackMultiplier":0,"moveMultiplier":1,"frozenGenome":true,"suppressedGenes":["gene_reproduction","gene_asexual","gene_sexual","gene_oviparous","gene_viviparous"]},
+    {"role":"Reproductive","label":"繁殖个体","birthWeight":5,"attackMultiplier":0,"moveMultiplier":1,"frozenGenome":false,"suppressedGenes":["gene_reproduction","gene_asexual","gene_sexual","gene_oviparous","gene_viviparous"]},
+    {"role":"Queen","label":"王后","birthWeight":0,"attackMultiplier":0,"moveMultiplier":0.15,"frozenGenome":false,"suppressedGenes":[]},
+    {"role":"Mate","label":"王后配偶","birthWeight":0,"attackMultiplier":0,"moveMultiplier":0.35,"frozenGenome":true,"suppressedGenes":["gene_reproduction","gene_asexual","gene_sexual","gene_oviparous","gene_viviparous"]}
+  ],
+  "patrolDuration":4,"patrolRestMin":12,"patrolRestMax":20,"retaliationSeconds":12,"scanInterval":0.6,
+  "supplyPointCount":3,"minimumReproductives":1,"maximumReproductives":2,"reproductivePopulationThreshold":6,"circleSegments":96,"geneSuppression":10000,
+  "colonyRadius":45,"minimumColonyRadius":20,"soldierPatrolRadiusRatio":0.65,"soldierPatrolSeconds":8,"soldierRestSeconds":10,
+  "arrivalDistance":2,"transportSearchRadius":90,"transportReach":2.5,"transportOffset":1.5,"nurseryDeliveryFraction":0.5,
+  "biomassPerSize":18,"minimumBiomass":2,"queenFeedThreshold":7,"memberFeedThreshold":7,"feedRate":6,"feedRadius":6,"queenReserveTarget":35,
+  "queenGestationSeconds":70,"queenCooldownSeconds":0.5,"queenBirthCost":8,"mateCost":4,"foundingDistanceRatio":2.4,
+  "energyBlockSize":0.7,"energyColor":"#FFD447","glowIntensity":1.5,"glowRange":4,"overlayWidth":0.6
+}

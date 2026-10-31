@@ -5,6 +5,7 @@
   "isBaseGene": true,
   "tier": 0,
   "logicScriptId": "ReproductionGeneLogic",
+  "ecologyBalanceVersion": 1,
   "attributeCurves": [
     { "attributeId": "eggDefense", "minValue": 0.0, "maxValue": 50.0 },
     { "attributeId": "hatchSpeed", "minValue": 0.2, "maxValue": 1.5 }
@@ -22,7 +23,7 @@
     { "stateId": "sexual", "displayName": "有性繁殖", "center": 80, "color": [0.9, 0.4, 0.6] }
   ],
   "suppressionRules": [
-    { "targetGeneId": "gene_growth", "coefficient": 1000.0 },
+    { "targetGeneId": "gene_growth", "coefficient": 600.0 },
     { "targetGeneId": "gene_repair", "coefficient": 1000.0 }
   ]
 }
