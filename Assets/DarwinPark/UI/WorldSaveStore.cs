@@ -28,6 +28,8 @@ namespace DarwinPark.UI
         public string ecologyBalanceSettings;
         // ★ 适配：蚁群世界物件独立于存活实体保存，尸体和黄色能量块不会读档消失。
         public DarwinPark.Entities.Ecology.ColonyWorldState colony;
+        // ★ 适配：存档内设置独立于全局偏好，旧档缺字段按版本标记补默认值。
+        public WorldGameSettings gameSettings;
     }
     public sealed class WorldSaveEntry {public string path,name,error;public WorldSaveData data;}
     // ★ 新增：同目录临时文件+原子替换，失败保留原档和备份，加载先完整校验再清场。
@@ -70,6 +72,7 @@ namespace DarwinPark.UI
         {
             if(data==null||data.version!=1||!Guid.TryParseExact(data.id,"N",out _)||string.IsNullOrWhiteSpace(data.name)||string.IsNullOrWhiteSpace(data.terrainParameters)||string.IsNullOrWhiteSpace(data.environmentParameters)||data.entities==null||data.definitions==null||data.definitions.Any(d=>d==null||string.IsNullOrEmpty(d.id)))throw new InvalidDataException("存档格式或版本无效");
             // ★ 适配：新快照在清场前完成检查；旧档缺少 colony/ant 字段仍可读取。
+            data.gameSettings=WorldGameSettings.Normalize(data.gameSettings);
             DarwinPark.Entities.Ecology.ColonyWorldState.Validate(data.colony);
             foreach(var entity in data.entities)DarwinPark.Entities.Ecology.ColonyWorldState.ValidateMember(entity?.ecology?.ant);
             foreach(var entity in data.entities)DarwinPark.Entities.Ecology.ColonyWorldState.ValidateMotion(entity?.ecology);

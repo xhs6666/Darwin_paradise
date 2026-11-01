@@ -30,13 +30,15 @@ namespace DarwinPark.Entities.Stats
             var renderers = GetComponentsInChildren<Renderer>();
             foreach (var r in renderers)
             {
-                if (r.material != null)
+                // ★ 修复（防Bug回归）：记录颜色无需实例化材质；数百静止个体原来在Start就破坏了材质共享。
+                var materials=r.sharedMaterials;
+                if (materials.Length>0&&materials[0]!=null)
                 {
-                    // 使用 material 实例化材质，防止修改导致全局材质串色
-                    Color[] colors = new Color[r.materials.Length];
-                    for (int i = 0; i < r.materials.Length; i++)
+                    // 受击时才创建独立材质，静止且未受击的个体继续共享资源
+                    Color[] colors = new Color[materials.Length];
+                    for (int i = 0; i < materials.Length; i++)
                     {
-                        colors[i] = r.materials[i].color;
+                        colors[i] = materials[i]!=null?materials[i].color:Color.white;
                     }
                     _rendererOriginalColors[r] = colors;
                 }
@@ -47,7 +49,7 @@ namespace DarwinPark.Entities.Stats
         public List<DarwinPark.Entities.StatSaveValue> CaptureValues()
         {var values=new List<DarwinPark.Entities.StatSaveValue>();foreach(var pair in _stats)values.Add(new DarwinPark.Entities.StatSaveValue{id=pair.Key,value=pair.Value,max=_maxStats.TryGetValue(pair.Key,out var max)?max:100});return values;}
         public void RestoreValues(List<DarwinPark.Entities.StatSaveValue> values)
-        {foreach(var value in values){_stats[value.id]=value.value;_maxStats[value.id]=value.max;}}
+        {foreach(var value in values){_stats[value.id]=value.value;_maxStats[value.id]=value.max;}Ecology.EntityNeighborhood.Changed(GetComponent<EntityGeneController>());}
         public bool TryGet(string id, out float value) => _stats.TryGetValue(id, out value);
 
         /// <summary>★ 新增：进食先补饱食度，溢出进入储存；猎食收益不因饱食度上限而丢失。</summary>
@@ -72,7 +74,9 @@ namespace DarwinPark.Entities.Stats
             if (_stats.ContainsKey(id))
             {
                 float max = _maxStats.ContainsKey(id) ? _maxStats[id] : 100f;
-                _stats[id] = Mathf.Clamp(_stats[id] + delta, 0f, max);
+                float before=_stats[id];_stats[id] = Mathf.Clamp(before + delta, 0f, max);
+                // ★ 适配：同帧死亡或恢复立刻失效邻居计数；普通扣血不重建空间数据。
+                if(id=="health"&&(before>0)!=(_stats[id]>0))Ecology.EntityNeighborhood.Changed(GetComponent<EntityGeneController>());
 
                 // ★ 核心修改：如果是扣血，触发变红闪烁
                 if (playHitFlash && id == "health" && delta < 0)

@@ -69,13 +69,14 @@ namespace DarwinPark.EditorTools
             Check(RtsOrderController.Ensure(worker).Issue(RtsOrderKind.Collect,corpse.transform.position,null,corpse)&&worker.GetComponent<AntColonyMember>().State.resourceTarget==corpse.State.id,"工匠RTS采集接入原独占搬运任务");worker.GetComponent<AntColonyMember>().Suspend();corpse.Remove();
             var origin=soldier.transform.position;net.IssueRts(new[]{EcologyIdentity.Of(soldier)},RtsOrderKind.Move,at(16));clock.Play();yield return Wait(()=>EcologyQueries.Distance(origin,soldier.transform.position)>.5f,"离线RTS真实移动",10);clock.Pause();Check(true,"单人管理员RTS实际推动实体移动");
             net.IssueRts(new[]{EcologyIdentity.Of(soldier)},RtsOrderKind.Guard,soldier.transform.position);world.SaveNow(false);var saved=WorldSaveStore.Read(WorldSaveStore.FileFor(world.Current.id));Check(saved.entities.Single(e=>e.ecology.id==EcologyIdentity.Of(soldier)).ecology.rts.active,"RTS守卫命令实际写入并读取世界文件");net.IssueRts(new[]{EcologyIdentity.Of(soldier)},RtsOrderKind.Stop,soldier.transform.position);
+            Check(WorldEntityActions.SetLimit(50,false),"房主保存联机实体上限");
             Check(net.StartHost(0,false)&&net.IsHost&&net.CanManage,"房主打开真实TCP服务并保有唯一管理员权限");clock.Play();
             var fixture=new Fixture{port=net.Port,queen=EcologyIdentity.Of(queen),soldier=EcologyIdentity.Of(soldier),worker=EcologyIdentity.Of(worker),foreign=EcologyIdentity.Of(foreign),editor=EcologyIdentity.Of(editor),gene=editor.Genes.Genome.Genes[0].InstanceId,movePoint=at(-15)};File.WriteAllText(Path.Combine(Root,"fixture.json"),JsonUtility.ToJson(fixture));
             yield return Wait(()=>File.Exists(Path.Combine(Root,"basic-done")),"等待成员权限和王后RTS验证",180);
             Check(net.MemberCount==1&&net.Players.Count(p=>p.administrator)==1&&net.RejectedCommands>=3,"服务端拒绝越权请求且始终只有一名管理员");
             var menu=Object.FindFirstObjectByType<GameMainMenu>();menu.ShowPause();float time=clock.GameTime;yield return new WaitForSecondsRealtime(.5f);Check(clock.GameTime>time,"房主打开Esc菜单不暂停其他玩家的世界");
             net.SetCheats(true);yield return Wait(()=>File.Exists(Path.Combine(Root,"cheat-done")),"等待作弊编辑验证",60);
-            Check(editor.Genes.Genome.Find(fixture.gene).Value==61&&editor.Genes.Genome.HasDefinition("gene_repair"),"作弊成员的修改和添加基因实际在房主生效");net.SetCheats(false);
+            Check(editor.Genes.Genome.Find(fixture.gene).Value==61&&editor.Genes.Genome.HasDefinition("gene_repair"),"作弊成员的修改和添加基因实际在房主生效");Check(EntityPopulationLimit.Maximum==60&&WorldSaveStore.Read(WorldSaveStore.FileFor(world.Current.id)).gameSettings.entityLimit==60,"远端实体上限由房主实际写盘");net.SetCheats(false);
             yield return Wait(()=>File.Exists(Path.Combine(Root,"client-left")),"等待成员退出",60);yield return Wait(()=>net.MemberCount==0,"释放连接",15);
             Check(editor.GetComponent<EntityManualControl>()?.IsControlled!=true,"成员断线后服务端释放所占实体");
             world.SaveNow(false);saved=WorldSaveStore.Read(WorldSaveStore.FileFor(world.Current.id));Check(saved.entities.Single(e=>e.ecology.id==fixture.editor).genome.Find(fixture.gene).Value==61,"远端编辑由房主成对保存和读取");
@@ -90,6 +91,7 @@ namespace DarwinPark.EditorTools
             PlanetClimateMap.Instance.mapResolution=128;PlanetOreSystem.Instance.mapResolution=64;yield return Wait(()=>File.Exists(Path.Combine(Root,"fixture.json")),"等待房间信息",180);var fixture=JsonUtility.FromJson<Fixture>(File.ReadAllText(Path.Combine(Root,"fixture.json")));var net=LanSession.Instance;var world=Object.FindFirstObjectByType<WorldSessionManager>();
             net.Join("127.0.0.1",fixture.port,"取消的旧连接");net.LeaveToMenu();Check(!net.Online&&!WorldAuthority.IsReplica,"连接发起后可立即取消并释放权限");
             net.Join("127.0.0.1",fixture.port,"真实客户端成员");yield return Wait(()=>net.IsClient&&WorldRuntimeGate.Ready&&!world.Busy&&net.Players.Count==2,"实际TCP连接并加载房主世界",180);
+            Check(EntityPopulationLimit.Maximum==50,"成员通过世界快照获得同一存档上限");
             Check(WorldAuthority.IsReplica&&!WorldAuthority.CanEdit&&!net.IsHost&&net.Players.Count(p=>p.administrator)==1,"成员接收到世界且不能声明为管理员");
             Check(!Object.FindFirstObjectByType<SimulationPauseHotkey>().HandlePauseKey(KeyCode.P,true,false),"普通成员不能暂停所有人的世界");
             net.RequestEntity(fixture.queen);yield return Wait(()=>net.OwnedEntityId==fixture.queen&&EntityViewController.Instance.Target!=null,"选择王后",20);
@@ -97,6 +99,7 @@ namespace DarwinPark.EditorTools
             var panel=ServiceLocator.Get<UIRoot>().MainCanvas.transform.Find("GenePanel");Check(panel.GetComponentsInChildren<InputField>().All(f=>!f.interactable),"普通成员基因和名称输入均只读");
             Check(!LanEditActions.SetGene(editor,fixture.gene,61)&&!LanEditActions.AddGene(editor,"gene_repair")&&!EntityPlacementUtility.Spawn(null,queen.transform.position)&&!RandomPlanetSpawner.Ensure(ServiceLocator.Get<SimulationClock>().gameObject).StartBatch(null,10,true),"普通成员不能通过公开编辑与生成入口绕过权限");
             net.SendCommand(new LanCommand{kind="gene",entity=fixture.editor,gene=fixture.gene,value=99});yield return Wait(()=>net.Status.Contains("权限"),"服务端拒绝伪造编辑",10);Check(editor.Genes.Genome.Find(fixture.gene).Value==50,"伪造基因修改报文未改变权威世界");
+            int beforeManagement=EntityRegistry.All.Count;net.SendCommand(new LanCommand{kind="worldSettings",count=1});net.SendCommand(new LanCommand{kind="clearEntities"});yield return new WaitForSecondsRealtime(.5f);Check(EntityPopulationLimit.Maximum==50&&EntityRegistry.All.Count==beforeManagement&&EcologyQueries.Alive(queen),"伪造上限和一键清除报文被服务端拒绝");
             net.SendCommand(new LanCommand{kind="spawn",point=queen.transform.position});yield return new WaitForSecondsRealtime(.4f);net.SendCommand(new LanCommand{kind="cheats",enabled=true});yield return new WaitForSecondsRealtime(.4f);Check(!net.Cheats,"成员不能自行打开作弊模式");
             net.RequestEntity(fixture.editor);yield return Wait(()=>net.Status.Contains("进入游戏"),"拒绝中途切换实体",10);Check(net.OwnedEntityId==fixture.queen,"普通成员不能中途换取其他实体");
             net.SetRtsMode(true);Check(net.CanUseRts&&WorldAuthority.RtsMode,"普通成员操控王后时可进入RTS");
@@ -108,6 +111,7 @@ namespace DarwinPark.EditorTools
             yield return Wait(()=>Vector3.Dot(queen.transform.position-origin,direction)>.3f,"成员输入驱动服务端实体",15);manual.SetInput(Vector3.zero,false);Check(queen.GetComponent<Rigidbody>().isKinematic,"客户端不模拟物理但实际操控结果由房主同步");possession.enabled=true;EntityViewController.Instance.ExitView();EntityViewController.Instance.EnterView(queen);
             File.WriteAllText(Path.Combine(Root,"basic-done"),"PASS");yield return Wait(()=>net.Cheats&&WorldAuthority.CanEdit,"房主打开作弊",30);
             Check(net.Players.Count(p=>p.administrator)==1&&!net.IsHost,"作弊开放能力而不增加第二名管理员");LanEditActions.SetGene(editor,fixture.gene,61);yield return Wait(()=>editor.Genes.Genome.Find(fixture.gene).Value==61,"作弊修改基因",15);LanEditActions.AddGene(editor,"gene_repair");yield return Wait(()=>editor.Genes.Genome.HasDefinition("gene_repair"),"作弊添加基因",15);Check(true,"作弊成员能修改值及添加基因且收到权威同步");
+            var sameEditor=editor;Check(LanEditActions.Submit(new LanCommand{kind="worldSettings",count=60,running=true}),"作弊成员可请求修改存档实体上限");yield return Wait(()=>EntityPopulationLimit.Maximum==60,"实体上限轻量同步",15);Check(EcologyIdentity.Find(fixture.editor)==sameEditor,"上限同步不重新加载或重建客户端实体");
             int count=EntityRegistry.All.Count;Check(EntityPlacementUtility.Spawn(null,EcologyQueries.Surface(queen.transform.position+direction*30)),"作弊成员可以请求放置实体");yield return Wait(()=>EntityRegistry.All.Count>count,"服务端放置并同步",15);
             count=EntityRegistry.All.Count;Check(RandomPlanetSpawner.Ensure(ServiceLocator.Get<SimulationClock>().gameObject).StartBatch(null,2,true),"作弊成员可以请求全星球随机生成");yield return Wait(()=>EntityRegistry.All.Count>=count+2,"房主Esc期间执行远端随机生成",15);
             Check(true,"房主打开Esc期间远端随机生成仍正常完成");

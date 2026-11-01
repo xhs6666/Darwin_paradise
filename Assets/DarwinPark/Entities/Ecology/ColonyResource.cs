@@ -10,6 +10,7 @@ namespace DarwinPark.Entities.Ecology
     public enum ColonyResourceKind { Corpse,Nursery,Supply,Energy }
     [Serializable] public sealed class ColonyResourceSave
     {
+        public string sourceName;public float sourceSize;
         public string id,group,claim;public ColonyResourceKind kind;public Vector3 local,scale;public float energy;
     }
     // ★ 新增：尸体与能量块是独立世界物件；能量只能由尸体/被搬运植株转换，不能重复领取击杀奖励。
@@ -17,7 +18,7 @@ namespace DarwinPark.Entities.Ecology
     {
         private static readonly List<ColonyResource> ResourcesInWorld=new List<ColonyResource>();
         private static readonly Dictionary<string,ColonyResource> ById=new Dictionary<string,ColonyResource>();
-        private static Material _material;
+        private static Material _material;private ColonyResourcePresentation _presentation;
         public ColonyResourceSave State {get;private set;}
         public static IEnumerable<ColonyResource> All=>ResourcesInWorld.Where(r=>r!=null&&r.isActiveAndEnabled&&r.State.energy>0);
         public static ColonyResource Find(string id)=>!string.IsNullOrEmpty(id)&&ById.TryGetValue(id,out var resource)&&resource!=null&&resource.isActiveAndEnabled&&resource.State.energy>0?resource:null;
@@ -31,7 +32,9 @@ namespace DarwinPark.Entities.Ecology
         }
         public static ColonyResource LeaveCorpse(DarwinEntity victim,string group)
         {
-            return Create(new ColonyResourceSave{id=Guid.NewGuid().ToString("N"),group=group,kind=ColonyResourceKind.Corpse,
+            // ★ 适配：尸体保存可核实的生前名称与体型，旧尸体允许缺省，不生成虚假的活体基因。
+            victim.GetComponent<EntityStats>().TryGet("size",out float size);
+            return Create(new ColonyResourceSave{sourceName=victim.DisplayName,sourceSize=size,id=Guid.NewGuid().ToString("N"),group=group,kind=ColonyResourceKind.Corpse,
                 local=EcologyQueries.ToLocal(victim.transform.position),scale=victim.transform.lossyScale,energy=Biomass(victim)});
         }
         public static ColonyResource Create(ColonyResourceSave data)
@@ -53,7 +56,9 @@ namespace DarwinPark.Entities.Ecology
             block.SetColor("_BaseColor",color);block.SetColor("_Color",color);block.SetColor("_EmissionColor",data.kind==ColonyResourceKind.Corpse?Color.black:energy*AntColonySettings.Current.glowIntensity);renderer.SetPropertyBlock(block);
             if(data.kind!=ColonyResourceKind.Corpse)
             {var light=obj.AddComponent<Light>();light.type=LightType.Point;light.color=energy;light.intensity=AntColonySettings.Current.glowIntensity;light.range=AntColonySettings.Current.glowRange;light.shadows=LightShadows.None;}
-            var resource=obj.AddComponent<ColonyResource>();resource.State=data;ById[data.id]=resource;return resource;
+            var resource=obj.AddComponent<ColonyResource>();resource.State=data;ById[data.id]=resource;
+            // ★ 适配：尸体增加无碰撞的明确标记；右键几何拾取不增加物理负担。
+            if(data.kind==ColonyResourceKind.Corpse){resource._presentation=obj.AddComponent<ColonyResourcePresentation>();resource._presentation.Build();}return resource;
         }
         public bool Claim(AntColonyMember worker)
         {
@@ -67,7 +72,7 @@ namespace DarwinPark.Entities.Ecology
             State.claim=worker.Id;return true;
         }
         public void Release(string owner){if(State.claim==owner)State.claim=null;}
-        public void CarryTo(Vector3 point){transform.position=point;State.local=EcologyQueries.ToLocal(point);}
+        public void CarryTo(Vector3 point){transform.position=point;State.local=EcologyQueries.ToLocal(point);_presentation?.Align();}
         public static ColonyResource Convert(string group,Vector3 point,float energy,bool nursery)
         {
             var kind=nursery?ColonyResourceKind.Nursery:ColonyResourceKind.Supply;

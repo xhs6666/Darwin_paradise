@@ -32,10 +32,12 @@ namespace DarwinPark.EditorTools
         private static readonly MethodInfo Vitals=typeof(EntityVitals).GetMethod("AdvanceVitals",BindingFlags.NonPublic|BindingFlags.Instance);
         private static string Folder=>Path.GetFullPath(SessionState.GetBool(QuickKey,false)?"Artifacts/EcologyBalanceQuickReview":"Artifacts/EcologyBalanceReview");
         private static int _births;private static bool _countBirths;
-        static EcologyBalanceRegression(){EditorApplication.playModeStateChanged+=mode=>{if(mode==PlayModeStateChange.EnteredPlayMode&&SessionState.GetBool(BatchKey,false))EditorApplication.delayCall+=Validate;};}
+        private static bool _validationStarted;
+        // ★ 修复（防Bug回归）：Unity搜索索引异常可能中断启动delayCall，回归入口改用幂等update等待，不能把未执行当通过。
+        static EcologyBalanceRegression(){EditorApplication.update+=()=>{if(!_validationStarted&&Application.isPlaying&&SessionState.GetBool(BatchKey,false)&&Object.FindFirstObjectByType<WorldSessionManager>()!=null){_validationStarted=true;Validate();}};}
         public static void RunBatch(){SessionState.SetBool(QuickKey,false);Boot();}
         public static void RunQuickBatch(){SessionState.SetBool(QuickKey,true);Boot();}
-        private static void Boot(){SessionState.SetBool(BatchKey,true);EditorSceneManager.OpenScene("Assets/Scenes/SampleScene.unity");EditorApplication.EnterPlaymode();}
+        private static void Boot(){_validationStarted=false;SessionState.SetBool(BatchKey,true);EditorSceneManager.OpenScene("Assets/Scenes/SampleScene.unity");EditorApplication.EnterPlaymode();}
         [MenuItem("Tools/Darwin Park/Validate Ecology Balance")]
         public static void Validate()
         {

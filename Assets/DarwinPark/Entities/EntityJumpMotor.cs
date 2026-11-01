@@ -24,7 +24,8 @@ namespace DarwinPark.Entities
             if (!allowed || IsJumping || _body.isKinematic || _planet == null || _ground == null) return false;
             // ★ 修复（防Bug回归）：海底接地不能成为陆地跳跃/连续上浮的发力点。
             if(GetComponent<DarwinPark.Entities.Vitals.EntityEnvironmentHazard>()?.IsSubmerged == true) return false;
-            float scale = ServiceLocator.TryGet<SimulationClock>(out var clock) ? clock.TimeScale : 1;
+            // ★ 适配：行动使用时钟实际交付倍率，过载补算限速不造成物理时间分离。
+            float scale = ServiceLocator.TryGet<SimulationClock>(out var clock) ? clock.MotionTimeScale : 1;
             if (scale <= 0) return false;
             Vector3 up = (transform.position - _planet.position).normalized;
             var bounds = _collider.bounds;

@@ -52,6 +52,7 @@ namespace DarwinPark.UI
                 definitions=definitions.Select(d=>new SavedGeneDefinition{id=d.Key,json=d.Value}).ToList(),tree=tree,entityStateRegistry=EntityStateRegistry.ReadConfiguredJson(),ecologyBalanceSettings=DarwinPark.Entities.Ecology.EcologyBalanceSettings.ReadConfiguredJson()};
             // ★ 适配：新世界保存自己使用的蚁群参数，不受之后 mods 修改影响。
             data.colony=new DarwinPark.Entities.Ecology.ColonyWorldState{settings=DarwinPark.Entities.Ecology.AntColonySettings.ReadConfiguredJson()};
+            data.gameSettings=WorldGameSettings.Normalize(null);
             Begin(data,true);
         }
         public void Open(WorldSaveData data){if(!Busy){EnsureInitialized();WorldSaveStore.Validate(data);Begin(data,false);}}
@@ -104,12 +105,14 @@ namespace DarwinPark.UI
             var ore=PlanetOreSystem.Instance;if(data.ore!=null){ore.RestoreAmounts(data.ore,data.oreResolution);ore.RegenTimer=data.oreTimer;}else ore.ResetWorld();
             FindFirstObjectByType<SunSystem>().OrbitAngle=data.sunAngle;
             Progress=.9f;Status="恢复实体、基因与生命周期";yield return null;
+            // ★ 适配：先恢复上限，但已有实体恢复不受上限裁剪。
+            EntityPopulationLimit.UseSnapshot(data.gameSettings);
             var restored=new Dictionary<string,DarwinEntity>();
             for(int i=0;i<data.entities.Count;i++)
             {
                 var saved=data.entities[i];var before=EntityRegistry.All.ToArray();
                 if(DarwinEntity.Spawner==null)throw new InvalidOperationException("实体生成器尚未就绪");
-                DarwinEntity.Spawner(saved.genome,saved.position,saved.name);var spawned=EntityRegistry.All.Single(e=>!before.Contains(e));saved.Restore(spawned);
+                DarwinEntity spawned;using(EntityPopulationLimit.RestoreScope()){DarwinEntity.Spawner(saved.genome,saved.position,saved.name);spawned=EntityRegistry.All.Single(e=>!before.Contains(e));saved.Restore(spawned);}
                 if(saved.ecology!=null)restored[saved.ecology.id]=spawned;
                 if(saved.favorite)EntityFavoritesManager.Instance?.ToggleFavorite(spawned);
                 if(i%16==0){Progress=.9f+.06f*(i+1)/Mathf.Max(1,data.entities.Count);yield return null;}
@@ -145,6 +148,7 @@ namespace DarwinPark.UI
             PopulationRangeLayer.ClearWorld();DarwinPark.Entities.Ecology.ColonyWorldState.Clear();
             DarwinPark.Entities.Ecology.EcologyBalanceSettings.Clear();
             Debug.Log("[世界] 返回主界面 id="+Current?.id+"，联机副本="+WorldAuthority.IsReplica);
+            EntityPopulationLimit.Clear();
             Current=null;_autoSave=0;Progress=0;Status="";SaveStatus="";
         }
         public void SaveNow(bool? running=null)
@@ -166,11 +170,12 @@ namespace DarwinPark.UI
             Current.entityStateRegistry=EntityStateRegistry.CurrentJson;
             Current.ecologyBalanceSettings=DarwinPark.Entities.Ecology.EcologyBalanceSettings.CurrentJson;
             Current.colony=DarwinPark.Entities.Ecology.ColonyWorldState.Capture();
+            Current.gameSettings=EntityPopulationLimit.Capture();
             WorldSaveStore.Write(Current);SaveStatus="已保存 "+DateTime.Now.ToString("HH:mm:ss");
             Debug.Log("[存档] 保存成功 id="+Current.id+"，实体="+Current.entities.Count+"，模拟时间="+Current.gameTime+"，文件="+WorldSaveStore.FileFor(Current.id));
         }
         // ★ 修复（防Bug回归）：离线录制的临时相机/星球相位不能被自动存档写入世界。
-        private void Update(){if(!Busy&&!WorldRuntimeGate.Recording&&WorldRuntimeGate.Ready&&Current!=null){_autoSave+=Time.unscaledDeltaTime;if(_autoSave>=autoSaveInterval){_autoSave=0;try{SaveNow();}catch(Exception ex){SaveStatus="自动保存失败："+ex.Message;Debug.LogException(ex);}}}}
+        private void Update(){if(!Busy&&!WorldRuntimeGate.Loading&&!WorldRuntimeGate.Recording&&WorldRuntimeGate.Ready&&Current!=null){_autoSave+=Time.unscaledDeltaTime;if(_autoSave>=autoSaveInterval){_autoSave=0;try{SaveNow();}catch(Exception ex){SaveStatus="自动保存失败："+ex.Message;Debug.LogException(ex);}}}}
         private void OnApplicationQuit(){if(Current!=null&&!Busy)try{SaveNow();}catch(Exception ex){Debug.LogException(ex);}}
     }
 }

@@ -12,21 +12,22 @@ namespace DarwinPark.UI
     {
         public int seedSliderMin = 0, seedSliderMax = 1000000;
         public float temperatureMin = -30, temperatureMax = 60;
+        public Vector2 landPercentRange=new Vector2(20,80);
         public System.Action CancelRequested;
         private string _id;
         private InputField _input;
         private Slider _slider;
-        private Text _status;
+        private Text _status;private bool _waiting;
         private PlanetTerrainMeshBuilder _builder;
         public void Initialize(string id, string label)
         {
             _id = id; _builder = Object.FindFirstObjectByType<PlanetTerrainMeshBuilder>();
-            bool seed = id.Contains("seed"), temp = id.Contains("temp");
+            bool seed = id.Contains("seed"), temp = id.Contains("temp"), terrain=id.Contains("terrain");
             // ★ 适配：压缩空白，标题、编辑行和状态行各占一行。
             GetComponent<RectTransform>().sizeDelta = new Vector2(400, 102);
-            transform.Find("Title").GetComponent<Text>().text = "设定" + label + (seed ? "" : "（全年平均）");
+            transform.Find("Title").GetComponent<Text>().text = "设定" + label + (seed ? "" : terrain?"（陆地比例 %）":"（全年平均）");
             string initial = seed ? (_builder != null ? _builder.seed : 0).ToString() :
-                (temp ? ClimateDataHub.BaseTemperature : ClimateDataHub.BaseHumidity).ToString("F1", CultureInfo.InvariantCulture);
+                (terrain?(_builder!=null?_builder.continentRatio*100:50):temp ? ClimateDataHub.BaseTemperature : ClimateDataHub.BaseHumidity).ToString("F1", CultureInfo.InvariantCulture);
             var inputGO = UIFactory.NewRect("ValueInput", transform, typeof(Image), typeof(InputField));
             var irt = inputGO.GetComponent<RectTransform>();
             irt.anchorMin = irt.anchorMax = new Vector2(0, 0); irt.pivot = Vector2.zero;
@@ -38,8 +39,8 @@ namespace DarwinPark.UI
             UIFactory.Stretch(text.rectTransform, 8, 2); _input.textComponent = text;
             _input.contentType = seed ? InputField.ContentType.IntegerNumber : InputField.ContentType.DecimalNumber;
             _input.text = initial;
-            float min = seed ? seedSliderMin : temp ? temperatureMin : 0;
-            float max = seed ? seedSliderMax : temp ? temperatureMax : 100;
+            float min = seed ? seedSliderMin : terrain?landPercentRange.x:temp ? temperatureMin : 0;
+            float max = seed ? seedSliderMax : terrain?landPercentRange.y:temp ? temperatureMax : 100;
             float.TryParse(initial, NumberStyles.Float, CultureInfo.InvariantCulture, out float current);
             _slider = UIFactory.NewSlider("Parameter", transform, "", min, max, current, 252, out _);
             var row = _slider.transform.parent.GetComponent<RectTransform>();
@@ -69,6 +70,7 @@ namespace DarwinPark.UI
         }
         private void Update()
         {
+            if(_waiting&&WorldParameterUpdate.Instance?.Busy!=true){_status.text=WorldParameterUpdate.Instance?.LastStatus??"更新已结束";_waiting=false;}
             // ★ 适配：工具中的 Shift/回车不能提交背景游戏面板。
             if(DarwinPark.Core.GameInputGate.Blocked)return;
             // ★ 修复（防Bug回归）：右键取消独立处理，拖动滑条或点击内容不会销毁未提交草稿。
@@ -85,27 +87,19 @@ namespace DarwinPark.UI
         }
         public void Apply()
         {
-            if(!WorldAuthority.CanEdit)return;
-            if(LanSession.Instance?.IsClient==true)
-            {if(float.TryParse(_input.text,NumberStyles.Float,CultureInfo.InvariantCulture,out float requested))LanEditActions.Parameter(_id,requested);return;}
-            if (_id.Contains("seed"))
-            {
-                if (!int.TryParse(_input.text, out int seed)) { _status.text = "请输入有效的 32 位整数种子"; return; }
-                if (_builder == null) { _status.text = "星球尚未就绪"; return; }
-                if (_builder.seed != seed) { _builder.seed = seed; _builder.Build(); PlanetClimateMap.Instance?.MarkDirty(); }
-            }
+            if(!WorldAuthority.CanEdit||GameInputGate.Blocked)return;
+            string raw=_input.text;
+            if(_id.Contains("seed"))
+            {if(!int.TryParse(raw,NumberStyles.Integer,CultureInfo.InvariantCulture,out _)){_status.text="请输入有效的32位整数种子";return;}}
             else
             {
-                if (!float.TryParse(_input.text, NumberStyles.Float, CultureInfo.InvariantCulture, out float v) || float.IsNaN(v) || float.IsInfinity(v))
-                { _status.text = "请输入有效数字"; return; }
-                bool temp = _id.Contains("temp"); v = Mathf.Clamp(v, _slider.minValue, _slider.maxValue);
-                if (ServiceLocator.TryGet<EnvironmentSystem>(out var env))
-                { if (temp) env.BaseTemperature = v; else env.BaseHumidity = v; }
-                if (temp) ClimateDataHub.BaseTemperature = v; else ClimateDataHub.BaseHumidity = v;
-                _input.SetTextWithoutNotify(v.ToString("F1", CultureInfo.InvariantCulture));
-                PlanetClimateMap.Instance?.MarkDirty();
+                if(!float.TryParse(raw,NumberStyles.Float,CultureInfo.InvariantCulture,out float value)||!float.IsFinite(value)){_status.text="请输入有效数字";return;}
+                raw=Mathf.Clamp(value,_slider.minValue,_slider.maxValue).ToString("F1",CultureInfo.InvariantCulture);_input.SetTextWithoutNotify(raw);
             }
-            _status.text = "已应用";
+            // ★ 适配：统一使用后台更新入口，客户端保留完整整数文本，不经float丢失32位种子精度。
+            bool applied=LanEditActions.Submit(new LanCommand{kind="parameter",parameter=_id,name=raw});
+            _waiting=applied&&!WorldAuthority.IsReplica&&WorldParameterUpdate.Instance?.Busy==true;
+            _status.text=!applied?"参数未应用":WorldAuthority.IsReplica?"已请求管理员更新":_waiting?"正在更新":WorldParameterUpdate.Instance?.LastStatus??"已应用";
         }
     }
 }

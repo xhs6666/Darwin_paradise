@@ -17,6 +17,7 @@ namespace DarwinPark.Entities
     {
         public Genome Genome = new();
         public GenomeEvaluation Evaluation { get; private set; }
+        public int LogicRevision {get;private set;}
         public event Action<GenomeEvaluation> OnEvaluationChanged;
 
         [Header("成长设置")]
@@ -36,6 +37,7 @@ namespace DarwinPark.Entities
         private Dictionary<GeneInstance, IGeneLogic> _activeLogics = new();
         private readonly List<IGeneLogic> _simulationLogics=new List<IGeneLogic>();
         private bool _isRecalculating = false;
+        private EntityLifeCycle _life;private Ecology.CombatIntent _combat;private Ecology.EntityStateController _state;
         private int _mutatedStages;
         public int StageMutationChecks {get;private set;}
         // ★ 适配：恢复已抽过的阶段，读档不能重抽出生/成年变异。
@@ -59,23 +61,26 @@ namespace DarwinPark.Entities
         {
             // ★ 适配：联机生态只在管理员进程推进，副本不能发生独立变异或出生。
             if (dt <= 0f||WorldAuthority.IsReplica) return;
+            // ★ 适配：物理/搬运改变位置后更新已存在的邻居快照，不在每个小步重建索引。
+            Ecology.EntityNeighborhood.ObservePosition(this);
             // ★ 适配：卵孵化前不执行出生变异和普通基因行为，孵化后从幼年开始。
             var egg=GetComponent<Ecology.EggIncubation>();if(egg!=null&&egg.Incubating){egg.Advance(dt);return;}
             if (_isRecalculating) return;
-            float remaining = dt;
-            while (remaining > 0f)
+            // ★ 修复（防Bug回归）：生命与反击组件在实体生命周期内复用，不能每个模拟子步重复GetComponent。
+            if(_life==null){_life=GetComponent<EntityLifeCycle>();if(_life==null&&GetComponent<EntityStats>()!=null)_life=gameObject.AddComponent<EntityLifeCycle>();}
+            if(_combat==null)_combat=GetComponent<Ecology.CombatIntent>()??gameObject.AddComponent<Ecology.CombatIntent>();
+            // ★ 修复（防Bug回归）：按整数步数结算，避免0.5反复减0.1留下浮点残差、额外跑第六轮全部行为。
+            int steps=Mathf.CeilToInt(dt/.1f);
+            for(int index=0;index<steps;index++)
             {
-                float step = Mathf.Min(remaining, .1f);
-                remaining -= step;
+                float step=index==steps-1?dt-index*.1f:.1f;
                 // ★ 适配：寿命由单一组件推进，基因复制/失效/重新挂载不会重置或重复推进年龄。
-                var life=GetComponent<EntityLifeCycle>();
-                if(life==null && GetComponent<EntityStats>()!=null)life=gameObject.AddComponent<EntityLifeCycle>();
-                life?.Advance(step);
-                if(life!=null && life.HasDied)return;
+                _life?.Advance(step);
+                if(_life!=null && _life.HasDied)return;
                 // ★ 适配：反击记忆随模拟步长推进，暂停或倍率切换不会消耗真实秒数。
-                Ecology.CombatIntent.AdvanceFor(this,step);
+                _combat.Advance(step);
                 // ★ 适配：独立状态机先按配置选择意图，所有复制行动基因随后共用一个行为写入者。
-                GetComponent<Ecology.EntityStateController>()?.Advance(step);
+                _state?.Advance(step);
                 // ★ 修复（防Bug回归）：仍使用逻辑快照防止重算时修改集合，但复用缓冲区，避免每个实体每个子步分配新列表。
                 _simulationLogics.Clear();_simulationLogics.AddRange(_activeLogics.Values);
                 foreach (var logic in _simulationLogics) logic.OnUpdate(step);
@@ -148,6 +153,9 @@ namespace DarwinPark.Entities
             _isRecalculating = false;
             // ★ 适配：标签新增/移除、出错换基因或受抑后同步更新实体状态授权。
             Ecology.EntityStateController.Rebind(this);
+            _state=GetComponent<Ecology.EntityStateController>();LogicRevision++;
+            // ★ 适配：必须在新逻辑挂载和状态授权完成后刷新生产者分类，避免使用旧表达。
+            Ecology.EntityNeighborhood.Changed(this);
         }
 
         /// <summary>

@@ -1,0 +1,7 @@
+{
+  "reproductionDiagnostics": false,
+  "summaryInterval": 5,
+  "stationarySleep": true,
+  "restSpeed": 0.08,
+  "restContactSlack": 0.04
+}

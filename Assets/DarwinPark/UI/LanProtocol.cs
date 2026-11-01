@@ -22,6 +22,7 @@ namespace DarwinPark.UI
     [Serializable] public sealed class LanFrame
     {
         public long sequence;public float time,scale,sun;public bool running;
+        public WorldGameSettings gameSettings;
         public Quaternion rotation;public List<LanActor> actors=new List<LanActor>();
         public List<ColonyResourceSave> resources=new List<ColonyResourceSave>();
         public bool randomBusy;public int randomSpawned,randomRequested;public string randomStatus;

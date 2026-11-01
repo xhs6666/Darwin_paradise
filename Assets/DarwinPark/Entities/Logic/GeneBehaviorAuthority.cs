@@ -10,10 +10,8 @@ namespace DarwinPark.Entities.Logic
         public static bool IsPrimary<T>(EntityGeneController controller,GeneInstance gene) where T:class,IGeneLogic
         {
             // ★ 修复（防Bug回归）：每个模拟步只需找最大优先级，不能为四类行为反复创建和排序相同的基因集合。
-            GeneEvaluation selected=null;
-            if(controller.Evaluation!=null)foreach(var candidate in controller.Evaluation.Genes)
-                if(candidate.IsActive&&controller.GetLogic(candidate.Gene) is T&&(selected==null||candidate.Definition.Tier>selected.Definition.Tier||candidate.Definition.Tier==selected.Definition.Tier&&string.CompareOrdinal(candidate.Gene.InstanceId,selected.Gene.InstanceId)<0))selected=candidate;
-            return selected?.Gene==gene;
+            // ★ 适配：缓存随逻辑挂载版本更新，表达事件先于挂载时也不会留下旧主行为。
+            return GeneAuthorityCache.IsPrimary<T>(controller,gene);
         }
     }
 }

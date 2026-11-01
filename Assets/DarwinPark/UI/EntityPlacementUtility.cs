@@ -49,7 +49,7 @@ namespace DarwinPark.UI
             var a=Vector3.Cross(outward,Mathf.Abs(outward.y)>.95f?Vector3.right:Vector3.up).normalized;
             var b=Vector3.Cross(outward,a);int spawned=0;
             float outer=ground.bounds.extents.magnitude+height;
-            for(int i=0;i<count;i++)
+            for(int i=0;i<count&&EntityPopulationLimit.CanSpawn;i++)
             {
                 float radius=spacing*Mathf.Sqrt(i), angle=i*2.39996323f;
                 var dir=(point-builder.transform.position+a*(Mathf.Cos(angle)*radius)+b*(Mathf.Sin(angle)*radius)).normalized;

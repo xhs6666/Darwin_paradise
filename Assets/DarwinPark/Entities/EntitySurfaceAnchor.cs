@@ -48,6 +48,8 @@ namespace DarwinPark.Entities
         {
             if (ServiceLocator.TryGet<SimulationClock>(out var clock) && !clock.IsRunning) return;
             if (_rb == null || _rb.isKinematic) return;
+            // ★ 适配：已接触地表的静止刚体无需每个物理步重新采样高度；碰撞/行动唤醒后仍保留高空救援。
+            if(StationaryBodyRest.IsResting(_rb))return;
             FindPlanet();
             if (_builder == null || _builder.Data == null) return;
 

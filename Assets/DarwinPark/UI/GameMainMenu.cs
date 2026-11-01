@@ -36,6 +36,8 @@ namespace DarwinPark.UI
             _session.Loaded += OnWorldLoaded; _session.Failed += OnLoadFailed;
             // ★ 适配：局域网和RTS各用独立组件，菜单只提供入口。
             LanSession.Ensure(gameObject);
+            // ★ 新增：FPS独立于模拟与菜单Canvas，即使暂停或打开菜单也显示实际渲染帧率。
+            if(GetComponent<FrameRateDisplay>()==null)gameObject.AddComponent<FrameRateDisplay>();
             _volume = PlayerPrefs.GetFloat("MasterVolume", 1); AudioListener.volume = _volume;
             if (PlayerPrefs.HasKey("FullScreen")) Screen.fullScreen = PlayerPrefs.GetInt("FullScreen") != 0;
             if (PlayerPrefs.HasKey("QualityLevel")) QualitySettings.SetQualityLevel(Mathf.Clamp(PlayerPrefs.GetInt("QualityLevel"), 0, QualitySettings.names.Length - 1), true);
@@ -65,7 +67,8 @@ namespace DarwinPark.UI
                 if (LanSession.Instance?.Online!=true&&ServiceLocator.TryGet<SimulationClock>(out var clock) && clock.IsRunning) clock.Pause();
             }
             // ★ 修复（防Bug回归）：Esc 由最早更新的菜单消费，同一帧不再触发退出操控或底层工具取消；F10 无动作。
-            if (!Input.GetKeyDown(KeyCode.Escape) || _session.Busy || WorldRuntimeGate.Recording) return;
+            // ★ 适配：参数进度与存档设置自行处理输入，Esc不能再打开叠加的暂停菜单。
+            if (!Input.GetKeyDown(KeyCode.Escape) || _session.Busy || WorldRuntimeGate.Loading || WorldGameSettingsPanel.Instance?.Visible==true || WorldRuntimeGate.Recording) return;
             if (!_visible && WorldRuntimeGate.Ready) ShowPause();
             else if (_visible && _page == "pause") Resume();
             else if (_visible && _page == "settings") _page = _settingsBack;
@@ -207,12 +210,8 @@ namespace DarwinPark.UI
         }
         private void DrawLoading()
         {
-            GUILayout.Space(50); GUILayout.Label(_session.Status, new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter });
-            var rect = GUILayoutUtility.GetRect(100, 30, GUILayout.ExpandWidth(true));
-            GUI.DrawTexture(new Rect(rect.x,rect.y+9,rect.width-56,10),UIVisualTheme.SurfaceSprite("track").texture,ScaleMode.StretchToFill,true,0,Color.white,0,5);
-            GUI.DrawTexture(new Rect(rect.x,rect.y+9,(rect.width-56)*_session.Progress,10),UIVisualTheme.SurfaceSprite("fill").texture,ScaleMode.StretchToFill,true,0,Color.white,0,5);
-            GUI.Label(new Rect(rect.xMax-50,rect.y,50,30), Mathf.RoundToInt(_session.Progress * 100) + "%");
-            GUILayout.Label("正在准备世界" + new string('·', (int)(Time.unscaledTime * 2) % 4));
+            // ★ 适配：进场与原世界参数更新共用加载动画。
+            WorldLoadingView.Draw(_session.Status,_session.Progress);
             // ★ 适配：联机加载使用已验证的取消/清场入口，用户不必等待网络超时才能返回。
             if(LanSession.Instance?.IsClient==true&&RuntimeMenuTheme.Button("取消加入",null,false,38))LanSession.Instance.LeaveToMenu("已取消加入");
         }

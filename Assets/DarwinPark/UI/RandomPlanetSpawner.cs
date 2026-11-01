@@ -1,6 +1,7 @@
 using System.Collections;
 using DarwinPark.Core;
 using DarwinPark.Genetics;
+using DarwinPark.Entities;
 using DarwinPark.Planet;
 using UnityEngine;
 
@@ -20,6 +21,7 @@ namespace DarwinPark.UI
         public bool StartBatch(Genome genome,int count,bool landOnly)
         {
             if(!WorldAuthority.CanEdit||IsBusy||GameInputGate.Blocked&&!WorldAuthority.RemoteCommand||!WorldRuntimeGate.Ready||WorldRuntimeGate.Loading)return false;
+            if(!WorldAuthority.IsReplica&&!EntityPopulationLimit.CanSpawn){Status="已达到存档实体上限";return false;}
             // ★ 适配：作弊成员也由房主生成，客户端不创建无权威来源的实体。
             if(LanSession.Instance?.IsClient==true){Requested=Mathf.Clamp(count,1,maxCount);Spawned=0;IsBusy=true;Status="已请求管理员生成…";LanSession.Instance.SendCommand(new LanCommand{kind="random",genome=genome,count=Requested,landOnly=landOnly});return true;}
             var planet=FindFirstObjectByType<PlanetTerrainMeshBuilder>();var surface=planet!=null?planet.GetComponent<MeshCollider>():null;
@@ -35,6 +37,7 @@ namespace DarwinPark.UI
             int attempted=0,budget=Requested*Mathf.Max(1,attemptsPerEntity),slice=0;
             while(Spawned<Requested&&attempted<budget)
             {
+                if(!EntityPopulationLimit.CanSpawn){Finish("已达到存档实体上限，已生成 "+Spawned+" 个实体");yield break;}
                 if(!WorldRuntimeGate.Ready||WorldRuntimeGate.Loading||planet==null||surface==null){Finish("已停止：世界已切换");yield break;}
                 // ★ 适配：联机房主的Esc只暂停自己的输入，不应阻止其他管理员权限成员的生成任务。
                 if(GameInputGate.Blocked&&!WorldAuthority.Online){yield return null;continue;}

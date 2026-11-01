@@ -14,10 +14,23 @@ namespace DarwinPark.UI
     public sealed class RtsSelectionInput : MonoBehaviour
     {
         public KeyCode toggleKey=KeyCode.R;
+        public Vector2 commandBarSize=new Vector2(580,46);
+        public float commandBarGap=8,commandBarEdge=12;
+        public static RtsSelectionInput Instance {get;private set;}
+        private SimulationControlPanel _control;
         private readonly List<DarwinEntity> _selected=new List<DarwinEntity>();
         private bool _dragging;private Vector2 _start;private RtsOrderKind _mode=RtsOrderKind.Move;
         public IReadOnlyList<DarwinEntity> Selected=>_selected;
-        public static Rect CommandBarRect=>new Rect(12,Screen.height-260,Mathf.Min(580,Screen.width-24),46);
+        private void Awake(){Instance=this;_control=FindFirstObjectByType<SimulationControlPanel>();}
+        private void OnDestroy(){if(Instance==this)Instance=null;}
+        public static Rect CommandBarRect=>Instance!=null?Instance.GetCommandBarRect():Rect.zero;
+        public Rect GetCommandBarRect()
+        {
+            // ★ 修复（防Bug回归）：底栏210是Canvas单位，不能从屏幕像素直接减260；先取真实上沿再留出整条栏高度。
+            float edge=commandBarEdge,width=Mathf.Max(1,Mathf.Min(commandBarSize.x,Screen.width-edge*2));
+            float top=Screen.height;if(_control!=null&&_control.TryGetScreenRect(out var bottom))top=Screen.height-bottom.yMax;
+            return new Rect(edge,Mathf.Max(0,top-commandBarGap-commandBarSize.y),width,commandBarSize.y);
+        }
         public static bool IsOverCommandBar(Vector2 screenPoint)=>CommandBarRect.Contains(new Vector2(screenPoint.x,Screen.height-screenPoint.y));
         private void Update()
         {

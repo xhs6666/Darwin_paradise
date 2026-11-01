@@ -18,15 +18,20 @@ namespace DarwinPark.Entities
         public static void Register(DarwinEntity e)
         {
             if (e == null || !_all.Add(e)) return;
+            // ★ 适配：先更新共享空间快照，再通知可能立即查询邻居的订阅方。
+            Ecology.EntityNeighborhood.MembershipChanged(e,false);
             OnRegistered?.Invoke(e);
         }
 
         public static void Unregister(DarwinEntity e)
         {
             if (e == null || !_all.Remove(e)) return;
+            Ecology.EntityNeighborhood.MembershipChanged(e,true);
+            StationaryBodyRest.Remove(e.GetComponent<UnityEngine.Rigidbody>());
             OnUnregistered?.Invoke(e);
         }
 
-        public static void Clear() => _all.Clear();
+        // ★ 适配：换世界同步释放空间缓存，不能保留上一局引用。
+        public static void Clear(){_all.Clear();Ecology.EntityNeighborhood.Clear();StationaryBodyRest.Clear();}
     }
 }

@@ -30,9 +30,11 @@ namespace DarwinPark.Entities.Vitals
             float dt = clock != null ? clock.GameDeltaTime : Time.deltaTime;
             if (dt <= 0f) return;
             // ★ 修复（防Bug回归）：高倍率也按小步结算容量、仓储与修复阈值，避免一次大步吞掉营养溢出。
-            while (dt > 0f)
+            // ★ 修复（防Bug回归）：整数子步避免高倍率固定0.5秒产生第六次浮点残差结算。
+            int steps=Mathf.CeilToInt(dt/.1f);
+            for(int index=0;index<steps;index++)
             {
-                float step = Mathf.Min(dt, .1f); dt -= step;
+                float step=index==steps-1?dt-index*.1f:.1f;
                 AdvanceVitals(step);
             }
         }

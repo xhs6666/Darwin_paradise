@@ -12,7 +12,6 @@ namespace DarwinPark.Entities
 
         private Rigidbody _rb;
         private Collider _col;
-        private Light _swimLight;
         private PhysicsMaterial _surfaceMaterial;
 
         void Start()
@@ -25,16 +24,7 @@ namespace DarwinPark.Entities
             _rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
             _rb.interpolation = RigidbodyInterpolation.Interpolate;
 
-            // ★ 初始化水下发光组件（默认关闭）
-            var lightGO = new GameObject("SwimLight");
-            lightGO.transform.SetParent(transform);
-            lightGO.transform.localPosition = Vector3.zero;
-            _swimLight = lightGO.AddComponent<Light>();
-            _swimLight.type = LightType.Point;
-            _swimLight.range = 10f;
-            _swimLight.intensity = 2f;
-            _swimLight.color = new Color(0.3f, 0.8f, 1f); // 青色光
-            _swimLight.enabled = false;
+            // ★ 修复（防Bug回归）：通用引力从未启用游泳光效，不为每个静止实体额外创建GameObject和Light。
 
             if (_col != null)
             {
@@ -63,6 +53,8 @@ namespace DarwinPark.Entities
             if (planet == null) return;
 
             var genes = GetComponent<EntityGeneController>();
+            // ★ 适配：休眠实体不重复施力、射线检测和改写摩擦；碰撞唤醒或有效行动恢复后自动走完整路径。
+            if(StationaryBodyRest.RemainsAsleep(_rb,genes))return;
             float moveSpeed = genes != null ? genes.GetAttribute("moveSpeed") : 0f;
             // ★ 修复（防Bug回归）：原地面静摩擦为 1，会吞掉每步较小的漫游速度，导致有行动能力仍原地不动；仅移动时降低本实体材质摩擦。
             if(_surfaceMaterial!=null)
@@ -75,7 +67,7 @@ namespace DarwinPark.Entities
             bool isInWater = IsUnderWater(transform.position);
 
             // ★ 修复（防Bug回归）：行动基因不等于游泳，不能为所有入水实体开启游泳光效。
-            _swimLight.enabled = false;
+            // 游泳光效由对应能力负责，通用引力不创建灯光。
 
             Vector3 dirToCenter = planet.position - transform.position;
             float distance = dirToCenter.magnitude;
@@ -112,6 +104,7 @@ namespace DarwinPark.Entities
 
                     Quaternion targetRot = Quaternion.FromToRotation(transform.up, hit.normal) * transform.rotation;
                     transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.fixedDeltaTime * 15f);
+                    StationaryBodyRest.TryRest(_rb,genes,_col,hit,planet);
                 }
                 else
                 {

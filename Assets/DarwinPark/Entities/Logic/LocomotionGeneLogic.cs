@@ -134,7 +134,8 @@ namespace DarwinPark.Entities.Logic
         {
             Vector3 radial = (_controller.transform.position-_planet.transform.position).normalized;
             Vector3 toward = Vector3.ProjectOnPlane(position-_controller.transform.position, radial);
-            float scale = ServiceLocator.TryGet<SimulationClock>(out var clock) ? clock.TimeScale : 1;
+            // ★ 适配：行动使用时钟实际交付倍率，过载补算限速不造成物理时间分离。
+            float scale = ServiceLocator.TryGet<SimulationClock>(out var clock) ? clock.MotionTimeScale : 1;
             // ★ 修复（防Bug回归）：物理仍按真实步长运行，切向速度按倍率转换；限制到目标剩余距离避免高速越过。
             float physicalSpeed = Mathf.Min(EntityMovementLimits.Speed(speed) * scale, toward.magnitude / Mathf.Max(Time.deltaTime, .001f));
             Vector3 desired = toward.normalized * physicalSpeed;

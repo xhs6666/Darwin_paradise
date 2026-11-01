@@ -213,3 +213,14 @@
 | 2026-10-31 | 编辑器编译通过但Windows发布构建CS1061失败 | RuntimeMenuTheme直接引用仅编辑器可用的GUIStyleState.scaledBackgrounds；先前只验证编辑器程序集，未实际构建Player | RuntimeMenuTheme.cs、PlayerBuildLogRegression.cs | 专用API放在UNITY_EDITOR条件内，保留编辑器高DPI修复；回归必须真实构建非开发版Windows Player并启动，不以dotnet编辑器编译代替 |
 | 2026-10-31 | 发布版测试缺少可定位、可保存的输出；高频日志同步写盘可能卡顿 | 只有Debug和分类日志，没有统一跨线程持久化、会话及文件容量管理 | RuntimeFileLog.cs、RuntimeLogLifecycle.cs、SessionLogWriter.cs、RuntimeLogSettings.cs、runtime_logging.json、WorldSessionManager.cs、LanSession.cs、RandomPlanetSpawner.cs、GameMainMenu.cs、PlayerBuildLogRegression.cs | 场景Awake前订阅线程日志、独立后台有界队列、定时与错误刷新；退出成对注销排空、轮转和保留上限、只读目录回退；中文/线程/堆栈/实际文件/关闭解锁/重复初始化回归；实时读取端必须共享写，避免Mono默认ReadAllText误报文件锁 |
 | 2026-10-31 | 构建成功后太阳/星空启动Material(null)异常；地表Shader有负底数pow告警 | Shader.Find字符串引用不阻止发布裁剪；浮点归一化纬度可能微小越界 | Resources/RuntimeMaterials/runtime_unlit.mat、runtime_particles_unlit.mat、runtime_energy.mat、PlanetURP.shader、PlayerBuildLogRegression.cs | 通过Resources材质显式保留URP着色器及发光变体；pow底数saturate；实际WindowsPlayer启动日志无错误，不以构建Succeeded代替运行验收 |
+| 2026-11-01 | RTS压住权能栏，缺少全地图数量/基因筛选和实际FPS；新增FPS可能遮挡实体面板 | RTS用固定屏幕像素推算Canvas高度；没有独立只读地图统计；模拟时间不能作为渲染帧率口径 | RtsSelectionInput.cs、SimulationControlPanel.cs、MapEntityStatisticsUI.cs、FrameRateDisplay.cs、GeneInspectorUI.cs、GameMainMenu.cs、GameplayHudRegression.cs | 真实底栏边界与命中矩形成对；0.7/1/1.4缩放不重叠；注册表统计存活个体、复制基因去重、携带/生效分开、成员可筛选；定时刷新与稳定布局不标脏；unscaled时间采样、暂停/16倍验证、顶部避让；出生/死亡/禁用表达和退出归零真实回归 |
+| 2026-11-01 | 地图统计框横向过长 | 以左右双锚点填满右侧全部剩余宽度 | MapEntityStatisticsUI.cs、GameplayHudRegression.cs | 单侧锚定、preferredWidth上限340并适配可用空间；三档缩放检查实际屏幕宽度、边界和交互，统计及FPS联合33项通过 |
+
+| 2026-11-01 | 400～800无行动实体卡顿，长帧补算后再次阻塞 | 每生产者每子步全表竞争、资格/主行为重复查询，幼体逐个生成繁殖日志；重力持续唤醒并射线检查；0.5减0.1产生第六个残差子步 | EntityNeighborhood.cs、GeneAuthorityCache.cs、EcologyDiagnostics.cs、StationaryBodyRest.cs、SimulationStepBudget.cs及最小适配 | 同帧出生/死亡/表达/搬运/恢复失效；地形/传送/行动变化唤醒；积压不计入已完成日期；400/800/1600对照，生态与运动回归 |
+| 2026-11-01 | 统计栏仍偏大 | 340宽度与纵向拉伸占用过多底栏空间 | MapEntityStatisticsUI.cs、GameplayHudRegression.cs | 限制260×136并按缩放检查宽高、下拉与文字 |
+| 2026-11-01 | 生态回归启动后未执行 | Unity搜索索引异常打断delayCall | EcologyBalanceRegression.cs | 改为幂等update等待，必须读取实际PASS结果 |
+
+| 2026-11-01 | 统计同时显示两页、缺少存档内数量控制及清理入口 | 统计挂在页面公共根，生成/繁殖没有统一配额 | MapEntityActions.cs、WorldGameSettingsPanel.cs、WorldGameSettings.cs、WorldEntityActions.cs及生成/保存/联机适配 | 统计只在第二页；成员只读但隐藏创造/设置/清除；服务端拒绝伪造管理请求；超额存档完整恢复、真实出生等待空位、清理保存不复活 |
+| 2026-11-01 | 修改参数时同步卡住、地形误改湿度、种子精度丢失 | UI直接Build及MarkDirty触发主线程全量气候生成；地形落入湿度分支；整数先转float | WorldParameterUpdate.cs、WorldLoadingView.cs、PlanetParameterEditor.cs、LanEditActions.cs | 复用加载动画、后台纯数据计算、主线程提交；温湿度不重建地形；实体/镜头/时间/暂停保留，精确32位整数文本，失败/重复请求有界且恢复输入 |
+
+| 2026-11-01 | 出现深色球体且右键无法查看，统计需移回第一页 | 士兵尸体沿用球形深色外观且删除碰撞体；右键只查Physics和DarwinEntity，无法识别世界资源 | ColonyResourcePresentation.cs、WorldInspectablePicker.cs、WorldResourceInspector.cs、ColonyResource.cs、GeneInspectorUI.cs、SimulationControlPanel.cs | 尸体共享叉号标记，几何拾取不增加物理开销且尊重遮挡；活体/尸体面板互斥；搬运/移除/读档/成员只读及来源字段校验；存活统计排除尸体，第一页保留管理按钮 |

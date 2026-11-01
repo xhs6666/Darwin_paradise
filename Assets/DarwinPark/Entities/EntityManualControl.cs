@@ -46,7 +46,8 @@ namespace DarwinPark.Entities
         private void FixedUpdate()
         {
             if (!IsControlled || _planet == null || _body == null || _body.isKinematic) return;
-            float scale = ServiceLocator.TryGet<SimulationClock>(out var clock) ? clock.TimeScale : 1;
+            // ★ 适配：行动使用时钟实际交付倍率，过载补算限速不造成物理时间分离。
+            float scale = ServiceLocator.TryGet<SimulationClock>(out var clock) ? clock.MotionTimeScale : 1;
             if (scale <= 0) return;
             Vector3 up = (transform.position - _planet.position).normalized;
             // ★ 修复（防Bug回归）：陆地行动基因不提供游泳能力，入水后保留下沉而停止切向推进。

@@ -19,6 +19,7 @@ namespace DarwinPark.Entities.Ecology
         }
         private static DarwinEntity Spawn(Genome genome,Vector3 point)
         {
+            if(!EntityPopulationLimit.CanSpawn)return null;
             var before=EntityRegistry.All.ToArray();DarwinEntity.Spawner?.Invoke(genome,point,"");return EntityRegistry.All.FirstOrDefault(e=>!before.Contains(e));
         }
         public static void Advance(AntColonyMember queen,float dt)
@@ -31,7 +32,7 @@ namespace DarwinPark.Entities.Ecology
             bool sexual=reproduction.State?.StateId=="sexual";
             var mates=queen.Group.Where(m=>m.Role==AntRole.Mate).OrderBy(m=>m.Population.JoinOrder).ToArray();
             // 配偶不来自出生随机池；损失后由王后花费实际储备补充，并立即锁定为同群成年配偶。
-            if(sexual&&mates.Length==0&&stats.TryGet("storedNutrient",out var mateReserve)&&mateReserve>=settings.mateCost&&DarwinEntity.Spawner!=null)
+            if(EntityPopulationLimit.CanSpawn&&sexual&&mates.Length==0&&stats.TryGet("storedNutrient",out var mateReserve)&&mateReserve>=settings.mateCost&&DarwinEntity.Spawner!=null)
             {
                 var mate=Spawn(Copy(genes.Genome),EcologyQueries.Surface(queen.transform.position+Vector3.ProjectOnPlane(Vector3.right,EcologyQueries.Up(queen.transform.position))*settings.arrivalDistance));
                 if(mate!=null)
@@ -51,9 +52,9 @@ namespace DarwinPark.Entities.Ecology
                 if(state.partnerGenome!=null)
                     foreach(var gene in child.Genes){var partner=state.partnerGenome.Genes.FirstOrDefault(g=>g.DefinitionId==gene.DefinitionId);if(partner!=null)gene.Value=(gene.Value+partner.Value)*.5f;}
                 // 使用原出生入口，卵生/孵化和分工继承仍由同一个入口处理。
-                EcologyReproduction.Spawn(genes,child,point);genes.IsGestating=false;state.partnerGenome=null;state.reproductionCooldown=settings.queenCooldownSeconds;genes.Recalculate();return;
+                if(!EcologyReproduction.Spawn(genes,child,point))return;genes.IsGestating=false;state.partnerGenome=null;state.reproductionCooldown=settings.queenCooldownSeconds;genes.Recalculate();return;
             }
-            if(state.reproductionCooldown>0)return;
+            if(state.reproductionCooldown>0||!EntityPopulationLimit.CanSpawn)return;
             if(sexual&&(mates.Length==0||EcologyQueries.Distance(queen.transform.position,mates[0].transform.position)>settings.feedRadius))return;
             if(!stats.TryGet("storedNutrient",out float reserve)||reserve<settings.queenBirthCost)return;
             stats.Modify("storedNutrient",-settings.queenBirthCost);state.partnerGenome=sexual?Copy(mates[0].Genes.Genome):null;state.reproductionTimer=settings.queenGestationSeconds;genes.IsGestating=true;genes.Recalculate();

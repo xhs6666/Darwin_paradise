@@ -26,10 +26,12 @@ namespace DarwinPark.UI
     {
         public static bool Apply(LanCommand command,LanSession session)
         {
-            if(command==null)return false;
+            if(command==null||WorldRuntimeGate.Loading)return false;
             var entity=EcologyIdentity.Find(command.entity);
             switch(command.kind)
             {
+                case "worldSettings":return WorldEntityActions.SetLimit(command.count,command.running);
+                case "clearEntities":return WorldEntityActions.ClearAll();
                 case "gene":
                     if(!EcologyQueries.Alive(entity)||!LanSession.Finite(command.value))return false;
                     var gene=entity.Genes.Genome.Find(command.gene);if(gene==null)return false;gene.Value=Mathf.Clamp(command.value,0,100);entity.Genes.Recalculate();return true;
@@ -39,7 +41,7 @@ namespace DarwinPark.UI
                 case "rename":
                     if(!EcologyQueries.Alive(entity))return false;entity.DisplayName=string.IsNullOrWhiteSpace(command.name)?entity.Genes.GetRandomName():command.name.Trim().Substring(0,Mathf.Min(command.name.Trim().Length,64));return true;
                 case "spawn":
-                    if(!LanSession.Finite(command.point)||!ValidGenome(command.genome)||DarwinEntity.Spawner==null)return false;
+                    if(!EntityPopulationLimit.CanSpawn||!LanSession.Finite(command.point)||!ValidGenome(command.genome)||DarwinEntity.Spawner==null)return false;
                     var surfacePoint=EcologyQueries.Surface(command.point);float altitude=Vector3.Dot(command.point-surfacePoint,EcologyQueries.Up(surfacePoint));
                     if(!LanSession.Finite(altitude))return false;DarwinEntity.Spawner(EntityPlacementUtility.CopyGenome(command.genome),surfacePoint+EcologyQueries.Up(surfacePoint)*Mathf.Clamp(altitude,0,EcologyQueries.Planet.heightScale),"");return true;
                 case "batch":
@@ -52,11 +54,8 @@ namespace DarwinPark.UI
                 case "time":
                     if(!LanSession.Finite(command.scale)||command.scale<0||command.scale>LanSettings.Current.maximumTimeScale)return false;var clock=ServiceLocator.Get<SimulationClock>();clock.SetTimeScale(command.scale);if(command.running)clock.Play();else clock.Pause();return true;
                 case "parameter":
-                    if(!LanSession.Finite(command.value))return false;var builder=Object.FindFirstObjectByType<PlanetTerrainMeshBuilder>();var environment=ServiceLocator.Get<EnvironmentSystem>();
-                    if(command.parameter.Contains("seed")){builder.seed=(int)command.value;builder.Build();}
-                    else if(command.parameter.Contains("temp")){environment.BaseTemperature=Mathf.Clamp(command.value,-30,60);ClimateDataHub.BaseTemperature=environment.BaseTemperature;}
-                    else if(command.parameter.Contains("hum")){environment.BaseHumidity=Mathf.Clamp(command.value,0,100);ClimateDataHub.BaseHumidity=environment.BaseHumidity;}
-                    else return false;PlanetClimateMap.Instance?.MarkDirty();return true;
+                    if(command.name==null&&!LanSession.Finite(command.value))return false;
+                    return WorldParameterUpdate.Ensure().Request(command.parameter,command.name??command.value.ToString("R",System.Globalization.CultureInfo.InvariantCulture),out _);
                 case "profile":
                     if(command.definitions==null||command.definitions.Count>LanSettings.Current.maximumGeneDefinitions||command.tree==null)return false;var catalog=command.definitions.ToDictionary(d=>d.id,d=>d.json);
                     foreach(var pair in catalog){var parsed=JsonUtility.FromJson<GeneDefinitionJson>(pair.Value);if(!System.Text.RegularExpressions.Regex.IsMatch(pair.Key,"^[A-Za-z0-9_-]+$")||parsed==null||parsed.id!=pair.Key||!System.Enum.TryParse<GeneCategory>(parsed.category,true,out _))return false;}

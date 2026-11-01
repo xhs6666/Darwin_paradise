@@ -12,6 +12,8 @@ namespace DarwinPark.GameRoot
     {
         public static DarwinEntity CreateFromScratch(Genome genome, Vector3 position, string displayName)
         {
+            // ★ 适配：生成前统一限额，不能先实例化再删除而触发出生/注册副作用。
+            if(!EntityPopulationLimit.CanSpawn)return null;
             var go = new GameObject("Entity");
             go.transform.position = position;
             return AttachComponents(go, genome, displayName);
@@ -19,6 +21,7 @@ namespace DarwinPark.GameRoot
 
         public static DarwinEntity CreateFromTemplate(GameObject template, Genome genome, Vector3 position, string displayName)
         {
+            if(!EntityPopulationLimit.CanSpawn)return null;
             if (template == null) return CreateFromScratch(genome, position, displayName);
 
             var go = Object.Instantiate(template, position, Quaternion.identity);

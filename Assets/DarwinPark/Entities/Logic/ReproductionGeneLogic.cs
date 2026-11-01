@@ -18,8 +18,6 @@ namespace DarwinPark.Entities.Logic
 
         private Genome _partnerGenome = null;
 
-        // ★ 补上这一行：用于控制调试日志输出频率，防止刷屏
-        private float _debugTimer = 0f;
 
         public void Initialize(EntityGeneController controller, GeneInstance gene)
         {
@@ -45,6 +43,8 @@ namespace DarwinPark.Entities.Logic
 
             if (_controller.IsGestating)
             {
+                // ★ 适配：满额后完成的孕育等待空位，不伪造出生或重复消耗孕育营养。
+                if(_gestationTimer<=0&&!EntityPopulationLimit.CanSpawn)return;
                 _gestationTimer -= dt;
                 // ★ 适配：孕育额外营养开销与生态收支共用配置，避免长孕育必然饿死。
                 stats.Modify("nutrient", -Ecology.EcologyBalanceSettings.Current.gestationFoodPerSecond * dt);
@@ -65,15 +65,12 @@ namespace DarwinPark.Entities.Logic
             // ★ 核心修改：直接判断实体自带状态
             if (_controller.CurrentAge != AgeState.Adult)
             {
-                _debugTimer -= dt;
-                if (_debugTimer <= 0)
-                {
-                    _debugTimer = 5f;
-                    Debug.Log($"[繁殖调试] {_controller.gameObject.name} 无法繁殖：当前是 {_controller.CurrentAge}，需要成年。");
-                }
+                // ★ 适配：条件不足合并诊断，避免幼体数量和模拟倍率放大逐实体日志。
+                Ecology.EcologyDiagnostics.Blocked(Ecology.EcologyDiagnostics.ReproductionBlock.Age);
                 return;
             }
 
+            if(!EntityPopulationLimit.CanSpawn)return;
             // ★ 核心修改：根据体型计算所需营养和时间
             float size = 1f;
             // ★ 适配：实际扣款与提前储粮采用同一体型下限，微型实体不会准备不足的繁殖预算。
@@ -83,13 +80,8 @@ namespace DarwinPark.Entities.Logic
             // ★ 检查条件：必须是储存营养 (storedNutrient) 足够
             if (!stats.TryGet("storedNutrient", out var stored) || stored < requiredNutrient)
             {
-                // ★ 新增：缺失条件日志
-                _debugTimer -= dt;
-                if (_debugTimer <= 0)
-                {
-                    _debugTimer = 5f;
-                    Debug.Log($"[繁殖调试] {_controller.gameObject.name} 无法繁殖：储存营养不足 ({stored:F1}/{requiredNutrient:F1})。");
-                }
+                // ★ 适配：条件不足合并诊断，避免幼体数量和模拟倍率放大逐实体日志。
+                Ecology.EcologyDiagnostics.Blocked(Ecology.EcologyDiagnostics.ReproductionBlock.Reserve);
                 return;
             }
 
@@ -108,13 +100,8 @@ namespace DarwinPark.Entities.Logic
 
                 if (mate == null)
                 {
-                    // ★ 新增：缺失条件日志
-                    _debugTimer -= dt;
-                    if (_debugTimer <= 0)
-                    {
-                        _debugTimer = 5f;
-                        Debug.Log($"[繁殖调试] {_controller.gameObject.name} 无法繁殖：当前是有性繁殖，但附近 20 米没有找到合适的成年伴侣。");
-                    }
+                    // ★ 适配：条件不足合并诊断，避免幼体数量和模拟倍率放大逐实体日志。
+                    Ecology.EcologyDiagnostics.Blocked(Ecology.EcologyDiagnostics.ReproductionBlock.Mate);
                     return;
                 }
 
@@ -211,7 +198,7 @@ namespace DarwinPark.Entities.Logic
             if (DarwinEntity.Spawner != null)
             {
                 // ★ 适配：卵生后代的孵化状态独立于母体孕育，不会把卵直接当作已出生幼体。
-                Ecology.EcologyReproduction.Spawn(_controller,childGenome,spawnPos);
+                if(!Ecology.EcologyReproduction.Spawn(_controller,childGenome,spawnPos))return false;
             }
             Debug.Log($"[繁殖] {_controller.gameObject.name} 孕育完成，产下了后代！");
 

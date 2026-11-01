@@ -81,7 +81,7 @@ namespace DarwinPark.UI
             // ★ 适配：信息面板放在屏幕左上，添加面板放在左下并避开底部控制栏。
             rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0,1);
             // ★ 修复（防Bug回归）：信息面板改为更宽、更矮，尺寸集中配置，避免下一帧又被旧固定尺寸覆盖。
-            rt.anchoredPosition = infoCornerOffset; rt.sizeDelta = infoPanelSize;
+            rt.anchoredPosition = FrameRateDisplay.ReserveTop(infoCornerOffset,canvas.GetComponent<Canvas>()); rt.sizeDelta = infoPanelSize;
             UIVisualTheme.Paint(_panel.GetComponent<Image>());
             // ★ 修复（防Bug回归）：面板背景必须挡住游戏射线与右键，避免编辑时拾取身后的星球。
             _panel.GetComponent<Image>().raycastTarget = true;
@@ -265,6 +265,8 @@ namespace DarwinPark.UI
             var addRect=_addGenePanel.GetComponent<RectTransform>();
             addRect.sizeDelta=new Vector2(350,Mathf.Min(450,Mathf.Max(150,canvasHeight*.35f)));
             var panelRect=_panel.GetComponent<RectTransform>();
+            // ★ 适配：FPS固定左上，信息面板随屏幕缩放为它留出空间，避免名称/收藏按钮被盖住。
+            panelRect.anchoredPosition=FrameRateDisplay.ReserveTop(infoCornerOffset,_panel.GetComponentInParent<Canvas>());
             float canvasWidth=(_panel.transform.parent as RectTransform).rect.width;
             panelRect.sizeDelta=new Vector2(Mathf.Min(infoPanelSize.x,Mathf.Max(160,canvasWidth-infoCornerOffset.x-24)),Mathf.Min(infoPanelSize.y,Mathf.Max(160,canvasHeight-addCornerOffset.y-24-(_addGenePanel.activeSelf?addRect.sizeDelta.y+16:0))));
             // ★ 修复（防Bug回归）：可见时刷新数值，关闭/实体销毁时所有附属面板一并关闭。
@@ -279,8 +281,9 @@ namespace DarwinPark.UI
             bool entityView = Camera.main != null && Camera.main.GetComponent<OrbitCamera>() is OrbitCamera orbit && orbit.EntityViewActive;
             if (!entityView && !pointerOverUI && Input.GetMouseButtonDown(1))
             {
-                if (TryPickEntity(out var entity)) ShowEntityInfo(entity);
-                else HideEntityInfo();
+                var pickCamera=Camera.main;
+                if(pickCamera!=null)InspectAt(pickCamera.ScreenPointToRay(Input.mousePosition));
+                else {HideEntityInfo();WorldResourceInspector.Instance?.Hide();}
             }
             // ★ 修复（防Bug回归）：Esc 优先收起添加子窗口，保留正在查看的实体，避免一次取消丢失编辑上下文。
             if (Input.GetKeyDown(KeyCode.Escape))
@@ -300,14 +303,12 @@ namespace DarwinPark.UI
             }
         }
 
-        private bool TryPickEntity(out DarwinEntity entity)
+        // ★ 适配：活体与没有碰撞体的尸体/能量块共用最近可见目标拾取，仍尊重地形遮挡。
+        public bool InspectAt(Ray ray)
         {
-            entity = null;
-            var cam = Camera.main; if (cam == null) return false;
-            var ray = cam.ScreenPointToRay(Input.mousePosition);
-            if (!Physics.Raycast(ray, out var hit, 2000f)) return false;
-            entity = hit.collider.GetComponentInParent<DarwinEntity>();
-            return entity != null;
+            if(WorldInspectablePicker.Pick(ray,Camera.main!=null?Camera.main.farClipPlane:2000,out var entity,out var resource))
+            {if(entity!=null)ShowEntityInfo(entity);else{HideEntityInfo();WorldResourceInspector.Ensure().Show(resource);}return true;}
+            HideEntityInfo();WorldResourceInspector.Instance?.Hide();return false;
         }
 
         public void HideEntityInfo()
@@ -382,6 +383,7 @@ namespace DarwinPark.UI
         public void ShowEntityInfo(DarwinEntity entity)
         {
             if (entity == null || !EnsurePanel()) return;
+            WorldResourceInspector.Instance?.Hide();
             if(_currentEntity!=entity){_addGenePanel.SetActive(false);_treePanel.SetActive(false);}
             // ★ 修复（防Bug回归）：切换对象前提交旧输入，避免失焦事件把旧名字写到新实体。
             if (_nameInput != null && _nameInput.isFocused) _nameInput.DeactivateInputField();

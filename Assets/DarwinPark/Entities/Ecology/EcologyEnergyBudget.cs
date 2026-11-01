@@ -33,11 +33,8 @@ namespace DarwinPark.Entities.Ecology
         }
         public static float Competition(EntityGeneController genes)
         {
-            var settings=EcologyBalanceSettings.Current;int count=0;Vector3 position=genes.transform.position;
-            foreach(var entity in EntityRegistry.All)
-                // ★ 修复（防Bug回归）：先用廉价距离筛选，避免远处每个实体都触发组件和基因查询，空间分散后仍能持续运行。
-                if(entity!=null&&entity.gameObject!=genes.gameObject&&(entity.transform.position-position).sqrMagnitude<=settings.competitionRadius*settings.competitionRadius&&EcologyQueries.Alive(entity)&&IsProducer(entity.Genes))count++;
-            return 1+count*settings.competitionPerNeighbor;
+            // ★ 适配：按真实距离统计同一批生产者，帧内子步共用竞争结果，消除逐实体逐子步全图扫描。
+            return EntityNeighborhood.Competition(genes);
         }
         public static void Produce(EntityGeneController genes,GeneInstance source,float dt)
         {
@@ -46,14 +43,15 @@ namespace DarwinPark.Entities.Ecology
             var state=genes.Evaluation?.Genes.Find(g=>g.Gene==source&&g.IsActive)?.State;
             var settings=EcologyBalanceSettings.Current;float efficiency=genes.GetAttribute(settings.absorptionAttribute);
             if(efficiency<=0||state==null)return;
-            if(state.StateId==settings.photoState)stats.Feed(efficiency*settings.photoProductionRate*dt/(IsProducer(genes)?Competition(genes):1));
+            // ★ 适配：生产者分类已由帧共享快照计算，不能在每个子步再次遍历表达并读取同一组移动修饰组件。
+            if(state.StateId==settings.photoState)stats.Feed(efficiency*settings.photoProductionRate*dt/EntityNeighborhood.ProductionCompetition(genes));
             else if(state.StateId==settings.chemicalState&&PlanetOreSystem.Instance!=null)
                 stats.Feed(PlanetOreSystem.Instance.ConsumeOre(genes.transform.position,efficiency*settings.mineralExtractionRate*dt));
         }
         public static float Consumption(EntityGeneController genes,float baseRate,float movementRate)
         {
             var settings=EcologyBalanceSettings.Current;float speed=0;
-            var body=genes.GetComponent<Rigidbody>();float scale=ServiceLocator.TryGet<SimulationClock>(out var clock)?clock.TimeScale:1;
+            var body=genes.GetComponent<Rigidbody>();/* ★ 适配：与实际交付模拟时间一致。 */ float scale=ServiceLocator.TryGet<SimulationClock>(out var clock)?clock.MotionTimeScale:1;
             if(body!=null&&scale>0&&genes.GetAttribute(settings.movementAttribute)>0)
                 speed=Mathf.Min(genes.GetAttribute(settings.movementAttribute),Vector3.ProjectOnPlane(body.linearVelocity,EcologyQueries.Up(genes.transform.position)).magnitude/scale);
             return baseRate*settings.baseMetabolismScale+movementRate*settings.movementMetabolismScale*speed;

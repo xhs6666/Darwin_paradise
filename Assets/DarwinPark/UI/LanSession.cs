@@ -218,7 +218,7 @@ namespace DarwinPark.UI
                 if(_peers.TryGetValue(closed.Id,out var peer)){EcologyIdentity.Find(peer.player.entity)?.GetComponent<EntityManualControl>()?.Release();_peers.Remove(closed.Id);Roster();Debug.Log("[联机] 成员离开 player="+closed.Id);}
                 else if(closed==_server&&!_leaving){LeaveToMenu("管理员已关闭对局或连接中断");return;}
             }
-            if(IsHost&&WorldRuntimeGate.Ready&&!_world.Busy)
+            if(IsHost&&WorldRuntimeGate.Ready&&!WorldRuntimeGate.Loading&&!_world.Busy)
             {
                 bool roster=false;foreach(var peer in _peers.Values)
                 {
@@ -259,6 +259,8 @@ namespace DarwinPark.UI
         private void ApplyFrame(LanFrame frame)
         {
             if(frame==null||frame.sequence<=_receivedSequence)return;_receivedSequence=frame.sequence;
+            // ★ 适配：轻量设置随常规帧同步，不因更改上限重新加载整个客户端世界。
+            if(frame.gameSettings!=null&&frame.gameSettings.version==1){EntityPopulationLimit.UseSnapshot(frame.gameSettings);if(_world.Current!=null)_world.Current.gameSettings=EntityPopulationLimit.Capture();}
             ServiceLocator.Get<SimulationClock>().ApplyRemoteState(frame.time,frame.scale,frame.running);FindFirstObjectByType<SunSystem>().OrbitAngle=frame.sun;EcologyQueries.Planet.transform.rotation=frame.rotation;
             var ids=new HashSet<string>();foreach(var incoming in frame.actors)
             {

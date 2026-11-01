@@ -29,6 +29,14 @@ namespace DarwinPark.UI
         private string _activeParamId;
         private GameObject _bottomPanel;
         private readonly Vector3[] _panelCorners = new Vector3[4];
+        // ★ 新增：提供底栏实际屏幕边界，让混用IMGUI的RTS栏跟随Canvas缩放，而不是猜测固定高度。
+        public bool TryGetScreenRect(out Rect rect)
+        {
+            rect=default;if(_bottomPanel==null||!_bottomPanel.activeInHierarchy)return false;
+            _bottomPanel.GetComponent<RectTransform>().GetWorldCorners(_panelCorners);
+            var min=RectTransformUtility.WorldToScreenPoint(null,_panelCorners[0]);var max=RectTransformUtility.WorldToScreenPoint(null,_panelCorners[2]);
+            rect=Rect.MinMaxRect(min.x,min.y,max.x,max.y);return true;
+        }
 
         private string _currentSelectedLayer = "default";
 
@@ -174,6 +182,10 @@ namespace DarwinPark.UI
             BuildPage2(_page2Container.transform);
             _page2Container.SetActive(false);
 
+            // ★ 新增：全地图统计是只读公共信息，独立于两页创造/管理权限，成员也可筛选查看。
+            var statistics=UIFactory.NewRect("MapEntityStatistics",_page1Container.transform,typeof(Image));
+            statistics.AddComponent<MapEntityStatisticsUI>();
+
             SwitchPage(0);
         }
 
@@ -211,7 +223,7 @@ namespace DarwinPark.UI
 
         private void SwitchPage(int targetPage)
         {
-            if(!WorldAuthority.CanEdit&&targetPage==1)targetPage=0;
+            // ★ 适配：页面切换与创造权限分离，创造控件单独屏蔽。
             _currentPage = Mathf.Clamp(targetPage, 0, 1);
             _page1Container.SetActive(_currentPage == 0);
             _page2Container.SetActive(_currentPage == 1);
@@ -457,7 +469,8 @@ namespace DarwinPark.UI
         private void Update()
         {
             // ★ 适配：普通成员看不到创造页，作弊权限撤回后立即关闭修改弹窗。
-            if(_uiBuilt&&_tabNextBtn!=null){_tabNextBtn.interactable=WorldAuthority.CanEdit;if(!WorldAuthority.CanEdit){if(_currentPage==1)SwitchPage(0);DestroyMenus();}
+            if(_uiBuilt&&_tabNextBtn!=null){_tabNextBtn.interactable=true;if(!WorldAuthority.CanEdit)DestroyMenus();
+                var spawning=_page2Container?.transform.Find("EntitySpawnPanel");if(spawning!=null)spawning.gameObject.SetActive(WorldAuthority.CanEdit);
                 var play=_bottomPanel?.transform.Find("ContentArea/Page1/TimeSec/PlayBtn")?.GetComponent<Button>();if(play!=null)play.interactable=WorldAuthority.CanEdit;
                 var parameters=_bottomPanel?.transform.Find("ContentArea/Page1/ParamSec");if(parameters!=null)parameters.gameObject.SetActive(WorldAuthority.CanEdit);}
             if(Input.GetKeyDown(KeyCode.Escape))DestroyMenus();

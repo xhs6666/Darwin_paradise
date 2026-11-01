@@ -45,7 +45,8 @@ namespace DarwinPark.Entities.Ecology
                 worker.Activity=ColonyActivity.Transport;
                 Vector3 held=worker.transform.position+EcologyQueries.Up(worker.transform.position)*settings.transportOffset;
                 if(carried!=null)carried.CarryTo(held);
-                if(live!=null)live.transform.position=held;
+                // ★ 适配：搬运会在目标自己的Update之后传送位置，同帧更新邻域，避免食物与竞争还停留在旧格子。
+                if(live!=null){live.transform.position=held;EntityNeighborhood.ObservePosition(live.Genes);}
                 // ★ 修复（防Bug回归）：运输中允许先补给但保留独占货物，不能无限执行运输直到饿死，也不能中断后复制货物。
                 if(ColonyFeeding.Destination(worker,out _))return;
                 var destination=EcologyQueries.ToWorld(state.deliveryPoint);
@@ -114,7 +115,7 @@ namespace DarwinPark.Entities.Ecology
             ColonyResource.Find(state.resourceTarget)?.Release(worker.Id);ColonyResource.Find(state.carriedResource)?.Release(worker.Id);
             var live=Entity(state.carriedLiving);
             if(live!=null)
-            {var body=live.GetComponent<Rigidbody>();if(body!=null){body.isKinematic=state.originalKinematic;body.detectCollisions=state.originalDetect;}live.transform.position=EcologyQueries.Surface(worker.transform.position);}
+            {var body=live.GetComponent<Rigidbody>();if(body!=null){body.isKinematic=state.originalKinematic;body.detectCollisions=state.originalDetect;}live.transform.position=EcologyQueries.Surface(worker.transform.position);EntityNeighborhood.ObservePosition(live.Genes);}
             state.carriedResource=state.carriedLiving=state.resourceTarget=state.livingTarget=null;
             TrackCargo(worker,null);TrackTarget(worker);
         }

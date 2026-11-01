@@ -46,7 +46,7 @@ namespace DarwinPark.Entities.Ecology
             if(Vector3.Distance(transform.position,_candidate.transform.position)<=_settings.attachReach+HostRadius(_candidate)){TryAttach(_candidate);return;}
             if(_body==null||_body.isKinematic)return;
             Vector3 up=EcologyQueries.Up(transform.position),direction=Vector3.ProjectOnPlane(_candidate.transform.position-transform.position,up).normalized;
-            float scale=ServiceLocator.TryGet<SimulationClock>(out var clock)?clock.TimeScale:1;
+            /* ★ 适配：与实际交付模拟时间一致。 */ float scale=ServiceLocator.TryGet<SimulationClock>(out var clock)?clock.MotionTimeScale:1;
             _body.linearVelocity=direction*_settings.parasiteSeekSpeed*scale+up*Mathf.Min(0,Vector3.Dot(_body.linearVelocity,up));
         }
         private DarwinEntity FindHost()
@@ -80,7 +80,8 @@ namespace DarwinPark.Entities.Ecology
             Follow();return true;
         }
         private void LateUpdate(){if(Host!=null)Follow();}
-        private void Follow(){if(Host!=null)transform.position=Host.transform.position+Host.transform.TransformVector(_offset);}
+        // ★ 适配：宿主跟随可能发生在基因模拟之后，及时同步空间索引。
+        private void Follow(){if(Host!=null){transform.position=Host.transform.position+Host.transform.TransformVector(_offset);EntityNeighborhood.ObservePosition(GetComponent<EntityGeneController>());}}
         public void Detach()
         {
             // Host 可能已变成 Unity 的假 null，清理以缓存集合为准，不能只检查 Host != null。
