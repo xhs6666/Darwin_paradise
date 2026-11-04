@@ -164,12 +164,7 @@ namespace DarwinPark.UI
             nextRt.pivot = new Vector2(0, 0.5f);
             nextRt.anchoredPosition = new Vector2(90, 0);
 
-            // ★ 新增：设置紧邻左侧分页，两页共用；复用全局设置页而非存档内实体上限设置。
-            var settingsButton = UIFactory.NewButton("SettingsShortcut",tabBar.transform,"设置",()=>FindFirstObjectByType<GameMainMenu>()?.OpenSettingsShortcut(),new Vector2(88,30));
-            var settingsRt = settingsButton.GetComponent<RectTransform>();
-            settingsRt.anchorMin=settingsRt.anchorMax=new Vector2(0,.5f);settingsRt.pivot=new Vector2(0,.5f);settingsRt.anchoredPosition=new Vector2(160,0);
-            UIVisualTheme.AddIcon(settingsButton.transform,"gear",new Vector2(18,18),new Vector2(16,0),new Vector2(0,.5f));
-            var settingsText=settingsButton.GetComponentInChildren<Text>();settingsText.rectTransform.offsetMin=new Vector2(24,0);
+            // ★ 修复（防Bug回归）：按键控制属于设置页左侧分页，底栏仅保留原翻页按钮。
 
             var contentArea = UIFactory.NewRect("ContentArea", bottomPanel.transform);
             var cart = contentArea.GetComponent<RectTransform>();

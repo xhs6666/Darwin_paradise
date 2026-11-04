@@ -13,7 +13,8 @@ namespace DarwinPark.UI
     [DefaultExecutionOrder(150)]
     public sealed class RtsSelectionInput : MonoBehaviour
     {
-        public KeyCode toggleKey=KeyCode.R;
+        // ★ 适配：RTS开关读取本机按键设置，权限校验仍保留在原入口。
+        public KeyCode toggleKey=>ControlBindings.Get(ControlAction.Rts);
         public Vector2 commandBarSize=new Vector2(580,46);
         public float commandBarGap=8,commandBarEdge=12;
         public static RtsSelectionInput Instance {get;private set;}
@@ -77,7 +78,7 @@ namespace DarwinPark.UI
         private void OnGUI()
         {
             if(!WorldAuthority.RtsMode||!WorldRuntimeGate.Ready||GameInputGate.Blocked)return;RuntimeMenuTheme.Apply();
-            GUILayout.BeginArea(CommandBarRect,GUI.skin.box);GUILayout.BeginHorizontal();GUILayout.Label("RTS · "+_selected.Count+"  R返回",GUILayout.Width(125));
+            GUILayout.BeginArea(CommandBarRect,GUI.skin.box);GUILayout.BeginHorizontal();GUILayout.Label("RTS · "+_selected.Count+"  "+ControlBindings.Display(ControlAction.Rts)+"返回",GUILayout.Width(145));
             foreach(var entry in new[]{(RtsOrderKind.Move,"移动"),(RtsOrderKind.Attack,"攻击"),(RtsOrderKind.Collect,"采集"),(RtsOrderKind.Guard,"守卫"),(RtsOrderKind.Stop,"停止")})
             {
                 GUI.enabled=_selected.Any(e=>RtsOrderController.Supports(e,entry.Item1));if(GUILayout.Button(entry.Item2,_mode==entry.Item1?RuntimeMenuTheme.Selected:GUI.skin.button,GUILayout.Height(30)))

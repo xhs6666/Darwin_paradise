@@ -43,7 +43,8 @@ namespace DarwinPark.UI
             if (GameInputGate.Blocked) return;
             bool typing = IsTyping();
             // ★ 适配：有暂停菜单时 Esc 专用于暂停，Tab 退出实体操控，防止锁鼠标后无法返回轨道视角。
-            var viewExitKey = WorldRuntimeGate.Managed && exitKey == KeyCode.Escape ? KeyCode.Tab : exitKey;
+            // ★ 适配：退出实体视角与设置页绑定一致，Esc继续专用于菜单。
+            var viewExitKey = ControlBindings.Get(ControlAction.ExitView);
             if (_active && Input.GetKeyDown(viewExitKey)) { ExitView(); return; }
             bool overUI = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
             bool placing = OrbitCamera.IsDraggingUI || (EntityPlacementTool.Instance != null && EntityPlacementTool.Instance.IsPlacing);

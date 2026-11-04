@@ -23,6 +23,8 @@ namespace DarwinPark.UI
         private string _worldName = "", _seed = "";
         private List<WorldSaveEntry> _saves = new List<WorldSaveEntry>();
         private Vector2 _scroll;
+        private int _settingsTab;
+        private readonly ControlSettingsPage _controls=new ControlSettingsPage();
         public bool Visible => _visible;
 
         private void Awake()
@@ -39,6 +41,8 @@ namespace DarwinPark.UI
             // ★ 新增：FPS独立于模拟与菜单Canvas，即使暂停或打开菜单也显示实际渲染帧率。
             if(GetComponent<FrameRateDisplay>()==null)gameObject.AddComponent<FrameRateDisplay>();
             _volume = PlayerPrefs.GetFloat("MasterVolume", 1); AudioListener.volume = _volume;
+            // ★ 适配：启动时生成可编辑配置，避免第一次打开设置之前找不到数值文件。
+            _=GameplayTuning.Current;
             if (PlayerPrefs.HasKey("FullScreen")) Screen.fullScreen = PlayerPrefs.GetInt("FullScreen") != 0;
             if (PlayerPrefs.HasKey("QualityLevel")) QualitySettings.SetQualityLevel(Mathf.Clamp(PlayerPrefs.GetInt("QualityLevel"), 0, QualitySettings.names.Length - 1), true);
         }
@@ -68,7 +72,7 @@ namespace DarwinPark.UI
             }
             // ★ 修复（防Bug回归）：Esc 由最早更新的菜单消费，同一帧不再触发退出操控或底层工具取消；F10 无动作。
             // ★ 适配：参数进度与存档设置自行处理输入，Esc不能再打开叠加的暂停菜单。
-            if (!Input.GetKeyDown(KeyCode.Escape) || _session.Busy || WorldRuntimeGate.Loading || WorldGameSettingsPanel.Instance?.Visible==true || WorldRuntimeGate.Recording) return;
+            if (_controls.Waiting.HasValue || !Input.GetKeyDown(KeyCode.Escape) || _session.Busy || WorldRuntimeGate.Loading || WorldGameSettingsPanel.Instance?.Visible==true || WorldRuntimeGate.Recording) return;
             if (!_visible && WorldRuntimeGate.Ready) ShowPause();
             else if (_visible && _page == "pause") Resume();
             else if (_visible && _page == "settings") ReturnFromSettings();
@@ -81,17 +85,10 @@ namespace DarwinPark.UI
             if (_session.Busy || !WorldRuntimeGate.Ready || _visible) return;
             _visible = true; _page = "pause"; _message = ""; GameInputGate.Blocked = true; Capture();
         }
-        // ★ 新增：底栏快捷入口复用原设置页和输入/暂停门控；返回直接回到游戏，保留原有运行状态及实体操控。
-        public void OpenSettingsShortcut()
-        {
-            if(_visible||_session.Busy||!WorldRuntimeGate.Ready||WorldRuntimeGate.Loading||WorldRuntimeGate.Recording||GameInputGate.Blocked)return;
-            ShowPause();
-            if(!_visible)return;
-            _settingsBack="game";_page="settings";_scroll=Vector2.zero;
-        }
         private void ReturnFromSettings()
         {
-            if(_settingsBack=="game")Resume();else{_page=_settingsBack;_message="";}
+            // ★ 修复（防Bug回归）：设置在自身页面配置按键，返回只回原菜单；不再提供误加的底栏入口。
+            _controls.Cancel();_page=_settingsBack;_message="";
         }
         private void Resume()
         {
@@ -128,6 +125,7 @@ namespace DarwinPark.UI
         private void OnGUI()
         {
             if (WorldRuntimeGate.Recording || !_visible) return;
+            if(_page=="settings")_controls.HandleEvent(Event.current);else _controls.Cancel();
             GUI.depth = -1000; RuntimeMenuTheme.Apply();
             bool inGame = _session.Current != null && WorldRuntimeGate.Ready;
             if (!inGame) _background.Draw(new Rect(0, 0, Screen.width, Screen.height));
@@ -135,7 +133,7 @@ namespace DarwinPark.UI
             GUI.color = new Color(.025f, .04f, .065f, inGame ? .62f : .12f);
             GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), Texture2D.whiteTexture); GUI.color = Color.white;
             if (_page == "tools") { _tools.Draw(new Rect(10, 10, Screen.width - 20, Screen.height - 20), () => { _tools.Close(); _page = "main"; }); return; }
-            float width = Mathf.Min(_page == "saves" ? 650 : _page == "main" ? 320 : 480, Screen.width - 32);
+            float width = Mathf.Min(_page == "settings" ? 700 : _page == "saves" ? 650 : _page == "main" ? 320 : 480, Screen.width - 32);
             float height = Mathf.Min(_page == "create" || _page == "saves" ? 680 : 560, Screen.height - 32);
             // ★ 适配：主菜单靠左留出星球动画，窄窗口保留居中与滚动，按钮不会裁掉。
             float left = _page == "main" && Screen.width >= 900 ? Screen.width * .06f : (Screen.width - width) / 2;
@@ -229,6 +227,19 @@ namespace DarwinPark.UI
         }
         private void DrawSettings()
         {
+            // ★ 新增：设置页左侧分页；控制页改键立即保存，主菜单及游戏暂停页使用同一配置。
+            GUILayout.BeginHorizontal();GUILayout.BeginVertical(GUILayout.Width(Mathf.Min(125,Screen.width*.22f)));
+            string[] tabs={"声音与画面","按键控制","日志与诊断"};
+            for(int i=0;i<tabs.Length;i++)if(GUILayout.Button(tabs[i],i==_settingsTab?RuntimeMenuTheme.Primary:GUI.skin.button,GUILayout.Height(38))){_settingsTab=i;_controls.Cancel();}
+            GUILayout.EndVertical();GUILayout.Space(12);GUILayout.BeginVertical();
+            if(_settingsTab==1)_controls.Draw();
+            else if(_settingsTab==0)DrawDisplaySettings();
+            else DrawDiagnosticSettings();
+            GUILayout.EndVertical();GUILayout.EndHorizontal();
+            if (RuntimeMenuTheme.Button("返回","back",false,38)) ReturnFromSettings();
+        }
+        private void DrawDisplaySettings()
+        {
             GUILayout.Label("主音量 " + Mathf.RoundToInt(_volume * 100) + "%"); _volume = RuntimeMenuTheme.Slider(_volume, 0, 1); AudioListener.volume = _volume;
             GUILayout.BeginHorizontal();GUILayout.Label("全屏显示");GUILayout.FlexibleSpace();
             bool full=Screen.fullScreen;if(GUILayout.Button(full?"●  开":"○  关",full?RuntimeMenuTheme.Primary:GUI.skin.button,GUILayout.Width(80),GUILayout.Height(30)))full=!full;
@@ -237,6 +248,10 @@ namespace DarwinPark.UI
             GUILayout.BeginHorizontal();for(int i=0;i<names.Length;i++)if(GUILayout.Button(names[i],i==quality?RuntimeMenuTheme.Primary:GUI.skin.button,GUILayout.Height(36)))quality=i;GUILayout.EndHorizontal();
             if (quality != QualitySettings.GetQualityLevel()) QualitySettings.SetQualityLevel(quality, true);
             if (RuntimeMenuTheme.Button("保存设置","save",true,40)) { PlayerPrefs.SetFloat("MasterVolume", _volume); PlayerPrefs.SetInt("FullScreen", Screen.fullScreen ? 1 : 0); PlayerPrefs.SetInt("QualityLevel", QualitySettings.GetQualityLevel()); PlayerPrefs.Save(); _message = "设置已保存"; }
+            GUILayout.Label("游戏数值配置："+GameplayTuning.FilePath,new GUIStyle(RuntimeMenuTheme.Muted){wordWrap=true});
+        }
+        private void DrawDiagnosticSettings()
+        {
             // ★ 新增：测试日志只在设置中提供定位入口，不新增遮挡游戏的日志面板。
             if(!string.IsNullOrEmpty(RuntimeFileLog.DirectoryPath))
             {
@@ -245,8 +260,6 @@ namespace DarwinPark.UI
             }
             // ★ 适配：写盘启动失败也必须在设置里显示原因，不能以目录为空为由隐藏故障。
             RuntimeDiagnosticsUI.Draw();
-            // ★ 适配：快捷设置的返回和Esc共用恢复逻辑，不能落到不存在的game菜单页。
-            if (RuntimeMenuTheme.Button("返回","back",false,38)) ReturnFromSettings();
         }
         private void Back(string page) { if (RuntimeMenuTheme.Button("返回","back",false,38)) { if(_page=="multiplayer"&&LanSession.Instance?.Online==true)LanSession.Instance.LeaveToMenu("已取消连接");else{_page = page; _message = "";} } }
         // ★ 修复（防Bug回归）：暂停页原先只有退出程序，补齐保存并卸载世界的导航路径。

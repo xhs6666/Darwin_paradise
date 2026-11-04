@@ -8,11 +8,15 @@ namespace DarwinPark.UI
     /// <summary>★ 新增：实体视角专用锁鼠标、准星与按键；退出/失焦时成对释放输入。</summary>
     public sealed class EntityPossessionInput : MonoBehaviour
     {
-        public KeyCode forwardKey = KeyCode.W, backKey = KeyCode.S, leftKey = KeyCode.A, rightKey = KeyCode.D;
-        public KeyCode jumpKey = KeyCode.Space;
-        public KeyCode cursorKey = KeyCode.LeftAlt;
+        // ★ 适配：设置中的绑定直接用于输入，不保留另一套Inspector按键导致界面修改无效。
+        public KeyCode forwardKey=>ControlBindings.Get(ControlAction.Forward);
+        public KeyCode backKey=>ControlBindings.Get(ControlAction.Back);
+        public KeyCode leftKey=>ControlBindings.Get(ControlAction.Left);
+        public KeyCode rightKey=>ControlBindings.Get(ControlAction.Right);
+        public KeyCode jumpKey=>ControlBindings.Get(ControlAction.Jump);
+        public KeyCode cursorKey=>ControlBindings.Get(ControlAction.ReleaseCursor);
         public bool CursorReleased {get;private set;}
-        [Range(0, 2)] public int attackMouseButton = 0;
+        public int attackMouseButton=>(int)ControlBindings.Get(ControlAction.Attack)-(int)KeyCode.Mouse0;
         public float lookSensitivity = 3, zoomSensitivity = 4, minPitch = -80, maxPitch = 80;
         public float crosshairSize = 18, crosshairThickness = 2;
         private CursorLockMode _savedLock;
@@ -52,7 +56,7 @@ namespace DarwinPark.UI
         {
             if (!_active) return;
             // ★ 修复（防Bug回归）：Alt 是按住释放、松开恢复；不能沿用切换开关造成松键后仍无法操控。
-            SetCursorReleased(Input.GetKey(cursorKey)||Input.GetKey(KeyCode.RightAlt));
+            SetCursorReleased(ControlBindings.Held(ControlAction.ReleaseCursor));
             bool running=!ServiceLocator.TryGet<SimulationClock>(out var clock)||clock.IsRunning;
             blocked |= !Application.isFocused || GameInputGate.Blocked || CursorReleased;
             SetCaptured(!blocked);
@@ -68,18 +72,19 @@ namespace DarwinPark.UI
             // ★ 修复（防Bug回归）：锁定第一人称，禁用滚轮拉远。
             float y = (Input.GetKey(forwardKey) ? 1 : 0) - (Input.GetKey(backKey) ? 1 : 0);
             float x = (Input.GetKey(rightKey) ? 1 : 0) - (Input.GetKey(leftKey) ? 1 : 0);
-            if(_acceptAttack && Input.GetMouseButtonDown(attackMouseButton))_manual.QueueAttack();
+            if(_acceptAttack && ControlBindings.Down(ControlAction.Attack))_manual.QueueAttack();
             if(!running)_manual.ClearAttack();
             // ★ 适配：准星始终对应真实相机中心射线，自身碰撞体由独立选取器排除。
             if(Camera.main!=null)_manual.SetAim(Camera.main.ViewportPointToRay(new Vector3(.5f,.5f,0)));
-            _manual.SetInput(forward * y + Vector3.Cross(up, forward) * x, _acceptAttack && Input.GetMouseButton(attackMouseButton));
+            _manual.SetInput(forward * y + Vector3.Cross(up, forward) * x, _acceptAttack && ControlBindings.Held(ControlAction.Attack));
             if (running && Input.GetKeyDown(jumpKey)) _jump.TryJump(_manual.CanMove);
         }
         public void SetCursorReleased(bool held){if(!_active||CursorReleased==held)return;CursorReleased=held;_manual?.SetInput(Vector3.zero,false);_manual?.ClearAttack();SetCaptured(!held);}
         private void OnGUI()
         {
             // ★ 修复（防Bug回归）：低帧率时按下/松开可能发生在同一帧，补收事件并锁存一次攻击。
-            if(_active && _acceptAttack && !GameInputGate.Blocked && Application.isFocused && Event.current.type==EventType.MouseDown && Event.current.button==attackMouseButton)
+            var evt=Event.current;var attack=ControlBindings.Get(ControlAction.Attack);
+            if(_active && _acceptAttack && !GameInputGate.Blocked && Application.isFocused && (evt.type==EventType.MouseDown && evt.button==attackMouseButton || evt.type==EventType.KeyDown && evt.keyCode==attack))
                 _manual?.QueueAttack();
         }
         private void SetCaptured(bool captured)

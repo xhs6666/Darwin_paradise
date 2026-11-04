@@ -183,7 +183,8 @@ namespace DarwinPark.EditorTools
             AntColonyWorker.Release(loadedCarrier);Check(!AntColonyWorker.IsCarried(loadedCargo)&&loadedCargo.GetComponent<Rigidbody>().detectCollisions,"读档后的活体运输可正常释放并清理索引");
             var bottom=ServiceLocator.Get<UIRoot>().MainCanvas.transform.Find("BottomPanel/ContentArea/Page1/LayerSec");var button=bottom.Find("layer_population").GetComponent<Button>();button.onClick.Invoke();yield return null;yield return null;
             Check(PopulationRangeLayer.Visible&&Object.FindObjectsByType<LineRenderer>(FindObjectsSortMode.None).Count(r=>r.name.StartsWith("范围 "))>=2,"实际图层按钮显示不同种群的球面范围");
-            var range=Object.FindObjectsByType<LineRenderer>(FindObjectsSortMode.None).First(r=>r.name=="范围 "+group);var tint=new MaterialPropertyBlock();range.GetPropertyBlock(tint);
+            // ★ 适配：种群图层拆为多个活动圆，颜色检查定位王后主圆，避免沿用旧的单圆对象名。
+            var range=Object.FindObjectsByType<LineRenderer>(FindObjectsSortMode.None).First(r=>r.name=="范围 "+group+"/leader");var tint=new MaterialPropertyBlock();range.GetPropertyBlock(tint);
             Check(tint.GetColor("_BaseColor")==ColonyAppearance.ColorFor(group),"范围颜色实际写入 URP 材质属性而非只设置顶点色");
             var orbit=Camera.main.GetComponent<OrbitCamera>();var focus=loadedQueen.transform.position;var cameraPoint=focus+EcologyQueries.Up(focus)*160;
             orbit.RestoreView(cameraPoint,Quaternion.LookRotation(focus-cameraPoint,Vector3.Cross(EcologyQueries.Up(focus),Vector3.right)),Vector3.Distance(cameraPoint,builder.transform.position));

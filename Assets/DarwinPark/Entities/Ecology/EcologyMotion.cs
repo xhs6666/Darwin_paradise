@@ -42,7 +42,7 @@ namespace DarwinPark.Entities.Ecology
             if(genes.GetComponent<PopulationBehavior>()?.SameGroup(target)==true)return false;
             // ★ 修复（防Bug回归）：士兵以王后种群范围巡猎，不能被尚未初始化或留在出生位置的个人领地拒绝合法目标。
             var member=genes.GetComponent<AntColonyMember>();
-            if(member!=null&&member.Active&&member.Role==AntRole.Soldier)return EcologyQueries.Distance(member.Center,target.transform.position)<=member.Radius;
+            if(member!=null&&member.Active)return ColonyActivityRange.Contains(member.Population,target.transform.position);
             var territory=genes.GetComponent<TerritoryBehavior>();return territory==null||territory.AllowsTarget(target.transform.position);
         }
         public static float ResolveAttribute(EntityGeneController genes,string id,float value)

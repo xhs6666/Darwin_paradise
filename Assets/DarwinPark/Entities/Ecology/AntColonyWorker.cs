@@ -35,7 +35,7 @@ namespace DarwinPark.Entities.Ecology
             Claims.Remove(id);return false;
         }
         // ★ 适配：体内隐藏的寄生幼体不是可搬运植株；不能把被宿主带到附近的幼体当作零速食物。
-        private static bool Valid(DarwinEntity entity,AntColonyMember worker)=>EcologyQueries.Alive(entity)&&entity.GetComponent<NutritionParasite>()?.Host==null&&!worker.Population.SameGroup(entity)&&entity.Genes.GetAttribute("moveSpeed")<=0&&entity.GetComponent<EntityManualControl>()?.IsControlled!=true;
+        private static bool Valid(DarwinEntity entity,AntColonyMember worker)=>EcologyQueries.Alive(entity)&&ColonyActivityRange.Contains(worker.Population,entity.transform.position)&&entity.GetComponent<NutritionParasite>()?.Host==null&&!worker.Population.SameGroup(entity)&&entity.Genes.GetAttribute("moveSpeed")<=0&&entity.GetComponent<EntityManualControl>()?.IsControlled!=true;
         public static void Advance(AntColonyMember worker,float dt)
         {
             var state=worker.State;var settings=AntColonySettings.Current;
@@ -64,12 +64,14 @@ namespace DarwinPark.Entities.Ecology
             // ★ 修复（防Bug回归）：未取货时同样先解决饥饿，原任务保留，吃饱后继续执行。
             if(ColonyFeeding.Destination(worker,out _))return;
             var resource=ColonyResource.Find(state.resourceTarget);var plant=Entity(state.livingTarget);
-            if(resource!=null&&!resource.Claim(worker)){state.resourceTarget=null;resource=null;}
+            if(resource!=null&&(!ColonyActivityRange.Contains(worker.Population,resource.transform.position)||!resource.Claim(worker)))
+            {resource.Release(worker.Id);state.resourceTarget=null;resource=null;}
             if(plant!=null&&(!Valid(plant,worker)||Claimed(plant,worker))){state.livingTarget=null;plant=null;}
             if(resource==null&&plant==null&&state.scan<=0)
             {
                 state.scan=settings.scanInterval;
-                foreach(var body in ColonyResource.All.Where(r=>ColonyCorpseAccess.Available(r,worker)&&EcologyQueries.Distance(worker.transform.position,r.transform.position)<=settings.transportSearchRadius).OrderBy(r=>(r.transform.position-worker.transform.position).sqrMagnitude))
+                // ★ 适配：活动圆决定采集边界，搜索距离仍决定单次感知；二者不能被个人出生领地替代。
+                foreach(var body in ColonyResource.All.Where(r=>ColonyCorpseAccess.Available(r,worker)&&ColonyActivityRange.Contains(worker.Population,r.transform.position)&&EcologyQueries.Distance(worker.transform.position,r.transform.position)<=settings.transportSearchRadius).OrderBy(r=>(r.transform.position-worker.transform.position).sqrMagnitude))
                     if(body.Claim(worker)){resource=body;state.resourceTarget=body.State.id;break;}
                 if(resource==null)
                 {

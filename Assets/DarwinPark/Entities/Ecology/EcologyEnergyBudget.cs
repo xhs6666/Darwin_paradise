@@ -57,7 +57,9 @@ namespace DarwinPark.Entities.Ecology
             var body=genes.GetComponent<Rigidbody>();/* ★ 适配：与实际交付模拟时间一致。 */ float scale=ServiceLocator.TryGet<SimulationClock>(out var clock)?clock.MotionTimeScale:1;
             if(body!=null&&scale>0&&genes.GetAttribute(settings.movementAttribute)>0)
                 speed=Mathf.Min(genes.GetAttribute(settings.movementAttribute),Vector3.ProjectOnPlane(body.linearVelocity,EcologyQueries.Up(genes.transform.position)).magnitude/scale);
-            return baseRate*settings.baseMetabolismScale+movementRate*settings.movementMetabolismScale*speed;
+            // ★ 适配：全局可编辑倍率在最终收支入口应用，AI、手动和不同模拟倍率共用同一计算。
+            var tuning=GameplayTuning.Current;
+            return baseRate*settings.baseMetabolismScale*tuning.baseMetabolismMultiplier+movementRate*settings.movementMetabolismScale*speed*tuning.movementMetabolismMultiplier;
         }
     }
 }

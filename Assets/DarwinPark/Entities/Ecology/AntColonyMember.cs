@@ -118,7 +118,7 @@ namespace DarwinPark.Entities.Ecology
             if(State.patrolRemaining>0)
             {
                 State.patrolRemaining=Mathf.Max(0,State.patrolRemaining-dt);
-                float circumference=2*Mathf.PI*Radius*settings.soldierPatrolRadiusRatio;
+                float circumference=2*Mathf.PI*ColonyActivityRange.PatrolCircle(this).Radius*settings.soldierPatrolRadiusRatio;
                 State.circleAngle+=360*Genes.GetAttribute("moveSpeed")*dt/Mathf.Max(settings.arrivalDistance,circumference);
                 Activity=ColonyActivity.Patrol;if(State.patrolRemaining<=0)State.restRemaining=settings.soldierRestSeconds;
             }
@@ -138,8 +138,9 @@ namespace DarwinPark.Entities.Ecology
             if(Role==AntRole.Soldier&&EcologyQueries.Alive(HuntTarget)){target=HuntTarget;point=target.transform.position;return true;}
             if(Role==AntRole.Soldier&&State.patrolRemaining>0)
             {
-                var up=EcologyQueries.Up(Center);var axis=Vector3.Cross(up,Vector3.forward).normalized;if(axis.sqrMagnitude<.1f)axis=Vector3.Cross(up,Vector3.right).normalized;
-                point=EcologyQueries.Surface(Center+Quaternion.AngleAxis(State.circleAngle,up)*axis*Radius*AntColonySettings.Current.soldierPatrolRadiusRatio);
+                // ★ 适配：巡逻路径与捕猎、图层使用同一批王后和补给活动中心。
+                var circle=ColonyActivityRange.PatrolCircle(this);
+                point=ColonyActivityRange.Boundary(circle,State.circleAngle,AntColonySettings.Current.soldierPatrolRadiusRatio);
             }
             return true;
         }

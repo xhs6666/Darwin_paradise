@@ -1,0 +1,16 @@
+{
+  "bindings": [
+    {"action":"Forward","key":"W"},
+    {"action":"Back","key":"S"},
+    {"action":"Left","key":"A"},
+    {"action":"Right","key":"D"},
+    {"action":"Jump","key":"Space"},
+    {"action":"Attack","key":"Mouse0"},
+    {"action":"ReleaseCursor","key":"LeftAlt"},
+    {"action":"ExitView","key":"Tab"},
+    {"action":"ReleaseEnergy","key":"Q"},
+    {"action":"Pause","key":"P"},
+    {"action":"WorldPause","key":"Space"},
+    {"action":"Rts","key":"R"}
+  ]
+}

@@ -99,25 +99,14 @@ namespace DarwinPark.EditorTools
             var builder=Object.FindFirstObjectByType<PlanetTerrainMeshBuilder>();builder.subdivisions=16;typeof(WorldSessionManager).GetField("_initialTerrain",Private).SetValue(session,JsonUtility.ToJson(builder));PlanetClimateMap.Instance.mapResolution=64;PlanetOreSystem.Instance.mapResolution=32;
             session.Create("设置快捷入口回归",11012026,.5f,20,44);start=EditorApplication.timeSinceStartup;while(session.Busy){if(EditorApplication.timeSinceStartup-start>90)throw new TimeoutException("测试世界加载超时");yield return null;}
             Check(session.Current!=null&&!menu.Visible&&!video.isPlaying,"进入真实世界暂停菜单视频");
-            var root=ServiceLocator.Get<UIRoot>();var control=Object.FindFirstObjectByType<SimulationControlPanel>();var shortcut=root.MainCanvas.transform.Find("BottomPanel/TabBar/SettingsShortcut").GetComponent<Button>();
-            var page=typeof(SimulationControlPanel).GetMethod("SwitchPage",Private);var scaler=root.MainCanvas.GetComponent<CanvasScaler>();var oldMode=scaler.uiScaleMode;float oldScale=scaler.scaleFactor;scaler.uiScaleMode=CanvasScaler.ScaleMode.ConstantPixelSize;
-            foreach(float scale in new[]{.7f,1f,1.4f})
-            {
-                scaler.scaleFactor=scale;yield return null;Canvas.ForceUpdateCanvases();var settingsRect=ScreenRect(shortcut.GetComponent<RectTransform>());var nextRect=ScreenRect((RectTransform)root.MainCanvas.transform.Find("BottomPanel/TabBar/ui_icon_next"));
-                Check(settingsRect.xMin>nextRect.xMax&&settingsRect.xMax<=Screen.width,"左侧分页与设置入口不重叠 scale="+scale);
-            }
-            scaler.uiScaleMode=oldMode;scaler.scaleFactor=oldScale;
-            foreach(int p in new[]{0,1})
-            {
-                page.Invoke(control,new object[]{p});clock.Play();yield return null;shortcut.onClick.Invoke();
-                Check(menu.Visible&&(string)Field(menu,"_page")=="settings"&&GameInputGate.Blocked&&!clock.IsRunning&&!root.MainCanvas.enabled,"第"+(p+1)+"页快捷设置正确暂停并拦截底层输入");
-                yield return Capture("settings-from-page"+(p+1));typeof(GameMainMenu).GetMethod("ReturnFromSettings",Private).Invoke(menu,null);
-                Check(!menu.Visible&&clock.IsRunning&&root.MainCanvas.enabled&&!GameInputGate.Blocked,"快捷设置返回原运行状态和HUD 第"+(p+1)+"页");
-            }
-            clock.Pause();shortcut.onClick.Invoke();typeof(GameMainMenu).GetMethod("ReturnFromSettings",Private).Invoke(menu,null);Check(!clock.IsRunning&&!menu.Visible,"原先暂停时返回仍保持暂停");
-            WorldAuthority.CanEdit=false;shortcut.onClick.Invoke();Check(menu.Visible&&(string)Field(menu,"_page")=="settings","普通成员可打开本地音量/画面设置");typeof(GameMainMenu).GetMethod("ReturnFromSettings",Private).Invoke(menu,null);WorldAuthority.CanEdit=true;
-            GameInputGate.Blocked=true;shortcut.onClick.Invoke();Check(!menu.Visible,"其他覆盖UI打开时不叠加快捷设置");GameInputGate.Blocked=false;
-            page.Invoke(control,new object[]{0});yield return Capture("shortcut-left-tabs");menu.ShowPause();menu.ReturnToMainMenu();yield return null;yield return null;Check(video.isPlaying,"返回主界面恢复同一视频实例");
+            var root=ServiceLocator.Get<UIRoot>();
+            Check(root.MainCanvas.transform.Find("BottomPanel/TabBar/SettingsShortcut")==null,"底栏不存在误加的设置按钮");
+            clock.Play();menu.ShowPause();
+            typeof(GameMainMenu).GetField("_page",Private).SetValue(menu,"settings");typeof(GameMainMenu).GetField("_settingsBack",Private).SetValue(menu,"pause");
+            Check(menu.Visible&&GameInputGate.Blocked&&!clock.IsRunning,"设置页暂停并拦截底层输入");
+            yield return Capture("settings-page");typeof(GameMainMenu).GetMethod("ReturnFromSettings",Private).Invoke(menu,null);
+            Check((string)Field(menu,"_page")=="pause","设置返回暂停菜单");
+            menu.ReturnToMainMenu();yield return null;yield return null;Check(video.isPlaying,"返回主界面恢复同一视频实例");
             // ★ 适配：先移除声明RequireComponent的菜单，才能实际销毁背景组件并验收释放过程。
             var menuHost=menu.gameObject;Object.Destroy(menu);yield return null;Object.Destroy(background);yield return null;yield return null;
             Check(menuHost.GetComponent<VideoPlayer>()==null&&Problems.Count==0,"销毁背景释放解码器和输出，无Flush错误");

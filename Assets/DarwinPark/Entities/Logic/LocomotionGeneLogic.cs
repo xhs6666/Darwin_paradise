@@ -94,7 +94,9 @@ namespace DarwinPark.Entities.Logic
             var otherStats = _target.GetComponent<EntityStats>();
             var a = _controller.GetComponent<Collider>(); var b = _target.GetComponent<Collider>();
             float gap = a != null && b != null ? Vector3.Distance(a.ClosestPoint(b.bounds.center),b.ClosestPoint(a.bounds.center)) : Vector3.Distance(_controller.transform.position,_target.transform.position);
-            if (gap > _settings.attackReach || otherStats == null || !otherStats.TryGet("health",out float health) || health <= 0) return;
+            // ★ 修复（防Bug回归）：手动近战为准星判定留少量距离容差，AI的追击距离保持原有配置。
+            float reach=_settings.attackReach+(_controller.GetComponent<EntityManualControl>()?.IsControlled==true?GameplayTuning.Current.manualAttackReachBonus:0);
+            if (gap > reach || otherStats == null || !otherStats.TryGet("health",out float health) || health <= 0) return;
             float damage = graze ? _settings.grazeDamage : _controller.GetAttribute("attack");
             if (damage <= 0) return;
             _actionCooldown = _settings.attackInterval;

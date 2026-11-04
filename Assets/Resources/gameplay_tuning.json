@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "baseMetabolismMultiplier": 1.0,
+  "movementMetabolismMultiplier": 1.0,
+  "repairFoodPerHealth": 0.5,
+  "starvationDamagePerSecond": 1.0,
+  "manualAimPadding": 0.85,
+  "manualHitboxScale": 1.5,
+  "manualAttackReachBonus": 0.35,
+  "supplyActivityRadiusRatio": 1.0
+}

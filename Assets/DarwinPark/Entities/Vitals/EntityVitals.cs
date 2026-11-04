@@ -72,7 +72,8 @@ namespace DarwinPark.Entities.Vitals
                 {
                     float hpToRepair = repairEfficiency * dt;
                     _stats.Modify("health", hpToRepair);
-                    _stats.Modify("nutrient", -hpToRepair * 0.5f);
+                    // ★ 适配：修复和饥饿数值与行动代谢一起由全局配置管理。
+                    _stats.Modify("nutrient", -hpToRepair * GameplayTuning.Current.repairFoodPerHealth);
                 }
             }
 
@@ -81,7 +82,7 @@ namespace DarwinPark.Entities.Vitals
             // 溺水与温度伤害已迁移到 EntityEnvironmentHazard，由 EnvironmentConfig 数据驱动。
 
             if (_stats.TryGet("nutrient", out var finalNutrient) && finalNutrient <= 0f)
-                _stats.Modify("health", -1f * dt);
+                _stats.Modify("health", -GameplayTuning.Current.starvationDamagePerSecond * dt);
 
             if (_stats.TryGet("health", out var finalHp) && finalHp <= 0f)
                 Ecology.EntityDeathSettlement.Die(GetComponent<DarwinEntity>());

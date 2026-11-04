@@ -28,18 +28,20 @@ namespace DarwinPark.UI
             if(!WorldRuntimeGate.Ready){foreach(var ring in _rings.Values)if(ring!=null)ring.enabled=false;return;}
             if(Time.unscaledTime<_next)return;_next=Time.unscaledTime+AntColonySettings.Current.scanInterval;
             var groups=EntityRegistry.All.Select(e=>e.GetComponent<PopulationBehavior>()).Where(p=>p!=null&&p.Active&&!string.IsNullOrEmpty(p.GroupId)).GroupBy(p=>p.GroupId).ToArray();
-            var live=new HashSet<string>(groups.Select(g=>g.Key));
-            foreach(string obsolete in _rings.Keys.Where(k=>!live.Contains(k)).ToArray()){if(_rings[obsolete]!=null)Destroy(_rings[obsolete].gameObject);_rings.Remove(obsolete);}
+            var live=new HashSet<string>();
             foreach(var group in groups)
             {
-                var pop=group.First();var queen=AntColonyMember.QueenFor(pop);var leader=queen!=null?queen.Population:pop.Leader;if(leader==null)continue;
-                Vector3 center=leader.transform.position;float radius=queen!=null?queen.Radius:Mathf.Max(AntColonySettings.Current.minimumColonyRadius,leader.GetComponent<EntityGeneController>().GetAttribute("territory_radius"));
-                if(!_rings.TryGetValue(group.Key,out var ring)||ring==null)
-                {ring=ColonyAppearance.Circle(EcologyQueries.Planet!=null?EcologyQueries.Planet.transform:transform,"范围 "+group.Key,AntColonySettings.Current.overlayWidth);_rings[group.Key]=ring;}
+                // ★ 适配：每个活动中心独立画圆；只显示真实参与行为判断的范围。
+                foreach(var circle in ColonyActivityRange.Circles(group.First()))
+                {
+                string key=group.Key+"/"+circle.Id;live.Add(key);
+                if(!_rings.TryGetValue(key,out var ring)||ring==null)
+                {ring=ColonyAppearance.Circle(EcologyQueries.Planet!=null?EcologyQueries.Planet.transform:transform,"范围 "+key,AntColonySettings.Current.overlayWidth);_rings[key]=ring;}
                 ring.enabled=true;ring.positionCount=AntColonySettings.Current.circleSegments;ColonyAppearance.Tint(ring,ColonyAppearance.ColorFor(group.Key));
-                Vector3 up=EcologyQueries.Up(center),axis=Vector3.Cross(up,Vector3.forward).normalized;if(axis.sqrMagnitude<.1f)axis=Vector3.Cross(up,Vector3.right).normalized;
-                for(int i=0;i<ring.positionCount;i++){var point=EcologyQueries.Surface(center+Quaternion.AngleAxis(i*360f/ring.positionCount,up)*axis*radius);ring.SetPosition(i,ring.transform.InverseTransformPoint(point));}
+                for(int i=0;i<ring.positionCount;i++)ring.SetPosition(i,ring.transform.InverseTransformPoint(ColonyActivityRange.Boundary(circle,i*360f/ring.positionCount)));
+                }
             }
+            foreach(string obsolete in _rings.Keys.Where(k=>!live.Contains(k)).ToArray()){if(_rings[obsolete]!=null)Destroy(_rings[obsolete].gameObject);_rings.Remove(obsolete);}
         }
     }
 }

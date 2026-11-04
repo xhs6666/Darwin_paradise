@@ -232,7 +232,8 @@ namespace DarwinPark.UI
             }
             if(IsClient&&WorldRuntimeGate.Ready&&!_remoteLoading&&!GameInputGate.Blocked&&!WorldAuthority.RtsMode&&EntityViewController.Instance?.Target is DarwinEntity local)
             {
-                var manual=local.GetComponent<EntityManualControl>();_pendingAttack|=manual.ConsumeAttack()||manual.AttackHeld;_pendingJump|=Input.GetKeyDown(KeyCode.Space);
+                // ★ 修复（防Bug回归）：客户端发给房主的跳跃也必须使用改键后的输入。
+                var manual=local.GetComponent<EntityManualControl>();_pendingAttack|=manual.ConsumeAttack()||manual.AttackHeld;_pendingJump|=ControlBindings.Down(ControlAction.Jump);
                 if(Time.unscaledTime-_lastInput>=LanSettings.Current.inputInterval)
                 {_lastInput=Time.unscaledTime;SendCommand(new LanCommand{kind="input",direction=manual.MoveDirection,aim=Camera.main.transform.forward,attack=_pendingAttack,jump=_pendingJump});_pendingJump=_pendingAttack=false;}
             }

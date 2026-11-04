@@ -12,8 +12,9 @@ namespace DarwinPark.Core
     public class SimulationPauseHotkey : MonoBehaviour
     {
         [Header("热键")]
-        public KeyCode pauseKey = KeyCode.Space;
-        public KeyCode viewPauseKey = KeyCode.P;
+        // ★ 适配：世界暂停与通用暂停分开绑定，实体跳跃不会同时暂停。
+        public KeyCode pauseKey=>ControlBindings.Get(ControlAction.WorldPause);
+        public KeyCode viewPauseKey=>ControlBindings.Get(ControlAction.Pause);
 
         private SimulationClock _clock;
 

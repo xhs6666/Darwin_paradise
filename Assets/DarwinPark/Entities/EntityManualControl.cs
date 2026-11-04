@@ -19,7 +19,8 @@ namespace DarwinPark.Entities
         private Ray? _aimRay;
         private bool _attackQueued;
         public float aimRayDistance=200f;
-        public float aimRadius=.35f;
+        // ★ 适配：判定框扩大由可编辑游戏配置统一控制，避免旧场景组件残留小半径。
+        public float aimRadius=>GameplayTuning.Current.manualAimPadding;
         public void QueueAttack(){if(CanMove && IsControlled)_attackQueued=true;}
         public bool ConsumeAttack(){bool pending=_attackQueued;_attackQueued=false;return pending;}
         public void ClearAttack(){_attackQueued=false;AttackHeld=false;}

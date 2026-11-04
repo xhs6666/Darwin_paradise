@@ -15,7 +15,7 @@ namespace DarwinPark.Entities.Ecology
         public bool Active=>EcologyQueries.Active(_genes,_settings.territoryGene)!=null||EcologyQueries.Active(_genes,_settings.populationGene)!=null;
         public Vector3 Center=>EcologyQueries.ToWorld(CenterLocal);
         public float Radius=>Mathf.Max(_settings.arrivalDistance,_genes.GetAttribute("territory_radius"));
-        public float Defense=>Active&&EvictionRemaining<=0&&EcologyQueries.Distance(transform.position,Center)<=Radius?_genes.GetAttribute("defend_bonus"):0;
+        public float Defense=>Active&&EvictionRemaining<=0&&AllowsTarget(transform.position)?_genes.GetAttribute("defend_bonus"):0;
         private void Awake(){_genes=GetComponent<EntityGeneController>();_settings=EcologySettings.Load();}
         private void OnEnable(){_combat=EntityCombat.Ensure(gameObject);_combat.Attacked+=OnAttacked;}
         private void OnDisable(){if(_combat!=null)_combat.Attacked-=OnAttacked;}
@@ -40,7 +40,13 @@ namespace DarwinPark.Entities.Ecology
             if(CombatIntent.CanRetaliate(_genes,attacker))return;
             ThreatLocal=EcologyQueries.ToLocal(attacker.transform.position);EvictionRemaining=_settings.settleDelay;
         }
-        public bool AllowsTarget(Vector3 position)=>!Active||EvictionRemaining>0||EcologyQueries.Distance(Center,position)<=Radius;
+        public bool AllowsTarget(Vector3 position)
+        {
+            // ★ 适配：种群成员共享活动区，普通领地仍使用自身领地圆。
+            if(!Active||EvictionRemaining>0)return true;
+            var population=GetComponent<PopulationBehavior>();
+            return population!=null&&population.Active?ColonyActivityRange.Contains(population,position):EcologyQueries.Distance(Center,position)<=Radius;
+        }
         public bool Destination(out Vector3 point,out float speed)
         {
             point=transform.position;speed=1;if(!Active)return false;
@@ -51,7 +57,7 @@ namespace DarwinPark.Entities.Ecology
                 if(away.sqrMagnitude<.01f)away=Vector3.Cross(EcologyQueries.Up(transform.position),Vector3.right);
                 point=EcologyQueries.Surface(transform.position+away.normalized*_settings.fleeDistance);speed=_settings.fleeSpeedMultiplier;return true;
             }
-            if(EcologyQueries.Distance(Center,transform.position)>Radius){point=Center;return true;}
+            if(!AllowsTarget(transform.position)){var pop=GetComponent<PopulationBehavior>();point=pop!=null&&pop.Active?ColonyActivityRange.NearestCenter(pop,transform.position):Center;return true;}
             // ★ 修复（防Bug回归）：领地只约束边界与驱逐，不能永远返回巡逻意图并阻断饥饿捕猎。
             return false;
         }
