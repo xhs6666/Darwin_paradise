@@ -1,11 +1,21 @@
 {
+  // 配置版本请勿修改。支持 // 行注释及 /* 块注释 */；保存后约2秒自动生效，也可在设置页重新载入。
   "version": 1,
+  // 基础饱食消耗倍率：0关闭，0.5减半，2翻倍。
   "baseMetabolismMultiplier": 1.0,
+  // 行动饱食消耗倍率，按实际移动速度及模拟时间结算。
   "movementMetabolismMultiplier": 1.0,
+  // 每修复1生命所需饱食度，以及饱食耗尽后每模拟秒生命损失。
   "repairFoodPerHealth": 0.5,
   "starvationDamagePerSecond": 1.0,
+  // 手动攻击框额外距离、放大倍率(至少1)、近战距离容差。不改变物理体积。
   "manualAimPadding": 0.85,
   "manualHitboxScale": 1.5,
   "manualAttackReachBonus": 0.35,
-  "supplyActivityRadiusRatio": 1.0
+  // 种群活动半径倍率：初始缩小至旧版35%；同时作用于王后/领袖及真实补给圆。
+  "colonyActivityRadiusMultiplier": 0.35,
+  // 补给圆相对王后圆的半径倍率。无剩余补给能量时不生成补给圆。
+  "supplyActivityRadiusRatio": 1.0,
+  // 种群范围填色不透明度：0完全透明，1完全不透明。
+  "populationFillOpacity": 0.22
 }

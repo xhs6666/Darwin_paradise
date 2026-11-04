@@ -25,6 +25,9 @@ namespace DarwinPark.UI
         private Vector2 _scroll;
         private int _settingsTab;
         private readonly ControlSettingsPage _controls=new ControlSettingsPage();
+        private Vector2 _settingsScroll;
+        public Rect SettingsWindowRect=>new Rect((Screen.width-Mathf.Min(480,Screen.width-32))/2,(Screen.height-Mathf.Min(560,Screen.height-32))/2,Mathf.Min(480,Screen.width-32),Mathf.Min(560,Screen.height-32));
+        public Rect SettingsReturnRect {get{var r=SettingsWindowRect;return new Rect(r.x+8,r.yMax-48,r.width-16,38);}}
         public bool Visible => _visible;
 
         private void Awake()
@@ -65,6 +68,7 @@ namespace DarwinPark.UI
         }
         private void Update()
         {
+            GameplayTuning.Poll();
             if (_visible)
             {
                 HideHud();
@@ -89,6 +93,7 @@ namespace DarwinPark.UI
         {
             // ★ 修复（防Bug回归）：设置在自身页面配置按键，返回只回原菜单；不再提供误加的底栏入口。
             _controls.Cancel();_page=_settingsBack;_message="";
+            if(_page!="main"&&_page!="pause")_page=WorldRuntimeGate.Ready?"pause":"main";
         }
         private void Resume()
         {
@@ -132,8 +137,10 @@ namespace DarwinPark.UI
             // ★ 适配：保持实时/预录星球背景，只降低遮罩浓度，让新主题与样图的太空背景融合。
             GUI.color = new Color(.025f, .04f, .065f, inGame ? .62f : .12f);
             GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), Texture2D.whiteTexture); GUI.color = Color.white;
+            // ★ 修复（防Bug回归）：设置恢复480×560，分页内容独立滚动；返回固定在滚动区之外，避免溢出内容抢占点击。
+            if(_page=="settings"){DrawSettingsWindow();return;}
             if (_page == "tools") { _tools.Draw(new Rect(10, 10, Screen.width - 20, Screen.height - 20), () => { _tools.Close(); _page = "main"; }); return; }
-            float width = Mathf.Min(_page == "settings" ? 700 : _page == "saves" ? 650 : _page == "main" ? 320 : 480, Screen.width - 32);
+            float width = Mathf.Min(_page == "saves" ? 650 : _page == "main" ? 320 : 480, Screen.width - 32);
             float height = Mathf.Min(_page == "create" || _page == "saves" ? 680 : 560, Screen.height - 32);
             // ★ 适配：主菜单靠左留出星球动画，窄窗口保留居中与滚动，按钮不会裁掉。
             float left = _page == "main" && Screen.width >= 900 ? Screen.width * .06f : (Screen.width - width) / 2;
@@ -164,7 +171,6 @@ namespace DarwinPark.UI
                 GUILayout.Label(_session.SaveStatus);
                 GUILayout.Label("Esc  返回游戏",new GUIStyle(RuntimeMenuTheme.Muted){alignment=TextAnchor.MiddleCenter});
             }
-            else if (_page == "settings") DrawSettings();
             else if (_page == "multiplayer") {GetComponent<LanLobbyUI>().DrawJoin();Back("main");}
             if (!string.IsNullOrEmpty(_message)) GUILayout.Label(_message, new GUIStyle(GUI.skin.label) { wordWrap = true });
             GUILayout.EndScrollView(); GUILayout.EndArea();
@@ -225,18 +231,21 @@ namespace DarwinPark.UI
             // ★ 适配：联机加载使用已验证的取消/清场入口，用户不必等待网络超时才能返回。
             if(LanSession.Instance?.IsClient==true&&RuntimeMenuTheme.Button("取消加入",null,false,38))LanSession.Instance.LeaveToMenu("已取消加入");
         }
-        private void DrawSettings()
+        private void DrawSettingsWindow()
         {
-            // ★ 新增：设置页左侧分页；控制页改键立即保存，主菜单及游戏暂停页使用同一配置。
-            GUILayout.BeginHorizontal();GUILayout.BeginVertical(GUILayout.Width(Mathf.Min(125,Screen.width*.22f)));
+            var rect=SettingsWindowRect;GUI.Box(rect,GUIContent.none);
+            GUILayout.BeginArea(new Rect(rect.x+8,rect.y+18,rect.width-16,86));DrawPageHeading();GUILayout.EndArea();
+            float navWidth=Mathf.Min(104,rect.width*.25f),bodyHeight=Mathf.Max(100,rect.height-174);
+            GUILayout.BeginArea(new Rect(rect.x+8,rect.y+112,navWidth,bodyHeight));
             string[] tabs={"声音与画面","按键控制","日志与诊断"};
-            for(int i=0;i<tabs.Length;i++)if(GUILayout.Button(tabs[i],i==_settingsTab?RuntimeMenuTheme.Primary:GUI.skin.button,GUILayout.Height(38))){_settingsTab=i;_controls.Cancel();}
-            GUILayout.EndVertical();GUILayout.Space(12);GUILayout.BeginVertical();
-            if(_settingsTab==1)_controls.Draw();
-            else if(_settingsTab==0)DrawDisplaySettings();
-            else DrawDiagnosticSettings();
-            GUILayout.EndVertical();GUILayout.EndHorizontal();
-            if (RuntimeMenuTheme.Button("返回","back",false,38)) ReturnFromSettings();
+            for(int i=0;i<tabs.Length;i++)if(GUILayout.Button(tabs[i],i==_settingsTab?RuntimeMenuTheme.Primary:GUI.skin.button,GUILayout.Height(36))){_settingsTab=i;_settingsScroll=Vector2.zero;_controls.Cancel();}
+            GUILayout.EndArea();
+            GUILayout.BeginArea(new Rect(rect.x+navWidth+18,rect.y+112,rect.width-navWidth-26,bodyHeight));
+            _settingsScroll=GUILayout.BeginScrollView(_settingsScroll);
+            if(_settingsTab==1)_controls.Draw();else if(_settingsTab==0)DrawDisplaySettings();else DrawDiagnosticSettings();
+            if(!string.IsNullOrEmpty(_message))GUILayout.Label(_message,new GUIStyle(GUI.skin.label){wordWrap=true});
+            GUILayout.EndScrollView();GUILayout.EndArea();
+            if(GUI.Button(SettingsReturnRect,"←       返回",GUI.skin.button))ReturnFromSettings();
         }
         private void DrawDisplaySettings()
         {
@@ -249,6 +258,7 @@ namespace DarwinPark.UI
             if (quality != QualitySettings.GetQualityLevel()) QualitySettings.SetQualityLevel(quality, true);
             if (RuntimeMenuTheme.Button("保存设置","save",true,40)) { PlayerPrefs.SetFloat("MasterVolume", _volume); PlayerPrefs.SetInt("FullScreen", Screen.fullScreen ? 1 : 0); PlayerPrefs.SetInt("QualityLevel", QualitySettings.GetQualityLevel()); PlayerPrefs.Save(); _message = "设置已保存"; }
             GUILayout.Label("游戏数值配置："+GameplayTuning.FilePath,new GUIStyle(RuntimeMenuTheme.Muted){wordWrap=true});
+            if(RuntimeMenuTheme.Button("重新载入数值配置",null,false,32)){GameplayTuning.Reload();_message="已载入有效配置；外部修改也会自动生效";}
         }
         private void DrawDiagnosticSettings()
         {

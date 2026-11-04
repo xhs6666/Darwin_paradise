@@ -12,7 +12,7 @@ namespace DarwinPark.UI
     // ★ 新增：独立筛选卡放在统计右侧，窄屏由统计标题中的“筛选”按钮展开，不继续拉长原统计面板。
     [DefaultExecutionOrder(50)] public sealed class MapEntityGeneFilterUI:MonoBehaviour
     {
-        public float preferredWidth=290,minimumWidth=230,cardHeight=164,gap=10,refreshInterval=.5f;
+        public float preferredWidth=260,minimumWidth=230,cardHeight=164,gap=10,refreshInterval=.5f;
         public Vector2 resultWindowSize=new Vector2(320,372);
         public float minimumResultHeight=150;
         public int resultsPerPage=10;

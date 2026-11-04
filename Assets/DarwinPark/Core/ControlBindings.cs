@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace DarwinPark.Core
 {
-    public enum ControlAction { Forward, Back, Left, Right, Jump, Attack, ReleaseCursor, ExitView, ReleaseEnergy, Pause, WorldPause, Rts }
+    public enum ControlAction { Forward, Back, Left, Right, Jump, Attack, ReleaseCursor, ExitView, ReleaseEnergy, Pause, WorldPause, Rts, CycleLayer, ClearLayer }
     // ★ 新增：所有可改键输入共用同一份绑定；只保存本机偏好，联机指令仍由房主验证权限。
     public static class ControlBindings
     {
@@ -12,7 +12,7 @@ namespace DarwinPark.Core
         [Serializable] public sealed class Data { public Entry[] bindings; }
         private const string Preference="DarwinPark.Controls.v1";
         private static Dictionary<ControlAction,KeyCode> _keys;
-        public static readonly string[] Labels={"前进","后退","向左","向右","跳跃","攻击","按住释放鼠标","退出实体操控","吐出能量块","暂停 / 继续","星球视角暂停","切换 RTS"};
+        public static readonly string[] Labels={"前进","后退","向左","向右","跳跃","攻击","按住释放鼠标","退出实体操控","吐出能量块","暂停 / 继续","星球视角暂停","切换 RTS","切换图层","取消图层显示"};
         private static Dictionary<ControlAction,KeyCode> Defaults()
         {
             var asset=Resources.Load<TextAsset>("control_bindings");
@@ -49,7 +49,7 @@ namespace DarwinPark.Core
         }
         public static bool Down(ControlAction action)=>Input.GetKeyDown(Get(action));
         // 空格可分别承担星球暂停和实体跳跃；其他同时生效的操作不能绑定同一个键。
-        private static bool Overlaps(ControlAction a,ControlAction b)=>a!=ControlAction.WorldPause&&b!=ControlAction.WorldPause||a==ControlAction.Pause||b==ControlAction.Pause||a==ControlAction.Rts||b==ControlAction.Rts;
+        private static bool Overlaps(ControlAction a,ControlAction b)=>a!=ControlAction.WorldPause&&b!=ControlAction.WorldPause||a>=ControlAction.Rts||b>=ControlAction.Rts||a==ControlAction.Pause||b==ControlAction.Pause;
         private static bool SameKey(KeyCode a,KeyCode b)=>(a==KeyCode.RightAlt?KeyCode.LeftAlt:a)==(b==KeyCode.RightAlt?KeyCode.LeftAlt:b);
         private static bool Valid(KeyCode key)=>Enum.IsDefined(typeof(KeyCode),key)&&key!=KeyCode.None&&key!=KeyCode.Escape;
         public static bool TryBind(ControlAction action,KeyCode key,out string message)

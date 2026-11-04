@@ -39,6 +39,8 @@ namespace DarwinPark.UI
         }
 
         private string _currentSelectedLayer = "default";
+        public string CurrentLayer=>_currentSelectedLayer;
+        private readonly List<string> _layerOrder=new List<string>();
 
         private UIRoot _uiRoot;
         private bool _uiBuilt;
@@ -470,6 +472,12 @@ namespace DarwinPark.UI
 
         private void Update()
         {
+            if(WorldRuntimeGate.Ready&&!GameInputGate.Blocked)
+            {
+                if(ControlBindings.Down(ControlAction.ClearLayer))HandleLayerKey(ControlBindings.Get(ControlAction.ClearLayer));
+                else if(ControlBindings.Down(ControlAction.CycleLayer))HandleLayerKey(ControlBindings.Get(ControlAction.CycleLayer));
+            }
+            if(_currentSelectedLayer=="layer_population"&&!PopulationRangeLayer.Visible)SetLayer("default");
             // ★ 适配：普通成员看不到创造页，作弊权限撤回后立即关闭修改弹窗。
             if(_uiBuilt&&_tabNextBtn!=null){_tabNextBtn.interactable=true;if(!WorldAuthority.CanEdit)DestroyMenus();
                 var spawning=_page2Container?.transform.Find("EntitySpawnPanel");if(spawning!=null)spawning.gameObject.SetActive(WorldAuthority.CanEdit);
@@ -600,10 +608,13 @@ namespace DarwinPark.UI
 
         private void CreateLayerIcon(Transform parent, string iconId, string fallbackText)
         {
+            if(!_layerOrder.Contains(iconId))_layerOrder.Add(iconId);
             var btnGO = UIFactory.NewRect(iconId, parent, typeof(Image), typeof(Button));
             var img = btnGO.GetComponent<Image>();
             // ★ 适配：图标与按钮背景分离，选中时只更新面板表面，避免把线条图标当底色染暗。
             UIVisualTheme.Paint(img,"button");
+            // ★ 修复（防Bug回归）：SpriteSwap的焦点/悬停图会覆盖取消后的普通底图，图层状态改由唯一选中值驱动。
+            btnGO.GetComponent<Button>().transition=Selectable.Transition.None;
             var sprite = UIIconRegistry.Get(iconId);
 
             if (sprite != null)
@@ -614,7 +625,8 @@ namespace DarwinPark.UI
             UIFactory.Stretch(txt.rectTransform,2,4);
             // ★ 适配：新按钮使用网格的下方空位，原三个按钮仍由原三列布局定位。
             if(iconId=="layer_population")
-            {var element=btnGO.AddComponent<LayoutElement>();element.ignoreLayout=true;var rt=btnGO.GetComponent<RectTransform>();rt.anchorMin=rt.anchorMax=new Vector2(.5f,.5f);rt.sizeDelta=new Vector2(60,44);rt.anchoredPosition=new Vector2(0,-62);}
+            {var element=btnGO.AddComponent<LayoutElement>();element.ignoreLayout=true;var rt=btnGO.GetComponent<RectTransform>();rt.anchorMin=rt.anchorMax=new Vector2(.5f,.5f);rt.sizeDelta=new Vector2(60,44);rt.anchoredPosition=new Vector2(0,-62);
+             btnGO.AddComponent<RightClickHandler>().OnRightClick+=PopulationRangeLayer.ToggleStyle;}
 
             // 绑定点击事件
             btnGO.GetComponent<Button>().onClick.AddListener(() => OnLayerClicked(iconId));
@@ -627,6 +639,20 @@ namespace DarwinPark.UI
             {
                 layerId = "default";
             }
+            SetLayer(layerId);
+        }
+        public bool HandleLayerKey(KeyCode key,bool typing=false)
+        {
+            // ★ 新增：图层只读快捷键对普通成员开放，输入框及覆盖菜单不触发。
+            var selected=UnityEngine.EventSystems.EventSystem.current?.currentSelectedGameObject;
+            if(typing||GameInputGate.Blocked||!WorldRuntimeGate.Ready||selected!=null&&selected.GetComponentInParent<InputField>() is InputField input&&input.isFocused)return false;
+            if(key==ControlBindings.Get(ControlAction.ClearLayer)){SetLayer("default");return true;}
+            if(key!=ControlBindings.Get(ControlAction.CycleLayer)||_layerOrder.Count==0)return false;
+            int index=_layerOrder.IndexOf(_currentSelectedLayer);SetLayer(index+1>=_layerOrder.Count?"default":_layerOrder[index+1]);return true;
+        }
+        public void SetLayer(string layerId)
+        {
+            if(layerId!="default"&&!_layerOrder.Contains(layerId))return;
             _currentSelectedLayer = layerId;
             // ★ 适配：新图层独立绘制种群范围，原三个图层的按钮坐标与 Shader 模式保持不变。
             PopulationRangeLayer.SetVisible(layerId=="layer_population");

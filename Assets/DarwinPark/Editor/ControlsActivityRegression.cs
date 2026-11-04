@@ -91,7 +91,7 @@ namespace DarwinPark.EditorTools
 
             Vector3 home=EcologyQueries.Surface(builder.transform.position+Vector3.up*(builder.radius+builder.heightScale));var queen=AntColonyMember.Ensure(Spawn(home,true).GetComponent<PopulationBehavior>());queen.Assign(AntRole.Queen,"range-review");
             var soldier=AntColonyMember.Ensure(Spawn(home,true).GetComponent<PopulationBehavior>());soldier.Assign(AntRole.Soldier,queen.GroupId);
-            var supply=ColonyActivityRange.Boundary(new ActivityCircle("test",home,queen.Radius*.9f),0);queen.State.supplyPoints.Clear();queen.State.supplyPoints.Add(EcologyQueries.ToLocal(supply));
+            var supply=ColonyActivityRange.Boundary(new ActivityCircle("test",home,queen.Radius*.9f),0);queen.State.supplyPoints.Clear();queen.State.supplyPoints.Add(EcologyQueries.ToLocal(supply));ColonyResource.Convert(queen.GroupId,supply,10,false);
             Vector3 extended=ColonyActivityRange.Boundary(new ActivityCircle("test",home,queen.Radius*1.4f),0),outside=ColonyActivityRange.Boundary(new ActivityCircle("test",home,queen.Radius*2.4f),0);
             Check(EcologyQueries.Distance(home,extended)>queen.Radius&&ColonyActivityRange.Contains(soldier.Population,extended),"补给点活动圆扩展到王后圆外");
             Check(!ColonyActivityRange.Contains(soldier.Population,outside),"所有活动圆外的目标被排除");
@@ -99,7 +99,7 @@ namespace DarwinPark.EditorTools
             var terrain=soldier.GetComponent<TerritoryBehavior>();Check(terrain.AllowsTarget(extended)&&!terrain.AllowsTarget(outside),"个人领地判断使用同一活动圆并集");
             var saved=queen.Capture();queen.State.supplyPoints.Clear();queen.Restore(saved);Check(ColonyActivityRange.Contains(soldier.Population,extended),"活动中心随原存档字段往返恢复");
             PopulationRangeLayer.SetVisible(true);yield return null;yield return new WaitForSecondsRealtime(AntColonySettings.Current.scanInterval+.1f);
-            Check(Object.FindObjectsByType<LineRenderer>(FindObjectsSortMode.None).Any(r=>r.name.Contains("supply-0")),"种群图层绘制补给点活动圆");
+            Check(PopulationRangeLayer.ActiveCircleCount>=2,"种群图层绘制补给点活动圆");
             var resource=ColonyResource.Convert(queen.GroupId,outside,10,false);Check(ColonyActivityRange.Contains(soldier.Population,outside),"实际额外能量存放点纳入范围");resource.Remove();
 
             // ★ 适配：暂停时运动代谢为零；先启动模拟，才能核实运行中的配置倍率。

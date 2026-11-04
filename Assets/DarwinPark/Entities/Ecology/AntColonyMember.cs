@@ -36,7 +36,7 @@ namespace DarwinPark.Entities.Ecology
         public IEnumerable<AntColonyMember> Group=>Population.GroupMembers.Select(p=>p.GetComponent<AntColonyMember>()).Where(m=>m!=null&&m.Active);
         public AntColonyMember Queen=>PopulationGroupIndex.Queen(Population);
         public Vector3 Center {get{var queen=Queen;return queen!=null?queen.transform.position:transform.position;}}
-        public float Radius=>Mathf.Max(AntColonySettings.Current.minimumColonyRadius,Genes.GetAttribute("territory_radius"),AntColonySettings.Current.colonyRadius);
+        public float Radius=>Mathf.Max(AntColonySettings.Current.minimumColonyRadius,Genes.GetAttribute("territory_radius"),AntColonySettings.Current.colonyRadius)*DarwinPark.Core.GameplayTuning.Current.colonyActivityRadiusMultiplier;
         public bool Frozen=>Active&&Role!=AntRole.None&&AntColonySettings.Current.Rule(Role).frozenGenome;
         public ColonyActivity Activity {get;internal set;}
         internal DarwinEntity HuntTarget;
@@ -150,13 +150,10 @@ namespace DarwinPark.Entities.Ecology
         }
         public void EnsureSupplyPoints()
         {
-            if(State.founding||State.supplyPoints.Count>0)return;
-            var settings=AntColonySettings.Current;
-            for(int i=0;i<settings.supplyPointCount;i++)
-            {
-                var tangent=Vector3.ProjectOnPlane(UnityEngine.Random.onUnitSphere,EcologyQueries.Up(transform.position)).normalized;
-                State.supplyPoints.Add(EcologyQueries.ToLocal(EcologyQueries.Surface(transform.position+tangent*UnityEngine.Random.Range(settings.feedRadius,Radius))));
-            }
+            // ★ 修复（防Bug回归）：王后出生不预建空检查点；只保留当前确有剩余能量的成年补给位置。
+            State.supplyPoints.Clear();
+            foreach(var resource in ColonyResource.All)if(resource.State.group==GroupId&&resource.State.kind==ColonyResourceKind.Supply)
+                State.supplyPoints.Add(EcologyQueries.ToLocal(resource.transform.position));
         }
         public void EnforceGenome()
         {

@@ -137,7 +137,7 @@ namespace DarwinPark.EditorTools
             var young=Member(AntRole.Soldier,group,queen.transform.position);young.Genes.CurrentAge=AgeState.Infant;Fill(young.Entity,0);ColonyResource.Feed(young,.1f);Check(Food(young.Entity)>0,"幼年实体与王后共享育幼补给");
             var plant=Spawn(worker.transform.position,("gene_growth",50));float plantEnergy=ColonyResource.Biomass(plant);Fill(worker.Entity,10,100);
             worker.State.livingTarget=EcologyIdentity.Of(plant);worker.State.scan=1;worker.Advance(.1f);Check(worker.State.carriedLiving==EcologyIdentity.Of(plant)&&!plant.GetComponent<Rigidbody>().detectCollisions,"工匠可搬运无法移动的外群活实体");
-            worker.State.deliveryNursery=false;worker.State.deliveryPoint=queen.State.supplyPoints[0];worker.transform.position=EcologyQueries.ToWorld(worker.State.deliveryPoint);worker.Advance(.1f);
+            worker.State.deliveryNursery=false;worker.State.deliveryPoint=EcologyQueries.ToLocal(At(10));worker.transform.position=EcologyQueries.ToWorld(worker.State.deliveryPoint);worker.Advance(.1f);
             var supply=ColonyResource.All.Single(r=>r.State.kind==ColonyResourceKind.Supply);Check(Mathf.Abs(supply.State.energy-plantEnergy)<.001f,"群内补给点转换活实体并保留能量");
             soldier.transform.position=At(-4);Fill(soldier.Entity,0);soldier.Destination(out var feedingPoint,out var feedingTarget,out _);
             Check(feedingTarget==null&&Vector3.Distance(feedingPoint,supply.transform.position)<.001f&&soldier.Activity==ColonyActivity.Feed,"饥饿士兵会实际前往共享补给点");
@@ -149,7 +149,7 @@ namespace DarwinPark.EditorTools
             Check(cargo.GetComponent<Rigidbody>().detectCollisions&&string.IsNullOrEmpty(worker.State.carriedLiving),"搬运中断恢复活体碰撞并释放任务");cargo.gameObject.SetActive(false);
             var successor=Member(AntRole.Reproductive,group,At(2));successor.Advance(.1f);Check(successor.Role==AntRole.Queen&&successor.GroupId!=group&&successor.State.founding,"繁殖个体成年后成为独立种群王后");
             Check(EcologyQueries.Distance(queen.transform.position,EcologyQueries.ToWorld(successor.State.foundingPoint))>queen.Radius,"新王后离开原种群范围建群");
-            successor.transform.position=EcologyQueries.ToWorld(successor.State.foundingPoint);successor.Advance(.1f);Check(!successor.State.founding&&successor.State.supplyPoints.Count==AntColonySettings.Current.supplyPointCount,"新王后到达后生成自己的随机补给点");
+            successor.transform.position=EcologyQueries.ToWorld(successor.State.foundingPoint);successor.Advance(.1f);Check(!successor.State.founding&&successor.State.supplyPoints.Count==0,"新王后无剩余能量时不预建空补给点");
             for(int i=0;i<AntColonySettings.Current.maximumReproductives;i++){var reproductive=Member(AntRole.Reproductive,group,At(3+i));reproductive.Genes.CurrentAge=AgeState.Infant;}
             Check(Enumerable.Range(0,100).All(_=>queen.ChooseBirthRole()!=AntRole.Reproductive),"繁殖个体达到配置上限后不再随机增加");
             Fill(queen.Entity,10,100);AntColonyReproduction.Advance(queen,.1f);Check(queen.Genes.IsGestating&&queen.State.reproductionTimer>0,"王后有营养时开始持续繁殖流程");
@@ -182,10 +182,9 @@ namespace DarwinPark.EditorTools
             Check(loadedCargo!=null&&AntColonyWorker.IsCarried(loadedCargo)&&loadedCargo.GetComponent<Rigidbody>().isKinematic&&!loadedCargo.GetComponent<Rigidbody>().detectCollisions,"逆序读档重建活体运输索引与物理关系");
             AntColonyWorker.Release(loadedCarrier);Check(!AntColonyWorker.IsCarried(loadedCargo)&&loadedCargo.GetComponent<Rigidbody>().detectCollisions,"读档后的活体运输可正常释放并清理索引");
             var bottom=ServiceLocator.Get<UIRoot>().MainCanvas.transform.Find("BottomPanel/ContentArea/Page1/LayerSec");var button=bottom.Find("layer_population").GetComponent<Button>();button.onClick.Invoke();yield return null;yield return null;
-            Check(PopulationRangeLayer.Visible&&Object.FindObjectsByType<LineRenderer>(FindObjectsSortMode.None).Count(r=>r.name.StartsWith("范围 "))>=2,"实际图层按钮显示不同种群的球面范围");
-            // ★ 适配：种群图层拆为多个活动圆，颜色检查定位王后主圆，避免沿用旧的单圆对象名。
-            var range=Object.FindObjectsByType<LineRenderer>(FindObjectsSortMode.None).First(r=>r.name=="范围 "+group+"/leader");var tint=new MaterialPropertyBlock();range.GetPropertyBlock(tint);
-            Check(tint.GetColor("_BaseColor")==ColonyAppearance.ColorFor(group),"范围颜色实际写入 URP 材质属性而非只设置顶点色");
+            Check(PopulationRangeLayer.Visible&&PopulationRangeLayer.ActiveCircleCount>=2,"实际图层按钮显示不同种群的活动区");
+            var block=new MaterialPropertyBlock();builder.GetComponent<MeshRenderer>().GetPropertyBlock(block);var rangeData=block.GetTexture("_PopulationData") as Texture2D;
+            Check(rangeData!=null&&rangeData.GetPixels().Any(c=>Vector3.Distance(new Vector3(c.r,c.g,c.b),(Vector3)(Vector4)ColonyAppearance.ColorFor(group))<.001f),"范围颜色实际写入地表合并数据");
             var orbit=Camera.main.GetComponent<OrbitCamera>();var focus=loadedQueen.transform.position;var cameraPoint=focus+EcologyQueries.Up(focus)*160;
             orbit.RestoreView(cameraPoint,Quaternion.LookRotation(focus-cameraPoint,Vector3.Cross(EcologyQueries.Up(focus),Vector3.right)),Vector3.Distance(cameraPoint,builder.transform.position));
             yield return new WaitForEndOfFrame();ScreenCapture.CaptureScreenshot(Path.Combine(Folder,"population-ranges.png"));yield return null;yield return null;

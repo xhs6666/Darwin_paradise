@@ -101,7 +101,14 @@ namespace DarwinPark.Entities.Ecology
                 // ★ 适配：优先补足当前不存在的两类补给，再按配置分配后续货物，避免随机连抽使王后永久断粮。
                 if(!ColonyResource.All.Any(r=>r.State.group==worker.GroupId&&r.State.kind==ColonyResourceKind.Nursery))state.deliveryNursery=true;
                 else if(!ColonyResource.All.Any(r=>r.State.group==worker.GroupId&&r.State.kind==ColonyResourceKind.Supply))state.deliveryNursery=false;
-                state.deliveryPoint=state.deliveryNursery?EcologyQueries.ToLocal(queen.transform.position):queen.State.supplyPoints[UnityEngine.Random.Range(0,queen.State.supplyPoints.Count)];
+                if(state.deliveryNursery)state.deliveryPoint=EcologyQueries.ToLocal(queen.transform.position);
+                else if(queen.State.supplyPoints.Count>=settings.supplyPointCount)state.deliveryPoint=queen.State.supplyPoints[UnityEngine.Random.Range(0,queen.State.supplyPoints.Count)];
+                else
+                {
+                    // ★ 适配：已有实际货物才计划新存放位置；抵达转换前不把计划点计入活动区。
+                    var tangent=Vector3.ProjectOnPlane(UnityEngine.Random.onUnitSphere,EcologyQueries.Up(queen.transform.position)).normalized;
+                    state.deliveryPoint=EcologyQueries.ToLocal(EcologyQueries.Surface(queen.transform.position+tangent*UnityEngine.Random.Range(Mathf.Min(settings.feedRadius,queen.Radius),queen.Radius)));
+                }
             }
         }
         public static Vector3 Destination(AntColonyMember worker)

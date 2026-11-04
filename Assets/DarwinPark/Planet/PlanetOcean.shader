@@ -15,8 +15,10 @@ Shader "DarwinPark/PlanetOcean"
  HLSLPROGRAM
  #pragma vertex vert
  #pragma fragment frag
+ #pragma target 3.5
  #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
  #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+ #include "Terrain/PopulationRangeOverlay.hlsl"
  struct A {float4 positionOS:POSITION; float3 normalOS:NORMAL; float4 color:COLOR;};
  struct V {float4 positionCS:SV_POSITION; float3 positionOS:TEXCOORD0; float3 normalWS:TEXCOORD1; float depth:TEXCOORD2;};
  CBUFFER_START(UnityPerMaterial)
@@ -32,7 +34,8 @@ Shader "DarwinPark/PlanetOcean"
   if(_LayerMode>2.5) return half4(lerp(float3(.02,.02,.02),float3(1,.85,0),SAMPLE_TEXTURE2D(_OreMap,sampler_OreMap,uv).r),1);
   if(_LayerMode>1.5 && _ClimateReady>.5) color=SAMPLE_TEXTURE2D(_ClimateMap,sampler_ClimateMap,uv).rgb;
   float light=saturate(dot(normalize(i.normalWS),GetMainLight().direction));
-  return half4(color*lerp(.55,1.12,light),1);
+  // ★ 适配：范围跨海岸时水面也显示同一合并区域，避免被海面盖掉形成缺口。
+  return half4(ApplyPopulationRange(color*lerp(.55,1.12,light),i.positionOS),1);
  }
  ENDHLSL
  }

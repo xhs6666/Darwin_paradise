@@ -34,11 +34,13 @@ Shader "DarwinPark/URP_PlanetSurface"
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+            #pragma target 3.5
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 
             #include "Terrain/PlanetSurfaceDetail.hlsl"
             #include "Terrain/PlanetNearSurfaceDetail.hlsl"
+            #include "Terrain/PopulationRangeOverlay.hlsl"
 
             struct Attributes { float4 positionOS : POSITION; float3 normalOS : NORMAL; };
             struct Varyings { float4 positionCS : SV_POSITION; float3 normalWS : TEXCOORD0; float3 viewDirWS : TEXCOORD1; float3 positionWS : TEXCOORD2; float3 positionOS : TEXCOORD3; };
@@ -187,7 +189,8 @@ Shader "DarwinPark/URP_PlanetSurface"
                 // ★ 修复（防Bug回归）：URP 光方向指向光源，旧符号反转把受光面变成黑坑。
                 // 地图风格保留可读的环境照明，同时让山脊坡度清楚可辨。
                 float3 litColor = surfaceColor * (0.60 + mainLight.color * ndl * 0.55);
-                return half4(litColor, 1.0);
+                // ★ 适配：范围只在原地表最终颜色上透明混合，无额外球壳网格和共面闪烁。
+                return half4(ApplyPopulationRange(litColor,input.positionOS), 1.0);
             }
             ENDHLSL
         }

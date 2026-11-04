@@ -12,7 +12,7 @@ namespace DarwinPark.UI
     // ★ 新增：统计全地图存活实体，不依赖镜头、当前选择或管理员权限；复制基因按实体去重计数。
     public sealed class MapEntityStatisticsUI : MonoBehaviour
     {
-        public float leftOffset=840,rightOffset=12,preferredWidth=260,preferredHeight=164,readOnlyHeight=136,refreshInterval=.5f;
+        public float leftOffset=840,rightOffset=12,preferredWidth=260,preferredHeight=164,readOnlyHeight=164,refreshInterval=.5f;
         public int Total {get;private set;}
         public int Carriers {get;private set;}
         public int Expressed {get;private set;}
@@ -52,6 +52,8 @@ namespace DarwinPark.UI
             gameObject.AddComponent<MapEntityActions>();
             // ★ 适配：组合筛选与分页定位由独立组件提供，原统计与“清除全部”口径保持明确。
             MapEntityGeneFilterUI.Attach(this);
+            // ★ 适配：第三张同规格信息卡接在实体筛选右侧，普通成员也可查看。
+            gameObject.AddComponent<MapPopulationListUI>();
         }
         private void LateUpdate()
         {
