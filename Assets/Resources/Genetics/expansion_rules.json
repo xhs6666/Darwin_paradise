@@ -34,6 +34,22 @@
       "minValue": 0,
       "maxValue": 100,
       "requiredGenes": []
+    },
+    {
+      "source": "gene_nutrition",
+      "target": "gene_heterotrophy",
+      "kind": "evolution",
+      "minValue": 65,
+      "maxValue": 100,
+      "requiredGenes": []
+    },
+    {
+      "source": "gene_heterotrophy",
+      "target": "gene_scavenging",
+      "kind": "error",
+      "minValue": 0,
+      "maxValue": 100,
+      "requiredGenes": []
     }
   ]
 }

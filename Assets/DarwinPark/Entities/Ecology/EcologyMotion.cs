@@ -6,7 +6,7 @@ namespace DarwinPark.Entities.Ecology
     // ★ 修复（防Bug回归）：逃离 > 群体命令 > 领地边界 > 配置的实体状态；领地不再无条件抢占觅食。
     public static class EcologyMotion
     {
-        public static bool Immobilized(EntityGeneController genes)=>genes.GetComponent<ParasiteBehavior>()?.Active==true||genes.GetComponent<EggIncubation>()?.Incubating==true||AntColonyWorker.IsCarried(genes.GetComponent<DarwinEntity>());
+        public static bool Immobilized(EntityGeneController genes)=>genes.GetComponent<NutritionParasite>()?.Host!=null||genes.GetComponent<ParasiteBehavior>()?.Active==true||genes.GetComponent<EggIncubation>()?.Incubating==true||AntColonyWorker.IsCarried(genes.GetComponent<DarwinEntity>());
         public static bool Directive(EntityGeneController genes,out Vector3 point,out DarwinEntity target,out float multiplier)
         {
             target=null;point=genes.transform.position;multiplier=1;
@@ -17,6 +17,9 @@ namespace DarwinPark.Entities.Ecology
             var ant=genes.GetComponent<AntColonyMember>();if(ant!=null&&ant.Destination(out point,out target,out multiplier))return true;
             // ★ 适配：普通实体获得独立营养利用基因后也能实际走向能量块，不只等待食物贴到身体旁。
             var energy=genes.GetComponent<EnergyBlockMetabolism>();if(energy!=null&&energy.Destination(out point))return true;
+            // ★ 适配：食性选择食物目标，行动基因仍是唯一移动写入者；无行动能力时只能在接触范围吸收。
+            if(genes.GetComponent<NutritionParasite>()?.Destination(out point)==true)return true;
+            if(genes.GetComponent<CorpseFeeding>()?.Destination(out point)==true)return true;
             var territory=genes.GetComponent<TerritoryBehavior>();
             if(territory!=null&&territory.Active&&territory.EvictionRemaining>0)return territory.Destination(out point,out multiplier);
             var population=genes.GetComponent<PopulationBehavior>();
@@ -44,6 +47,8 @@ namespace DarwinPark.Entities.Ecology
         }
         public static float ResolveAttribute(EntityGeneController genes,string id,float value)
         {
+            // ★ 适配：附着期间不能攻击、跳跃或自行移动，移动只随宿主。
+            if((id=="moveSpeed"||id=="attack"||id=="jumpAbility")&&genes.GetComponent<NutritionParasite>()?.Host!=null)return 0;
             // ★ 修复（防Bug回归）：群体和角色只修饰移动/攻击；成长、营养、光环等属性不能绕一遍群体关系，尤其避免光环查询嵌套放大。
             if(id=="jumpAbility")return EntityMovementLimits.Attribute(genes,id,value);
             if(id!="moveSpeed"&&id!="attack")return value;
@@ -55,6 +60,8 @@ namespace DarwinPark.Entities.Ecology
         }
         public static bool Detectable(DarwinEntity target,Vector3 observer,float range,DarwinEntity observerEntity=null)
         {
+            // ★ 适配：体内营养寄生取消渲染与世界碰撞，不能被自主捕猎当作外露实体。
+            if(target.GetComponent<NutritionParasite>()?.Host!=null)return false;
             var parasite=target.GetComponent<ParasiteBehavior>();
             if(parasite!=null&&parasite.Host!=null&&!parasite.VisibleTo(observerEntity))return false;
             float conceal=parasite!=null&&parasite.Host!=null?Mathf.Clamp01(target.Genes.GetAttribute("hide_from_host")):0;

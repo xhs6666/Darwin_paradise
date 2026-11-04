@@ -29,6 +29,8 @@ namespace DarwinPark.UI
             if(saved.ecology!=null)GetComponent<EntityStateController>()?.Restore(saved.ecology.entityStateId);
             _point=saved.position;_rotation=saved.rotation;if(!_initialized||Vector3.Distance(transform.position,_point)>40)transform.SetPositionAndRotation(_point,_rotation);
             _initialized=true;Freeze(entity);
+            // ★ 适配：冻结行为之后再展示权威寄生状态，不能在成员电脑吸收或孵化。
+            NutritionReplicaPresentation.Apply(entity,saved.ecology);
             if(expression){var inspector=FindFirstObjectByType<GeneInspectorUI>();if(inspector?.CurrentEntity==entity)inspector.ShowEntityInfo(entity);}
         }
         private void LateUpdate(){if(WorldAuthority.IsReplica&&_initialized)transform.SetPositionAndRotation(Vector3.Lerp(transform.position,_point,1-Mathf.Exp(-Time.unscaledDeltaTime*16)),Quaternion.Slerp(transform.rotation,_rotation,1-Mathf.Exp(-Time.unscaledDeltaTime*16)));}

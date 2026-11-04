@@ -145,9 +145,10 @@ namespace DarwinPark.Entities.Ecology
         }
         private void AutoCommand()
         {
-            if(Mode==_settings.wolfState)
+            // ★ 适配：自动群猎尊重食性，手动下令仍可指挥防御攻击；食腐/幼年寄生不会因狼群模式被迫捕猎。
+            if(Mode==_settings.wolfState&&NutritionTransfer.CanHuntForFood(_genes))
             {
-                var prey=EntityRegistry.All.Where(e=>EcologyQueries.Alive(e)&&e!=_entity&&!SameGroup(e)&&PredationSizePolicy.Allows(_genes,e)&&EcologyMotion.Detectable(e,transform.position,_genes.GetAttribute("senseRange"),_entity))
+                var prey=EntityRegistry.All.Where(e=>EcologyQueries.Alive(e)&&e!=_entity&&!SameGroup(e)&&NutritionTransfer.FoodTargetAllowed(_genes,e)&&PredationSizePolicy.Allows(_genes,e)&&EcologyMotion.Detectable(e,transform.position,_genes.GetAttribute("senseRange"),_entity))
                     .OrderBy(e=>(e.transform.position-transform.position).sqrMagnitude).FirstOrDefault();
                 if(prey!=null){Issue(PopulationCommand.Hunt,prey,prey.transform.position,false,out _);return;}
             }
@@ -171,6 +172,7 @@ namespace DarwinPark.Entities.Ecology
             point=transform.position;target=null;if(!Active||Command==PopulationCommand.None||CommandRemaining<=0)return false;
             if(Command==PopulationCommand.Hunt)
             {
+                if(_manualRemaining<=0&&!NutritionTransfer.FoodTargetAllowed(_genes,Target))return false;
                 if(!EcologyQueries.Alive(Target)||SameGroup(Target)||!PredationSizePolicy.Allows(_genes,Target))return false;
                 target=Target;point=Target.transform.position;
                 var peers=GroupMembers.OrderBy(m=>m.JoinOrder).ToList();int index=Mathf.Max(0,peers.IndexOf(this));

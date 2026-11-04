@@ -45,9 +45,13 @@ namespace DarwinPark.UI
             foreach(var text in dropdown.GetComponentsInChildren<Text>(true)){text.font=UIFactory.DefaultFont;text.fontSize=13;text.color=UIVisualTheme.Text;}
             var arrow=dropdown.transform.Find("Arrow").GetComponent<Image>();arrow.sprite=UIIconRegistry.Get("ui_icon_next");arrow.color=UIVisualTheme.Accent;arrow.preserveAspect=true;arrow.rectTransform.sizeDelta=new Vector2(16,16);arrow.rectTransform.localRotation=Quaternion.Euler(0,0,-90);
             var item=_filter.template.GetComponentInChildren<Toggle>(true);UIVisualTheme.Paint(item.targetGraphic as Image,"hover");if(item.graphic!=null)item.graphic.color=UIVisualTheme.Accent;
+            // ★ 适配：统计列表与组合筛选使用同一完整模板皮肤。
+            RuntimeDropdownSkin.Apply(_filter);
             _filter.onValueChanged.AddListener(_=>RefreshNow());_result=Label("FilterResult","",101,30,12);
             // ★ 适配：设置与清理独立组件管理，不混入统计口径。
             gameObject.AddComponent<MapEntityActions>();
+            // ★ 适配：组合筛选与分页定位由独立组件提供，原统计与“清除全部”口径保持明确。
+            MapEntityGeneFilterUI.Attach(this);
         }
         private void LateUpdate()
         {

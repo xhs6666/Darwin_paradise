@@ -1,0 +1,49 @@
+{
+  "id": "gene_heterotrophy",
+  "displayName": "异养基因",
+  "category": "Nutrition",
+  "parentGeneId": "gene_nutrition",
+  "baseGeneId": "gene_nutrition",
+  "isBaseGene": false,
+  "tier": 1,
+  "logicScriptId": "HeterotrophyGeneLogic",
+  "aiModuleId": "",
+  "attributeCurves": [
+    {
+      "attributeId": "host_drain_rate",
+      "minValue": 0.2,
+      "maxValue": 1.5
+    },
+    {
+      "attributeId": "digestion_efficiency",
+      "minValue": 0.5,
+      "maxValue": 1
+    }
+  ],
+  "states": [
+    {
+      "stateId": "parasite",
+      "displayName": "寄生",
+      "center": 25,
+      "color": [
+        0.6,
+        0.3,
+        0.8
+      ]
+    },
+    {
+      "stateId": "digest",
+      "displayName": "消化",
+      "center": 75,
+      "color": [
+        0.9,
+        0.35,
+        0.2
+      ]
+    }
+  ],
+  "attributeLinkages": [],
+  "suppressionRules": [],
+  "entityStateTagVersion": 1,
+  "entityStateTags": []
+}

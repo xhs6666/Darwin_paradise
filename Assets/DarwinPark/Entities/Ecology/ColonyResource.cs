@@ -20,6 +20,8 @@ namespace DarwinPark.Entities.Ecology
         private static readonly Dictionary<string,ColonyResource> ById=new Dictionary<string,ColonyResource>();
         private static Material _material;private ColonyResourcePresentation _presentation;
         public ColonyResourceSave State {get;private set;}
+        // ★ 适配：食腐只读领取状态；资源归属与独占状态共用同一判断。
+        public bool HasLiveClaim=>ColonyCorpseAccess.HasLiveClaim(this);
         public static IEnumerable<ColonyResource> All=>ResourcesInWorld.Where(r=>r!=null&&r.isActiveAndEnabled&&r.State.energy>0);
         public static ColonyResource Find(string id)=>!string.IsNullOrEmpty(id)&&ById.TryGetValue(id,out var resource)&&resource!=null&&resource.isActiveAndEnabled&&resource.State.energy>0?resource:null;
         private void OnEnable(){if(!ResourcesInWorld.Contains(this))ResourcesInWorld.Add(this);if(State!=null)ById[State.id]=this;}
@@ -62,14 +64,14 @@ namespace DarwinPark.Entities.Ecology
         }
         public bool Claim(AntColonyMember worker)
         {
-            if(State.kind!=ColonyResourceKind.Corpse||State.group!=worker.GroupId)return false;
+            // ★ 修复（防Bug回归）：中立/灭绝种群遗留尸体也能搬运，不能仅接收自己士兵标记的尸体。
+            if(!ColonyCorpseAccess.Available(this,worker))return false;
             if(!string.IsNullOrEmpty(State.claim)&&State.claim!=worker.Id)
             {
                 // ★ 适配：领取者按持久 ID 直接定位，竞争一具尸体时不再让每名工匠扫描全部种群。
-                var owner=EcologyIdentity.Find(State.claim)?.GetComponent<AntColonyMember>();
-                if(owner!=null&&owner.Active&&owner.Role==AntRole.Worker)return false;
+                if(HasLiveClaim)return false;
             }
-            State.claim=worker.Id;return true;
+            State.claim=worker.Id;State.group=worker.GroupId;return true;
         }
         public void Release(string owner){if(State.claim==owner)State.claim=null;}
         public void CarryTo(Vector3 point){transform.position=point;State.local=EcologyQueries.ToLocal(point);_presentation?.Align();}

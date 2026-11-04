@@ -24,8 +24,9 @@ namespace DarwinPark.Genetics
             foreach(var node in defaults.nodes)if(required.Contains(node.id)&&nodes.Add(node.id))result.nodes.Add(node);
             foreach(var edge in newEdges)if(!result.edges.Any(e=>e.from==edge.from&&e.to==edge.to&&e.kind==edge.kind))result.edges.Add(edge);
             GeneTreeStorage.Validate(result,merged);
-            foreach(var id in missing)catalog.Add(id,merged[id]);
-            tree.nodes=result.nodes;tree.edges=result.edges;
+            // ★ 修复（防Bug回归）：校验时迁移了旧卵寄生定义，既有条目也要成对写回，不能只保存新增ID。
+            foreach(var entry in merged)catalog[entry.Key]=entry.Value;
+            tree.nodes=result.nodes;tree.edges=result.edges;tree.nutritionVersion=result.nutritionVersion;
             return missing.Count;
         }
     }

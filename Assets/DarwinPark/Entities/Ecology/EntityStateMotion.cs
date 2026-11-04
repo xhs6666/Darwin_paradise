@@ -16,9 +16,11 @@ namespace DarwinPark.Entities.Ecology
                     var territory=genes.GetComponent<TerritoryBehavior>();
                     return territory!=null&&territory.PatrolDestination(out point);
                 case EntityStateBehavior.Hunt:
+                    // ★ 适配：普通主动取食需要消化能力；防御/手动攻击与蚁群士兵仍走各自入口。
+                    if(!NutritionTransfer.CanHuntForFood(genes))return false;
                     float range=genes.GetAttribute(state.Current.targetRangeAttributeId);
                     bool Valid(DarwinEntity entity)=>EcologyQueries.Alive(entity)&&entity.gameObject!=genes.gameObject&&
-                        EcologyMotion.Detectable(entity,genes.transform.position,range,genes.GetComponent<DarwinEntity>())&&EcologyMotion.CanHunt(genes,entity);
+                        NutritionTransfer.FoodTargetAllowed(genes,entity)&&EcologyMotion.Detectable(entity,genes.transform.position,range,genes.GetComponent<DarwinEntity>())&&EcologyMotion.CanHunt(genes,entity);
                     if(Valid(state.DetectedTarget))state.HuntTarget=state.DetectedTarget;
                     if(!Valid(state.HuntTarget))
                     {

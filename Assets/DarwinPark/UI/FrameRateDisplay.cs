@@ -9,6 +9,7 @@ namespace DarwinPark.UI
         public Vector2 offset=new Vector2(12,10),size=new Vector2(190,28);
         public float sampleInterval=.5f,panelGap=8,simulationLineHeight=18;
         public int fontSize=16;
+        [Range(0,1)] public float backgroundOpacity=.18f;
         public static FrameRateDisplay Instance {get;private set;}
         public float CurrentFps {get;private set;}
         public int SampleCount {get;private set;}
@@ -44,7 +45,9 @@ namespace DarwinPark.UI
                 _simulationStyle=new GUIStyle(_style){fontSize=12};_simulationStyle.normal.background=null;
             }
             int depth=GUI.depth;var color=GUI.color;GUI.depth=-2000;GUI.color=Color.white;
-            var rect=DisplayRect;GUI.Box(rect,GUIContent.none,_style);GUI.Label(new Rect(offset,size),DisplayText,_fpsStyle);
+            // ★ 修复（防Bug回归）：仅背景半透明，文字保持清晰；0可完全取消背景，不再遮挡世界。
+            var rect=DisplayRect;var background=GUI.backgroundColor;GUI.backgroundColor=new Color(1,1,1,backgroundOpacity);
+            if(backgroundOpacity>0)GUI.Box(rect,GUIContent.none,_style);GUI.backgroundColor=background;GUI.Label(new Rect(offset,size),DisplayText,_fpsStyle);
             if(!string.IsNullOrEmpty(_simulationText))GUI.Label(new Rect(offset.x,offset.y+size.y-2,size.x,simulationLineHeight),_simulationText,_simulationStyle);
             GUI.depth=depth;GUI.color=color;
         }

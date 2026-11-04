@@ -11,9 +11,9 @@ namespace DarwinPark.UI
         public static string Current(DarwinEntity entity)
         {
             // ★ 适配：蚁群优先显示实际分工活动，避免工匠运输仍被标为普通巡逻。
-            if(ColonyStatusPresentation.TryCurrent(entity,out string colony))return colony;
+            if(ColonyStatusPresentation.TryCurrent(entity,out string colony))return NutritionStatusPresentation.Append(entity,colony);
             var controller=entity.GetComponent<EntityStateController>();
-            return controller!=null?controller.Current.displayName:EntityStateRegistry.Current.Get(EntityStateRegistry.Current.defaultStateId).displayName;
+            return NutritionStatusPresentation.Append(entity,controller!=null?controller.Current.displayName:EntityStateRegistry.Current.Get(EntityStateRegistry.Current.defaultStateId).displayName);
         }
         public static string GeneTags(GeneDefinition gene)
         {

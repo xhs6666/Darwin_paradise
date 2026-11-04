@@ -21,6 +21,10 @@ namespace DarwinPark.Entities.Logic
                 case "NutritionGeneLogic": return new NutritionGeneLogic(); // ★ 这里
                 // ★ 适配：能量块基因独立注册，不混入光合/化生生产。
                 case "EnergyBlockGeneLogic": return new EnergyBlockGeneLogic();
+                // ★ 适配：异养、食腐、卵寄生分别注册，营养寄生不复用旧繁殖寄生逻辑。
+                case "HeterotrophyGeneLogic": return new HeterotrophyGeneLogic();
+                case "ScavengingGeneLogic": return new ScavengingGeneLogic();
+                case "EggParasiticGeneLogic": return new EggParasiticGeneLogic();
                 case "StorageGeneLogic": return new StorageGeneLogic();     // ★ 补上这个
                 case "LocomotionGeneLogic": return new LocomotionGeneLogic();
                 case "ReproductionGeneLogic": return new ReproductionGeneLogic();

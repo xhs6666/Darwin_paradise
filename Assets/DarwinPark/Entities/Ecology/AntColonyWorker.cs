@@ -34,7 +34,8 @@ namespace DarwinPark.Entities.Ecology
             if(owner!=null&&owner.Active&&(owner.State.livingTarget==id||owner.State.carriedLiving==id))return true;
             Claims.Remove(id);return false;
         }
-        private static bool Valid(DarwinEntity entity,AntColonyMember worker)=>EcologyQueries.Alive(entity)&&!worker.Population.SameGroup(entity)&&entity.Genes.GetAttribute("moveSpeed")<=0&&entity.GetComponent<EntityManualControl>()?.IsControlled!=true;
+        // ★ 适配：体内隐藏的寄生幼体不是可搬运植株；不能把被宿主带到附近的幼体当作零速食物。
+        private static bool Valid(DarwinEntity entity,AntColonyMember worker)=>EcologyQueries.Alive(entity)&&entity.GetComponent<NutritionParasite>()?.Host==null&&!worker.Population.SameGroup(entity)&&entity.Genes.GetAttribute("moveSpeed")<=0&&entity.GetComponent<EntityManualControl>()?.IsControlled!=true;
         public static void Advance(AntColonyMember worker,float dt)
         {
             var state=worker.State;var settings=AntColonySettings.Current;
@@ -49,6 +50,8 @@ namespace DarwinPark.Entities.Ecology
                 if(live!=null){live.transform.position=held;EntityNeighborhood.ObservePosition(live.Genes);}
                 // ★ 修复（防Bug回归）：运输中允许先补给但保留独占货物，不能无限执行运输直到饿死，也不能中断后复制货物。
                 if(ColonyFeeding.Destination(worker,out _))return;
+                // ★ 修复（防Bug回归）：王后移动后育幼送达点必须随之更新，避免永远送往旧位置。
+                if(state.deliveryNursery&&worker.Queen!=null)state.deliveryPoint=EcologyQueries.ToLocal(worker.Queen.transform.position);
                 var destination=EcologyQueries.ToWorld(state.deliveryPoint);
                 if(EcologyQueries.Distance(worker.transform.position,destination)>settings.arrivalDistance)return;
                 float energy=carried!=null?carried.State.energy:ColonyResource.Biomass(live);
@@ -66,7 +69,7 @@ namespace DarwinPark.Entities.Ecology
             if(resource==null&&plant==null&&state.scan<=0)
             {
                 state.scan=settings.scanInterval;
-                foreach(var body in ColonyResource.All.Where(r=>r.State.kind==ColonyResourceKind.Corpse&&r.State.group==worker.GroupId&&EcologyQueries.Distance(worker.transform.position,r.transform.position)<=settings.transportSearchRadius).OrderBy(r=>(r.transform.position-worker.transform.position).sqrMagnitude))
+                foreach(var body in ColonyResource.All.Where(r=>ColonyCorpseAccess.Available(r,worker)&&EcologyQueries.Distance(worker.transform.position,r.transform.position)<=settings.transportSearchRadius).OrderBy(r=>(r.transform.position-worker.transform.position).sqrMagnitude))
                     if(body.Claim(worker)){resource=body;state.resourceTarget=body.State.id;break;}
                 if(resource==null)
                 {

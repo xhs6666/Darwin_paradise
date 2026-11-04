@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "enabled": true,
+  "snapshotMilliseconds": 5000,
+  "sampleMilliseconds": 1000,
+  "shutdownMilliseconds": 3000,
+  "stallMilliseconds": 15000,
+  "retainedSessions": 8,
+  "criticalBytes": 524288,
+  "criticalPerSecond": 8,
+  "tailBytes": 262144,
+  "retainedExports": 3,
+  "exportMaximumBytes": 67108864,
+  "nativeMaximumFiles": 16,
+  "nativeLookbackHours": 48,
+  "nativeSearchDepth": 2
+}

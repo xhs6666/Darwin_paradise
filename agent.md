@@ -224,3 +224,11 @@
 | 2026-11-01 | 修改参数时同步卡住、地形误改湿度、种子精度丢失 | UI直接Build及MarkDirty触发主线程全量气候生成；地形落入湿度分支；整数先转float | WorldParameterUpdate.cs、WorldLoadingView.cs、PlanetParameterEditor.cs、LanEditActions.cs | 复用加载动画、后台纯数据计算、主线程提交；温湿度不重建地形；实体/镜头/时间/暂停保留，精确32位整数文本，失败/重复请求有界且恢复输入 |
 
 | 2026-11-01 | 出现深色球体且右键无法查看，统计需移回第一页 | 士兵尸体沿用球形深色外观且删除碰撞体；右键只查Physics和DarwinEntity，无法识别世界资源 | ColonyResourcePresentation.cs、WorldInspectablePicker.cs、WorldResourceInspector.cs、ColonyResource.cs、GeneInspectorUI.cs、SimulationControlPanel.cs | 尸体共享叉号标记，几何拾取不增加物理开销且尊重遮挡；活体/尸体面板互斥；搬运/移除/读档/成员只读及来源字段校验；存活统计排除尸体，第一页保留管理按钮 |
+
+| 2026-11-01 | 闪退/卡死后只有输出，难以保存或定位最后错误；Windows Mono内存值为0 | 普通日志后台队列无法证明正常退出，缺少独立错误刷盘、运行状态心跳、原生日志归档和导出；Mono进程工作集API在本机恒为0 | RuntimeDiagnosticSession.cs、RuntimeCrashDiagnostics.cs、DiagnosticFiles.cs、DiagnosticMemory.cs、RuntimeDiagnosticSettings.cs、RuntimeDiagnosticWorldState.cs、RuntimeDiagnosticsUI.cs、RuntimeFileLog.cs、RuntimeLogLifecycle.cs、GameMainMenu.cs、RuntimeDiagnosticsRegression.cs | 错误独立刷盘且有界；异常退出与根因区分；持有锁的并发实例不误判；心跳后台更新但Unity只主线程采样；终止异常不写正常标记；实际Windows进程强制结束/重启/导出；原生报告受预算限制；编辑器日志不自动采集；写盘故障可见，不修改异常传播策略 |
+
+| 2026-11-01 | 统计仅能查看单基因携带数，不能用包含/不包含组合条件列出和定位实体；空标题复用行缺少Text | 缺少独立条件模型与结果列表；UIFactory对空标题不创建文字组件 | EntityGeneFilter.cs、MapEntityGeneFilterUI.cs、EntityFilterResultsUI.cs、MapEntityStatisticsUI.cs、EntityGeneFilterRegression.cs | 包含全部/排除任一且同基因互斥；携带不等于生效；复制基因去重；实际下拉切换和清空；列表固定行分页与少量结果缩短；失效引用重验；普通成员只读、窄屏可展开、页面及世界退出关闭；不改全局清除范围；列表预建文字再复用 |
+
+| 2026-11-01 | FPS背景遮挡画面、下拉出现白绿块，工匠漏收自然尸体，营养与寄生机制混用 | 默认下拉子控件无精灵；死亡入口分散且搬运仅认本群；攻击伤害凭空产粮；旧繁殖寄生承担营养吸取；库已含新定义时旧树漏迁移 | FrameRateDisplay.cs、RuntimeDropdownSkin.cs、EntityDeathSettlement.cs、NutritionTransfer.cs、NutritionParasite.cs、EggHostPregnancy.cs、CorpseFeeding.cs、ColonyCorpseAccess.cs、NutritionEvolutionUpgrade.cs及配置与适配 | 致死消化/尸体单次结算且严格守恒；中立尸体真实行走运输、独占和交付；寄生成年前后、禁用、宿主死亡及碰撞恢复；外来卵独立DNA、计时和逆序读档；迁移后保留用户树编辑；副本只展示；实际展开截图、编辑器编译和Windows构建 |
+
+| 2026-11-02 | 超过2,097,152三角形地形碰撞警告和潜在漏检；菜单视频WindowsVideoMedia Flush错误；底栏缺少设置快捷入口 | 超大网格仍使用PhysX快速结构且重建前未解绑旧碰撞；原H.264 High/B帧走Windows原生解码；设置只在Esc内 | PlanetTerrainMeshBuilder.cs、MainMenuBackground.cs、MainMenuBackgroundRecorder.cs、SimulationControlPanel.cs、GameMainMenu.cs、SampleScene.unity、earth-orbit.webm、TerrainVideoSettingsRegression.cs | 先解绑再改网格，按引擎上限选择烘焙结构且保留精度和其他选项；真实211.68万三角形多方向射线；VP8实际循环/暂停/释放；两页设置、输入门控、原运行状态和三档缩放；发布版构建运行验证 |

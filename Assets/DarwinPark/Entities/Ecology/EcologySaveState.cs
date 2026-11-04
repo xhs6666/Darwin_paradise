@@ -17,10 +17,14 @@ namespace DarwinPark.Entities.Ecology
         public float evictionRemaining,commandRemaining,manualRemaining,duelRemaining,incubationRemaining;
         public PopulationCommand command;
         public bool hostDetected;public float hostDetectionRemaining;
+        // ★ 适配：营养寄生与外来卵分别持久化；旧hostId仍属于已改名的旧寄生，不能混入新食性。
+        public NutritionParasiteSave nutritionParasite;
+        public int nutritionParasiteCount;
+        public List<ForeignEggSave> foreignEggs;
         // ★ 修复（防Bug回归）：Unity 内联类缺字段时可能生成空对象；仅完全空的生态记录视作旧档无此字段。
         public bool IsEmpty=>string.IsNullOrEmpty(id)&&string.IsNullOrEmpty(groupId)&&string.IsNullOrEmpty(mode)&&string.IsNullOrEmpty(targetId)&&string.IsNullOrEmpty(hostId)&&
             string.IsNullOrEmpty(entityStateId)&&joinOrder==0&&!leader&&!hasCenter&&!hostKinematic&&!hostDetected&&center==Vector3.zero&&threat==Vector3.zero&&commandPoint==Vector3.zero&&hostOffset==Vector3.zero&&
-            evictionRemaining==0&&commandRemaining==0&&manualRemaining==0&&duelRemaining==0&&incubationRemaining==0&&hostDetectionRemaining==0&&command==PopulationCommand.None&&ant?.HasData!=true;
+            evictionRemaining==0&&commandRemaining==0&&manualRemaining==0&&duelRemaining==0&&incubationRemaining==0&&hostDetectionRemaining==0&&command==PopulationCommand.None&&ant?.HasData!=true&&string.IsNullOrEmpty(nutritionParasite?.host)&&nutritionParasiteCount==0&&(foreignEggs==null||foreignEggs.Count==0);
         // ★ 新增：先保存本体与稳定标识，再在所有实体创建后恢复群体目标和宿主引用，不依赖加载先后顺序。
         public static EcologySaveState Capture(DarwinEntity entity)
         {
@@ -30,6 +34,7 @@ namespace DarwinPark.Entities.Ecology
             if(pop!=null){state.groupId=pop.GroupId;state.joinOrder=pop.JoinOrder;state.leader=pop.IsLeader;state.mode=pop.Mode;state.command=pop.Command;state.commandRemaining=pop.CommandRemaining;state.commandPoint=pop.CommandPointLocal;state.manualRemaining=pop.ManualRemaining;state.duelRemaining=pop.DuelRemaining;state.targetId=pop.Target!=null?EcologyIdentity.Of(pop.Target):null;}
             var parasite=entity.GetComponent<ParasiteBehavior>();
             if(parasite!=null&&parasite.Host!=null){state.hostId=EcologyIdentity.Of(parasite.Host);state.hostOffset=parasite.Offset;state.hostKinematic=parasite.OriginalKinematic;state.hostDetected=parasite.DetectedByHost;state.hostDetectionRemaining=parasite.DetectionRemaining;}
+            state.nutritionParasite=entity.GetComponent<NutritionParasite>()?.Capture();state.nutritionParasiteCount=NutritionParasite.CountOn(entity);state.foreignEggs=entity.GetComponent<EggHostPregnancy>()?.Capture();
             state.entityStateId=entity.GetComponent<EntityStateController>()?.Current.id;
             state.ant=entity.GetComponent<AntColonyMember>()?.Capture();state.patrol=entity.GetComponent<PatrolRhythm>()?.Capture();state.combat=entity.GetComponent<CombatIntent>()?.Capture();
             state.rts=entity.GetComponent<RtsOrderController>()?.Capture();state.incubationRemaining=entity.GetComponent<EggIncubation>()?.Remaining??0;return state;
@@ -37,6 +42,7 @@ namespace DarwinPark.Entities.Ecology
         public void Restore(DarwinEntity entity)
         {
             EcologyIdentity.Ensure(entity.gameObject).Restore(id);
+            if(foreignEggs?.Count>0)(entity.GetComponent<EggHostPregnancy>()??entity.gameObject.AddComponent<EggHostPregnancy>()).Restore(foreignEggs);
             // ★ 适配：RTS目标使用持久ID和本地坐标，与实体按任意顺序恢复兼容。
             if(rts?.active==true)RtsOrderController.Ensure(entity).Restore(rts);
             entity.GetComponent<TerritoryBehavior>()?.Restore(center,hasCenter,evictionRemaining,threat);
@@ -53,6 +59,7 @@ namespace DarwinPark.Entities.Ecology
             if(combat!=null){entities.TryGetValue(combat.target??"",out var attacker);(entity.GetComponent<CombatIntent>()??entity.gameObject.AddComponent<CombatIntent>()).Restore(attacker,combat.remaining);}
             if(!string.IsNullOrEmpty(hostId)&&entities.TryGetValue(hostId,out var host))
             {var parasite=entity.GetComponent<ParasiteBehavior>();if(parasite!=null&&parasite.TryAttach(host,true,hostOffset,hostKinematic))parasite.RestoreDetection(hostDetected,hostDetectionRemaining);}
+            if(!string.IsNullOrEmpty(nutritionParasite?.host)&&entities.TryGetValue(nutritionParasite.host,out var feedingHost))entity.GetComponent<NutritionParasite>()?.TryAttach(feedingHost,nutritionParasite);
         }
     }
 }

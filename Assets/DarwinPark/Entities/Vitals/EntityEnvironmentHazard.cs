@@ -80,7 +80,8 @@ namespace DarwinPark.Entities.Vitals
             if (_stats.TryGet("health", out float hp) && hp <= _config.deathHealthThreshold)
             {
                 Log.Info(Log.Tag.Entity, $"{name} 因环境伤害死亡");
-                Destroy(gameObject);
+                // ★ 适配：环境死亡与战斗、饥饿共用尸体结算，不直接删除剩余营养。
+                Ecology.EntityDeathSettlement.Die(GetComponent<DarwinEntity>());
             }
         }
 

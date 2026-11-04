@@ -34,6 +34,8 @@ namespace DarwinPark.UI
             // ★ 修复（防Bug回归）：运行时默认下拉控件没有箭头贴图会显示白块，复用已有方向图标并统一选项皮肤。
             var arrow=dropdown.transform.Find("Arrow").GetComponent<Image>();arrow.sprite=UIIconRegistry.Get("ui_icon_next");arrow.color=UIVisualTheme.Accent;arrow.preserveAspect=true;arrow.rectTransform.sizeDelta=new Vector2(16,16);arrow.rectTransform.localRotation=Quaternion.Euler(0,0,-90);
             var item=_source.template.GetComponentInChildren<Toggle>(true);UIVisualTheme.Paint(item.targetGraphic as Image,"hover");if(item.graphic!=null)item.graphic.color=UIVisualTheme.Accent;
+            // ★ 适配：默认滚动条和勾选图也需要换肤，避免白色/绿色方块。
+            RuntimeDropdownSkin.Apply(_source);
             // ★ 适配：栏宽减半后给双字标签保留完整字宽，输入框和范围按钮继续各占独立区域。
             var label=UIFactory.NewText("QuantityLabel",transform,"数量",13);Place(label.rectTransform,0,-66,.18f,28);
             var field=UIFactory.NewRect("Quantity",transform,typeof(Image),typeof(InputField));_count=field.GetComponent<InputField>();Place(field.GetComponent<RectTransform>(),.18f,-66,.43f,28);_count.contentType=InputField.ContentType.IntegerNumber;

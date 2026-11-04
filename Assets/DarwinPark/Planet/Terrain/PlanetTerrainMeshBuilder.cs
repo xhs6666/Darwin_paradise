@@ -69,6 +69,12 @@ namespace DarwinPark.Planet
         [Header("渲染")]
         public Material TerrainMaterial;
 
+        [Header("地形碰撞")]
+        [Tooltip("普通网格使用快速碰撞结构；超过PhysX三角形上限时自动改用兼容结构，避免漏碰撞。")]
+        public bool useFastMidphase = true;
+        // ★ 修复（防Bug回归）：这是PhysX快速结构的索引上限，不是降低地形精度的游戏参数。
+        public const int FastMidphaseTriangleLimit = 2_097_152;
+
         public PlanetTerrainData Data { get; private set; }
         private Mesh _mesh;
 
@@ -160,6 +166,11 @@ namespace DarwinPark.Planet
                 return;
             }
 
+            // ★ 修复（防Bug回归）：先解绑旧碰撞网格，防止Clear/重新上传时沿用旧的快速结构提前烘焙超大网格。
+            var mc = GetComponent<MeshCollider>();
+            if (mc == null) mc = gameObject.AddComponent<MeshCollider>();
+            mc.sharedMesh = null;
+
             // 3. 构建 Mesh 网格
             if (_mesh == null)
             {
@@ -193,8 +204,11 @@ namespace DarwinPark.Planet
             mr.SetPropertyBlock(block);
 
             // 5. 配置碰撞体 (只获取一次，绝不重复)
-            var mc = GetComponent<MeshCollider>();
-            if (mc == null) mc = gameObject.AddComponent<MeshCollider>();
+            // ★ 修复（防Bug回归）：超过2,097,152三角形时禁用Fast Midphase，保留其余选项；小网格按Inspector偏好恢复。
+            var cooking = mc.cookingOptions & ~MeshColliderCookingOptions.UseFastMidphase;
+            if (useFastMidphase && Data.Triangles.Length / 3 <= FastMidphaseTriangleLimit)
+                cooking |= MeshColliderCookingOptions.UseFastMidphase;
+            mc.cookingOptions = cooking;
             mc.sharedMesh = _mesh;
 
             // ★ 适配：独立海面/云层复用本次生成的焊接网格，重建地形时同步刷新。

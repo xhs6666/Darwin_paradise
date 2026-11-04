@@ -15,7 +15,8 @@ namespace DarwinPark.Entities.Ecology
         public static bool SettleSoldierAttack(EntityGeneController genes,DarwinEntity target,bool killed)
         {
             var member=genes.GetComponent<AntColonyMember>();if(member==null||!member.Active||member.Role!=AntRole.Soldier)return false;
-            if(killed){ColonyResource.LeaveCorpse(target,member.GroupId);member.AfterKill();}
+            // ★ 修复（防Bug回归）：尸体由死亡入口统一生成，士兵只更新巡逻状态，不能再生成第二具。
+            if(killed)member.AfterKill();
             return true;
         }
     }

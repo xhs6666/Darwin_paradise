@@ -26,6 +26,8 @@ namespace DarwinPark.Entities.Ecology
             var settings=EcologyBalanceSettings.Current;
             // ★ 修复（防Bug回归）：密集生态每步大量查询角色，只线性选主表达，避免为每个邻居创建 LINQ 排序集合。
             if(genes==null||genes.GetComponent<EggIncubation>()?.Incubating==true)return false;
+            // ★ 适配：异养后代/食腐分支接管营养方式，不能同时借父基因的光合状态凭空生产。
+            if(EcologyQueries.Active(genes,NutritionEcologySettings.Current.heterotrophyGene)!=null||EcologyQueries.Active(genes,NutritionEcologySettings.Current.scavengerGene)!=null)return false;
             GeneEvaluation gene=null;
             if(genes.Evaluation!=null)foreach(var candidate in genes.Evaluation.Genes)
                 if(candidate.IsActive&&candidate.Definition.Id==settings.nutritionGene&&(gene==null||candidate.EffectiveStrength>gene.EffectiveStrength))gene=candidate;
@@ -39,6 +41,7 @@ namespace DarwinPark.Entities.Ecology
         public static void Produce(EntityGeneController genes,GeneInstance source,float dt)
         {
             if(dt<=0||!GeneBehaviorAuthority.IsPrimary<NutritionGeneLogic>(genes,source))return;
+            if(EcologyQueries.Active(genes,NutritionEcologySettings.Current.heterotrophyGene)!=null||EcologyQueries.Active(genes,NutritionEcologySettings.Current.scavengerGene)!=null)return;
             var stats=genes.GetComponent<EntityStats>();if(stats==null)return;
             var state=genes.Evaluation?.Genes.Find(g=>g.Gene==source&&g.IsActive)?.State;
             var settings=EcologyBalanceSettings.Current;float efficiency=genes.GetAttribute(settings.absorptionAttribute);

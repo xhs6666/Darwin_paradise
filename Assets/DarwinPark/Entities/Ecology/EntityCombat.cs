@@ -19,6 +19,8 @@ namespace DarwinPark.Entities.Ecology
             if(GetComponent<EggIncubation>()?.Incubating==true)defense+=GetComponent<EntityGeneController>().GetAttribute("eggDefense");
             float actual=Mathf.Min(hp,damage/(1+Mathf.Max(0,defense)/100));
             stats.Modify("health",-actual);if(attacker!=null)Attacked?.Invoke(attacker,actual);
+            // ★ 适配：致死攻击先统一消化/尸体结算，其他调用者不再复制击杀营养奖励。
+            if(actual>=hp)EntityDeathSettlement.Die(GetComponent<DarwinEntity>(),attacker);
             return actual;
         }
     }

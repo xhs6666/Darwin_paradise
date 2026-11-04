@@ -51,7 +51,8 @@ namespace DarwinPark.EditorTools
             _frame=new Texture2D(width,height,TextureFormat.RGB24,false);
             string folder=Path.Combine(Application.streamingAssetsPath,"Menu");Directory.CreateDirectory(folder);
             // 编码器从 PATH 查找，不把本机工具路径写进项目。
-            _encoder=new System.Diagnostics.Process{StartInfo=new System.Diagnostics.ProcessStartInfo("ffmpeg","-y -hide_banner -loglevel error -f rawvideo -pixel_format rgb24 -video_size "+width+"x"+height+" -framerate "+fps+" -i - -an -vf vflip -c:v libx264 -preset medium -crf 20 -pix_fmt yuv420p -color_primaries bt709 -color_trc bt709 -colorspace bt709 -movflags +faststart \""+Path.Combine(folder,"earth-orbit.mp4")+"\""){UseShellExecute=false,CreateNoWindow=true,RedirectStandardInput=true}};
+            // ★ 修复（防Bug回归）：后续重新录制也输出VP8/WebM，不能再次生成会触发Windows硬件解码Flush错误的H.264资源。
+            _encoder=new System.Diagnostics.Process{StartInfo=new System.Diagnostics.ProcessStartInfo("ffmpeg","-y -hide_banner -loglevel error -f rawvideo -pixel_format rgb24 -video_size "+width+"x"+height+" -framerate "+fps+" -i - -an -vf vflip -c:v libvpx -deadline good -cpu-used 2 -crf 10 -b:v 2M -g "+(fps*2)+" -pix_fmt yuv420p -color_primaries bt709 -color_trc bt709 -colorspace bt709 \""+Path.Combine(folder,"earth-orbit.webm")+"\""){UseShellExecute=false,CreateNoWindow=true,RedirectStandardInput=true}};
             _encoder.Start();
             for(int i=0;i<fps*seconds;i++)
             {

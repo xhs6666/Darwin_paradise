@@ -19,7 +19,8 @@ namespace DarwinPark.Entities.Ecology
         public float DetectionRemaining=>_detectionRemaining;
         public bool VisibleTo(DarwinEntity observer)=>observer!=Host||_detectedByHost;
         public void RestoreDetection(bool detected,float remaining){_detectedByHost=detected;_detectionRemaining=remaining;}
-        public bool Active=>EcologyQueries.Active(_genes,_settings.parasiticGene)!=null;
+        // ★ 修复（防Bug回归）：热更新或旧组件残留时，新卵寄生逻辑不能继续触发旧的吸血/跟随行为。
+        public bool Active=>EcologyQueries.Active(_genes,_settings.parasiticGene)?.Definition.LogicScriptId==DarwinPark.Genetics.NutritionEcologySettings.Current.legacyEggLogic;
         public bool Internal=>EcologyQueries.Active(_genes,_settings.parasiticGene)?.State?.StateId==_settings.internalState;
         public bool OriginalKinematic=>Host!=null?_kinematic:_body!=null&&_body.isKinematic;
         private void Awake(){_genes=GetComponent<EntityGeneController>();_entity=GetComponent<DarwinEntity>();_settings=EcologySettings.Load();EcologyIdentity.Ensure(gameObject);}

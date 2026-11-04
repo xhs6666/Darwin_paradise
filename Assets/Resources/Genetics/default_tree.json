@@ -1,9 +1,13 @@
 {
   "version": 1,
+  "nutritionVersion": 1,
   "nodes": [
     {
       "id": "gene_nutrient_utilization",
-      "position": {"x": 250, "y": 810},
+      "position": {
+        "x": 250,
+        "y": 810
+      },
       "error": true
     },
     {
@@ -117,6 +121,22 @@
         "y": 300
       },
       "error": true
+    },
+    {
+      "id": "gene_heterotrophy",
+      "position": {
+        "x": 710,
+        "y": 620
+      },
+      "error": false
+    },
+    {
+      "id": "gene_scavenging",
+      "position": {
+        "x": 950,
+        "y": 620
+      },
+      "error": true
     }
   ],
   "edges": [
@@ -165,6 +185,18 @@
     {
       "from": "gene_oviparous",
       "to": "gene_parasitic",
+      "kind": "error",
+      "value": 100
+    },
+    {
+      "from": "gene_nutrition",
+      "to": "gene_heterotrophy",
+      "kind": "evolution",
+      "value": 100
+    },
+    {
+      "from": "gene_heterotrophy",
+      "to": "gene_scavenging",
       "kind": "error",
       "value": 100
     }

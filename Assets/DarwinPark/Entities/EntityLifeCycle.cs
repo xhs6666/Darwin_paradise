@@ -40,7 +40,8 @@ namespace DarwinPark.Entities
                 // ★ 修复（防Bug回归）：寿命终点直接结算死亡，不能靠缓慢扣血与修复互相抵消。
                 HasDied=true;_stats.TryGet("health",out hp);_stats.Modify("health",-Mathf.Max(0,hp),false);
                 GetComponent<EntityManualControl>()?.Release();
-                gameObject.SetActive(false);Destroy(gameObject);
+                // ★ 适配：寿终也留下尚未被吸收的营养；清场仍走原有显式销毁路径。
+                Ecology.EntityDeathSettlement.Die(GetComponent<DarwinEntity>());
             }
         }
         // ★ 适配：读档直接恢复寿命，不运行出生初始化。

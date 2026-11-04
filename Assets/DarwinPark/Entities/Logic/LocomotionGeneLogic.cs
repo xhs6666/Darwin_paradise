@@ -66,7 +66,7 @@ namespace DarwinPark.Entities.Logic
                 if(_target!=null)TryBite(stats,false);return;
             }
             // ★ 适配：由生态预算决定是否需补充繁殖储备，仓储充足后避免过度捕食。
-            if (EcologyEnergyBudget.WantsFood(_controller,stats,_settings.hungerThreshold) && state != null)
+            if (NutritionTransfer.CanHuntForFood(_controller)&&EcologyEnergyBudget.WantsFood(_controller,stats,_settings.hungerThreshold) && state != null)
             {
                 bool graze = state.StateId == "herbivore";
                 if (state.StateId == "hunt" || graze)
@@ -98,17 +98,15 @@ namespace DarwinPark.Entities.Logic
             float damage = graze ? _settings.grazeDamage : _controller.GetAttribute("attack");
             if (damage <= 0) return;
             _actionCooldown = _settings.attackInterval;
-            // ★ 修复（防Bug回归）：按实际造成的伤害奖励，防止过量攻击刷收益；吃不下的部分进入储存。
-            float actualDamage = EntityCombat.Ensure(_target.gameObject).Receive(_controller.GetComponent<DarwinEntity>(),damage);
+            // ★ 适配：仅致死结算产生可吸收营养，非致死伤害不会凭空增加食物。
+            EntityCombat.Ensure(_target.gameObject).Receive(_controller.GetComponent<DarwinEntity>(),damage);
             otherStats.TryGet("health",out float remainingHealth);
             // ★ 适配：士兵只造成伤害并留下运输尸体，不再运行普通进食或群体分红。
             if(Ecology.AntColonyCombat.SettleSoldierAttack(_controller,_target,remainingHealth<=0))
             // ★ 修复（防Bug回归）：尸体已成为独立资源，立即注销死者，避免同帧存档仍保存可重复恢复的原实体。
             {if(remainingHealth<=0){_target.gameObject.SetActive(false);Object.Destroy(_target.gameObject);_target=null;}return;}
-            float reward=actualDamage*_settings.biteNutrition+(remainingHealth<=0?_settings.killNutrition:0);
-            var population=_controller.GetComponent<PopulationBehavior>();
-            if(remainingHealth<=0&&population!=null&&population.Active)population.ShareReward(reward);else stats.Feed(reward);
-            if (remainingHealth<=0) { Object.Destroy(_target.gameObject); _target = null; }
+            // ★ 修复（防Bug回归）：伤害不是食物；击败后的消化与剩余尸体在EntityCombat中结算，非致死攻击不再凭空补粮。
+            if(remainingHealth<=0)_target=null;
         }
         private void FindTarget(bool graze)
         {
@@ -144,6 +142,6 @@ namespace DarwinPark.Entities.Logic
             Vector3 tangent = Vector3.Lerp(Vector3.ProjectOnPlane(velocity,radial),desired,1-Mathf.Exp(-_settings.steering*dt));
             _rb.linearVelocity = Vector3.ClampMagnitude(tangent,_settings.maximumMoveSpeed*scale) + radial * inward;
         }
-        public virtual string GetTooltipInfo() => _target != null ? "正在追击：" + _target.DisplayName : "感知范围内搜索食物；饥饿时进食";
+        public virtual string GetTooltipInfo() => _target != null ? "正在追击：" + _target.DisplayName : "提供移动与攻击；消化食性寻找活体，幼年寄生寻找宿主，食腐寻找尸体。食草倾向仅选择静止活体。";
     }
 }

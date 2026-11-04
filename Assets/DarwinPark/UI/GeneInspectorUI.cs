@@ -57,6 +57,8 @@ namespace DarwinPark.UI
             ,{"energy_block_absorption","能量块吸收速率"},{"energy_block_release","能量块吐出量"}
             ,{"territory_radius","领地半径"},{"defend_bonus","领地防御"},{"leadership_aura","领袖光环"},{"coordination","协同效率"}
             ,{"host_drain_rate","寄生吸取速率"},{"hide_from_host","寄生隐蔽"},{"gestationEfficiency","孕育效率"}
+            // ★ 适配：新食性参数使用中文显示，避免实体面板只显示内部属性ID。
+            ,{"digestion_efficiency","消化效率"},{"scavenge_rate","食腐吸收速率"}
         };
 
         private void Start()

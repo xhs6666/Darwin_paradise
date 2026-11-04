@@ -43,7 +43,7 @@ namespace DarwinPark.Entities.Vitals
         {
             // ★ 适配：卵不进行自主觅食/运动代谢，但保留生命值与可被攻击破坏的碰撞体。
             if(GetComponent<DarwinPark.Entities.Ecology.EggIncubation>()?.Incubating==true)
-            {if(_stats.TryGet("health",out var eggHealth)&&eggHealth<=0)Destroy(gameObject);return;}
+            {if(_stats.TryGet("health",out var eggHealth)&&eggHealth<=0)Ecology.EntityDeathSettlement.Die(GetComponent<DarwinEntity>());return;}
             // 1. 营养吸收与消耗
             // ★ 修复（防Bug回归）：营养基因已结算生产，此处重复凭空产粮会掩盖生态收支；这里只计算消耗。
             float consumed = Ecology.EcologyEnergyBudget.Consumption(_genes,baseMetabolism,moveMetabolism)*dt;
@@ -84,7 +84,7 @@ namespace DarwinPark.Entities.Vitals
                 _stats.Modify("health", -1f * dt);
 
             if (_stats.TryGet("health", out var finalHp) && finalHp <= 0f)
-                Destroy(gameObject);
+                Ecology.EntityDeathSettlement.Die(GetComponent<DarwinEntity>());
         }
     }
 }

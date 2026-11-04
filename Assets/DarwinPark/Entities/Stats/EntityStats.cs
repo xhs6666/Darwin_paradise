@@ -51,6 +51,8 @@ namespace DarwinPark.Entities.Stats
         public void RestoreValues(List<DarwinPark.Entities.StatSaveValue> values)
         {foreach(var value in values){_stats[value.id]=value.value;_maxStats[value.id]=value.max;}Ecology.EntityNeighborhood.Changed(GetComponent<EntityGeneController>());}
         public bool TryGet(string id, out float value) => _stats.TryGetValue(id, out value);
+        // ★ 适配：营养转移只需当前空位，不应每帧构造整份存档数值列表。
+        public float CapacityRemaining(string id)=>_stats.TryGetValue(id,out float value)&&_maxStats.TryGetValue(id,out float maximum)?Mathf.Max(0,maximum-value):0;
 
         /// <summary>★ 新增：进食先补饱食度，溢出进入储存；猎食收益不因饱食度上限而丢失。</summary>
         public void Feed(float amount)

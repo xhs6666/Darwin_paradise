@@ -1092,7 +1092,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c736a5549379442c8a2be97301be6e64, type: 3}
   m_Name:
   m_EditorClassIdentifier: DarwinPark.UI::DarwinPark.UI.MainMenuBackground
-  videoFile: Menu/earth-orbit.mp4
+  videoFile: Menu/earth-orbit.webm
   posterFile: Menu/earth-orbit.jpg
   videoWidth: 1280
   videoHeight: 720

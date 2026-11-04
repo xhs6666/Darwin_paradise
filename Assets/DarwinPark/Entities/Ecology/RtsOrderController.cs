@@ -32,7 +32,8 @@ namespace DarwinPark.Entities.Ecology
             if(kind==RtsOrderKind.Collect)
             {
                 var worker=GetComponent<AntColonyMember>();
-                if(resource!=null&&resource.State.kind==ColonyResourceKind.Corpse&&resource.State.group==worker.GroupId)
+                // ★ 适配：RTS与工匠自主领取使用同一尸体资格，允许收集自然死亡尸体。
+                if(resource!=null&&ColonyCorpseAccess.Available(resource,worker))
                 {AntColonyWorker.Release(worker);worker.State.resourceTarget=resource.State.id;worker.State.scan=1;}
                 else if(target!=null&&!worker.Population.SameGroup(target)&&target.Genes.GetAttribute("moveSpeed")<=0)
                 {AntColonyWorker.Release(worker);worker.State.livingTarget=EcologyIdentity.Of(target);worker.State.scan=1;}

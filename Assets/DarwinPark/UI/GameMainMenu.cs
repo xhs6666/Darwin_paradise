@@ -71,7 +71,7 @@ namespace DarwinPark.UI
             if (!Input.GetKeyDown(KeyCode.Escape) || _session.Busy || WorldRuntimeGate.Loading || WorldGameSettingsPanel.Instance?.Visible==true || WorldRuntimeGate.Recording) return;
             if (!_visible && WorldRuntimeGate.Ready) ShowPause();
             else if (_visible && _page == "pause") Resume();
-            else if (_visible && _page == "settings") _page = _settingsBack;
+            else if (_visible && _page == "settings") ReturnFromSettings();
             else if (_visible && _page == "multiplayer" && LanSession.Instance?.Online==true) LanSession.Instance.LeaveToMenu("已取消连接");
             else if (_visible && (_page == "saves" || _page == "create" || _page == "multiplayer")) _page = "main";
             GameInputGate.ConsumeEscape();
@@ -80,6 +80,18 @@ namespace DarwinPark.UI
         {
             if (_session.Busy || !WorldRuntimeGate.Ready || _visible) return;
             _visible = true; _page = "pause"; _message = ""; GameInputGate.Blocked = true; Capture();
+        }
+        // ★ 新增：底栏快捷入口复用原设置页和输入/暂停门控；返回直接回到游戏，保留原有运行状态及实体操控。
+        public void OpenSettingsShortcut()
+        {
+            if(_visible||_session.Busy||!WorldRuntimeGate.Ready||WorldRuntimeGate.Loading||WorldRuntimeGate.Recording||GameInputGate.Blocked)return;
+            ShowPause();
+            if(!_visible)return;
+            _settingsBack="game";_page="settings";_scroll=Vector2.zero;
+        }
+        private void ReturnFromSettings()
+        {
+            if(_settingsBack=="game")Resume();else{_page=_settingsBack;_message="";}
         }
         private void Resume()
         {
@@ -231,7 +243,10 @@ namespace DarwinPark.UI
                 GUILayout.Label("日志目录："+RuntimeFileLog.DirectoryPath,new GUIStyle(RuntimeMenuTheme.Muted){wordWrap=true});
                 if(RuntimeMenuTheme.Button("打开日志文件夹",null,false,36))RuntimeFileLog.OpenDirectory();
             }
-            Back(_settingsBack);
+            // ★ 适配：写盘启动失败也必须在设置里显示原因，不能以目录为空为由隐藏故障。
+            RuntimeDiagnosticsUI.Draw();
+            // ★ 适配：快捷设置的返回和Esc共用恢复逻辑，不能落到不存在的game菜单页。
+            if (RuntimeMenuTheme.Button("返回","back",false,38)) ReturnFromSettings();
         }
         private void Back(string page) { if (RuntimeMenuTheme.Button("返回","back",false,38)) { if(_page=="multiplayer"&&LanSession.Instance?.Online==true)LanSession.Instance.LeaveToMenu("已取消连接");else{_page = page; _message = "";} } }
         // ★ 修复（防Bug回归）：暂停页原先只有退出程序，补齐保存并卸载世界的导航路径。

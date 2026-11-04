@@ -29,8 +29,10 @@ namespace DarwinPark.EditorTools
         private static readonly BindingFlags Private=BindingFlags.NonPublic|BindingFlags.Instance;
         private static string Folder=>Path.GetFullPath("Artifacts/AntColonyReview");
         private static string _owned;private static Vector3 _home;
-        static AntColonyRegression(){EditorApplication.playModeStateChanged+=s=>{if(s==PlayModeStateChange.EnteredPlayMode&&SessionState.GetBool(Key,false))EditorApplication.delayCall+=Validate;};}
-        public static void RunBatch(){SessionState.SetBool(Key,true);EditorSceneManager.OpenScene("Assets/Scenes/SampleScene.unity");EditorApplication.EnterPlaymode();}
+        private static bool _started;
+        // ★ 修复（防Bug回归）：Unity搜索索引异常会打断delayCall，update幂等等待启动就绪后再跑实际回归。
+        static AntColonyRegression(){EditorApplication.update+=()=>{if(!_started&&Application.isPlaying&&SessionState.GetBool(Key,false)&&Object.FindFirstObjectByType<WorldSessionManager>()!=null){_started=true;Validate();}};}
+        public static void RunBatch(){Application.runInBackground=true;SessionState.SetBool(Key,true);EditorSceneManager.OpenScene("Assets/Scenes/SampleScene.unity");EditorApplication.EnterPlaymode();}
         [MenuItem("Tools/Darwin Park/Validate Ant Colony")]
         public static void Validate()
         {

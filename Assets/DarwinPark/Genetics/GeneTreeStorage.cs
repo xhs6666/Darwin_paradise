@@ -12,6 +12,8 @@ namespace DarwinPark.Genetics
     [Serializable] public class GeneTreeDocument
     {
         public int version=1;
+        // ★ 适配：记录营养分支迁移，既补齐旧树，也保留迁移后用户主动编辑的连线。
+        public int nutritionVersion;
         public List<GeneTreeNode> nodes=new List<GeneTreeNode>();
         public List<GeneTreeEdge> edges=new List<GeneTreeEdge>();
     }
@@ -64,6 +66,8 @@ namespace DarwinPark.Genetics
         {
             // ★ 适配：已知旧默认关系先迁移再校验，避免新出错限制让已保存世界无法打开。
             NutrientUtilizationEvolutionUpgrade.Apply(doc,catalog);
+            // ★ 适配：营养分支和卵寄生先迁移，再验证旧世界的定义与连线。
+            NutritionEvolutionUpgrade.Apply(doc,catalog);
             if(doc==null || doc.nodes==null || doc.edges==null) throw new InvalidDataException("无效基因树");
             var ids=new HashSet<string>();
             foreach(var n in doc.nodes) if(!catalog.ContainsKey(n.id)||!ids.Add(n.id)) throw new InvalidDataException("缺失或重复节点："+n.id);

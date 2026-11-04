@@ -1,0 +1,34 @@
+{
+  "id": "gene_scavenging",
+  "displayName": "食腐基因",
+  "category": "Nutrition",
+  "parentGeneId": "gene_heterotrophy",
+  "baseGeneId": "gene_nutrition",
+  "isBaseGene": false,
+  "tier": 2,
+  "logicScriptId": "ScavengingGeneLogic",
+  "aiModuleId": "",
+  "attributeCurves": [
+    {
+      "attributeId": "scavenge_rate",
+      "minValue": 2,
+      "maxValue": 10
+    }
+  ],
+  "states": [
+    {
+      "stateId": "scavenge",
+      "displayName": "食腐",
+      "center": 50,
+      "color": [
+        0.7,
+        0.5,
+        0.25
+      ]
+    }
+  ],
+  "attributeLinkages": [],
+  "suppressionRules": [],
+  "entityStateTagVersion": 1,
+  "entityStateTags": []
+}

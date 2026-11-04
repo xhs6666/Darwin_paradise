@@ -83,7 +83,8 @@ namespace DarwinPark.UI
                     if(body.entity==null)continue;var offset=body.position-builder.transform.position;body.direction=offset.normalized;
                     float oldRadius=builder.radius+PlanetTerrainSampler.SampleHeight(oldData,builder.transform.InverseTransformDirection(body.direction))*builder.heightScale;
                     body.altitude=Mathf.Clamp(offset.magnitude-oldRadius,minimumSurfaceOffset,maximumPreservedAltitude);
-                    body.relocate=!AntColonyWorker.IsCarried(body.entity)&&body.entity.GetComponent<ParasiteBehavior>()?.Host==null;
+                    // ★ 适配：新营养寄生体的位置由宿主恢复，不能被地形重算独立投到地面。
+                    body.relocate=!AntColonyWorker.IsCarried(body.entity)&&body.entity.GetComponent<ParasiteBehavior>()?.Host==null&&body.entity.GetComponent<NutritionParasite>()?.Host==null;
                 }
                 Progress=.12f;Status="生成地形与山脉";float sea=builder.seaLevelRatio;
                 var task=Task.Run(()=>PlanetTerrainGenerator.Generate(config,sea,land));while(!task.IsCompleted)yield return null;if(task.IsFaulted)throw task.Exception;data=task.Result;

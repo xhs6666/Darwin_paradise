@@ -86,6 +86,8 @@ namespace DarwinPark.UI
             var catalog=data.definitions.ToDictionary(d=>d.id,d=>d.json);if(catalog.Count==0)throw new InvalidDataException("存档基因配置为空");GeneTreeStorage.Validate(data.tree,catalog);
             // ★ 修复（防Bug回归）：已知旧关系迁移会同步修正父基因，必须写回快照；否则文件里的父定义与已迁移的出错连线不一致。
             foreach(var definition in data.definitions)definition.json=catalog[definition.id];
+            // ★ 适配：新增营养定义成对写回快照，不能只更新树节点却遗漏基因JSON。
+            foreach(var entry in catalog)if(data.definitions.All(d=>d.id!=entry.Key))data.definitions.Add(new SavedGeneDefinition{id=entry.Key,json=entry.Value});
             foreach(var definition in catalog){var gene=JsonUtility.FromJson<GeneDefinitionJson>(definition.Value);if(gene==null||gene.id!=definition.Key||!Enum.TryParse<GeneCategory>(gene.category,true,out _))throw new InvalidDataException("基因配置无效："+definition.Key);}
             EntityStateSaveValidation.Validate(data);
             // ★ 适配：先校验世界生态快照，禁止清场后才发现坏平衡参数；旧世界使用待迁移的当前配置。
@@ -96,6 +98,8 @@ namespace DarwinPark.UI
                 if(entity?.ecology?.IsEmpty==true)entity.ecology=null;
                 if(entity.genome==null||entity.genome.Genes==null||entity.stats==null||entity.reproduction==null||entity.traits==null)throw new InvalidDataException("实体存档不完整");
                 if(entity.genome.Genes.Any(g=>!catalog.ContainsKey(g.DefinitionId)))throw new InvalidDataException("实体引用缺失基因");
+                // ★ 适配：外来卵不能略过后代基因校验；寄生宿主标识独立校验。
+                DarwinPark.Entities.Ecology.NutritionSaveValidation.Validate(entity.ecology,catalog.Keys);
                 if(entity.ecology!=null&&(!Guid.TryParseExact(entity.ecology.id,"N",out _)||!Finite(entity.ecology.evictionRemaining)||!Finite(entity.ecology.commandRemaining)||!Finite(entity.ecology.incubationRemaining)))throw new InvalidDataException("生态状态或实体标识无效");
             }
             var ids=data.entities.Where(e=>e.ecology!=null).Select(e=>e.ecology.id).ToList();
