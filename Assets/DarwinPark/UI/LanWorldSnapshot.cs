@@ -35,7 +35,8 @@ namespace DarwinPark.UI
             var frame=new LanFrame{sequence=sequence,time=clock.GameTime,scale=clock.ConfiguredTimeScale,running=clock.IsRunning,sun=Object.FindFirstObjectByType<SunSystem>().OrbitAngle,rotation=planet.transform.rotation,
                 actors=EntityRegistry.All.Where(EcologyQueries.Alive).Select(e=>new LanActor{state=EntitySaveState.Capture(e),suppression=e.Genes.EnvironmentGeneSuppression}).ToList(),gameSettings=EntityPopulationLimit.Capture(),resources=ColonyResource.All.Select(r=>r.Capture()).ToList()};
             var random=Object.FindFirstObjectByType<RandomPlanetSpawner>();if(random!=null){frame.randomBusy=random.IsBusy;frame.randomSpawned=random.Spawned;frame.randomRequested=random.Requested;frame.randomStatus=random.Status;}
-            if(includeOre){frame.ore=PlanetOreSystem.Instance.CaptureAmounts();frame.oreResolution=PlanetOreSystem.Instance.mapResolution;frame.oreTimer=PlanetOreSystem.Instance.RegenTimer;}return frame;
+            // ★ 适配：历史与显示配置随低频快照同步，不把整份长期档案塞进每次移动同步。
+            if(includeOre){frame.population=PopulationArchive.Capture();frame.ore=PlanetOreSystem.Instance.CaptureAmounts();frame.oreResolution=PlanetOreSystem.Instance.mapResolution;frame.oreTimer=PlanetOreSystem.Instance.RegenTimer;}return frame;
         }
     }
 }

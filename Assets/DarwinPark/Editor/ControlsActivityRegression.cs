@@ -89,7 +89,7 @@ namespace DarwinPark.EditorTools
             Check(EntityAttackAim.Pick(self.gameObject,ray,10,manual.aimRadius)==null,"扩大判定不能穿墙攻击");Object.DestroyImmediate(wall);
             Check(EntityAttackAim.Pick(self.gameObject,new Ray(origin+Vector3.up*1.5f,Vector3.back),10,manual.aimRadius)==null,"背后和离开准星的实体不会被误击");Object.DestroyImmediate(floor);
 
-            Vector3 home=EcologyQueries.Surface(builder.transform.position+Vector3.up*(builder.radius+builder.heightScale));var queen=AntColonyMember.Ensure(Spawn(home,true).GetComponent<PopulationBehavior>());queen.Assign(AntRole.Queen,"range-review");
+            Vector3 home=EcologyQueries.Surface(builder.transform.position+Vector3.up*(builder.radius+builder.heightScale));var queen=AntColonyMember.Ensure(Spawn(home,true).GetComponent<PopulationBehavior>());queen.Assign(AntRole.Queen,Guid.NewGuid().ToString("N"));
             var soldier=AntColonyMember.Ensure(Spawn(home,true).GetComponent<PopulationBehavior>());soldier.Assign(AntRole.Soldier,queen.GroupId);
             var supply=ColonyActivityRange.Boundary(new ActivityCircle("test",home,queen.Radius*.9f),0);queen.State.supplyPoints.Clear();queen.State.supplyPoints.Add(EcologyQueries.ToLocal(supply));ColonyResource.Convert(queen.GroupId,supply,10,false);
             Vector3 extended=ColonyActivityRange.Boundary(new ActivityCircle("test",home,queen.Radius*1.4f),0),outside=ColonyActivityRange.Boundary(new ActivityCircle("test",home,queen.Radius*2.4f),0);

@@ -91,8 +91,11 @@ namespace DarwinPark.EditorTools
             Check(control.HandleLayerKey(ControlBindings.Get(ControlAction.CycleLayer))&&control.CurrentLayer!="default","默认切换图层快捷键生效");Check(control.HandleLayerKey(ControlBindings.Get(ControlAction.ClearLayer))&&control.CurrentLayer=="default","默认取消图层快捷键生效");
             ControlBindings.TryBind(ControlAction.CycleLayer,KeyCode.K,out _);Check(!control.HandleLayerKey(KeyCode.L)&&control.HandleLayerKey(KeyCode.K),"设置改键后图层新键生效旧键失效");Check(!control.HandleLayerKey(KeyCode.K,true),"输入框打字不触发图层快捷键");GameInputGate.Blocked=true;Check(!control.HandleLayerKey(KeyCode.K),"菜单门控期间不触发图层切换");GameInputGate.Blocked=false;
             resource.State.energy=0;Check(ColonyActivityRange.Circles(queen.Population).Count()==1,"补给耗尽立即移除检查点范围");resource.Remove();
-            var stats=Object.FindFirstObjectByType<MapEntityStatisticsUI>();var population=stats.GetComponent<MapPopulationListUI>();yield return null;population.RefreshNow();Check(population.GroupCount==1&&population.MemberCount==2,"种群列表正确统计活群与成员");Check(population.Card.rect.width==stats.preferredWidth&&population.Card.rect.height==stats.preferredHeight&&stats.GetComponent<MapEntityGeneFilterUI>().preferredWidth==stats.preferredWidth,"三张卡片使用同规格宽高");Check(population.Locate(0),"列表支持定位王后或领袖");population.OpenList();yield return null;Check(root.MainCanvas.transform.Find("PopulationListWindow").gameObject.activeSelf,"种群列表可以展开查看");yield return Capture("population-list");
-            foreach(var e in EntityRegistry.All.ToArray())Object.DestroyImmediate(e.gameObject);population.RefreshNow();Check(population.GroupCount==0&&population.MemberCount==0,"种群灭绝后列表同步清空");
+            var stats=Object.FindFirstObjectByType<MapEntityStatisticsUI>();typeof(SimulationControlPanel).GetMethod("SwitchPage",Private).Invoke(control,new object[]{1});yield return null;yield return null;
+            var population=root.MainCanvas.transform.Find("BottomPanel/ContentArea/Page2").GetComponentInChildren<MapPopulationListUI>(true);population.RefreshNow();Check(population.LivingCount==1&&population.MemberCount==2,"第二页种群入口正确统计活群与成员");
+            Check(population.Card.rect.width==stats.preferredWidth&&population.Card.rect.height==stats.preferredHeight,"第二页种群入口沿用紧凑卡片规格");Check(population.Locate(0),"列表支持定位王后或领袖");population.OpenList();yield return null;Check(PopulationWorkbench.Instance.Visible,"完整种群详情可以展开查看");yield return Capture("population-list");
+            foreach(var e in EntityRegistry.All.ToArray())Object.DestroyImmediate(e.gameObject);population.RefreshNow();Check(population.LivingCount==0&&population.MemberCount==0&&population.GroupCount>0,"种群灭绝后活体归零且保留历史档案");PopulationWorkbench.Instance.Close();
+
         }
     }
 }

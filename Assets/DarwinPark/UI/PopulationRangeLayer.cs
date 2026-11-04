@@ -37,6 +37,7 @@ namespace DarwinPark.UI
             var groups=EntityRegistry.All.Select(e=>e.GetComponent<PopulationBehavior>()).Where(p=>p!=null&&p.Active&&!string.IsNullOrEmpty(p.GroupId)).GroupBy(p=>p.GroupId).OrderBy(g=>g.Key);
             foreach(var group in groups)
             {
+                if(!PopulationArchive.IsVisible(group.Key))continue;
                 Color tint=ColonyAppearance.ColorFor(group.Key);
                 foreach(var circle in ColonyActivityRange.Circles(group.First()))
                 {

@@ -81,8 +81,11 @@ namespace DarwinPark.Entities.Ecology
             if(WorldAuthority.IsReplica)return;
             if(!Active){GetComponent<AntColonyMember>()?.Suspend();if(Members.Remove(this)||!string.IsNullOrEmpty(GroupId))PopulationGroupIndex.Invalidate();GroupId="";LeaderFlag=false;Command=PopulationCommand.None;return;}
             if(dt<=0)return;
+            string previousGroup=_mode!=null&&_mode!=Mode?GroupId:null;
             if(_mode!=null&&_mode!=Mode){GetComponent<AntColonyMember>()?.Suspend();Members.Remove(this);PopulationGroupIndex.Invalidate();GroupId="";LeaderFlag=false;Command=PopulationCommand.None;}
             _mode=Mode;EnsureMembership();
+            // ★ 适配：种群状态改变后独立成群也记录真实来源；加入既有种群不会改写其谱系。
+            if(!string.IsNullOrEmpty(previousGroup)&&previousGroup!=GroupId&&LeaderFlag)PopulationArchive.RecordFounding(previousGroup,GroupId,Mode,_entity.DisplayName,"种群状态变化形成新种群");
             if(GetComponent<EggIncubation>()?.Incubating==true)return;
             // ★ 适配：固定分工独立推进，旧全群采集与决斗不能覆盖蚁群角色。
             if(Mode==_settings.antState){AntColonyMember.Ensure(this).Advance(dt);return;}
@@ -109,6 +112,8 @@ namespace DarwinPark.Entities.Ecology
                 var neighbor=Members.Where(m=>m!=null&&m!=this&&m.Active&&m.Mode==Mode&&EcologyQueries.Distance(transform.position,m.transform.position)<=_settings.joinRadius)
                     .OrderBy(m=>m.JoinOrder).FirstOrDefault();
                 GroupId=neighbor?.GroupId??Guid.NewGuid().ToString("N");JoinOrder=++_serial;LeaderFlag=neighbor==null;
+                // ★ 新增：新建种群记录真实成立时间；读档期间不把首次观察误写成出生。
+                if(neighbor==null&&WorldRuntimeGate.Ready&&!WorldRuntimeGate.Loading&&!WorldAuthority.IsReplica)PopulationArchive.Register(GroupId,Mode,_entity.DisplayName,true);
             }
             _serial=Math.Max(_serial,JoinOrder);if(!Members.Contains(this)){Members.Add(this);PopulationGroupIndex.Invalidate();}
         }

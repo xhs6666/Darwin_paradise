@@ -76,7 +76,7 @@ namespace DarwinPark.UI
             }
             // ★ 修复（防Bug回归）：Esc 由最早更新的菜单消费，同一帧不再触发退出操控或底层工具取消；F10 无动作。
             // ★ 适配：参数进度与存档设置自行处理输入，Esc不能再打开叠加的暂停菜单。
-            if (_controls.Waiting.HasValue || !Input.GetKeyDown(KeyCode.Escape) || _session.Busy || WorldRuntimeGate.Loading || WorldGameSettingsPanel.Instance?.Visible==true || WorldRuntimeGate.Recording) return;
+            if (_controls.Waiting.HasValue || !Input.GetKeyDown(KeyCode.Escape) || _session.Busy || WorldRuntimeGate.Loading || WorldGameSettingsPanel.Instance?.Visible==true || PopulationWorkbench.Instance?.Visible==true || WorldRuntimeGate.Recording) return;
             if (!_visible && WorldRuntimeGate.Ready) ShowPause();
             else if (_visible && _page == "pause") Resume();
             else if (_visible && _page == "settings") ReturnFromSettings();

@@ -95,9 +95,12 @@ namespace DarwinPark.Entities.Ecology
         }
         private void BeginFounding()
         {
+            string parentGroup=GroupId;
             Vector3 center=Center,up=EcologyQueries.Up(center);var tangent=Vector3.ProjectOnPlane(UnityEngine.Random.onUnitSphere,up).normalized;
             State.foundingPoint=EcologyQueries.ToLocal(EcologyQueries.Surface(center+tangent*Radius*AntColonySettings.Current.foundingDistanceRatio));
             State.founding=true;State.supplyPoints.Clear();Assign(AntRole.Queen,Guid.NewGuid().ToString("N"));State.supplyPoints.Clear();
+            // ★ 新增：在种群标识变化的真实建群入口记录来源，而不是按地理接近猜测谱系。
+            PopulationArchive.RecordFounding(parentGroup,GroupId,Population.Mode,Entity.DisplayName);
             Activity=ColonyActivity.Founding;
         }
         private void AdvanceSoldier(float dt)

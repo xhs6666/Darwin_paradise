@@ -52,8 +52,6 @@ namespace DarwinPark.UI
             gameObject.AddComponent<MapEntityActions>();
             // ★ 适配：组合筛选与分页定位由独立组件提供，原统计与“清除全部”口径保持明确。
             MapEntityGeneFilterUI.Attach(this);
-            // ★ 适配：第三张同规格信息卡接在实体筛选右侧，普通成员也可查看。
-            gameObject.AddComponent<MapPopulationListUI>();
         }
         private void LateUpdate()
         {

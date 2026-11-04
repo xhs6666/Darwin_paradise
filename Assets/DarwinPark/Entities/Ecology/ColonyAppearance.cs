@@ -7,6 +7,8 @@ namespace DarwinPark.Entities.Ecology
     {
         private static Material _lineMaterial;
         public static Color ColorFor(string id)
+        {if(PopulationArchive.TryColor(id,out var color))return color;return DefaultColorFor(id);}
+        public static Color DefaultColorFor(string id)
         {uint hash=2166136261;unchecked{foreach(char c in id??""){hash^=c;hash*=16777619;}}return Color.HSVToRGB((hash%100000)/100000f,.6f,1);}
         // ★ 修复（防Bug回归）：URP Unlit 不读取线条顶点色，必须使用独立属性块，否则所有种群标记和范围均显示成白色。
         public static void Tint(LineRenderer line,Color color)

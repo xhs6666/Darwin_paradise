@@ -262,6 +262,8 @@ namespace DarwinPark.UI
             if(frame==null||frame.sequence<=_receivedSequence)return;_receivedSequence=frame.sequence;
             // ★ 适配：轻量设置随常规帧同步，不因更改上限重新加载整个客户端世界。
             if(frame.gameSettings!=null&&frame.gameSettings.version==1){EntityPopulationLimit.UseSnapshot(frame.gameSettings);if(_world.Current!=null)_world.Current.gameSettings=EntityPopulationLimit.Capture();}
+            // ★ 适配：服务端档案只在低频帧出现，空字段不能清空已有历史与颜色。
+            if(frame.population!=null)PopulationArchive.Restore(frame.population);
             ServiceLocator.Get<SimulationClock>().ApplyRemoteState(frame.time,frame.scale,frame.running);FindFirstObjectByType<SunSystem>().OrbitAngle=frame.sun;EcologyQueries.Planet.transform.rotation=frame.rotation;
             var ids=new HashSet<string>();foreach(var incoming in frame.actors)
             {

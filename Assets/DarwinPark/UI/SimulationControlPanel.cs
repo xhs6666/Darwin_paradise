@@ -441,6 +441,8 @@ namespace DarwinPark.UI
 
             var spawnPanel = page2GO.AddComponent<EntitySpawnPanel>();
             spawnPanel.DefaultEntityPrefab = this.EntityPrefab;
+            // ★ 适配：种群列表属于第二页的独立只读入口，不随创造权限隐藏。
+            var population=UIFactory.NewRect("PopulationList",parent,typeof(Image));population.AddComponent<MapPopulationListUI>();
         }
 
         // ---------------------------------------------

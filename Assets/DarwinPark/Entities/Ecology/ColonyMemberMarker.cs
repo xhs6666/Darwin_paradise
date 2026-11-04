@@ -7,6 +7,7 @@ namespace DarwinPark.Entities.Ecology
     {
         private LineRenderer _ring;private AntColonyMember _member;
         private string _group;
+        private long _displayRevision=-1;
         private void Awake()
         {
             _member=GetComponent<AntColonyMember>();_ring=ColonyAppearance.Circle(transform,"种群标记",.06f);_ring.positionCount=24;
@@ -15,9 +16,9 @@ namespace DarwinPark.Entities.Ecology
         }
         private void LateUpdate()
         {
-            bool show=_member!=null&&_member.Active&&_member.Role!=AntRole.None&&GetComponent<EntityManualControl>()?.IsControlled!=true;
+            bool show=_member!=null&&_member.Active&&_member.Role!=AntRole.None&&PopulationArchive.IsVisible(_member.GroupId)&&GetComponent<EntityManualControl>()?.IsControlled!=true;
             _ring.enabled=show;if(!show)return;
-            if(_group!=_member.GroupId){_group=_member.GroupId;ColonyAppearance.Tint(_ring,ColonyAppearance.ColorFor(_group));}
+            if(_group!=_member.GroupId||_displayRevision!=PopulationArchive.DisplayRevision){_group=_member.GroupId;_displayRevision=PopulationArchive.DisplayRevision;ColonyAppearance.Tint(_ring,ColonyAppearance.ColorFor(_group));}
         }
         private void OnDisable(){if(_ring!=null)_ring.enabled=false;}
     }

@@ -10,11 +10,14 @@ namespace DarwinPark.Entities.Ecology
     {
         public int version=1;public string settings;
         public List<ColonyResourceSave> resources=new List<ColonyResourceSave>();
-        public bool IsEmpty=>version==0&&string.IsNullOrEmpty(settings)&&(resources==null||resources.Count==0);
-        public static ColonyWorldState Capture()=>new ColonyWorldState{settings=AntColonySettings.CurrentJson,resources=ColonyResource.All.Select(r=>r.Capture()).ToList()};
+        public PopulationArchiveState population;
+        public bool IsEmpty=>version==0&&string.IsNullOrEmpty(settings)&&(resources==null||resources.Count==0)&&population==null;
+        public static ColonyWorldState Capture()=>new ColonyWorldState{settings=AntColonySettings.CurrentJson,resources=ColonyResource.All.Select(r=>r.Capture()).ToList(),population=PopulationArchive.Capture()};
         public static void Validate(ColonyWorldState state)
         {
             if(state==null||state.IsEmpty)return;
+            // ★ 适配：颜色、历史及谱系在世界清场前校验，旧档缺字段仍可加载。
+            PopulationArchive.Validate(state.population);
             if(state.version!=1||state.resources==null)throw new InvalidDataException("蚁群世界快照版本或资源列表无效");
             if(!string.IsNullOrEmpty(state.settings))AntColonySettings.Parse(state.settings);
             var ids=new HashSet<string>();
@@ -23,13 +26,13 @@ namespace DarwinPark.Entities.Ecology
                     throw new InvalidDataException("蚁群资源标识、位置或能量无效");
         }
         private static bool Finite(Vector3 p)=>!float.IsNaN(p.x)&&!float.IsInfinity(p.x)&&!float.IsNaN(p.y)&&!float.IsInfinity(p.y)&&!float.IsNaN(p.z)&&!float.IsInfinity(p.z);
-        public static void Prepare(ColonyWorldState state){Validate(state);ColonyResource.ClearWorld();AntColonySettings.UseSnapshot(state?.settings);}
+        public static void Prepare(ColonyWorldState state){Validate(state);ColonyResource.ClearWorld();AntColonySettings.UseSnapshot(state?.settings);PopulationArchive.Restore(state?.population);PopulationArchiveObserver.Ensure();}
         public static void Restore(ColonyWorldState state)
         {
             if(state?.resources!=null)foreach(var resource in state.resources)ColonyResource.Create(JsonUtility.FromJson<ColonyResourceSave>(JsonUtility.ToJson(resource)));
             foreach(var member in AntColonyMember.All.ToArray())AntColonyWorker.Resolve(member);
         }
-        public static void Clear(){ColonyResource.ClearWorld();AntColonySettings.Clear();}
+        public static void Clear(){ColonyResource.ClearWorld();AntColonySettings.Clear();PopulationArchive.Clear();}
         public static void ValidateMember(AntColonyMemberSave state)
         {
             if(state==null||!state.HasData)return;

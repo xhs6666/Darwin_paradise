@@ -1,0 +1,6 @@
+{
+  "refreshSeconds": 0.5,
+  "sampleGameSeconds": 10,
+  "maximumSamples": 512,
+  "maximumEvents": 256
+}
