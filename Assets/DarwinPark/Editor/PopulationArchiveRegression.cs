@@ -45,6 +45,9 @@ namespace DarwinPark.EditorTools
         private static IEnumerator Capture(string file){yield return null;yield return new WaitForEndOfFrame();ScreenCapture.CaptureScreenshot(Path.Combine(Folder,file+".png"));yield return null;yield return null;}
         private static IEnumerator Run()
         {
+            // ★ 修复（防Bug回归）：日期必须与底栏日历一致，整日/月/年切换不按小数天数四舍五入。
+            Check(PopulationWorkbench.Day(6818)=="第 1 年 11 月 17 日","累计681.8天显示为游戏年月日");
+            Check(PopulationWorkbench.Day(0)=="第 0 年 1 月 1 日"&&PopulationWorkbench.Day(299.9f)=="第 0 年 1 月 30 日"&&PopulationWorkbench.Day(300)=="第 0 年 2 月 1 日"&&PopulationWorkbench.Day(3650)=="第 1 年 1 月 1 日","日期起点、跨月及跨年与底栏一致");
             yield return null;var session=Object.FindFirstObjectByType<WorldSessionManager>();var builder=Object.FindFirstObjectByType<PlanetTerrainMeshBuilder>();builder.subdivisions=24;typeof(WorldSessionManager).GetField("_initialTerrain",Private).SetValue(session,JsonUtility.ToJson(builder));PlanetClimateMap.Instance.mapResolution=64;PlanetOreSystem.Instance.mapResolution=32;
             session.Create("种群档案与谱系验证",20261104,.5f,20,44);double start=EditorApplication.timeSinceStartup;while(session.Busy){if(EditorApplication.timeSinceStartup-start>100)throw new TimeoutException("加载超时");yield return null;}var clock=ServiceLocator.Get<SimulationClock>();clock.Pause();foreach(var e in EntityRegistry.All.ToArray())Object.DestroyImmediate(e.gameObject);ColonyResource.ClearWorld();PopulationArchive.Clear();
             var root=ServiceLocator.Get<UIRoot>();var control=Object.FindFirstObjectByType<SimulationControlPanel>();var switchPage=typeof(SimulationControlPanel).GetMethod("SwitchPage",Private);var page1=root.MainCanvas.transform.Find("BottomPanel/ContentArea/Page1");var page2=root.MainCanvas.transform.Find("BottomPanel/ContentArea/Page2");

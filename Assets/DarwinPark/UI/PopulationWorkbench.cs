@@ -77,7 +77,12 @@ namespace DarwinPark.UI
         }
         private void OnDisable()=>Close();
         private void OnDestroy(){Close();_charts.Dispose();if(Instance==this)Instance=null;}
-        public static string Day(float time)=>"第 "+(time/10f).ToString("F1")+" 天";
+        // ★ 修复（防Bug回归）：档案日期沿用底栏的游戏日历（10秒/天、365天/年、30天/月），避免显示累计小数天数。
+        public static string Day(float time)
+        {
+            int totalDays=Mathf.FloorToInt(Mathf.Max(0,time)/10f),dayOfYear=totalDays%365;
+            return $"第 {totalDays/365} 年 {dayOfYear/30+1} 月 {dayOfYear%30+1} 日";
+        }
         private void OnGUI()
         {
             if(!Visible)return;GUI.depth=-950;RuntimeMenuTheme.Apply();var previous=GUI.color;GUI.color=new Color(0,0,0,.65f);GUI.DrawTexture(new Rect(0,0,Screen.width,Screen.height),Texture2D.whiteTexture);GUI.color=previous;
@@ -169,8 +174,8 @@ namespace DarwinPark.UI
         private void DrawHistory(PopulationRecord record,float width)
         {
             GUILayout.Label("成员规模随模拟时间变化（压缩采样保留起点和最新记录）",RuntimeMenuTheme.Muted);
-            var samples=record.samples.Skip(Mathf.Max(0,record.samples.Count-16)).ToList();var values=samples.Select(s=>new PopulationChartValue{Label=(s.time/10f).ToString("F1")+"天",Count=s.members,Color=ColonyAppearance.ColorFor(record.id)}).ToList();
-            var area=GUILayoutUtility.GetRect(width,Mathf.Max(100,values.Count*25));_charts.Draw(area,values,false);
+            var samples=record.samples.Skip(Mathf.Max(0,record.samples.Count-16)).ToList();var values=samples.Select(s=>new PopulationChartValue{Label=Day(s.time),Count=s.members,Color=ColonyAppearance.ColorFor(record.id)}).ToList();
+            var area=GUILayoutUtility.GetRect(width,Mathf.Max(100,values.Count*25));_charts.Draw(area,values,false,230);
             GUILayout.Label("事件记录（最近 "+PopulationArchiveSettings.Current.maximumEvents+" 条）",RuntimeMenuTheme.Muted);
             foreach(var item in record.events.AsEnumerable().Reverse())GUILayout.Label(Day(item.time)+"  "+item.text,new GUIStyle(GUI.skin.label){wordWrap=true});
             GUILayout.Space(8);GUILayout.Label("采样明细：时间 / 总数 / 幼年 / 成年 / 老年",RuntimeMenuTheme.Muted);

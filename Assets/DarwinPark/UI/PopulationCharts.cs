@@ -35,7 +35,7 @@ namespace DarwinPark.UI
     public sealed class PopulationCharts:IDisposable
     {
         private Texture2D _pie;private string _signature;
-        public void Draw(Rect area,IReadOnlyList<PopulationChartValue> values,bool pie)
+        public void Draw(Rect area,IReadOnlyList<PopulationChartValue> values,bool pie,float labelWidth=140)
         {
             if(values.Sum(v=>v.Count)==0){GUI.Label(area,"暂无可统计数据");return;}
             if(pie)
@@ -44,11 +44,13 @@ namespace DarwinPark.UI
                 if(_pie==null||_signature!=signature){BuildPie(values);_signature=signature;}
                 float side=Mathf.Min(area.width,area.height);GUI.DrawTexture(new Rect(area.x+(area.width-side)/2,area.y,side,side),_pie,ScaleMode.ScaleToFit,true);return;
             }
+            // ★ 适配：发展历史改用年月日后需更宽的标签区域，避免日期覆盖柱形。
+            labelWidth=Mathf.Min(labelWidth,Mathf.Max(0,area.width-100));
             float maximum=Mathf.Max(1,values.Max(v=>v.Count)),row=Mathf.Max(22,Mathf.Min(32,area.height/values.Count));
             for(int i=0;i<values.Count;i++)
             {
-                var value=values[i];float y=area.y+i*row;GUI.Label(new Rect(area.x,y,140,row),value.Label);
-                var old=GUI.color;GUI.color=value.Color;GUI.DrawTexture(new Rect(area.x+145,y+5,Mathf.Max(1,(area.width-205)*value.Count/maximum),row-10),Texture2D.whiteTexture);GUI.color=old;
+                var value=values[i];float y=area.y+i*row;GUI.Label(new Rect(area.x,y,labelWidth,row),value.Label);
+                var old=GUI.color;GUI.color=value.Color;GUI.DrawTexture(new Rect(area.x+labelWidth+5,y+5,Mathf.Max(1,(area.width-labelWidth-65)*value.Count/maximum),row-10),Texture2D.whiteTexture);GUI.color=old;
                 GUI.Label(new Rect(area.xMax-54,y,54,row),value.Count.ToString());
             }
         }
