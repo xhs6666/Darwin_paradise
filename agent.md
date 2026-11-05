@@ -245,3 +245,5 @@
 | 2026-11-05 | 筛选下拉展开后无法收起，残留Option A模板行 | 原生Dropdown创建当帧Show早于Start，淡入控制器为空，展开流程在隐藏模板/创建遮罩前中断 | RuntimeDropdownDismissal.cs、RuntimeDropdownSkin.cs、GameMainMenu.cs、EntityGeneFilterRegression.cs | 初始化期间禁止展开但保留射线；不覆盖业务权限；列表和模板分别清理；Esc优先关闭，鼠标外部/按钮/选择/切页/HUD隐藏回归；40项专项及Windows构建通过 |
 
 | 2026-11-05 | 同群成员挤到王后头上，随机生成缺少条件与长期比例维持 | 空闲/跟随/取食共用中心点，地面射线命中实体；生成来源只有固定模板，缺少世界级比例规则与繁殖调节 | ColonyFormation.cs、PlanetGravity.cs、AntColonyMember.cs、ColonyFeeding.cs、RandomSpawnWorkbench.cs、RandomPlanetSpawner.cs、PopulationMaintenance.cs及存档/联机适配 | 分散站位与切向避让不传送、真实地表/出生空位；两种来源互斥且出生不重抽；补充计入分母，超量只延迟新孕育；完整互斥比例防反馈增殖，拒绝无解目标；规则/等待成对保存、上限/暂停/权限/切世/清除回归；44专项、59蚁群、48生成界面、91档案及Windows构建通过 |
+
+| 2026-11-05 | 生成条件选择框沿用系统外观、搜索输入不可靠，维持页只列已建规则且条件无法独立保存 | 来源窗口混用IMGUI和Canvas，缺少原生持久输入控件、来源库和自动规则行 | RandomSpawnWorkbench.cs、RandomSpawnPresetStore.cs、PopulationMaintenanceRegression.cs | 原生主题有无按钮互斥；筛选只重建结果保留输入焦点；条件JSON独立原子写读、外部校验；自动列出来源但显式启用，移除规则不删除来源；58专项、48界面兼容与Windows构建通过 |

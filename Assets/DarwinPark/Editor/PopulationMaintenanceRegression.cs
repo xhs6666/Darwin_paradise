@@ -44,7 +44,8 @@ namespace DarwinPark.EditorTools
             result.GetComponent<Rigidbody>().isKinematic=true;var stats=result.GetComponent<EntityStats>();stats.Modify("storedNutrient",100,false);return result;
         }
         private static ReproductionGeneLogic Logic(DarwinEntity e)=>e.Genes.Genome.Genes.Select(e.Genes.GetLogic).OfType<ReproductionGeneLogic>().First();
-        private static IEnumerator Capture(string name){yield return null;yield return new WaitForEndOfFrame();ScreenCapture.CaptureScreenshot(Path.Combine(Folder,name+".png"));yield return null;}
+        // ★ 适配：切页后等待布局与动态字体字形准备完毕，再截取真实稳定画面。
+        private static IEnumerator Capture(string name){yield return new WaitForSecondsRealtime(.5f);yield return null;yield return new WaitForEndOfFrame();ScreenCapture.CaptureScreenshot(Path.Combine(Folder,name+".png"));yield return null;}
         private static IEnumerator Wait(Func<bool> done,string reason){double start=EditorApplication.timeSinceStartup;while(!done()){if(EditorApplication.timeSinceStartup-start>20)throw new TimeoutException(reason);yield return null;}}
         private static IEnumerator Run()
         {
@@ -52,7 +53,7 @@ namespace DarwinPark.EditorTools
             session.Create("队形与维持比例验证",20261105,.5f,20,44);yield return Wait(()=>!session.Busy,"生成世界");clock.Pause();Clear();PopulationMaintenance.Restore(null);EntityPopulationLimit.UseSnapshot(new WorldGameSettings{entityLimit=0});
             Vector3 home=EcologyQueries.Surface(builder.transform.position+Vector3.up*(builder.radius+builder.heightScale));for(int i=0;i<192;i++){float y=1-2*(i+.5f)/192,angle=i*2.399963f;var d=new Vector3(Mathf.Sqrt(1-y*y)*Mathf.Cos(angle),y,Mathf.Sqrt(1-y*y)*Mathf.Sin(angle));var p=EcologyQueries.Surface(builder.transform.position+d*(builder.radius+builder.heightScale));if((p-builder.transform.position).magnitude>builder.WaterRadius+3){home=p;break;}}
             var control=Object.FindFirstObjectByType<SimulationControlPanel>();typeof(SimulationControlPanel).GetMethod("SwitchPage",Private).Invoke(control,new object[]{1});yield return null;yield return null;var panel=Object.FindFirstObjectByType<RandomSpawnPanel>();panel.transform.Find("Source").GetComponent<Button>().onClick.Invoke();var work=RandomSpawnWorkbench.Instance;
-            Check(work.Visible&&GameInputGate.Blocked&&!clock.IsRunning,"选择实体实际打开两列来源窗口并暂停单人模拟");work.SetGene("gene_growth",true,true);work.SetGene("gene_locomotion",false,true);Check(work.Draft.method==RandomSpawnMethod.Genes,"基因条件自动选择独立随机方式");yield return Capture("two-column-source");
+            Check(work.Visible&&GameInputGate.Blocked&&!clock.IsRunning,"选择实体实际打开两列来源窗口并暂停单人模拟");yield return VerifySourceUI(work);work.SetGene("gene_growth",true,true);work.SetGene("gene_locomotion",false,true);Check(work.Draft.method==RandomSpawnMethod.Genes,"基因条件自动选择独立随机方式");yield return Capture("two-column-source");
             var source=work.Draft;var signatures=new HashSet<string>();for(int i=0;i<80;i++){var genome=source.CreateGenome();CheckSource(genome,source);signatures.Add(string.Join("|",genome.Genes.Select(g=>g.DefinitionId+g.Value)));}Check(signatures.Count>20,"必有必无以外的基因和数值逐个随机，而非整批复制");
             work.SelectTemplate(null);Check(work.Draft.method==RandomSpawnMethod.Template&&work.Draft.CreateGenome().Genes.Count==RandomSpawnRecipe.DefaultGenome().Genes.Count,"模板方式与基因随机方式互斥，不附加随机基因");work.ApplySelection();Check(!work.Visible&&!GameInputGate.Blocked,"应用来源后恢复输入");
             var spawner=RandomPlanetSpawner.Ensure(clock.gameObject);Check(spawner.StartRecipe(source,8,true),"实际启动条件随机生成");yield return Wait(()=>!spawner.IsBusy,"条件随机生成");Check(EntityRegistry.All.Count==8&&EntityRegistry.All.All(e=>source.Matches(e.Genes.Genome)),"真实批次满足必有必无条件");yield return null;Check(EntityRegistry.All.All(e=>source.Matches(e.Genes.Genome)),"出生初始化不破坏明确生成条件");
@@ -78,6 +79,40 @@ namespace DarwinPark.EditorTools
             }
             finally{tuning.minimumAdditionalGenes=oldMin;tuning.maximumAdditionalGenes=oldMax;WorldAuthority.CanEdit=true;WorldAuthority.IsReplica=false;}
             yield return VerifyFormation(home,clock);clock.Pause();PopulationMaintenance.Set(new PopulationMaintenanceRule{id=Guid.NewGuid().ToString("N"),source=new RandomSpawnRecipe{method=RandomSpawnMethod.Genes,name="清理验证",included=new(){"gene_growth"}}});Check(WorldEntityActions.ClearAll()&&PopulationMaintenance.Rules.Count==1&&PopulationMaintenance.Rules.All(r=>!r.enabled),"清除全部实体会停用维持规则，不会立即重新生成");
+        }
+        // ★ 新增：通过真实Canvas输入控件、按钮和JSON文件验证焦点/筛选/互斥/自动列出，而不是仅调用字符串筛选函数。
+        private static IEnumerator VerifySourceUI(RandomSpawnWorkbench work)
+        {
+            Transform root=ServiceLocator.Get<UIRoot>().MainCanvas.transform.Find("RandomSpawnWorkbenchBlocker/RandomSpawnWorkbench");
+            InputField Search()=>root.GetComponentsInChildren<InputField>().Single(f=>f.name=="GeneSearch");
+            Button Named(string name)=>root.GetComponentsInChildren<Button>().Single(b=>b.name==name);
+            var search=Search();search.Select();search.ActivateInputField();yield return null;
+            foreach(char character in "生长")search.ProcessEvent(new Event{type=EventType.KeyDown,character=character});
+            Check(search.text=="生长"&&search.isFocused,"原生搜索框连续输入中文并保持焦点");yield return null;
+            Check(root.GetComponentsInChildren<Text>().Where(t=>t.name=="GeneLabel").All(t=>t.text.Contains("生长")),"搜索输入即时过滤真实基因行");
+            search.ProcessEvent(Event.KeyboardEvent("backspace"));Check(search.text=="生","搜索退格可正常编辑而不丢失输入");
+            search.text="GENE_GROWTH";yield return null;Check(root.GetComponentsInChildren<Text>().Count(t=>t.name=="GeneLabel")==1,"基因编号搜索不区分大小写");search.text="";yield return null;
+            Named("Include_gene_growth").onClick.Invoke();Named("Exclude_gene_growth").onClick.Invoke();
+            Check(work.Draft.excluded.Contains("gene_growth")&&!work.Draft.included.Contains("gene_growth"),"主题有无按钮真实点击互斥");
+            Named("Include_gene_growth").onClick.Invoke();Named("Exclude_gene_locomotion").onClick.Invoke();
+            Check(Named("Include_gene_growth").image.sprite==UIVisualTheme.SurfaceSprite("selected"),"选中按钮使用游戏统一主题表面");
+            var name=root.GetComponentsInChildren<InputField>().Single(f=>f.name=="ConditionName");string conditionName="生长条件自测"+Guid.NewGuid().ToString("N").Substring(0,6);string externalName=conditionName+"外改";name.text=conditionName;Named("SaveCondition").onClick.Invoke();yield return null;
+            var saved=RandomSpawnPresetStore.Load().Single(p=>p.source.name==conditionName);string path=Path.Combine(RandomSpawnPresetStore.DirectoryPath,saved.id+".json");
+            Check(File.Exists(path)&&File.ReadAllText(path).Contains("gene_growth")&&saved.source.excluded.Contains("gene_locomotion"),"保存条件按钮实际生成独立可读JSON并成对加载");
+            var bytes=File.ReadAllBytes(path);Check(!(bytes.Length>2&&bytes[0]==239&&bytes[1]==187&&bytes[2]==191),"条件JSON为无BOM的UTF-8");
+            var edited=JsonUtility.FromJson<RandomSpawnPresetStore.Preset>(File.ReadAllText(path));edited.source.name=externalName;File.WriteAllText(path,JsonUtility.ToJson(edited,true));
+            work.Close();var owner=Object.FindFirstObjectByType<RandomSpawnPanel>();work.Open(owner,true);yield return null;root=ServiceLocator.Get<UIRoot>().MainCanvas.transform.Find("RandomSpawnWorkbenchBlocker/RandomSpawnWorkbench");
+            var sources=work.MaintenanceSources();Check(sources.Any(r=>r.name=="默认实体")&&EntityTemplateManager.Templates.All(t=>sources.Any(r=>r.name==t.templateName))&&sources.Any(r=>r.name==externalName),"重新打开后自动列出默认模板、所有模板和外部编辑的条件");
+            Check(PopulationMaintenance.Rules.Count==0&&root.GetComponentsInChildren<Text>().Any(t=>t.name=="Conditions"&&t.text.Contains("必有：")&&t.text.Contains("必无：")),"自动列出包含控制基因说明但不会自动启动全部规则");
+            root.GetComponentsInChildren<ScrollRect>().Single(r=>r.name=="MaintenanceSources").verticalNormalizedPosition=0;yield return Capture("automatic-maintenance-sources");
+            Transform ConditionRow()=>root.GetComponentsInChildren<Text>().Single(t=>t.name=="Name"&&t.text==externalName).transform.parent;
+            var conditionRow=ConditionRow();conditionRow.GetComponentsInChildren<InputField>().Single(f=>f.name=="Ratio").text="25";conditionRow.GetComponentsInChildren<Button>().Single(b=>b.name=="ApplyRatio").onClick.Invoke();yield return null;
+            Check(PopulationMaintenance.Rules.Count==1&&PopulationMaintenance.Rules.Single().ratio==.25f&&PopulationMaintenance.Rules.Single().source.included.Contains("gene_growth"),"自动列出条件可直接设定比例并启用真实规则");
+            ConditionRow().GetComponentsInChildren<Button>().Single(b=>b.name=="RuleEnabled").onClick.Invoke();yield return null;Check(!PopulationMaintenance.Rules.Single().enabled,"自动列表原生按钮可停用规则");
+            ConditionRow().GetComponentsInChildren<Button>().Single(b=>b.name=="DeleteRule").onClick.Invoke();yield return null;Check(PopulationMaintenance.Rules.Count==0&&work.MaintenanceSources().Any(r=>r.name==externalName),"移除规则保留JSON来源供再次启用");
+            work.Close();work.Open(owner);yield return null;root=ServiceLocator.Get<UIRoot>().MainCanvas.transform.Find("RandomSpawnWorkbenchBlocker/RandomSpawnWorkbench");
+            var dropdown=root.GetComponentsInChildren<Dropdown>().Single(d=>d.name=="SavedConditions");int index=dropdown.options.FindIndex(o=>o.text==externalName);dropdown.value=index;yield return null;
+            Check(work.Draft.included.Contains("gene_growth")&&work.Draft.excluded.Contains("gene_locomotion"),"已存条件在生成来源中可选且恢复控制基因");
         }
         private static void CheckSource(Genome genome,RandomSpawnRecipe source)
         {if(!source.Matches(genome)||genome.Genes.Count==0)throw new InvalidOperationException("受约束随机基因组违反生成条件");}
