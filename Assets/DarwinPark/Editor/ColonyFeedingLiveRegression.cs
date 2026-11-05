@@ -53,7 +53,7 @@ namespace DarwinPark.EditorTools
             Check(Food(queen)==0&&Food(child)==0,"复现王后和幼体均无营养的存档状态");
             var abandoned=ColonyFeeding.Find(queen,false);
             Check(abandoned!=null&&abandoned.State.group!=queen.GroupId&&!ColonyResourceOwnership.HasOwner(abandoned.State.group),"复现旧群灭绝、能量仍锁在旧群的归属问题");
-            queen.Destination(out var destination,out var target,out _);Check(target==null&&destination==abandoned.transform.position,"饥饿王后的实际目的地指向废弃育幼块");
+            queen.Destination(out var destination,out var target,out _);Check(target==null&&EcologyQueries.Distance(destination,abandoned.transform.position)<=AntColonySettings.Current.feedRadius,"饥饿王后的实际目的地指向废弃育幼块");
             var resourceState=abandoned.State;var resourcePoint=abandoned.transform.position;
             float beforeEnergy=resourceState.energy;clock.SetTimeScale(4);clock.Play();float before=clock.GameTime;start=EditorApplication.timeSinceStartup;float report=0;
             // ★ 修复（防Bug回归）：营养基因自身也可能短暂产粮，必须观察实际能量块扣减和归属领取，不能把饱食度变正误判为块已被吸收。

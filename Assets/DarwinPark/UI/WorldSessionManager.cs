@@ -88,6 +88,8 @@ namespace DarwinPark.UI
             // ★ 适配：新版本只补齐缺失基因，不覆盖该世界已经保存的基因定义。
             GeneCatalogExpansion.Expand(GeneRuntimeProfile.Catalog,GeneRuntimeProfile.Tree);
             GeneDatabase.Reload();GeneDatabase.EnsureLoaded();
+            // ★ 适配：新旧世界的维持来源与任务分开恢复，不能把上一个世界的自动生成带到当前存档。
+            PopulationMaintenance.Restore(data.maintenance);RandomPlanetSpawner.Ensure(ServiceLocator.Get<SimulationClock>().gameObject).ResetWorld();
             var material=_builder.TerrainMaterial;JsonUtility.FromJsonOverwrite(data.terrainParameters,_builder);_builder.TerrainMaterial=material;
             var environment=ServiceLocator.Get<EnvironmentSystem>();JsonUtility.FromJsonOverwrite(data.environmentParameters,environment);
             ClimateDataHub.BaseTemperature=environment.BaseTemperature;ClimateDataHub.BaseHumidity=environment.BaseHumidity;
@@ -149,6 +151,7 @@ namespace DarwinPark.UI
             DarwinPark.Entities.Ecology.EcologyBalanceSettings.Clear();
             Debug.Log("[世界] 返回主界面 id="+Current?.id+"，联机副本="+WorldAuthority.IsReplica);
             EntityPopulationLimit.Clear();
+            PopulationMaintenance.Restore(null);FindFirstObjectByType<RandomPlanetSpawner>()?.ResetWorld();
             Current=null;_autoSave=0;Progress=0;Status="";SaveStatus="";
         }
         public void SaveNow(bool? running=null)
@@ -171,6 +174,7 @@ namespace DarwinPark.UI
             Current.ecologyBalanceSettings=DarwinPark.Entities.Ecology.EcologyBalanceSettings.CurrentJson;
             Current.colony=DarwinPark.Entities.Ecology.ColonyWorldState.Capture();
             Current.gameSettings=EntityPopulationLimit.Capture();
+            Current.maintenance=PopulationMaintenance.Capture();
             WorldSaveStore.Write(Current);SaveStatus="已保存 "+DateTime.Now.ToString("HH:mm:ss");
             Debug.Log("[存档] 保存成功 id="+Current.id+"，实体="+Current.entities.Count+"，模拟时间="+Current.gameTime+"，文件="+WorldSaveStore.FileFor(Current.id));
         }

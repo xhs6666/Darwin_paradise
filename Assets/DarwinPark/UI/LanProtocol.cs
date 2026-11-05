@@ -16,6 +16,7 @@ namespace DarwinPark.UI
         public int count;public Vector3 point,direction,aim;public Genome genome;
         public string[] selection;public RtsOrderKind order;
         public List<SavedGeneDefinition> definitions;public GeneTreeDocument tree;
+        public RandomSpawnRecipe recipe;public PopulationMaintenanceRule maintenanceRule;
     }
     [Serializable] public sealed class LanActor
     {public EntitySaveState state;public float suppression;}
@@ -24,6 +25,7 @@ namespace DarwinPark.UI
         public long sequence;public float time,scale,sun;public bool running;
         public WorldGameSettings gameSettings;
         public PopulationArchiveState population;
+        public PopulationMaintenanceState maintenance;
         public Quaternion rotation;public List<LanActor> actors=new List<LanActor>();
         public List<ColonyResourceSave> resources=new List<ColonyResourceSave>();
         public bool randomBusy;public int randomSpawned,randomRequested;public string randomStatus;

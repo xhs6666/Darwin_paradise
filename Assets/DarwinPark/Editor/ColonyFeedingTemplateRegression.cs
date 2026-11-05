@@ -37,7 +37,8 @@ namespace DarwinPark.EditorTools
                 {
                     Fill(member,0);member.transform.position=supply.transform.position;
                     member.Destination(out var point,out var target,out _);
-                    Check(target==null&&point==nursery.transform.position,"饥饿"+member.Role+"主动走向育幼能量块");
+                    // ★ 适配：业务要求进入可实际进食的半径，不再要求多个身体共用资源中心点。
+                    Check(target==null&&EcologyQueries.Distance(point,nursery.transform.position)<=AntColonySettings.Current.feedRadius,"饥饿"+member.Role+"主动走向育幼能量块");
                     member.transform.position=nursery.transform.position;float energy=nursery.State.energy;member.Advance(.1f);
                     Check(Food(member)>0&&Mathf.Abs(energy-nursery.State.energy-Food(member))<.001f,"育幼能量经实际分工更新进入"+member.Role+"且守恒");
                 }
@@ -51,14 +52,14 @@ namespace DarwinPark.EditorTools
                 // 存在猎物时，饥饿指令必须比猎物优先，不能只验证空闲士兵。
                 Fill(soldier,0);typeof(AntColonyMember).GetField("HuntTarget",BindingFlags.NonPublic|BindingFlags.Instance).SetValue(soldier,worker.Entity);
                 soldier.Destination(out var feedingPoint,out var feedingTarget,out _);
-                Check(feedingTarget==null&&feedingPoint==supply.transform.position,"已有追猎目标时士兵先前往补给");
+                Check(feedingTarget==null&&EcologyQueries.Distance(feedingPoint,supply.transform.position)<=AntColonySettings.Current.feedRadius,"已有追猎目标时士兵先前往补给");
                 typeof(AntColonyMember).GetField("HuntTarget",BindingFlags.NonPublic|BindingFlags.Instance).SetValue(soldier,null);
                 var corpse=ColonyResource.Create(new ColonyResourceSave{id=Guid.NewGuid().ToString("N"),group=worker.GroupId,kind=ColonyResourceKind.Corpse,energy=12,local=EcologyQueries.ToLocal(worker.transform.position),scale=Vector3.one});
                 Fill(worker,10);worker.State.resourceTarget=corpse.State.id;worker.State.scan=10;worker.Advance(.1f);
                 Check(worker.State.carriedResource==corpse.State.id,"补给测试建立真实尸体运输");
                 worker.State.deliveryPoint=EcologyQueries.ToLocal(nursery.transform.position);Fill(worker,0);
                 worker.transform.position=positions[2];worker.Advance(.1f);worker.Destination(out feedingPoint,out _,out _);
-                Check(worker.Activity==ColonyActivity.Feed&&feedingPoint==supply.transform.position&&worker.State.carriedResource==corpse.State.id&&corpse.State.claim==worker.Id,"饥饿工匠暂停运输去补给并保留独占货物");
+                Check(worker.Activity==ColonyActivity.Feed&&EcologyQueries.Distance(feedingPoint,supply.transform.position)<=AntColonySettings.Current.feedRadius&&worker.State.carriedResource==corpse.State.id&&corpse.State.claim==worker.Id,"饥饿工匠暂停运输去补给并保留独占货物");
                 worker.transform.position=supply.transform.position;worker.Advance(1);worker.Advance(1);
                 Check(Food(worker)>AntColonySettings.Current.memberFeedThreshold,"繁忙工匠通过实际分工更新吃饱");
                 worker.Destination(out var delivery,out _,out _);Check(delivery==EcologyQueries.ToWorld(worker.State.deliveryPoint),"工匠吃饱后自动恢复原运输目的地");

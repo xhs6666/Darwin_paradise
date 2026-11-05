@@ -139,6 +139,8 @@ namespace DarwinPark.Entities.Logic
             // ★ 修复（防Bug回归）：物理仍按真实步长运行，切向速度按倍率转换；限制到目标剩余距离避免高速越过。
             float physicalSpeed = Mathf.Min(EntityMovementLimits.Speed(speed) * scale, toward.magnitude / Mathf.Max(Time.deltaTime, .001f));
             Vector3 desired = toward.normalized * physicalSpeed;
+            // ★ 适配：同群成员保持身体间距，重叠列也向侧面走开，不向王后头顶施加吸附或垂直速度。
+            desired=ColonyFormation.Avoid(_controller,desired,EntityMovementLimits.Speed(speed)*scale);
             Vector3 velocity = _rb.linearVelocity;
             float inward = Mathf.Min(0,Vector3.Dot(velocity,radial));
             Vector3 tangent = Vector3.Lerp(Vector3.ProjectOnPlane(velocity,radial),desired,1-Mathf.Exp(-_settings.steering*dt));

@@ -30,6 +30,8 @@ namespace DarwinPark.UI
         public DarwinPark.Entities.Ecology.ColonyWorldState colony;
         // ★ 适配：存档内设置独立于全局偏好，旧档缺字段按版本标记补默认值。
         public WorldGameSettings gameSettings;
+        // ★ 新增：维持目标及生成来源独立保存，旧档缺字段不启用自动生成。
+        public PopulationMaintenanceState maintenance;
     }
     public sealed class WorldSaveEntry {public string path,name,error;public WorldSaveData data;}
     // ★ 新增：同目录临时文件+原子替换，失败保留原档和备份，加载先完整校验再清场。
@@ -84,6 +86,7 @@ namespace DarwinPark.UI
             var environment=JsonUtility.FromJson<EnvironmentSaveValidation>(data.environmentParameters);
             if(environment==null||!Finite(environment.BaseTemperature)||!Finite(environment.BaseHumidity))throw new InvalidDataException("环境参数无效");
             var catalog=data.definitions.ToDictionary(d=>d.id,d=>d.json);if(catalog.Count==0)throw new InvalidDataException("存档基因配置为空");GeneTreeStorage.Validate(data.tree,catalog);
+            PopulationMaintenance.Validate(data.maintenance,catalog.Keys);
             // ★ 修复（防Bug回归）：已知旧关系迁移会同步修正父基因，必须写回快照；否则文件里的父定义与已迁移的出错连线不一致。
             foreach(var definition in data.definitions)definition.json=catalog[definition.id];
             // ★ 适配：新增营养定义成对写回快照，不能只更新树节点却遗漏基因JSON。
@@ -98,7 +101,7 @@ namespace DarwinPark.UI
                 if(entity?.ecology?.IsEmpty==true)entity.ecology=null;
                 if(entity.genome==null||entity.genome.Genes==null||entity.stats==null||entity.reproduction==null||entity.traits==null)throw new InvalidDataException("实体存档不完整");
                 // ★ 适配：新增等待计时与孤雌孕育标记在清场前检查；旧档缺字段按0/false兼容。
-                if(entity.reproduction.Any(r=>r==null||!Finite(r.mateWait)||r.mateWait<0||r.parthenogenetic&&r.partner?.Genes?.Count>0))throw new InvalidDataException("孤雌生殖状态无效");
+                if(entity.reproduction.Any(r=>r==null||!Finite(r.mateWait)||r.mateWait<0||!Finite(r.maintenanceWait)||r.maintenanceWait<0||r.parthenogenetic&&r.partner?.Genes?.Count>0))throw new InvalidDataException("繁殖等待状态无效");
                 if(entity.genome.Genes.Any(g=>!catalog.ContainsKey(g.DefinitionId)))throw new InvalidDataException("实体引用缺失基因");
                 // ★ 适配：外来卵不能略过后代基因校验；寄生宿主标识独立校验。
                 DarwinPark.Entities.Ecology.NutritionSaveValidation.Validate(entity.ecology,catalog.Keys);

@@ -278,6 +278,8 @@ namespace DarwinPark.UI
             }
             foreach(var resource in ColonyResource.All.ToArray())if(!resources.Contains(resource.State.id))resource.Remove();
             RandomPlanetSpawner.Ensure(ServiceLocator.Get<SimulationClock>().gameObject).ApplyRemoteProgress(frame.randomBusy,frame.randomSpawned,frame.randomRequested,frame.randomStatus);
+            // ★ 适配：副本只接收规则供界面展示，自动补充和繁殖调节仍只由房主运行。
+            if(frame.maintenance!=null)PopulationMaintenance.Restore(frame.maintenance);
             // ★ 修复（防Bug回归）：Unity JSON会把未发送的null数组还原为空数组，不能据此创建0×0矿图纹理。
             if(frame.oreResolution>0&&frame.ore!=null&&frame.ore.Length==(long)frame.oreResolution*frame.oreResolution){PlanetOreSystem.Instance.RestoreAmounts(frame.ore,frame.oreResolution);PlanetOreSystem.Instance.RegenTimer=frame.oreTimer;}
         }

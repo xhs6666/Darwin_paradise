@@ -140,7 +140,8 @@ namespace DarwinPark.EditorTools
             worker.State.deliveryNursery=false;worker.State.deliveryPoint=EcologyQueries.ToLocal(At(10));worker.transform.position=EcologyQueries.ToWorld(worker.State.deliveryPoint);worker.Advance(.1f);
             var supply=ColonyResource.All.Single(r=>r.State.kind==ColonyResourceKind.Supply);Check(Mathf.Abs(supply.State.energy-plantEnergy)<.001f,"群内补给点转换活实体并保留能量");
             soldier.transform.position=At(-4);Fill(soldier.Entity,0);soldier.Destination(out var feedingPoint,out var feedingTarget,out _);
-            Check(feedingTarget==null&&Vector3.Distance(feedingPoint,supply.transform.position)<.001f&&soldier.Activity==ColonyActivity.Feed,"饥饿士兵会实际前往共享补给点");
+            // ★ 适配：目的地允许分布在实际进食半径内，不再要求所有身体占据资源中心。
+            Check(feedingTarget==null&&EcologyQueries.Distance(feedingPoint,supply.transform.position)<=AntColonySettings.Current.feedRadius&&soldier.Activity==ColonyActivity.Feed,"饥饿士兵会实际前往共享补给范围");
             soldier.transform.position=supply.transform.position;Fill(soldier.Entity,0);ColonyResource.Feed(soldier,1);Check(Food(soldier.Entity)>0,"普通成年成员可吸收群内补给");
             // ★ 适配：覆盖繁忙运输、追猎、王后离开旧位置及模板实际落盘，避免只用瞬时 Feed 调用验收。
             ColonyFeedingTemplateRegression.Verify(queen,worker,soldier,young,nursery,supply);

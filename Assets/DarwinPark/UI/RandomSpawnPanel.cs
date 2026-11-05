@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using DarwinPark.Core;
 using DarwinPark.Genetics;
+using DarwinPark.Entities;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,9 +13,10 @@ namespace DarwinPark.UI
     {
         public int defaultCount=10;
         public float leftOffset=440,preferredWidth=240;
-        private RandomPlanetSpawner _spawner;private Dropdown _source;private InputField _count;private Button _range,_generate,_cancel;private Text _status;
-        private readonly List<EntityTemplateData> _templates=new List<EntityTemplateData>();
+        private RandomPlanetSpawner _spawner;private Button _source;private InputField _count;private Button _range,_generate,_cancel;private Text _status;
         private bool _landOnly=true;
+        public bool LandOnly=>_landOnly;
+        public RandomSpawnRecipe Recipe {get;private set;}
         public static void Attach(Transform parent)
         {
             if(parent.Find("RandomSpawn")!=null)return;
@@ -22,45 +24,38 @@ namespace DarwinPark.UI
         }
         private void Start()
         {
-            _spawner=RandomPlanetSpawner.Ensure(ServiceLocator.Get<SimulationClock>().gameObject);Build();RefreshSources();EntityTemplateManager.OnTemplatesChanged+=RefreshSources;
+            _spawner=RandomPlanetSpawner.Ensure(ServiceLocator.Get<SimulationClock>().gameObject);Recipe=new RandomSpawnRecipe{template=RandomSpawnRecipe.DefaultGenome()};Build();RefreshSources();EntityTemplateManager.OnTemplatesChanged+=RefreshSources;
         }
         private void OnDestroy(){EntityTemplateManager.OnTemplatesChanged-=RefreshSources;}
         private void Build()
         {
             var title=UIFactory.NewText("Title",transform,"随机生成 · 全星球",15);Place(title.rectTransform,0,-6,1,24);
-            var dropdown=DefaultControls.CreateDropdown(new DefaultControls.Resources());dropdown.name="Source";dropdown.transform.SetParent(transform,false);_source=dropdown.GetComponent<Dropdown>();Place(dropdown.GetComponent<RectTransform>(),0,-32,1,28);
-            foreach(var text in dropdown.GetComponentsInChildren<Text>(true)){text.font=UIFactory.DefaultFont;text.fontSize=13;text.color=UIVisualTheme.Text;}
-            UIVisualTheme.Paint(dropdown.GetComponent<Image>(),"field");UIVisualTheme.Paint(_source.template.GetComponent<Image>());
-            // ★ 修复（防Bug回归）：运行时默认下拉控件没有箭头贴图会显示白块，复用已有方向图标并统一选项皮肤。
-            var arrow=dropdown.transform.Find("Arrow").GetComponent<Image>();arrow.sprite=UIIconRegistry.Get("ui_icon_next");arrow.color=UIVisualTheme.Accent;arrow.preserveAspect=true;arrow.rectTransform.sizeDelta=new Vector2(16,16);arrow.rectTransform.localRotation=Quaternion.Euler(0,0,-90);
-            var item=_source.template.GetComponentInChildren<Toggle>(true);UIVisualTheme.Paint(item.targetGraphic as Image,"hover");if(item.graphic!=null)item.graphic.color=UIVisualTheme.Accent;
-            // ★ 适配：默认滚动条和勾选图也需要换肤，避免白色/绿色方块。
-            RuntimeDropdownSkin.Apply(_source);
+            // ★ 新增：选择实体后打开模板/基因条件两列界面，两种来源互斥，不能把模板偷偷改成受约束随机基因。
+            _source=UIFactory.NewButton("Source",transform,"选择实体",()=>RandomSpawnWorkbench.Ensure().Open(this),new Vector2(220,28));Place(_source.GetComponent<RectTransform>(),0,-32,1,28);_source.GetComponentInChildren<Text>().fontSize=12;
             // ★ 适配：栏宽减半后给双字标签保留完整字宽，输入框和范围按钮继续各占独立区域。
             var label=UIFactory.NewText("QuantityLabel",transform,"数量",13);Place(label.rectTransform,0,-66,.18f,28);
             var field=UIFactory.NewRect("Quantity",transform,typeof(Image),typeof(InputField));_count=field.GetComponent<InputField>();Place(field.GetComponent<RectTransform>(),.18f,-66,.43f,28);_count.contentType=InputField.ContentType.IntegerNumber;
             var value=UIFactory.NewText("Text",field.transform,defaultCount.ToString(),14,TextAnchor.MiddleCenter);UIFactory.Stretch(value.rectTransform);_count.textComponent=value;_count.text=defaultCount.ToString();
-            _range=UIFactory.NewButton("Range",transform,"范围：仅陆地",()=>{_landOnly=!_landOnly;_range.GetComponentInChildren<Text>().text=_landOnly?"范围：仅陆地":"范围：全部地表";},new Vector2(160,28));Place(_range.GetComponent<RectTransform>(),.44f,-66,1,28);
+            _range=UIFactory.NewButton("Range",transform,"范围：仅陆地",()=>SetLandOnly(!_landOnly),new Vector2(160,28));Place(_range.GetComponent<RectTransform>(),.44f,-66,1,28);
             _generate=UIFactory.NewButton("Generate",transform,"随机生成",Generate,new Vector2(170,30));Place(_generate.GetComponent<RectTransform>(),0,-100,.65f,30);
-            _cancel=UIFactory.NewButton("Cancel",transform,"取消",()=>_spawner.Cancel(),new Vector2(90,30));Place(_cancel.GetComponent<RectTransform>(),.68f,-100,1,30);
+            _cancel=UIFactory.NewButton("Cancel",transform,"取消本批",()=>_spawner.Cancel(),new Vector2(90,30));Place(_cancel.GetComponent<RectTransform>(),.68f,-100,1,30);
             foreach(var button in new[]{_range,_generate,_cancel})button.GetComponentInChildren<Text>().fontSize=13;
-            _status=UIFactory.NewText("Status",transform,"",12);Place(_status.rectTransform,0,-132,1,22);
+            var maintain=UIFactory.NewButton("Maintain",transform,"维持比例…",()=>RandomSpawnWorkbench.Ensure().Open(this,true),new Vector2(110,24));Place(maintain.GetComponent<RectTransform>(),0,-132,.48f,24);maintain.GetComponentInChildren<Text>().fontSize=12;
+            _status=UIFactory.NewText("Status",transform,"",11);Place(_status.rectTransform,.48f,-132,1,24);_status.resizeTextForBestFit=true;_status.resizeTextMinSize=9;_status.resizeTextMaxSize=11;
         }
         private static void Place(RectTransform rt,float left,float top,float right,float height)
         {rt.anchorMin=new Vector2(left,1);rt.anchorMax=new Vector2(right,1);rt.pivot=new Vector2(.5f,1);rt.offsetMin=new Vector2(8,top-height);rt.offsetMax=new Vector2(-8,top);}
         private void RefreshSources()
         {
-            if(_source==null)return;string selected=_source.value>0&&_source.value<=_templates.Count?_templates[_source.value-1].templateName:null;
-            _templates.Clear();_templates.AddRange(EntityTemplateManager.Templates);_source.ClearOptions();var names=new List<string>{"默认实体"};names.AddRange(_templates.Select(t=>"模板："+t.templateName));_source.AddOptions(names);
-            _source.value=selected!=null?Mathf.Max(0,_templates.FindIndex(t=>t.templateName==selected)+1):0;_source.RefreshShownValue();
+            if(_source==null)return;_source.GetComponentInChildren<Text>().text="选择实体："+(Recipe?.method==RandomSpawnMethod.Genes?"基因条件随机":Recipe?.name??"默认实体");
         }
+        public void SetRecipe(RandomSpawnRecipe recipe){recipe.Validate(GeneDatabase.All.Select(d=>d.Id).ToArray());Recipe=JsonUtility.FromJson<RandomSpawnRecipe>(JsonUtility.ToJson(recipe));RefreshSources();}
+        // ★ 适配：来源窗口内的范围选择应用后同步到底栏，不能显示全部地表却仍按仅陆地生成。
+        public void SetLandOnly(bool value){_landOnly=value;if(_range!=null)_range.GetComponentInChildren<Text>().text=value?"范围：仅陆地":"范围：全部地表";}
         public void Generate()
         {
             if(!WorldAuthority.CanEdit)return;
-            if(_spawner==null)return;int count=int.TryParse(_count.text,out var parsed)?Mathf.Clamp(parsed,1,_spawner.maxCount):defaultCount;_count.text=count.ToString();Genome genome=null;
-            if(_source.value>0&&_source.value<=_templates.Count)
-            {genome=new Genome();foreach(var gene in _templates[_source.value-1].genes)genome.Add(GeneInstance.Create(gene.definitionId,gene.value,gene.tier));}
-            _spawner.StartBatch(genome,count,_landOnly);
+            if(_spawner==null)return;int count=int.TryParse(_count.text,out var parsed)?Mathf.Clamp(parsed,1,_spawner.maxCount):defaultCount;_count.text=count.ToString();_spawner.StartRecipe(Recipe,count,_landOnly);
         }
         private void Update()
         {

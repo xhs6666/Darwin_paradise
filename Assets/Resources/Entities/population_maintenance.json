@@ -1,0 +1,12 @@
+{
+  "maximumRules": 8,
+  "maximumRefillPerCycle": 12,
+  "emptyWorldSeedCount": 10,
+  "maximumGenomeGenes": 32,
+  "minimumAdditionalGenes": 1,
+  "maximumAdditionalGenes": 5,
+  "pollGameSeconds": 1,
+  "extraBreedingDelaySeconds": 30,
+  "minimumGeneValue": 1,
+  "maximumGeneValue": 100
+}

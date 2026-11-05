@@ -119,7 +119,8 @@ namespace DarwinPark.Entities.Ecology
             var plant=Entity(state.livingTarget);if(plant!=null)return plant.transform.position;
             // 工匠休息时靠近群内补给点，避免饥饿时被无效运输目标锁住。
             var supply=ColonyResource.All.Where(r=>r.State.group==worker.GroupId&&r.State.kind==ColonyResourceKind.Supply).OrderBy(r=>(r.transform.position-worker.transform.position).sqrMagnitude).FirstOrDefault();
-            return supply!=null?supply.transform.position:worker.Center;
+            // ★ 修复（防Bug回归）：空闲工匠在活动区分散休息，不能全部返回同一个王后中心坐标。
+            return ColonyFormation.Home(worker,supply!=null?supply.transform.position:worker.Center,supply!=null?AntColonySettings.Current.feedRadius:worker.Radius*.75f);
         }
         public static void Release(AntColonyMember worker)
         {

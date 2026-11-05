@@ -50,6 +50,9 @@ namespace DarwinPark.UI
                     return EntityPlacementUtility.SpawnBatch(command.genome,point,EcologyQueries.Up(point),Mathf.Clamp(command.value,0,planet.heightScale),Mathf.Clamp(command.count,1,RandomPlanetSpawner.Ensure(ServiceLocator.Get<SimulationClock>().gameObject).maxCount),Mathf.Clamp(command.scale,0,LanSettings.Current.rtsPickRadius))>0;
                 case "random":
                     return ValidGenome(command.genome)&&RandomPlanetSpawner.Ensure(ServiceLocator.Get<SimulationClock>().gameObject).StartBatch(command.genome,command.count,command.landOnly);
+                case "randomRecipe":return RandomPlanetSpawner.Ensure(ServiceLocator.Get<SimulationClock>().gameObject).StartRecipe(command.recipe,command.count,command.landOnly);
+                case "maintenanceSet":return PopulationMaintenance.Set(command.maintenanceRule);
+                case "maintenanceRemove":return PopulationMaintenance.Remove(command.target);
                 case "randomCancel":RandomPlanetSpawner.Ensure(ServiceLocator.Get<SimulationClock>().gameObject).Cancel();return true;
                 case "time":
                     if(!LanSession.Finite(command.scale)||command.scale<0||command.scale>LanSettings.Current.maximumTimeScale)return false;var clock=ServiceLocator.Get<SimulationClock>();clock.SetTimeScale(command.scale);if(command.running)clock.Play();else clock.Pause();return true;
@@ -60,6 +63,8 @@ namespace DarwinPark.UI
                     if(command.definitions==null||command.definitions.Count>LanSettings.Current.maximumGeneDefinitions||command.tree==null)return false;var catalog=command.definitions.ToDictionary(d=>d.id,d=>d.json);
                     foreach(var pair in catalog){var parsed=JsonUtility.FromJson<GeneDefinitionJson>(pair.Value);if(!System.Text.RegularExpressions.Regex.IsMatch(pair.Key,"^[A-Za-z0-9_-]+$")||parsed==null||parsed.id!=pair.Key||!System.Enum.TryParse<GeneCategory>(parsed.category,true,out _))return false;}
                     if(catalog.Count==0||EntityRegistry.All.Any(e=>e.Genes.Genome.Genes.Any(g=>!catalog.ContainsKey(g.DefinitionId))))return false;GeneTreeStorage.Validate(command.tree,catalog);
+                    // ★ 适配：正在使用的维持条件/模板同样依赖定义库，不能删除后让自动补充永久卡在无效任务。
+                    PopulationMaintenance.Validate(PopulationMaintenance.Capture(),catalog.Keys);
                     GeneRuntimeProfile.Catalog=catalog;GeneRuntimeProfile.Tree=command.tree;GeneDatabase.Reload();GeneDatabase.EnsureLoaded();foreach(var current in EntityRegistry.All)current.Genes.Recalculate();return true;
                 case "save":Object.FindFirstObjectByType<WorldSessionManager>().SaveNow();return true;
                 default:return false;

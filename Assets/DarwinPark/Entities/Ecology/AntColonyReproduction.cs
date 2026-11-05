@@ -36,7 +36,7 @@ namespace DarwinPark.Entities.Ecology
             // ★ 适配：带孤雌分支的王后等待真实配偶，不再凭空复制一个配偶绕过等待机制；其他有性王后保持既有补配偶流程。
             if(EntityPopulationLimit.CanSpawn&&sexual&&!ParthenogenesisCondition.Enabled(genes)&&mates.Length==0&&stats.TryGet("storedNutrient",out var mateReserve)&&mateReserve>=settings.mateCost&&DarwinEntity.Spawner!=null)
             {
-                var mate=Spawn(Copy(genes.Genome),EcologyQueries.Surface(queen.transform.position+Vector3.ProjectOnPlane(Vector3.right,EcologyQueries.Up(queen.transform.position))*settings.arrivalDistance));
+                var mate=ColonyFormation.TryBirthPosition(queen,out var matePoint)?Spawn(Copy(genes.Genome),matePoint):null;
                 if(mate!=null)
                 {
                     AntColonyMember.Ensure(mate.GetComponent<PopulationBehavior>()).Assign(AntRole.Mate,queen.GroupId);
@@ -50,7 +50,8 @@ namespace DarwinPark.Entities.Ecology
                 state.mateWait=0;
                 state.reproductionTimer=Mathf.Max(0,state.reproductionTimer-dt);
                 if(state.reproductionTimer>0||DarwinEntity.Spawner==null)return;
-                if(!OffspringPlacement.TryGetPosition(queen.transform.position,false,out var point))return;
+                // ★ 修复（防Bug回归）：只在育幼范围空位出生；拥挤时保留孕育，不继续向已有身体上方堆叠后代。
+                if(!ColonyFormation.TryBirthPosition(queen,out var point))return;
                 var child=Copy(genes.Genome);
                 if(state.partnerGenome!=null)
                     foreach(var gene in child.Genes){var partner=state.partnerGenome.Genes.FirstOrDefault(g=>g.DefinitionId==gene.DefinitionId);if(partner!=null)gene.Value=(gene.Value+partner.Value)*.5f;}
@@ -62,6 +63,8 @@ namespace DarwinPark.Entities.Ecology
             bool parthenogenetic=ParthenogenesisCondition.Advance(genes,ref state.mateWait,!sexual||eligibleMate!=null,dt);
             if(!EntityPopulationLimit.CanSpawn||sexual&&eligibleMate==null&&!parthenogenetic)return;
             if(!stats.TryGet("storedNutrient",out float reserve)||reserve<settings.queenBirthCost)return;
+            // ★ 适配：维持比例超量时延长王后的新孕育间隔，不中断已开始的孕育。
+            if(!PopulationMaintenance.BreedingReady(genes,ref state.maintenanceWait,dt))return;state.maintenanceWait=0;
             stats.Modify("storedNutrient",-settings.queenBirthCost);state.partnerGenome=sexual&&!parthenogenetic?Copy(eligibleMate.Genes.Genome):null;state.parthenogenetic=parthenogenetic;state.mateWait=0;state.reproductionTimer=settings.queenGestationSeconds;genes.IsGestating=true;genes.Recalculate();
         }
     }

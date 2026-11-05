@@ -13,6 +13,7 @@ namespace DarwinPark.Entities
         private Rigidbody _rb;
         private Collider _col;
         private PhysicsMaterial _surfaceMaterial;
+        private Collider _ground;
 
         void Start()
         {
@@ -89,7 +90,9 @@ namespace DarwinPark.Entities
                 _rb.linearVelocity=dirToCenter*Mathf.Max(0,Vector3.Dot(_rb.linearVelocity,dirToCenter));
             }
 
-            if (Physics.Raycast(transform.position, dirToCenter, out RaycastHit hit, 20f))
+            // ★ 修复（防Bug回归）：实体头顶不是地面；只用星球碰撞体检测着地，避免层叠成员互相充当地表法线。
+            if(_ground==null)_ground=planet.GetComponent<MeshCollider>();
+            if (_ground!=null&&_ground.Raycast(new Ray(transform.position,dirToCenter),out RaycastHit hit,20f))
             {
                 float radius = _col != null ? _col.bounds.extents.y : 1f;
                 if (hit.distance <= radius + 0.5f)

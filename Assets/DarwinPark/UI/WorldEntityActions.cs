@@ -24,6 +24,7 @@ namespace DarwinPark.UI
         {
             if(WorldAuthority.IsReplica||!WorldAuthority.CanEdit||!WorldRuntimeGate.Ready||WorldRuntimeGate.Loading)return false;
             foreach(var job in Object.FindObjectsByType<RandomPlanetSpawner>(FindObjectsSortMode.None))job.Cancel();
+            PopulationMaintenance.SuspendAll();
             EntityPlacementTool.Instance?.CancelPlacement();EntityViewController.Instance?.ExitView();
             foreach(var inspector in Object.FindObjectsByType<GeneInspectorUI>(FindObjectsSortMode.None))inspector.HideEntityInfo();
             EntityFavoritesManager.Instance?.ClearWorld();var entities=EntityRegistry.All.ToArray();

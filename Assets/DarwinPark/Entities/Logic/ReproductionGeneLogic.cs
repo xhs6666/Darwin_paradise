@@ -15,6 +15,7 @@ namespace DarwinPark.Entities.Logic
         private float _cooldownTimer = 0f;
         private float _mateWaitTimer;
         private bool _parthenogenetic;
+        private float _maintenanceWait;
 
         private LifeCycleSettings _settings;
 
@@ -29,9 +30,9 @@ namespace DarwinPark.Entities.Logic
         }
 
         // ★ 适配：孕育计时、产后冷却与配偶基因组一起保存，不能读档后立即生产或丢失后代遗传。
-        public ReproductionSaveState CaptureState()=>new ReproductionSaveState{gene=_gene.InstanceId,gestation=_gestationTimer,cooldown=_cooldownTimer,partner=_partnerGenome,mateWait=_mateWaitTimer,parthenogenetic=_parthenogenetic};
+        public ReproductionSaveState CaptureState()=>new ReproductionSaveState{gene=_gene.InstanceId,gestation=_gestationTimer,cooldown=_cooldownTimer,partner=_partnerGenome,mateWait=_mateWaitTimer,maintenanceWait=_maintenanceWait,parthenogenetic=_parthenogenetic};
         // ★ 修复（防Bug回归）：Unity内联序列化可能把null配偶恢复为空Genome，不能因此把单亲孕育误判为有性。
-        public void RestoreState(ReproductionSaveState state){_gestationTimer=state.gestation;_cooldownTimer=state.cooldown;_partnerGenome=state.partner?.Genes?.Count>0?state.partner:null;_mateWaitTimer=state.mateWait;_parthenogenetic=state.parthenogenetic;}
+        public void RestoreState(ReproductionSaveState state){_gestationTimer=state.gestation;_cooldownTimer=state.cooldown;_partnerGenome=state.partner?.Genes?.Count>0?state.partner:null;_mateWaitTimer=state.mateWait;_maintenanceWait=state.maintenanceWait;_parthenogenetic=state.parthenogenetic;}
         public void OnUpdate(float dt)
         {
             if(dt<=0||DarwinPark.Core.WorldAuthority.IsReplica)return;
@@ -70,6 +71,7 @@ namespace DarwinPark.Entities.Logic
             // ★ 核心修改：直接判断实体自带状态
             if (_controller.CurrentAge != AgeState.Adult)
             {
+                _maintenanceWait=0;
                 _mateWaitTimer=0;
                 // ★ 适配：条件不足合并诊断，避免幼体数量和模拟倍率放大逐实体日志。
                 Ecology.EcologyDiagnostics.Blocked(Ecology.EcologyDiagnostics.ReproductionBlock.Age);
@@ -81,6 +83,8 @@ namespace DarwinPark.Entities.Logic
             // ★ 适配：实际扣款与提前储粮采用同一体型下限，微型实体不会准备不足的繁殖预算。
             if (stats.TryGet("size", out var s)) size = Mathf.Max(Ecology.EcologyBalanceSettings.Current.minimumReproductionSize, s);
             float requiredNutrient = _settings.nutrientCost * size;
+            // ★ 适配：超过维持目标只延长新孕育的间隔；已有孕育在上面的独立分支正常完成。
+            bool maintenanceReady=PopulationMaintenance.BreedingReady(_controller,ref _maintenanceWait,dt);
 
             var repDef = GeneDatabase.Get(_gene.DefinitionId);
             var repState = repDef?.ResolveState(_gene.Value, _gene.MissingStateIds);
@@ -101,6 +105,7 @@ namespace DarwinPark.Entities.Logic
                 Ecology.EcologyDiagnostics.Blocked(Ecology.EcologyDiagnostics.ReproductionBlock.Reserve);
                 return;
             }
+            if(!maintenanceReady)return;
 
             if (repState != null && (repState.StateId == "asexual"||parthenogenetic))
             {
@@ -130,6 +135,7 @@ namespace DarwinPark.Entities.Logic
         {
             _partnerGenome = partnerGenome;
             _parthenogenetic=parthenogenetic;_mateWaitTimer=0;
+            _maintenanceWait=0;
             _controller.IsGestating = true;
 
             _gestationTimer=CalculateGestationTime(size);

@@ -42,6 +42,8 @@ namespace DarwinPark.Entities.Ecology
         {
             var resource=Find(member,false);point=resource!=null?resource.transform.position:member.transform.position;
             if(resource==null)return false;
+            // ★ 修复（防Bug回归）：进入真实进食半径就停下，远处成员分散到资源周围，不能全部追到王后/能量块的中心。
+            point=EcologyQueries.Distance(member.transform.position,point)<=AntColonySettings.Current.feedRadius?member.transform.position:ColonyFormation.Home(member,point,AntColonySettings.Current.feedRadius*.65f);
             member.Activity=ColonyActivity.Feed;return true;
         }
     }

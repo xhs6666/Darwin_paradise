@@ -1,0 +1,8 @@
+{
+  "spacing": 2.4,
+  "margin": 0.35,
+  "avoidanceRadius": 6,
+  "avoidanceStrength": 1.8,
+  "birthRadiusRatio": 0.9,
+  "birthAttempts": 32
+}

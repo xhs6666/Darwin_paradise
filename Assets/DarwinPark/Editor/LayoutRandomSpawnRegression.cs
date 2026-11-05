@@ -32,8 +32,8 @@ namespace DarwinPark.EditorTools
             // ★ 新增：实际布局宽度及IMGUI命令栏命中回归，避免缩窄被LayoutElement覆盖和点击穿透。
             check(ui.preferredWidth==240&&ui.GetComponent<RectTransform>().rect.width<=241,"随机生成栏实际宽度缩至原来一半");
             var bar=RtsSelectionInput.CommandBarRect;check(RtsSelectionInput.IsOverCommandBar(new Vector2(bar.center.x,Screen.height-bar.center.y))&&!RtsSelectionInput.IsOverCommandBar(Vector2.zero),"RTS命令栏命中坐标正确且不吞场景输入");
-            var service=RandomPlanetSpawner.Ensure(ServiceLocator.Get<SimulationClock>().gameObject);var count=ui.transform.Find("Quantity").GetComponent<InputField>();var source=ui.transform.Find("Source").GetComponent<Dropdown>();var generate=ui.transform.Find("Generate").GetComponent<Button>();
-            var before=EntityRegistry.All.ToArray();count.text="16";source.value=0;generate.onClick.Invoke();double start=EditorApplication.timeSinceStartup;
+            var service=RandomPlanetSpawner.Ensure(ServiceLocator.Get<SimulationClock>().gameObject);var count=ui.transform.Find("Quantity").GetComponent<InputField>();var source=ui.transform.Find("Source").GetComponent<Button>();var generate=ui.transform.Find("Generate").GetComponent<Button>();
+            var before=EntityRegistry.All.ToArray();count.text="16";ui.SetRecipe(new RandomSpawnRecipe{template=RandomSpawnRecipe.DefaultGenome()});generate.onClick.Invoke();double start=EditorApplication.timeSinceStartup;
             while(service.IsBusy){if(EditorApplication.timeSinceStartup-start>30)throw new TimeoutException(service.Status);yield return null;}
             var spawned=EntityRegistry.All.Where(e=>!before.Contains(e)).ToArray();check(spawned.Length==16&&service.Spawned==16,"第二页按钮精确随机生成指定数量的默认实体");
             check(spawned.Any(a=>spawned.Any(b=>Vector3.Angle(EcologyQueries.Up(a.transform.position),EcologyQueries.Up(b.transform.position))>60)),"随机实体分散到星球不同区域而非同一落点");
@@ -41,9 +41,9 @@ namespace DarwinPark.EditorTools
             var surface=planet.GetComponent<MeshCollider>();float outside=surface.bounds.extents.magnitude+20;
             check(spawned.All(e=>{var up=EcologyQueries.Up(e.transform.position);return surface.Raycast(new Ray(planet.transform.position+up*outside,-up),out var hit,outside*2)&&Vector3.Distance(hit.point,e.transform.position)>=service.spawnHeight-.2f&&Vector3.Distance(hit.point,e.transform.position)<service.spawnHeight+.5f;}),"每个实体均由真实地表射线定位并保持出生高度");
             string name="随机模板验证-"+Guid.NewGuid().ToString("N"),oldName=actor.DisplayName;actor.DisplayName=name;EntityTemplateManager.SaveTemplate(actor);actor.DisplayName=oldName;
-            yield return null;int selected=source.options.FindIndex(o=>o.text=="模板："+name);check(selected>0,"随机栏实时列出新保存的模板");
-            source.Show();yield return null;check(source.GetComponentsInChildren<Toggle>().Length>=source.options.Count,"来源下拉列表可实际展开并选择全部模板");source.Hide();
-            source.value=selected;count.text="3";before=EntityRegistry.All.ToArray();generate.onClick.Invoke();start=EditorApplication.timeSinceStartup;
+            yield return null;var selectedTemplate=EntityTemplateManager.Templates.SingleOrDefault(t=>t.templateName==name);check(selectedTemplate!=null,"选择界面实时列出新保存的模板");
+            source.onClick.Invoke();yield return null;check(RandomSpawnWorkbench.Instance.Visible,"选择实体按钮实际打开两列来源界面");RandomSpawnWorkbench.Instance.SelectTemplate(selectedTemplate);RandomSpawnWorkbench.Instance.ApplySelection();
+            count.text="3";before=EntityRegistry.All.ToArray();generate.onClick.Invoke();start=EditorApplication.timeSinceStartup;
             while(service.IsBusy){if(EditorApplication.timeSinceStartup-start>30)throw new TimeoutException(service.Status);yield return null;}
             var copies=EntityRegistry.All.Where(e=>!before.Contains(e)).ToArray();var template=EntityTemplateManager.Templates.Single(t=>t.templateName==name);
             check(copies.Length==3&&copies.All(e=>template.genes.All(g=>e.Genes.Genome.Genes.Any(copy=>copy.DefinitionId==g.definitionId&&copy.Value==g.value))),"模板随机投放保留全部遗传数值");
@@ -58,7 +58,7 @@ namespace DarwinPark.EditorTools
             check(service.Spawned==0&&EntityRegistry.All.Count==before.Length,"没有合适陆地时有界结束且不把实体放入海底");service.landClearance=clearance;service.attemptsPerEntity=attempts;
             service.StartBatch(null,service.maxCount,true);int progress=service.Spawned;page.Invoke(control,new object[]{0});yield return null;yield return null;
             check(service.Spawned>progress,"切换底栏页面后分帧任务仍正常推进");service.Cancel();page.Invoke(control,new object[]{1});yield return null;
-            source.value=0;count.text="10";inspector.ShowEntityInfo(actor);Canvas.ForceUpdateCanvases();yield return new WaitForEndOfFrame();ScreenCapture.CaptureScreenshot(System.IO.Path.Combine(Folder,"panel-and-random-spawn.png"));yield return null;
+            ui.SetRecipe(new RandomSpawnRecipe{template=RandomSpawnRecipe.DefaultGenome()});count.text="10";inspector.ShowEntityInfo(actor);Canvas.ForceUpdateCanvases();yield return new WaitForEndOfFrame();ScreenCapture.CaptureScreenshot(System.IO.Path.Combine(Folder,"panel-and-random-spawn.png"));yield return null;
         }
         private static void VerifyEvolution(Action<bool,string> check)
         {

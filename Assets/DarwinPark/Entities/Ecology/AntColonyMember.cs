@@ -11,7 +11,7 @@ namespace DarwinPark.Entities.Ecology
         public string role,lockedGenome,resourceTarget,livingTarget,carriedResource,carriedLiving;
         public float scan,patrolRemaining,restRemaining,circleAngle,reproductionTimer,reproductionCooldown;
         // ★ 适配：王后无配偶等待和孤雌孕育状态与已有蚁群快照一起持久化。
-        public float mateWait;public bool parthenogenetic;
+        public float mateWait,maintenanceWait;public bool parthenogenetic;
         public bool founding,deliveryNursery,originalKinematic,originalDetect;
         public Vector3 foundingPoint,deliveryPoint;
         public List<Vector3> supplyPoints=new List<Vector3>();
@@ -137,8 +137,8 @@ namespace DarwinPark.Entities.Ecology
             if(State.founding){point=EcologyQueries.ToWorld(State.foundingPoint);return true;}
             // ★ 修复（防Bug回归）：所有已定居分工先寻可用补给，王后/幼体前往育幼能量块，成年成员前往普通补给。
             if(ColonyFeeding.Destination(this,out point))return true;
-            if(Young){point=Center;return true;}
-            if(Role==AntRole.Mate){point=Center;return true;}
+            // ★ 修复（防Bug回归）：跟随终点是各自站位，不能让同群成员持续向王后的身体中心挤压。
+            if(Young||Role==AntRole.Mate){point=ColonyFormation.Home(this,Center,AntColonySettings.Current.feedRadius*.8f);return true;}
             if(Role==AntRole.Worker){point=AntColonyWorker.Destination(this);return true;}
             if(Role==AntRole.Soldier&&EcologyQueries.Alive(HuntTarget)){target=HuntTarget;point=target.transform.position;return true;}
             if(Role==AntRole.Soldier&&State.patrolRemaining>0)
@@ -147,6 +147,7 @@ namespace DarwinPark.Entities.Ecology
                 var circle=ColonyActivityRange.PatrolCircle(this);
                 point=ColonyActivityRange.Boundary(circle,State.circleAngle,AntColonySettings.Current.soldierPatrolRadiusRatio);
             }
+            else if(Role==AntRole.Soldier)point=ColonyFormation.Home(this,Center,Radius*.75f);
             return true;
         }
         public bool TrySupplyDestination(out Vector3 point)
