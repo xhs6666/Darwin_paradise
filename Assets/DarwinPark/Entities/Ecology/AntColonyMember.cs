@@ -10,6 +10,8 @@ namespace DarwinPark.Entities.Ecology
     {
         public string role,lockedGenome,resourceTarget,livingTarget,carriedResource,carriedLiving;
         public float scan,patrolRemaining,restRemaining,circleAngle,reproductionTimer,reproductionCooldown;
+        // ★ 适配：王后无配偶等待和孤雌孕育状态与已有蚁群快照一起持久化。
+        public float mateWait;public bool parthenogenetic;
         public bool founding,deliveryNursery,originalKinematic,originalDetect;
         public Vector3 foundingPoint,deliveryPoint;
         public List<Vector3> supplyPoints=new List<Vector3>();
@@ -169,6 +171,8 @@ namespace DarwinPark.Entities.Ecology
             if(member._suppressionRole!=member.State.role)
             {
                 member._suppression.Clear();foreach(var id in AntColonySettings.Current.Rule(member.Role).suppressedGenes)member._suppression[id]=AntColonySettings.Current.geneSuppression;
+                // ★ 适配：旧角色配置已禁用有性繁殖时，其新增出错分支也应禁用，避免工匠/配偶显示可繁殖能力。
+                if(member._suppression.ContainsKey(ParthenogenesisEvolutionUpgrade.SourceGeneId))member._suppression[ParthenogenesisEvolutionUpgrade.GeneId]=AntColonySettings.Current.geneSuppression;
                 member._suppressionRole=member.State.role;
             }
             return member._suppression;
@@ -183,6 +187,6 @@ namespace DarwinPark.Entities.Ecology
         }
         public AntColonyMemberSave Capture()=>JsonUtility.FromJson<AntColonyMemberSave>(JsonUtility.ToJson(State));
         public void Suspend(){AntColonyWorker.Release(this);HuntTarget=null;}
-        public void Restore(AntColonyMemberSave state){if(state==null||!state.HasData)return;State=JsonUtility.FromJson<AntColonyMemberSave>(JsonUtility.ToJson(state));_suppressionRole=null;PopulationGroupIndex.Invalidate();Genes.Recalculate();Population.EnsureMembership();if(GetComponent<ColonyMemberMarker>()==null)gameObject.AddComponent<ColonyMemberMarker>();}
+        public void Restore(AntColonyMemberSave state){if(state==null||!state.HasData)return;State=JsonUtility.FromJson<AntColonyMemberSave>(JsonUtility.ToJson(state));if(State.partnerGenome?.Genes?.Count==0)State.partnerGenome=null;_suppressionRole=null;PopulationGroupIndex.Invalidate();Genes.Recalculate();Population.EnsureMembership();if(GetComponent<ColonyMemberMarker>()==null)gameObject.AddComponent<ColonyMemberMarker>();}
     }
 }

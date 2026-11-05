@@ -7,7 +7,7 @@ float3 ApplyPopulationRange(float3 color,float3 positionOS)
 {
     if(_PopulationStyle.x<.5||_PopulationCount<.5)return color;
     float3 direction=normalize(positionOS);
-    float distance=10,group=-1;float3 tint=0;
+    float distance=10,group=-1,opacity=0;float3 tint=0;
     float4 paint=0;
     [loop] for(int i=0;i<(int)_PopulationCount;i++)
     {
@@ -15,15 +15,16 @@ float3 ApplyPopulationRange(float3 color,float3 positionOS)
         float4 data=LOAD_TEXTURE2D(_PopulationData,int2(1,i));
         if(data.w!=group&&group>=0)
         {
-            float alpha=_PopulationStyle.x<1.5?(distance<=0?_PopulationStyle.y:0):1-smoothstep(_PopulationStyle.z,_PopulationStyle.z+max(fwidth(distance),.00001),abs(distance));
+            // ★ 适配：同群填色和外沿都使用该群不透明度，重叠圆不重复累积。
+            float alpha=opacity*(_PopulationStyle.x<1.5?(distance<=0?1:0):1-smoothstep(_PopulationStyle.z,_PopulationStyle.z+max(fwidth(distance),.00001),abs(distance)));
             if(alpha>paint.a)paint=float4(tint,alpha);
             distance=10;
         }
-        group=data.w;tint=data.rgb;
+        group=data.w;tint=data.rgb;opacity=LOAD_TEXTURE2D(_PopulationData,int2(2,i)).r;
         // 圆边界等价于dot=cos(radius)；只在边界附近换算线宽，不需要每像素acos。
         distance=min(distance,(circle.w-dot(direction,circle.xyz))/max(sqrt(saturate(1-circle.w*circle.w)),.0001));
     }
-    float alpha=_PopulationStyle.x<1.5?(distance<=0?_PopulationStyle.y:0):1-smoothstep(_PopulationStyle.z,_PopulationStyle.z+max(fwidth(distance),.00001),abs(distance));
+    float alpha=opacity*(_PopulationStyle.x<1.5?(distance<=0?1:0):1-smoothstep(_PopulationStyle.z,_PopulationStyle.z+max(fwidth(distance),.00001),abs(distance)));
     if(alpha>paint.a)paint=float4(tint,alpha);
     return lerp(color,paint.rgb,paint.a);
 }

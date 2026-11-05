@@ -13,6 +13,8 @@ namespace DarwinPark.Core
         public float manualAimPadding=.85f, manualHitboxScale=1.5f, manualAttackReachBonus=.35f;
         public float supplyActivityRadiusRatio=1;
         public float colonyActivityRadiusMultiplier=.35f, populationFillOpacity=.22f;
+        // ★ 新增：成年且无合适配偶的连续等待天数，外部配置可热更新。
+        public float parthenogenesisWaitDays=5;
         private static GameplayTuning _current;
         private static long _stamp;private static float _nextPoll;
         public static string FilePath=>Path.Combine(GamePaths.Root,"config","gameplay.json");

@@ -7,7 +7,8 @@ using UnityEngine;
 namespace DarwinPark.Entities
 {
     [Serializable] public class StatSaveValue {public string id;public float value,max;}
-    [Serializable] public class ReproductionSaveState {public string gene;public float gestation,cooldown;public Genome partner;}
+    // ★ 适配：无配偶等待与本次孤雌孕育标记成对保存，重载不能重置等待或误标成无性繁殖。
+    [Serializable] public class ReproductionSaveState {public string gene;public float gestation,cooldown,mateWait;public bool parthenogenetic;public Genome partner;}
     // ★ 新增：实体快照保留遗传实例、生命周期与孕育，而非读档时重新出生。
     [Serializable] public class EntitySaveState
     {

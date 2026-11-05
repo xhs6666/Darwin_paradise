@@ -50,6 +50,14 @@
       "minValue": 0,
       "maxValue": 100,
       "requiredGenes": []
+    },
+    {
+      "source": "gene_sexual",
+      "target": "gene_parthenogenesis",
+      "kind": "error",
+      "minValue": 0,
+      "maxValue": 100,
+      "requiredGenes": []
     }
   ]
 }

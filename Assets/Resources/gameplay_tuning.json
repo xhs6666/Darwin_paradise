@@ -17,5 +17,7 @@
   // 补给圆相对王后圆的半径倍率。无剩余补给能量时不生成补给圆。
   "supplyActivityRadiusRatio": 1.0,
   // 种群范围填色不透明度：0完全透明，1完全不透明。
-  "populationFillOpacity": 0.22
+  "populationFillOpacity": 0.22,
+  // 孤雌生殖：成年且连续找不到合适配偶多少游戏日后尝试自主孕育；0为立即，仍需营养及数量空位。
+  "parthenogenesisWaitDays": 5
 }

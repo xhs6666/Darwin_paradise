@@ -43,13 +43,14 @@ namespace DarwinPark.UI
                 {
                     var direction=planet.transform.InverseTransformPoint(circle.Center).normalized;
                     // ★ 适配：预存半径余弦，逐像素判断不用反三角函数，避免范围填色拖慢渲染。
-                    pixels.Add(new Color(direction.x,direction.y,direction.z,Mathf.Cos(circle.Radius/radius)));pixels.Add(new Color(tint.r,tint.g,tint.b,index));
+                    pixels.Add(new Color(direction.x,direction.y,direction.z,Mathf.Cos(circle.Radius/radius)));pixels.Add(new Color(tint.r,tint.g,tint.b,index));pixels.Add(new Color(PopulationArchive.OpacityFor(group.Key),0,0,0));
                 }
                 index++;
             }
-            ActiveCircleCount=pixels.Count/2;int height=Mathf.NextPowerOfTwo(Mathf.Max(1,ActiveCircleCount));
-            if(_data==null||_data.height!=height){if(_data!=null)Destroy(_data);_data=new Texture2D(2,height,TextureFormat.RGBAFloat,false,true){name="种群活动区数据",filterMode=FilterMode.Point,wrapMode=TextureWrapMode.Clamp};}
-            while(pixels.Count<height*2)pixels.Add(Color.clear);_data.SetPixels(pixels.ToArray());_data.Apply(false,false);Apply(true);
+            // ★ 适配：第三列保存每群不透明度，同群并集只混合一次；旧的全局默认仍由档案解析。
+            ActiveCircleCount=pixels.Count/3;int height=Mathf.NextPowerOfTwo(Mathf.Max(1,ActiveCircleCount));
+            if(_data==null||_data.height!=height){if(_data!=null)Destroy(_data);_data=new Texture2D(3,height,TextureFormat.RGBAFloat,false,true){name="种群活动区数据",filterMode=FilterMode.Point,wrapMode=TextureWrapMode.Clamp};}
+            while(pixels.Count<height*3)pixels.Add(Color.clear);_data.SetPixels(pixels.ToArray());_data.Apply(false,false);Apply(true);
         }
         private void Apply(bool show)
         {

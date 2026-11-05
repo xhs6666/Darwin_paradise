@@ -1,0 +1,19 @@
+{
+  "id": "gene_parthenogenesis",
+  "displayName": "孤雌生殖基因",
+  "category": "Reproduction",
+  "parentGeneId": "gene_sexual",
+  "baseGeneId": "gene_reproduction",
+  "isBaseGene": false,
+  "tier": 2,
+  "logicScriptId": "ReproductionGeneLogic",
+  "aiModuleId": "",
+  "entityStateTagVersion": 1,
+  "entityStateTags": [],
+  "attributeCurves": [],
+  "attributeLinkages": [],
+  "suppressionRules": [],
+  "states": [
+    { "stateId": "sexual", "displayName": "孤雌生殖（优先有性）", "center": 80, "color": [0.85, 0.55, 0.95] }
+  ]
+}

@@ -15,6 +15,8 @@ namespace DarwinPark.Entities.Ecology
     {
         // ★ 新增：实体配色默认独立；旧存档缺少该字段时维持原本外观。
         public string id,name,mode,parentId,color;public bool originKnown,visible=true,syncEntityColor;
+        // ★ 新增：-1表示沿用外部全局默认值，旧档不因缺少字段而变成完全透明。
+        public float rangeOpacity=-1;
         public float firstSeen,lastSeen;public int current,peak,lastLiving,increases,decreases;
         public int infants,adults,elders;
         public List<PopulationSample> samples=new List<PopulationSample>();
@@ -97,11 +99,12 @@ namespace DarwinPark.Entities.Ecology
                 var compact=new List<PopulationSample>{record.samples[0]};for(int i=2;i<record.samples.Count-1;i+=2)compact.Add(record.samples[i]);compact.Add(record.samples[record.samples.Count-1]);record.samples=compact;
             }
         }
-        public static bool SetDisplay(string id,string color,bool visible,bool? syncEntityColor=null)
+        public static bool SetDisplay(string id,string color,bool visible,bool? syncEntityColor=null,float? rangeOpacity=null)
         {
-            if(WorldAuthority.IsReplica||!WorldAuthority.CanEdit||Find(id) is not PopulationRecord record||!ColorUtility.TryParseHtmlString(color,out var parsed))return false;
-            record.color="#"+ColorUtility.ToHtmlStringRGB(parsed);record.visible=visible;if(syncEntityColor.HasValue)record.syncEntityColor=syncEntityColor.Value;Revision++;DisplayRevision++;return true;
+            if(WorldAuthority.IsReplica||!WorldAuthority.CanEdit||Find(id) is not PopulationRecord record||!ColorUtility.TryParseHtmlString(color,out var parsed)||rangeOpacity.HasValue&&(!float.IsFinite(rangeOpacity.Value)||rangeOpacity<0||rangeOpacity>1))return false;
+            record.color="#"+ColorUtility.ToHtmlStringRGB(parsed);record.visible=visible;if(syncEntityColor.HasValue)record.syncEntityColor=syncEntityColor.Value;if(rangeOpacity.HasValue)record.rangeOpacity=rangeOpacity.Value;Revision++;DisplayRevision++;return true;
         }
+        public static float OpacityFor(string id)=>Find(id) is PopulationRecord record&&record.rangeOpacity>=0?record.rangeOpacity:GameplayTuning.Current.populationFillOpacity;
         public static bool TryColor(string id,out Color color){color=default;return Find(id) is PopulationRecord record&&!string.IsNullOrEmpty(record.color)&&ColorUtility.TryParseHtmlString(record.color,out color);}
         public static bool IsVisible(string id)=>Find(id)?.visible??true;
         public static PopulationArchiveState Capture(){if(WorldRuntimeGate.Ready&&!WorldAuthority.IsReplica)Observe();return JsonUtility.FromJson<PopulationArchiveState>(JsonUtility.ToJson(new PopulationArchiveState{groups=Records.Values.OrderBy(r=>r.id).ToList()}));}
@@ -110,6 +113,7 @@ namespace DarwinPark.Entities.Ecology
             if(state==null)return;if(state.version!=1||state.groups==null)throw new InvalidDataException("种群档案版本无效");var ids=new HashSet<string>();
             foreach(var r in state.groups)
             {
+                if(r!=null&&(!float.IsFinite(r.rangeOpacity)||r.rangeOpacity!= -1&&(r.rangeOpacity<0||r.rangeOpacity>1)))throw new InvalidDataException("种群范围不透明度无效");
                 if(r==null||!Guid.TryParseExact(r.id,"N",out _)||!ids.Add(r.id)||string.IsNullOrWhiteSpace(r.name)||r.current<0||r.lastLiving<0||r.peak<r.current||!float.IsFinite(r.firstSeen)||r.firstSeen<0||!float.IsFinite(r.lastSeen)||r.lastSeen<r.firstSeen||r.samples==null||r.events==null||r.genes==null||!string.IsNullOrEmpty(r.color)&&!ColorUtility.TryParseHtmlString(r.color,out _))throw new InvalidDataException("种群档案内容无效");
                 float last=-1;foreach(var s in r.samples){if(s==null||!float.IsFinite(s.time)||s.time<last||s.time<0||s.members<0||s.infants<0||s.adults<0||s.elders<0||s.infants+s.adults+s.elders!=s.members)throw new InvalidDataException("种群历史采样无效");last=s.time;}
                 if(r.events.Any(e=>e==null||!float.IsFinite(e.time)||e.time<0||string.IsNullOrWhiteSpace(e.text))||r.genes.Any(g=>g==null||string.IsNullOrWhiteSpace(g.id)||g.carried<0||g.expressed<0||g.expressed>g.carried||g.carried>r.lastLiving))throw new InvalidDataException("种群事件或基因计数无效");

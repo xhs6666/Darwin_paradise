@@ -14,6 +14,8 @@ namespace DarwinPark.Genetics
         public int version=1;
         // ★ 适配：记录营养分支迁移，既补齐旧树，也保留迁移后用户主动编辑的连线。
         public int nutritionVersion;
+        // ★ 适配：孤雌生殖分支增量迁移一次，之后尊重用户自己的树编辑。
+        public int parthenogenesisVersion;
         public List<GeneTreeNode> nodes=new List<GeneTreeNode>();
         public List<GeneTreeEdge> edges=new List<GeneTreeEdge>();
     }
@@ -68,6 +70,7 @@ namespace DarwinPark.Genetics
             NutrientUtilizationEvolutionUpgrade.Apply(doc,catalog);
             // ★ 适配：营养分支和卵寄生先迁移，再验证旧世界的定义与连线。
             NutritionEvolutionUpgrade.Apply(doc,catalog);
+            ParthenogenesisEvolutionUpgrade.Apply(doc,catalog);
             if(doc==null || doc.nodes==null || doc.edges==null) throw new InvalidDataException("无效基因树");
             var ids=new HashSet<string>();
             foreach(var n in doc.nodes) if(!catalog.ContainsKey(n.id)||!ids.Add(n.id)) throw new InvalidDataException("缺失或重复节点："+n.id);

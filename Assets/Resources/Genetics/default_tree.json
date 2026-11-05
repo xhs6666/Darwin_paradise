@@ -137,6 +137,14 @@
         "y": 620
       },
       "error": true
+    },
+    {
+      "id": "gene_parthenogenesis",
+      "position": {
+        "x": 710,
+        "y": 420
+      },
+      "error": true
     }
   ],
   "edges": [
@@ -199,6 +207,13 @@
       "to": "gene_scavenging",
       "kind": "error",
       "value": 100
+    },
+    {
+      "from": "gene_sexual",
+      "to": "gene_parthenogenesis",
+      "kind": "error",
+      "value": 100
     }
-  ]
+  ],
+  "parthenogenesisVersion": 1
 }

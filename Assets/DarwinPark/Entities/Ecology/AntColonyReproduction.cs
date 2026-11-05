@@ -24,15 +24,17 @@ namespace DarwinPark.Entities.Ecology
         }
         public static void Advance(AntColonyMember queen,float dt)
         {
-            if(queen.Role!=AntRole.Queen||queen.Young||queen.State.founding||queen.Genes.CurrentAge!=AgeState.Adult||dt<=0)return;
+            if(queen.Role!=AntRole.Queen||queen.Young||queen.State.founding||queen.Genes.CurrentAge!=AgeState.Adult){queen.State.mateWait=0;return;}
+            if(dt<=0||DarwinPark.Core.WorldAuthority.IsReplica)return;
             var genes=queen.Genes;var state=queen.State;var settings=AntColonySettings.Current;var stats=queen.GetComponent<EntityStats>();
             var reproduction=genes.Evaluation.Genes.Where(g=>g.IsActive&&genes.GetLogic(g.Gene) is ReproductionGeneLogic).OrderByDescending(g=>g.Definition.Tier).FirstOrDefault();
             if(reproduction==null)
-            {if(genes.IsGestating){genes.IsGestating=false;state.reproductionTimer=0;genes.Recalculate();}return;}
+            {state.mateWait=0;if(genes.IsGestating){genes.IsGestating=false;state.reproductionTimer=0;genes.Recalculate();}return;}
             bool sexual=reproduction.State?.StateId=="sexual";
             var mates=queen.Group.Where(m=>m.Role==AntRole.Mate).OrderBy(m=>m.Population.JoinOrder).ToArray();
             // 配偶不来自出生随机池；损失后由王后花费实际储备补充，并立即锁定为同群成年配偶。
-            if(EntityPopulationLimit.CanSpawn&&sexual&&mates.Length==0&&stats.TryGet("storedNutrient",out var mateReserve)&&mateReserve>=settings.mateCost&&DarwinEntity.Spawner!=null)
+            // ★ 适配：带孤雌分支的王后等待真实配偶，不再凭空复制一个配偶绕过等待机制；其他有性王后保持既有补配偶流程。
+            if(EntityPopulationLimit.CanSpawn&&sexual&&!ParthenogenesisCondition.Enabled(genes)&&mates.Length==0&&stats.TryGet("storedNutrient",out var mateReserve)&&mateReserve>=settings.mateCost&&DarwinEntity.Spawner!=null)
             {
                 var mate=Spawn(Copy(genes.Genome),EcologyQueries.Surface(queen.transform.position+Vector3.ProjectOnPlane(Vector3.right,EcologyQueries.Up(queen.transform.position))*settings.arrivalDistance));
                 if(mate!=null)
@@ -45,6 +47,7 @@ namespace DarwinPark.Entities.Ecology
             }
             if(genes.IsGestating)
             {
+                state.mateWait=0;
                 state.reproductionTimer=Mathf.Max(0,state.reproductionTimer-dt);
                 if(state.reproductionTimer>0||DarwinEntity.Spawner==null)return;
                 if(!OffspringPlacement.TryGetPosition(queen.transform.position,false,out var point))return;
@@ -52,12 +55,14 @@ namespace DarwinPark.Entities.Ecology
                 if(state.partnerGenome!=null)
                     foreach(var gene in child.Genes){var partner=state.partnerGenome.Genes.FirstOrDefault(g=>g.DefinitionId==gene.DefinitionId);if(partner!=null)gene.Value=(gene.Value+partner.Value)*.5f;}
                 // 使用原出生入口，卵生/孵化和分工继承仍由同一个入口处理。
-                if(!EcologyReproduction.Spawn(genes,child,point))return;genes.IsGestating=false;state.partnerGenome=null;state.reproductionCooldown=settings.queenCooldownSeconds;genes.Recalculate();return;
+                if(!EcologyReproduction.Spawn(genes,child,point))return;genes.IsGestating=false;state.partnerGenome=null;state.parthenogenetic=false;state.reproductionCooldown=settings.queenCooldownSeconds;genes.Recalculate();return;
             }
-            if(state.reproductionCooldown>0||!EntityPopulationLimit.CanSpawn)return;
-            if(sexual&&(mates.Length==0||EcologyQueries.Distance(queen.transform.position,mates[0].transform.position)>settings.feedRadius))return;
+            if(state.reproductionCooldown>0){state.mateWait=0;return;}
+            var eligibleMate=mates.FirstOrDefault(m=>EcologyQueries.Distance(queen.transform.position,m.transform.position)<=settings.feedRadius);
+            bool parthenogenetic=ParthenogenesisCondition.Advance(genes,ref state.mateWait,!sexual||eligibleMate!=null,dt);
+            if(!EntityPopulationLimit.CanSpawn||sexual&&eligibleMate==null&&!parthenogenetic)return;
             if(!stats.TryGet("storedNutrient",out float reserve)||reserve<settings.queenBirthCost)return;
-            stats.Modify("storedNutrient",-settings.queenBirthCost);state.partnerGenome=sexual?Copy(mates[0].Genes.Genome):null;state.reproductionTimer=settings.queenGestationSeconds;genes.IsGestating=true;genes.Recalculate();
+            stats.Modify("storedNutrient",-settings.queenBirthCost);state.partnerGenome=sexual&&!parthenogenetic?Copy(eligibleMate.Genes.Genome):null;state.parthenogenetic=parthenogenetic;state.mateWait=0;state.reproductionTimer=settings.queenGestationSeconds;genes.IsGestating=true;genes.Recalculate();
         }
     }
 }

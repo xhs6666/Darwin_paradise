@@ -38,8 +38,10 @@ namespace DarwinPark.Entities.Ecology
             if(state==null||!state.HasData)return;
             // ★ 修复（防Bug回归）：数字形式的未定义角色和非有限运输坐标也必须在清场前拒绝，不能等到恢复角色时崩溃。
             if(!Enum.TryParse<AntRole>(state.role,out var role)||!Enum.IsDefined(typeof(AntRole),role)||role==AntRole.None||state.supplyPoints==null||state.supplyPoints.Any(p=>!Finite(p))||!Finite(state.foundingPoint)||!Finite(state.deliveryPoint))throw new InvalidDataException("蚁群分工、运输位置或补给点无效");
-            foreach(float value in new[]{state.scan,state.patrolRemaining,state.restRemaining,state.circleAngle,state.reproductionTimer,state.reproductionCooldown})
+            foreach(float value in new[]{state.scan,state.patrolRemaining,state.restRemaining,state.circleAngle,state.reproductionTimer,state.reproductionCooldown,state.mateWait})
                 if(float.IsNaN(value)||float.IsInfinity(value))throw new InvalidDataException("蚁群计时无效");
+            if(state.mateWait<0)throw new InvalidDataException("孤雌生殖等待计时无效");
+            if(state.parthenogenetic&&state.partnerGenome?.Genes?.Count>0)throw new InvalidDataException("孤雌孕育不应包含配偶基因");
             if(!string.IsNullOrEmpty(state.lockedGenome))ValidateGenome(JsonUtility.FromJson<Genetics.Genome>(state.lockedGenome));
             if(state.partnerGenome!=null&&state.partnerGenome.Genes?.Count>0)ValidateGenome(state.partnerGenome);
         }

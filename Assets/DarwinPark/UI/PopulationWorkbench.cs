@@ -23,6 +23,7 @@ namespace DarwinPark.UI
         private GameObject _inputBlocker;
         private string _search="",_hex="",_status="";private Color _draft;
         private int _filter,_page,_memberPage;private float _next;
+        private float _rangeOpacity;
         private Vector2 _detailsScroll,_listScroll;
         private List<PopulationRecord> _all=new List<PopulationRecord>();private List<DarwinEntity> _members=new List<DarwinEntity>();
         private List<PopulationChartValue> _genes=new List<PopulationChartValue>(),_ages=new List<PopulationChartValue>();
@@ -47,7 +48,7 @@ namespace DarwinPark.UI
         public void Select(string id,int tab=0)
         {
             SelectedId=id;SelectedTab=Mathf.Clamp(tab,0,6);_memberPage=0;_detailsScroll=Vector2.zero;_status="";
-            var record=PopulationArchive.Find(id);if(record!=null){_draft=ColonyAppearance.ColorFor(id);_hex="#"+ColorUtility.ToHtmlStringRGB(_draft);_show=record.visible;_syncEntityColor=record.syncEntityColor;}RefreshNow();
+            var record=PopulationArchive.Find(id);if(record!=null){_draft=ColonyAppearance.ColorFor(id);_hex="#"+ColorUtility.ToHtmlStringRGB(_draft);_show=record.visible;_syncEntityColor=record.syncEntityColor;_rangeOpacity=PopulationArchive.OpacityFor(id);}RefreshNow();
         }
         public void RefreshNow()
         {
@@ -55,10 +56,11 @@ namespace DarwinPark.UI
             _all=PopulationArchive.All.OrderByDescending(r=>r.current>0).ThenByDescending(r=>r.current).ThenBy(r=>r.firstSeen).ThenBy(r=>r.id).ToList();
             _members=PopulationArchive.Members(SelectedId).OrderBy(e=>e.DisplayName).ThenBy(EcologyIdentity.Of).ToList();_genes=PopulationDistributions.Genes(SelectedId,_expressed);_ages=PopulationDistributions.Ages(SelectedId);
         }
-        public bool ApplyDisplay(string color,bool visible,bool? syncEntityColor=null)
+        public bool ApplyDisplay(string color,bool visible,bool? syncEntityColor=null,float? rangeOpacity=null)
         {
-            if(!PopulationArchive.SetDisplay(SelectedId,color,visible,syncEntityColor)){_status="请输入有效的#RRGGBB颜色；显示配置由房主保存";return false;}
+            if(!PopulationArchive.SetDisplay(SelectedId,color,visible,syncEntityColor,rangeOpacity)){_status="请输入有效颜色与0～100%不透明度；显示配置由房主保存";return false;}
             _syncEntityColor=PopulationArchive.Find(SelectedId).syncEntityColor;
+            _rangeOpacity=PopulationArchive.OpacityFor(SelectedId);
             try{FindFirstObjectByType<WorldSessionManager>().SaveNow(_running);_status="显示配置已保存到当前世界";}
             catch(Exception ex){_status="颜色已应用，保存失败："+ex.Message;Debug.LogWarning("[种群配置] "+ex.Message);}
             return true;
@@ -208,11 +210,13 @@ namespace DarwinPark.UI
             // ★ 适配：三个滑条分别使用对应通道色，拖动仍走原生输入与数值同步。
             GUILayout.Label("红 "+Mathf.RoundToInt(_draft.r*255));float r=RuntimeMenuTheme.Slider(_draft.r,0,1,Color.red);GUILayout.Label("绿 "+Mathf.RoundToInt(_draft.g*255));float g=RuntimeMenuTheme.Slider(_draft.g,0,1,Color.green);GUILayout.Label("蓝 "+Mathf.RoundToInt(_draft.b*255));float b=RuntimeMenuTheme.Slider(_draft.b,0,1,Color.blue);
             if(r!=_draft.r||g!=_draft.g||b!=_draft.b){_draft=new Color(r,g,b);_hex="#"+ColorUtility.ToHtmlStringRGB(_draft);}
-            var preview=GUILayoutUtility.GetRect(100,34);var old=GUI.color;GUI.color=_draft;GUI.DrawTexture(preview,Texture2D.whiteTexture);GUI.color=old;
+            var preview=GUILayoutUtility.GetRect(100,20);var old=GUI.color;GUI.color=_draft;GUI.DrawTexture(preview,Texture2D.whiteTexture);GUI.color=old;
+            // ★ 新增：范围透明度独立于实体身体，避免透明外观改变实体遮挡和物理判定。
+            GUILayout.Label("范围不透明度 "+Mathf.RoundToInt(_rangeOpacity*100)+"%");_rangeOpacity=RuntimeMenuTheme.Slider(_rangeOpacity,0,1);
             _show=GUILayout.Toggle(_show,"显示该种群范围与成员标记");
             _syncEntityColor=GUILayout.Toggle(_syncEntityColor,"同步实体颜色（实体外观使用种群配色）");
             bool enabled=GUI.enabled;GUI.enabled=!WorldAuthority.IsReplica&&WorldAuthority.CanEdit;
-            if(RuntimeMenuTheme.Button("保存显示配置","save",true,38))ApplyDisplay(_hex,_show,_syncEntityColor);GUI.enabled=enabled;
+            if(RuntimeMenuTheme.Button("保存显示配置","save",true,38))ApplyDisplay(_hex,_show,_syncEntityColor,_rangeOpacity);GUI.enabled=enabled;
             if(RuntimeMenuTheme.Button("恢复默认配色",null,false,32)){_draft=ColonyAppearance.DefaultColorFor(record.id);_hex="#"+ColorUtility.ToHtmlStringRGB(_draft);}
             if(WorldAuthority.IsReplica)GUILayout.Label("联机成员可查看，显示配置由房主保存。",RuntimeMenuTheme.Muted);
         }

@@ -97,6 +97,8 @@ namespace DarwinPark.UI
                 // ★ 适配：兼容新增生态字段之前的存档；有内容但没有有效标识的记录仍作为损坏拒绝。
                 if(entity?.ecology?.IsEmpty==true)entity.ecology=null;
                 if(entity.genome==null||entity.genome.Genes==null||entity.stats==null||entity.reproduction==null||entity.traits==null)throw new InvalidDataException("实体存档不完整");
+                // ★ 适配：新增等待计时与孤雌孕育标记在清场前检查；旧档缺字段按0/false兼容。
+                if(entity.reproduction.Any(r=>r==null||!Finite(r.mateWait)||r.mateWait<0||r.parthenogenetic&&r.partner?.Genes?.Count>0))throw new InvalidDataException("孤雌生殖状态无效");
                 if(entity.genome.Genes.Any(g=>!catalog.ContainsKey(g.DefinitionId)))throw new InvalidDataException("实体引用缺失基因");
                 // ★ 适配：外来卵不能略过后代基因校验；寄生宿主标识独立校验。
                 DarwinPark.Entities.Ecology.NutritionSaveValidation.Validate(entity.ecology,catalog.Keys);

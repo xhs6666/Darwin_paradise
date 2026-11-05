@@ -239,3 +239,5 @@
 | 2026-11-05 | 种群档案显示累计小数天数，难以对照游戏日历 | 档案独立用模拟秒除以10显示天数，历史图表另有格式 | PopulationWorkbench.cs、PopulationCharts.cs、PopulationArchiveRegression.cs | 概览/事件/图表/采样共用年月日，沿用底栏日历；历史标签加宽；跨月跨年与681.8天回归 |
 
 | 2026-11-05 | RGB滑条都显示青绿色，种群颜色无法用于实体身体 | 主题滑条固定青绿填充，实体受击颜色与种群色没有统一显示入口 | RuntimeMenuTheme.cs、PopulationWorkbench.cs、PopulationArchive.cs、EntityStats.cs | 通道独立纯色；每群同步开关默认关闭并随存档/快照保存；材质槽属性块不污染共享资源，受击优先且结束恢复；原生属性块在Awake创建 |
+
+| 2026-11-05 | 范围不透明度只能全局修改；有性实体长期无配偶无法延续种群 | 档案没有单群透明度，繁殖没有无配偶等待及单亲回退分支 | PopulationArchive.cs、PopulationWorkbench.cs、PopulationRangeLayer.cs、PopulationRangeOverlay.hlsl、ReproductionGeneLogic.cs、AntColonyReproduction.cs、ParthenogenesisEvolutionUpgrade.cs及存档/配置 | 旧档默认值与单群0～1不透明度分开；并集不重复混合；新出错分支迁移一次；成年连续等待、营养和数量上限、冷却及分工边界；等待/单亲类型成对写读，空配偶Genome归一化，普通缺粮繁殖不新增无效物理扫描 |
