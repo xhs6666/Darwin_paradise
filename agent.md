@@ -241,3 +241,5 @@
 | 2026-11-05 | RGB滑条都显示青绿色，种群颜色无法用于实体身体 | 主题滑条固定青绿填充，实体受击颜色与种群色没有统一显示入口 | RuntimeMenuTheme.cs、PopulationWorkbench.cs、PopulationArchive.cs、EntityStats.cs | 通道独立纯色；每群同步开关默认关闭并随存档/快照保存；材质槽属性块不污染共享资源，受击优先且结束恢复；原生属性块在Awake创建 |
 
 | 2026-11-05 | 范围不透明度只能全局修改；有性实体长期无配偶无法延续种群 | 档案没有单群透明度，繁殖没有无配偶等待及单亲回退分支 | PopulationArchive.cs、PopulationWorkbench.cs、PopulationRangeLayer.cs、PopulationRangeOverlay.hlsl、ReproductionGeneLogic.cs、AntColonyReproduction.cs、ParthenogenesisEvolutionUpgrade.cs及存档/配置 | 旧档默认值与单群0～1不透明度分开；并集不重复混合；新出错分支迁移一次；成年连续等待、营养和数量上限、冷却及分工边界；等待/单亲类型成对写读，空配偶Genome归一化，普通缺粮繁殖不新增无效物理扫描 |
+
+| 2026-11-05 | 筛选下拉展开后无法收起，残留Option A模板行 | 原生Dropdown创建当帧Show早于Start，淡入控制器为空，展开流程在隐藏模板/创建遮罩前中断 | RuntimeDropdownDismissal.cs、RuntimeDropdownSkin.cs、GameMainMenu.cs、EntityGeneFilterRegression.cs | 初始化期间禁止展开但保留射线；不覆盖业务权限；列表和模板分别清理；Esc优先关闭，鼠标外部/按钮/选择/切页/HUD隐藏回归；40项专项及Windows构建通过 |

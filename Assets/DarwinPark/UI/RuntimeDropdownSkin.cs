@@ -9,6 +9,8 @@ namespace DarwinPark.UI
     {
         public static void Apply(Dropdown dropdown)
         {
+            // ★ 适配：所有运行时下拉共用初始化保护、Esc优先关闭和模板清理，避免各入口再次漏修。
+            if(dropdown.GetComponent<RuntimeDropdownDismissal>()==null)dropdown.gameObject.AddComponent<RuntimeDropdownDismissal>();
             UIVisualTheme.Paint(dropdown.template.GetComponent<Image>());
             foreach(var toggle in dropdown.template.GetComponentsInChildren<Toggle>(true))
             {

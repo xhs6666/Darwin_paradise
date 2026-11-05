@@ -44,10 +44,20 @@ namespace DarwinPark.EditorTools
             entity.GetComponent<DarwinPark.Entities.Vitals.EntityVitals>().enabled=false;entity.GetComponent<DarwinPark.Entities.Vitals.EntityEnvironmentHazard>().enabled=false;return entity;
         }
         private static IEnumerator Capture(string name){yield return null;yield return new WaitForEndOfFrame();ScreenCapture.CaptureScreenshot(Path.Combine(Folder,name+".png"));yield return null;yield return null;}
+        // ★ 新增：通过真实GraphicRaycaster和EventSystem派发鼠标事件，验证点击遮罩和列表项目而非只手调Hide。
+        private static Vector2 Center(RectTransform rect){var corners=new Vector3[4];rect.GetWorldCorners(corners);return RectTransformUtility.WorldToScreenPoint(null,(corners[0]+corners[2])*.5f);}
+        private static GameObject Click(Vector2 point)
+        {
+            Canvas.ForceUpdateCanvases();var data=new PointerEventData(EventSystem.current){position=point,button=PointerEventData.InputButton.Left};var hits=new List<RaycastResult>();EventSystem.current.RaycastAll(data,hits);if(hits.Count==0)throw new InvalidOperationException("点击位置没有UI命中");
+            data.pointerCurrentRaycast=hits[0];var target=hits[0].gameObject;ExecuteEvents.ExecuteHierarchy(target,data,ExecuteEvents.pointerDownHandler);ExecuteEvents.ExecuteHierarchy(target,data,ExecuteEvents.pointerUpHandler);ExecuteEvents.ExecuteHierarchy(target,data,ExecuteEvents.pointerClickHandler);return target;
+        }
         private static IEnumerator Run()
         {
             yield return null;yield return null;yield return null;yield return null;
             var root=ServiceLocator.Get<UIRoot>();var stats=Object.FindFirstObjectByType<MapEntityStatisticsUI>(FindObjectsInactive.Include);
+            var probe=DefaultControls.CreateDropdown(new DefaultControls.Resources());probe.transform.SetParent(root.MainCanvas.transform,false);RuntimeDropdownSkin.Apply(probe.GetComponent<Dropdown>());
+            string probeError="none";try{probe.GetComponent<Dropdown>().Show();}catch(Exception ex){probeError=ex.ToString();}File.WriteAllText(Path.Combine(Folder,"early-dropdown.txt"),probeError+"\ntemplate="+probe.GetComponent<Dropdown>().template.gameObject.activeSelf+"\nlist="+(probe.transform.Find("Dropdown List")!=null));
+            Check(probeError=="none"&&!probe.GetComponent<Dropdown>().template.gameObject.activeSelf&&probe.transform.Find("Dropdown List")==null&&probe.GetComponent<CanvasGroup>().blocksRaycasts,"创建当帧展开不会抛淡入异常或留下Option A模板，保持阻止点击穿透");probe.GetComponent<Dropdown>().interactable=false;yield return null;yield return null;Check(!probe.GetComponent<Dropdown>().interactable&&!probe.GetComponent<Dropdown>().IsInteractable(),"初始化保护不覆盖业务禁用与只读权限");Object.DestroyImmediate(probe);
             var filter=stats.GetComponent<MapEntityGeneFilterUI>();Check(filter!=null&&filter.Card!=null,"组合筛选组件在真实统计卡启动时挂载");
             var clock=ServiceLocator.Get<SimulationClock>();WorldRuntimeGate.Ready=true;typeof(GameMainMenu).GetMethod("Resume",Private).Invoke(Object.FindFirstObjectByType<GameMainMenu>(),null);clock.Pause();
             var control=Object.FindFirstObjectByType<SimulationControlPanel>();var switchPage=typeof(SimulationControlPanel).GetMethod("SwitchPage",Private);switchPage.Invoke(control,new object[]{0});
@@ -60,6 +70,15 @@ namespace DarwinPark.EditorTools
             filter.SetGene("gene_nutrition",false);Check(filter.Matches.Count==2&&filter.Matches.Contains(a)&&filter.Matches.Contains(c),"包含与不包含条件同时生效");
             filter.SetGene("gene_locomotion",false);Check(!filter.Criteria.Included.Contains("gene_locomotion")&&filter.Matches.Count==1&&filter.Matches[0]==e,"同一基因切换规则互斥，多个排除任一命中即排除");
             filter.ResetFilter();var include=filter.Card.Find("IncludeGenes").GetComponent<Dropdown>();int index=include.options.FindIndex(o=>o.text.Contains("行动基因"));Check(index>=2,"实际下拉菜单包含可选行动基因");
+            include.Show();yield return new WaitForSecondsRealtime(.25f);Check(include.transform.Find("Dropdown List")!=null&&!include.template.gameObject.activeSelf,"初始化后正常展开且隐藏原始模板");yield return Capture("dropdown-open");
+            var outside=Click(new Vector2(Screen.width*.2f,Screen.height*.7f));Check(outside.name=="Blocker","点击列表外部实际命中关闭遮罩而非底层世界");yield return new WaitForSecondsRealtime(.25f);Check(include.transform.Find("Dropdown List")==null&&!include.template.gameObject.activeSelf,"点击外部彻底收起列表和模板");
+            include.Show();yield return new WaitForSecondsRealtime(.25f);Click(Center(include.GetComponent<RectTransform>()));yield return new WaitForSecondsRealtime(.25f);Check(include.transform.Find("Dropdown List")==null,"再次点击展开按钮可收起菜单");
+            include.Show();yield return new WaitForSecondsRealtime(.25f);var picked=include.transform.Find("Dropdown List").GetComponentsInChildren<Toggle>().First(t=>t.GetComponentInChildren<Text>().text==include.options[index].text);Click(Center(picked.GetComponent<RectTransform>()));yield return new WaitForSecondsRealtime(.25f);Check(filter.Criteria.Included.Contains("gene_locomotion")&&include.transform.Find("Dropdown List")==null,"点击真实列表项目应用条件并关闭菜单");filter.ResetFilter();
+            include.Show();yield return new WaitForSecondsRealtime(.25f);var menu=Object.FindFirstObjectByType<GameMainMenu>();bool menuVisible=menu.Visible;Check(RuntimeDropdownDismissal.CloseOpenPopups()&&menu.Visible==menuVisible&&!include.GetComponent<RuntimeDropdownDismissal>().IsOpen,"Esc菜单路由优先收起下拉且不打开暂停菜单");yield return new WaitForSecondsRealtime(.25f);
+            include.Show();yield return new WaitForSecondsRealtime(.25f);ExecuteEvents.Execute(include.gameObject,new BaseEventData(EventSystem.current),ExecuteEvents.cancelHandler);Check(!include.GetComponent<RuntimeDropdownDismissal>().IsOpen&&GameInputGate.Blocked,"取消事件关闭菜单并消费本帧Esc输入");yield return new WaitForSecondsRealtime(.25f);
+            include.template.gameObject.SetActive(true);include.GetComponent<RuntimeDropdownDismissal>().ClosePopup();Check(!include.template.gameObject.activeSelf,"异常残留的原始Option A模板也能关闭");
+            include.Show();yield return new WaitForSecondsRealtime(.25f);switchPage.Invoke(control,new object[]{1});yield return null;Check(include.transform.Find("Dropdown List")==null&&!include.template.gameObject.activeSelf&&root.MainCanvas.transform.Find("Blocker")==null,"切换页面清理列表模板与遮罩");switchPage.Invoke(control,new object[]{0});yield return null;yield return null;
+            include.Show();yield return new WaitForSecondsRealtime(.25f);root.MainCanvas.enabled=false;yield return null;yield return null;Check(!include.GetComponent<RuntimeDropdownDismissal>().IsOpen,"隐藏HUD时不残留独立排序的弹出列表");root.MainCanvas.enabled=true;yield return new WaitForSecondsRealtime(.25f);yield return Capture("dropdown-closed");
             include.value=index;Check(filter.Matches.Count==3,"从实际下拉菜单选择包含条件");include.value=index;Check(filter.Matches.Count==5,"再次选择同一基因可取消条件");include.value=index;include.value=1;Check(filter.Criteria.Included.Count==0&&filter.Matches.Count==5,"清空本组独立于占位项，不会因value为0而失效");
             filter.SetGene("gene_locomotion",true);filter.SetGene("gene_nutrition",false);filter.OpenResults();yield return null;
             Check(filter.Results.Visible&&filter.Results.VisibleRowCount==2,"生成筛选后的真实实体列表与数量");
