@@ -13,9 +13,15 @@ namespace DarwinPark.Entities.Stats
         private Coroutine _flashCoroutine;
         private Dictionary<Renderer, Color[]> _rendererOriginalColors = new();
         private bool _isFlashing = false;
+        private Ecology.PopulationBehavior _population;
+        private bool _appliedSync,_appliedFlash;
+        private Color _appliedColor;
+        private MaterialPropertyBlock _colorBlock;
 
         private void Awake()
         {
+            // ★ 修复（防Bug回归）：属性块包含原生资源，必须在主线程Awake创建，不能放进组件字段初始化。
+            _colorBlock=new MaterialPropertyBlock();
             _stats["health"] = 100f; _maxStats["health"] = 100f;
             _stats["nutrient"] = 10f; _maxStats["nutrient"] = 10f;
             _stats["storedNutrient"] = 0f; _maxStats["storedNutrient"] = 100f;
@@ -27,9 +33,11 @@ namespace DarwinPark.Entities.Stats
         private void Start()
         {
             // ★ 记录实体原本的材质颜色
-            var renderers = GetComponentsInChildren<Renderer>();
+            var renderers = GetComponentsInChildren<Renderer>(true);
             foreach (var r in renderers)
             {
+                // ★ 修复（防Bug回归）：成员环、收藏线及资源标记有自己的颜色，不属于实体身体。
+                if(r is not MeshRenderer&&r is not SkinnedMeshRenderer)continue;
                 // ★ 修复（防Bug回归）：记录颜色无需实例化材质；数百静止个体原来在Start就破坏了材质共享。
                 var materials=r.sharedMaterials;
                 if (materials.Length>0&&materials[0]!=null)
@@ -38,11 +46,40 @@ namespace DarwinPark.Entities.Stats
                     Color[] colors = new Color[materials.Length];
                     for (int i = 0; i < materials.Length; i++)
                     {
-                        colors[i] = materials[i]!=null?materials[i].color:Color.white;
+                        r.GetPropertyBlock(_colorBlock,i);if(_colorBlock.isEmpty)r.GetPropertyBlock(_colorBlock);
+                        colors[i] = _colorBlock.HasColor("_BaseColor")?_colorBlock.GetColor("_BaseColor"):_colorBlock.HasColor("_Color")?_colorBlock.GetColor("_Color"):materials[i]!=null?materials[i].color:Color.white;
                     }
                     _rendererOriginalColors[r] = colors;
                 }
             }
+            RefreshAppearance();
+        }
+
+        // ★ 新增：在最后渲染前组合受击色和种群配色；出生、读档、换群和暂停时的配置修改都能生效。
+        private void LateUpdate()=>RefreshAppearance();
+        private void RefreshAppearance()
+        {
+            if(_population==null)_population=GetComponent<Ecology.PopulationBehavior>();
+            bool sync=_population!=null&&_population.Active&&Ecology.PopulationArchive.Find(_population.GroupId)?.syncEntityColor==true;
+            Color color=sync?Ecology.ColonyAppearance.ColorFor(_population.GroupId):Color.white;
+            if(sync==_appliedSync&&_isFlashing==_appliedFlash&&(!sync||color==_appliedColor))return;
+            _appliedSync=sync;_appliedFlash=_isFlashing;_appliedColor=color;
+            foreach(var pair in _rendererOriginalColors)
+            {
+                if(pair.Key==null)continue;
+                for(int i=0;i<pair.Value.Length;i++)
+                {
+                    Color body=_isFlashing?Color.red:sync?color:pair.Value[i];body.a=pair.Value[i].a;
+                    // ★ 修复（防Bug回归）：逐实体/材质槽属性块保留其他属性，避免改写共享材质或每次受击实例化材质。
+                    pair.Key.GetPropertyBlock(_colorBlock,i);if(_colorBlock.isEmpty)pair.Key.GetPropertyBlock(_colorBlock);
+                    _colorBlock.SetColor("_BaseColor",body);_colorBlock.SetColor("_Color",body);pair.Key.SetPropertyBlock(_colorBlock,i);
+                }
+            }
+        }
+        private void OnDisable()
+        {
+            if(_flashCoroutine!=null)StopCoroutine(_flashCoroutine);_flashCoroutine=null;_isFlashing=false;
+            RestoreColor();
         }
 
         // ★ 适配：数值与上限成对持久化，恢复时不触发受击闪烁或进食副作用。
@@ -110,38 +147,16 @@ namespace DarwinPark.Entities.Stats
         private IEnumerator FlashRoutine()
         {
             _isFlashing = true;
-            SetColor(Color.red); // 变红
+            RefreshAppearance(); // 变红
             yield return new WaitForSeconds(0.15f); // 红0.15秒
             RestoreColor(); // 恢复
             _isFlashing = false;
             _flashCoroutine = null;
         }
 
-        private void SetColor(Color color)
-        {
-            foreach (var kvp in _rendererOriginalColors)
-            {
-                var renderer = kvp.Key;
-                if (renderer == null) continue;
-                foreach (var mat in renderer.materials)
-                {
-                    mat.color = color;
-                }
-            }
-        }
-
         private void RestoreColor()
         {
-            foreach (var kvp in _rendererOriginalColors)
-            {
-                var renderer = kvp.Key;
-                if (renderer == null) continue;
-                Color[] originalColors = kvp.Value;
-                for (int i = 0; i < renderer.materials.Length && i < originalColors.Length; i++)
-                {
-                    renderer.materials[i].color = originalColors[i];
-                }
-            }
+            _isFlashing=false;RefreshAppearance();
         }
     }
 }

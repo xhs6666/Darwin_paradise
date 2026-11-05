@@ -13,7 +13,8 @@ namespace DarwinPark.Entities.Ecology
     [Serializable] public sealed class PopulationGeneCount {public string id;public int carried,expressed;}
     [Serializable] public sealed class PopulationRecord
     {
-        public string id,name,mode,parentId,color;public bool originKnown,visible=true;
+        // ★ 新增：实体配色默认独立；旧存档缺少该字段时维持原本外观。
+        public string id,name,mode,parentId,color;public bool originKnown,visible=true,syncEntityColor;
         public float firstSeen,lastSeen;public int current,peak,lastLiving,increases,decreases;
         public int infants,adults,elders;
         public List<PopulationSample> samples=new List<PopulationSample>();
@@ -96,10 +97,10 @@ namespace DarwinPark.Entities.Ecology
                 var compact=new List<PopulationSample>{record.samples[0]};for(int i=2;i<record.samples.Count-1;i+=2)compact.Add(record.samples[i]);compact.Add(record.samples[record.samples.Count-1]);record.samples=compact;
             }
         }
-        public static bool SetDisplay(string id,string color,bool visible)
+        public static bool SetDisplay(string id,string color,bool visible,bool? syncEntityColor=null)
         {
             if(WorldAuthority.IsReplica||!WorldAuthority.CanEdit||Find(id) is not PopulationRecord record||!ColorUtility.TryParseHtmlString(color,out var parsed))return false;
-            record.color="#"+ColorUtility.ToHtmlStringRGB(parsed);record.visible=visible;Revision++;DisplayRevision++;return true;
+            record.color="#"+ColorUtility.ToHtmlStringRGB(parsed);record.visible=visible;if(syncEntityColor.HasValue)record.syncEntityColor=syncEntityColor.Value;Revision++;DisplayRevision++;return true;
         }
         public static bool TryColor(string id,out Color color){color=default;return Find(id) is PopulationRecord record&&!string.IsNullOrEmpty(record.color)&&ColorUtility.TryParseHtmlString(record.color,out color);}
         public static bool IsVisible(string id)=>Find(id)?.visible??true;

@@ -237,3 +237,5 @@
 | 2026-11-04 | 种群入口只提供单群下拉，缺少完整列表、显示配置、分布图表及长期发展谱系 | 临时统计依赖存活实体，没有独立档案和来源事件；入口误放第一页 | PopulationArchive.cs、PopulationWorkbench.cs、PopulationCharts.cs、MapPopulationListUI.cs、ColonyWorldState.cs、建群/出生/颜色与联机适配 | 入口第二页且不依赖创造权限；生效/携带去重、互斥年龄和多基因构成口径分开；灭绝历史与真实来源持久化，旧档不伪造；颜色/隐藏成对写读、周期采样有界压缩；窗口暂停及实际射线防穿透；36项专项、59蚁群、30图层及实际Windows构建通过 |
 
 | 2026-11-05 | 种群档案显示累计小数天数，难以对照游戏日历 | 档案独立用模拟秒除以10显示天数，历史图表另有格式 | PopulationWorkbench.cs、PopulationCharts.cs、PopulationArchiveRegression.cs | 概览/事件/图表/采样共用年月日，沿用底栏日历；历史标签加宽；跨月跨年与681.8天回归 |
+
+| 2026-11-05 | RGB滑条都显示青绿色，种群颜色无法用于实体身体 | 主题滑条固定青绿填充，实体受击颜色与种群色没有统一显示入口 | RuntimeMenuTheme.cs、PopulationWorkbench.cs、PopulationArchive.cs、EntityStats.cs | 通道独立纯色；每群同步开关默认关闭并随存档/快照保存；材质槽属性块不污染共享资源，受击优先且结束恢复；原生属性块在Awake创建 |

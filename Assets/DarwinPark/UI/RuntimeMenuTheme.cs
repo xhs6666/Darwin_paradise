@@ -119,12 +119,17 @@ namespace DarwinPark.UI
             return Slider(rect,value,min,max);
         }
         public static float Slider(Rect rect,float value,float min,float max)
+            =>Slider(rect,value,min,max,null);
+        // ★ 新增：通道滑条用纯白底按颜色绘制，避免青绿色主题贴图乘色后把红/蓝通道染黑。
+        public static float Slider(float value,float min,float max,Color color)
+            =>Slider(GUILayoutUtility.GetRect(80,26,GUILayout.ExpandWidth(true)),value,min,max,color);
+        private static float Slider(Rect rect,float value,float min,float max,Color? color)
         {
             value=GUI.HorizontalSlider(new Rect(rect.x,rect.center.y-10,rect.width,20),value,min,max,_sliderInput,_sliderThumbInput);
             var bar=new Rect(rect.x,rect.center.y-4,rect.width,8);
             GUI.DrawTexture(bar,Texture("track"),ScaleMode.StretchToFill,true,0,Color.white,0,4);
             float fraction=Mathf.InverseLerp(min,max,value);
-            if(fraction>0)GUI.DrawTexture(new Rect(bar.x,bar.y,bar.width*fraction,bar.height),Texture("fill"),ScaleMode.StretchToFill,true,0,Color.white,0,4);
+            if(fraction>0)GUI.DrawTexture(new Rect(bar.x,bar.y,bar.width*fraction,bar.height),color.HasValue?Texture2D.whiteTexture:Texture("fill"),ScaleMode.StretchToFill,true,0,color??Color.white,0,4);
             GUI.DrawTexture(new Rect(rect.x+(rect.width-20)*fraction,rect.center.y-10,20,20),Texture("thumb"));
             return value;
         }

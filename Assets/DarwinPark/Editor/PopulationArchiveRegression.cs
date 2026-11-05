@@ -43,6 +43,10 @@ namespace DarwinPark.EditorTools
             entity.GetComponent<Rigidbody>().isKinematic=true;AntColonyMember.Ensure(entity.GetComponent<PopulationBehavior>()).Assign(role,group);entity.DisplayName=role==AntRole.Queen?"山谷蚁群":"成员 "+role;return entity;
         }
         private static IEnumerator Capture(string file){yield return null;yield return new WaitForEndOfFrame();ScreenCapture.CaptureScreenshot(Path.Combine(Folder,file+".png"));yield return null;yield return null;}
+        // ★ 新增：检查实际身体材质槽的颜色，避免只验证配置字段却漏掉渲染或共享材质污染。
+        private static Renderer Body(DarwinEntity entity)=>entity.GetComponentsInChildren<Renderer>(true).First(r=>r is MeshRenderer||r is SkinnedMeshRenderer);
+        private static Color BodyColor(Renderer renderer)
+        {var block=new MaterialPropertyBlock();renderer.GetPropertyBlock(block,0);if(block.isEmpty)renderer.GetPropertyBlock(block);return block.HasColor("_BaseColor")?block.GetColor("_BaseColor"):block.HasColor("_Color")?block.GetColor("_Color"):renderer.sharedMaterial.color;}
         private static IEnumerator Run()
         {
             // ★ 修复（防Bug回归）：日期必须与底栏日历一致，整日/月/年切换不按小数天数四舍五入。
@@ -64,10 +68,20 @@ namespace DarwinPark.EditorTools
             typeof(PopulationWorkbench).GetField("_pie",Private).SetValue(workbench,false);yield return Capture("genes-bars");workbench.Select(parent,2);yield return Capture("ages-bars");typeof(PopulationWorkbench).GetField("_pie",Private).SetValue(workbench,true);yield return Capture("ages-pie");
             Check(PopulationWorkbench.Instance.SelectedTab==2,"同一详情支持基因和年龄扇形/柱状切换");
             workbench.Select(parent,6);Check(!workbench.ApplyDisplay("not-a-color",true),"无效颜色被拒绝");Check(workbench.ApplyDisplay("#D13F82",true),"独立显示配置可应用并实际保存");Check(ColorUtility.ToHtmlStringRGB(ColonyAppearance.ColorFor(parent))=="D13F82","范围和标记使用自定义颜色");
+            var body=Body(queen);var shared=body.sharedMaterial;Color native=BodyColor(body),sharedColor=shared.color;
+            Check(!PopulationArchive.Find(parent).syncEntityColor,"旧档和未配置种群默认保留实体原色");
+            var preserved=new MaterialPropertyBlock();body.GetPropertyBlock(preserved,0);preserved.SetFloat("_PopulationRegressionSentinel",.42f);body.SetPropertyBlock(preserved,0);
+            Check(workbench.ApplyDisplay("#D13F82",true,true),"显示设置可保存同步实体颜色开关");yield return null;yield return null;
+            Check(ColorUtility.ToHtmlStringRGB(BodyColor(body))=="D13F82"&&ColorUtility.ToHtmlStringRGB(BodyColor(Body(infant)))=="D13F82","同群实体身体实际使用种群颜色");
+            body.GetPropertyBlock(preserved,0);Check(body.sharedMaterial==shared&&shared.color==sharedColor&&Mathf.Approximately(preserved.GetFloat("_PopulationRegressionSentinel"),.42f),"同步不实例化或污染共享材质且保留其他属性");
+            queen.GetComponent<EntityStats>().Modify("health",-.1f);Check(ColorUtility.ToHtmlStringRGB(BodyColor(body))=="FF0000","同步配色仍保留受击红色反馈");yield return new WaitForSecondsRealtime(.22f);Check(ColorUtility.ToHtmlStringRGB(BodyColor(body))=="D13F82","受击结束恢复当前种群颜色");
+            workbench.ApplyDisplay("#D13F82",true,false);yield return null;yield return null;Check(BodyColor(body)==native,"关闭同步恢复实体原本颜色");workbench.ApplyDisplay("#D13F82",true,true);
             PopulationRangeLayer.SetVisible(true);yield return new WaitForSecondsRealtime(.7f);var block=new MaterialPropertyBlock();builder.GetComponent<MeshRenderer>().GetPropertyBlock(block);var texture=block.GetTexture("_PopulationData") as Texture2D;Check(texture!=null&&texture.GetPixels().Any(c=>Mathf.Abs(c.r-209/255f)<.001f&&Mathf.Abs(c.g-63/255f)<.001f&&Mathf.Abs(c.b-130/255f)<.001f),"真实范围Shader收到新颜色");
             Check(workbench.ApplyDisplay("#D13F82",false),"显示配置支持隐藏单个种群");yield return new WaitForSecondsRealtime(.7f);Check(PopulationRangeLayer.ActiveCircleCount==0,"隐藏配置实际移除该群地图范围");workbench.ApplyDisplay("#D13F82",true);
             WorldAuthority.IsReplica=true;Check(!workbench.ApplyDisplay("#FFFFFF",true)&&ColorUtility.ToHtmlStringRGB(ColonyAppearance.ColorFor(parent))=="D13F82","成员副本不能越权保存颜色");WorldAuthority.IsReplica=false;workbench.Close();Check(!GameInputGate.Blocked&&clock.IsRunning,"关闭档案恢复原模拟和输入状态");clock.Pause();
             var reproductive=Spawn(home,parent,AntRole.Reproductive);PopulationArchive.Observe();var member=reproductive.GetComponent<AntColonyMember>();member.Advance(.1f);string child=member.GroupId;Check(child!=parent&&member.Role==AntRole.Queen&&PopulationArchive.Find(child)?.parentId==parent,"真实离群建群记录来源种群");Check(PopulationArchive.Find(parent).events.Any(e=>e.text.Contains("离群建立")),"来源种群留下衍生事件");PopulationArchive.Observe();Check(PopulationArchive.Find(child).originKnown,"新建衍生种群具有真实成立记录");
+            yield return null;yield return null;Check(BodyColor(Body(reproductive))==Body(reproductive).sharedMaterial.color,"新种群未开启同步时保持独立原色");
+            workbench.Open(child,6);workbench.ApplyDisplay("#3267CD",true,true);workbench.Close();clock.Pause();yield return null;yield return null;Check(ColorUtility.ToHtmlStringRGB(BodyColor(Body(reproductive)))=="3267CD"&&ColorUtility.ToHtmlStringRGB(BodyColor(body))=="D13F82","各个种群的实体同步配色互不影响");
             var second=Spawn(home,child,AntRole.Reproductive).GetComponent<AntColonyMember>();second.Advance(.1f);string grandchild=second.GroupId;Check(PopulationArchive.Find(grandchild)?.parentId==child,"多代发展链记录准确");PopulationArchive.Observe();
             var changing=queen.GetComponent<PopulationBehavior>();changing.Advance(.1f);queen.Genes.Genome.Genes.First(g=>g.DefinitionId=="gene_population").Value=80;queen.Genes.Recalculate();changing.Advance(.1f);string wolf=changing.GroupId;
             Check(wolf!=parent&&PopulationArchive.Find(wolf)?.parentId==parent,"种群状态变化独立成群保留原来源");
@@ -79,9 +93,11 @@ namespace DarwinPark.EditorTools
             foreach(var entity in PopulationArchive.Members(parent))Object.DestroyImmediate(entity.gameObject);PopulationArchive.Observe();list.RefreshNow();Check(PopulationArchive.Find(parent).current==0&&list.GroupCount>=3&&list.Groups.Any(g=>g.Id==parent),"灭绝种群仍在完整列表中保留");Check(PopulationDistributions.Ages(parent).Sum(v=>v.Count)>0&&PopulationDistributions.Genes(parent,false).Count>0,"灭绝后保留最后存活分布快照");
             session.SaveNow(false);var data=WorldSaveStore.Read(WorldSaveStore.FileFor(session.Current.id));Check(data.colony.population.groups.Single(g=>g.id==grandchild).parentId==child&&data.colony.population.groups.Single(g=>g.id==parent).color=="#D13F82","磁盘写读成对保存谱系、历史和颜色");
             var frame=LanWorldSnapshot.Frame(1,true);Check(frame.population!=null&&frame.population.groups.Single(r=>r.id==grandchild).parentId==child&&frame.population.groups.Single(r=>r.id==parent).color=="#D13F82","低频联机快照包含历史、谱系和显示配置");
+            Check(data.colony.population.groups.Single(g=>g.id==child).syncEntityColor&&frame.population.groups.Single(g=>g.id==child).syncEntityColor,"同步实体颜色开关真实写盘并包含在联机快照");
             var invalid=JsonUtility.FromJson<WorldSaveData>(JsonUtility.ToJson(data));invalid.colony.population.groups.Single(g=>g.id==parent).parentId=grandchild;bool rejected=false;try{WorldSaveStore.Validate(invalid);}catch(InvalidDataException){rejected=true;}Check(rejected,"循环谱系在清场前拒绝");
             invalid=JsonUtility.FromJson<WorldSaveData>(JsonUtility.ToJson(data));invalid.colony.population.groups[0].samples[0].time=float.NaN;rejected=false;try{WorldSaveStore.Validate(invalid);}catch(InvalidDataException){rejected=true;}Check(rejected,"非有限历史采样在清场前拒绝");
             session.Open(data);start=EditorApplication.timeSinceStartup;while(session.Busy){if(EditorApplication.timeSinceStartup-start>100)throw new TimeoutException("读档超时");yield return null;}clock.Pause();Check(PopulationArchive.Find(parent).current==0&&PopulationArchive.Find(grandchild).parentId==child&&ColorUtility.ToHtmlStringRGB(ColonyAppearance.ColorFor(parent))=="D13F82","真实重载恢复已灭绝档案、后代和颜色");
+            yield return null;yield return null;Check(PopulationArchive.Find(child).syncEntityColor&&PopulationArchive.Members(child).All(e=>ColorUtility.ToHtmlStringRGB(BodyColor(Body(e)))=="3267CD"),"读档后自动恢复存活成员的同步外观");
             var legacy=JsonUtility.FromJson<WorldSaveData>(JsonUtility.ToJson(data));legacy.colony.population=null;session.Open(legacy);while(session.Busy)yield return null;clock.Pause();PopulationArchive.Observe();Check(PopulationArchive.All.All(g=>!g.originKnown&&string.IsNullOrEmpty(g.parentId)),"旧存档缺档案时兼容且不伪造历史和谱系");
             var menu=Object.FindFirstObjectByType<GameMainMenu>();menu.ShowPause();menu.ReturnToMainMenu();yield return null;Check(!PopulationArchive.All.Any()&&!workbench.Visible,"卸载世界清理档案及独立窗口");
         }
