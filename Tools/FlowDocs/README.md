@@ -41,3 +41,5 @@ node Tools/FlowDocs/browser-check.mjs
 扫描边界是Assets中的C#、Shader和HLSL。Packages/Library和Tools不属于游戏源码覆盖范围；零方法的数据类/枚举也会列入索引。自动属性的隐式存储、字段初始化原文可在源码视图查看。Unity消息跨组件顺序、虚方法/接口的实际实例、反射与字符串入口、线程调度和完整GPU宏展开都不能由静态文档证明。实现候选和动态边界已单独标记。
 
 源码校验和与位置ID使用统一LF换行后的UTF-8文本，避免不同Git换行设置导致相同源码被误报为过期。生成数据不含生成时间，便于审查和复现。
+
+“文件作用”页和脚本标题下的职责说明来自 `Tools/file_catalog_roles.json`。新增脚本应补充此文件；一键更新会运行 `Tools/generate_file_catalog.py` 同步Markdown索引和离线说明数据。

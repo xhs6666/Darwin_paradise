@@ -116,3 +116,6 @@ InitTestScene*.unity*
 
 # Offline flow-documentation generator local restore cache
 /Tools/FlowDocs/obj/
+
+# Python maintenance tool cache
+/Tools/__pycache__/

@@ -11,4 +11,6 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 dotnet (Join-Path $PSScriptRoot '../../Artifacts/FlowDocs/bin/net10.0/FlowDocs.dll') $ProjectRoot
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 python (Join-Path $PSScriptRoot 'validate.py') $ProjectRoot
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+python (Join-Path $PSScriptRoot '../generate_file_catalog.py') $ProjectRoot
 exit $LASTEXITCODE
