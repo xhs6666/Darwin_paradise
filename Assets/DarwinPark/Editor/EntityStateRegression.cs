@@ -82,9 +82,15 @@ namespace DarwinPark.EditorTools
             var hunter=Spawn(new Vector3(1,320,0),"gene_locomotion",75);state.Advance(.1f);
             Check(state.Current.id==hunt.id&&state.DetectedTarget==hunter,"巡逻发现行动基因捕猎分支时切到实体捕猎");
             Check(actor.Genes.Evaluation.Genes.Single().State.StateId=="patrol"&&actor.Genes.Genome.Genes.Single().Value==20,"实体切换不改写领地基因巡逻分支或基因值");
+            // ★ 修复（防Bug回归）：旧夹具只有领地基因；营养规则已要求消化能力，先验证限制，再明确授予该能力测试捕猎链路。
+            Check(!NutritionTransfer.CanHuntForFood(actor.Genes),"仅有领地状态不会凭空获得消化取食能力");
+            var nutrition=NutritionEcologySettings.Current;var digestDef=GeneDatabase.Get(nutrition.heterotrophyGene);
+            var digestion=GeneInstance.Create(digestDef.Id,digestDef.States.Single(s=>s.StateId==nutrition.digestState).Center,digestDef.Tier);
+            actor.Genes.Genome.Add(digestion);actor.Genes.Recalculate();state.Advance(.1f);
             Check(EcologyMotion.Directive(actor.Genes,out _,out target,out _)&&target==hunter,"捕猎状态通过实际行动器锁定发现的捕猎者");
             hunter.GetComponent<EntityStats>().TryGet("health",out float hp);actor.Genes.AdvanceSimulation(.1f);hunter.GetComponent<EntityStats>().TryGet("health",out float after);
             Check(after<hp,"切换为捕猎后真实近身攻击生效");
+            actor.Genes.Genome.Genes.Remove(digestion);actor.Genes.Recalculate();
             var hunterGene=hunter.Genes.Genome.Genes.Single();hunterGene.Value=25;hunter.Genes.Recalculate();state.Advance(.1f);
             Check(state.Current.id==patrol.id,"周围只有行动基因食草分支时仍巡逻");
             hunterGene.Value=75;hunter.Genes.Recalculate();hunter.transform.position=new Vector3(150,320,0);state.Advance(.1f);Check(state.Current.id==patrol.id,"感知范围外的捕猎者不触发状态");

@@ -587,7 +587,8 @@ namespace DarwinPark.UI
             // ★ 修复（防Bug回归）：就地更新显示节点，避免周期重建抢走输入焦点或重置滚动位置。
             _rowRefresh.Add(()=>{
                 if(geneBlock==null || controller==null)return;
-                var live=controller.Evaluation?.Genes.Find(g=>g.Gene.InstanceId==eval.Gene.InstanceId);if(live==null)return;
+                // ★ 适配：表达索引随重算刷新，避免每个可见基因行重新扫描。
+                var live=controller.GetEvaluation(eval.Gene);if(live==null)return;
                 nameTxt.text=$"<b>{live.Definition.DisplayName}</b> "+(live.IsActive?"<color=#4EE5B5>生效中</color>":"<color=#FF6B6B>失效</color>");
                 stateTxt.text=" | 状态: "+(live.State?.DisplayName??"无状态");
                 if(!inputField.isFocused)inputField.SetTextWithoutNotify(live.Gene.Value.ToString("F1"));
@@ -598,7 +599,8 @@ namespace DarwinPark.UI
         private void ShowGeneTooltip(GeneEvaluation eval)
         {
             if (eval == null) return;
-            eval=_currentEntity?.Genes.Evaluation?.Genes.Find(g=>g.Gene.InstanceId==eval.Gene.InstanceId)??eval;
+            // ★ 适配：提示使用最新表达索引，与原实例ID查询语义一致。
+            eval=_currentEntity?.Genes.GetEvaluation(eval.Gene)??eval;
             _tooltipPanel.SetActive(true);
             _tooltipPanel.transform.SetAsLastSibling();
             StringBuilder sb = new StringBuilder();

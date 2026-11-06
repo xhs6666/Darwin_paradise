@@ -59,7 +59,7 @@ namespace DarwinPark.GameRoot
 
             // 4. 挂载属性与生命系统
             if (go.GetComponent<EntityStats>() == null) go.AddComponent<EntityStats>();
-            if (go.GetComponent<EntityStatsGeneBridge>() == null) go.AddComponent<EntityStatsGeneBridge>();
+            // ★ 适配：属性和生命保持原有计算路径，不再安装仅有空回调的桥接组件。
             if (go.GetComponent<EntityVitals>() == null) go.AddComponent<EntityVitals>();
             // ★ 新增：温度/溺水环境伤害独立挂载，数据来自 EnvironmentConfig。
             if (go.GetComponent<EntityEnvironmentHazard>() == null) go.AddComponent<EntityEnvironmentHazard>();

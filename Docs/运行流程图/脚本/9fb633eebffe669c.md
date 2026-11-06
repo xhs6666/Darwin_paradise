@@ -2736,7 +2736,7 @@ flowchart TD
 - [ColonyResource.Remove · L99](293dbaecfff4b585.md#m3e346b425034ee3a)（方法）
 - [RandomPlanetSpawner.ApplyRemoteProgress · L92](1c13222a547b265c.md#mf0ff742b53144e65)（方法）
 - [RandomPlanetSpawner.Ensure · L24](1c13222a547b265c.md#mccefd1367aa9ded3)（方法）
-- [PopulationMaintenance.Restore · L136](923ccc4e86c4786c.md#m17a7879cb457a04a)（方法）
+- [PopulationMaintenance.Restore · L147](923ccc4e86c4786c.md#mfc640b9c7ef9df02)（方法）
 - [PlanetOreSystem.RestoreAmounts · L111](86b3fbb4d9436121.md#mf32079659fe75cd5)（方法）
 - [PlanetOreSystem.Instance.get · L8](86b3fbb4d9436121.md#m53f6a6af4b6dc252)（访问器）
 - [PlanetOreSystem.RegenTimer.set · L110](86b3fbb4d9436121.md#ma831f663fb815b50)（访问器）

@@ -34,7 +34,13 @@ namespace DarwinPark.Entities
         public bool Matches(Genome genome)
         {
             if(genome?.Genes==null)return false;
-            if(method==RandomSpawnMethod.Genes)return included.All(id=>genome.Genes.Any(g=>g.DefinitionId==id))&&!excluded.Any(id=>genome.Genes.Any(g=>g.DefinitionId==id));
+            // ★ 适配：优化重复计算，匹配是繁殖/数量扫描热路径；显式循环保持携带条件，避免每次All/Any产生闭包和枚举对象。
+            if(method==RandomSpawnMethod.Genes)
+            {
+                for(int i=0;i<included.Count;i++)if(!Carries(genome,included[i]))return false;
+                for(int i=0;i<excluded.Count;i++)if(Carries(genome,excluded[i]))return false;
+                return true;
+            }
             var expected=template??DefaultGenome();if(expected.Genes.Count!=genome.Genes.Count)return false;
             // 复制基因同样比较重数，模板实例ID不参与统计，出生生成的实例具有各自身份。
             foreach(var gene in expected.Genes)
@@ -43,6 +49,8 @@ namespace DarwinPark.Entities
             }
             return true;
         }
+        private static bool Carries(Genome genome,string id)
+        {for(int i=0;i<genome.Genes.Count;i++)if(genome.Genes[i].DefinitionId==id)return true;return false;}
         // ★ 修复（防Bug回归）：数量扫描不为每个实体/基因拼接浮点字符串，避免维持模板带来持续GC。
         private static bool Same(GeneInstance a,GeneInstance b)=>a.DefinitionId==b.DefinitionId&&a.Value==b.Value&&a.Tier==b.Tier&&a.Enabled==b.Enabled&&a.CopyStrength==b.CopyStrength&&a.MissingStateIds.SequenceEqual(b.MissingStateIds);
         public void Validate(ICollection<string> catalog)
@@ -74,17 +82,19 @@ namespace DarwinPark.Entities
     // ★ 新增：规则是世界数据；只在不足时补充，超量用额外繁殖间隔降低出生率，不删除实体或改动正在孕育的后代。
     public static class PopulationMaintenance
     {
-        private static readonly List<PopulationMaintenanceRule> Items=new();private static readonly Dictionary<string,int> Counts=new();private static HashSet<string> RoundedPartitions=new();private static int _frame=-1,_registered=-1;
+        private static readonly List<PopulationMaintenanceRule> Items=new();private static readonly Dictionary<string,int> Counts=new();private static HashSet<string> RoundedPartitions=new();private static int _frame=-1;private static long _membership=-1;
         public static IReadOnlyList<PopulationMaintenanceRule> Rules=>Items;public static int Total {get;private set;}
         public static void Refresh()
         {
-            if(_frame==Time.frameCount&&_registered==EntityRegistry.All.Count)return;_frame=Time.frameCount;_registered=EntityRegistry.All.Count;Total=0;Counts.Clear();foreach(var rule in Items)Counts[rule.id]=0;
+            // ★ 修复（防Bug回归）：同帧移除再新增可保持总数不变，必须按注册版本失效，而非只比较数量。
+            if(_frame==Time.frameCount&&_membership==EntityRegistry.MembershipRevision)return;_frame=Time.frameCount;_membership=EntityRegistry.MembershipRevision;Total=0;Counts.Clear();foreach(var rule in Items)Counts[rule.id]=0;
             foreach(var entity in EntityRegistry.All)if(EcologyQueries.Alive(entity)){Total++;foreach(var rule in Items)if(rule.source.Matches(entity.Genes.Genome))Counts[rule.id]++;}
         }
         public static int Count(PopulationMaintenanceRule rule){Refresh();return Counts.TryGetValue(rule.id,out int count)?count:0;}
         public static int Needed(PopulationMaintenanceRule rule)
         {
-            int count=Count(rule);if(!rule.enabled||rule.ratio<=0)return 0;if(Total==0)return Math.Min(PopulationMaintenanceSettings.Current.emptyWorldSeedCount,PopulationMaintenanceSettings.Current.maximumRefillPerCycle);if(count>=Total*rule.ratio)return 0;
+            // ★ 适配：优化重复计算，停用/零目标规则无需先统计全世界。
+            if(!rule.enabled||rule.ratio<=0)return 0;int count=Count(rule);if(Total==0)return Math.Min(PopulationMaintenanceSettings.Current.emptyWorldSeedCount,PopulationMaintenanceSettings.Current.maximumRefillPerCycle);if(count>=Total*rule.ratio)return 0;
             // 新实体同时增加分子和分母，不能用ratio*当前总数直接补差。
             return (int)Math.Min(PopulationMaintenanceSettings.Current.maximumRefillPerCycle,Math.Max(0,Math.Ceiling(((double)rule.ratio*Total-count)/(1d-rule.ratio))));
         }
@@ -102,7 +112,8 @@ namespace DarwinPark.Entities
         }
         public static float BreedingScale(EntityGeneController genes)
         {
-            if(Items.Count==0)return 1;Refresh();float factor=1;
+            // ★ 适配：优化重复计算，保留停用规则供界面查看，但没有有效调节规则时不扫描全体实体。
+            bool active=false;for(int i=0;i<Items.Count;i++)if(Items[i].enabled){active=true;break;}if(!active)return 1;Refresh();float factor=1;
             foreach(var rule in Items)if(rule.enabled&&rule.source.Matches(genes.Genome)&&Total>0){float share=Counts[rule.id]/(float)Total;if(share>rule.ratio)factor=Mathf.Min(factor,rule.ratio/share);}return factor;
         }
         public static bool BreedingReady(EntityGeneController genes,ref float waited,float dt)

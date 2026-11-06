@@ -247,3 +247,15 @@
 | 2026-11-05 | 同群成员挤到王后头上，随机生成缺少条件与长期比例维持 | 空闲/跟随/取食共用中心点，地面射线命中实体；生成来源只有固定模板，缺少世界级比例规则与繁殖调节 | ColonyFormation.cs、PlanetGravity.cs、AntColonyMember.cs、ColonyFeeding.cs、RandomSpawnWorkbench.cs、RandomPlanetSpawner.cs、PopulationMaintenance.cs及存档/联机适配 | 分散站位与切向避让不传送、真实地表/出生空位；两种来源互斥且出生不重抽；补充计入分母，超量只延迟新孕育；完整互斥比例防反馈增殖，拒绝无解目标；规则/等待成对保存、上限/暂停/权限/切世/清除回归；44专项、59蚁群、48生成界面、91档案及Windows构建通过 |
 
 | 2026-11-05 | 生成条件选择框沿用系统外观、搜索输入不可靠，维持页只列已建规则且条件无法独立保存 | 来源窗口混用IMGUI和Canvas，缺少原生持久输入控件、来源库和自动规则行 | RandomSpawnWorkbench.cs、RandomSpawnPresetStore.cs、PopulationMaintenanceRegression.cs | 原生主题有无按钮互斥；筛选只重建结果保留输入焦点；条件JSON独立原子写读、外部校验；自动列出来源但显式启用，移除规则不删除来源；58专项、48界面兼容与Windows构建通过 |
+
+
+## 2026-11-06 精简优化补充台账
+
+|日期|现象|根因|修复文件|防复发要点|
+|---|---|---|---|---|
+|2026-11-06|基因表达事件异常后实体后续无法重算|重算锁只在正常结束路径释放|EntityGeneController.cs|finally释放锁；订阅者抛错后再重算应增加逻辑版本|
+|2026-11-06|同帧替换个体后维持比例计数沿用旧结果|缓存仅比较总数，等量替换不失效|EntityRegistry.cs、PopulationMaintenance.cs|成员版本在成功注册/注销时递增；同帧等量替换立即重统计|
+|2026-11-06|扩展AI在Tick内改变表达可能枚举失败，销毁时未释放模块|直接遍历可变字典，缺销毁清理与副本门控|EntityAIController.cs、GeneAIModuleRegistry.cs|统一工厂；快照核对身份；销毁成对退订释放；暂停/副本不推进|
+|2026-11-06|旧实体状态回归误把无消化能力的领地个体当成食物猎手|营养规则迁移后旧测试未更新前置条件|EntityStateRegression.cs|先验收无消化能力不主动取食，再按配置授予消化能力验收真实追击与攻击|
+|2026-11-07|旧社会生态回归取得空寄生组件后中断|gene_parasitic已是卵寄生，旧吸血测试仍使用旧定义前提|SocialEcologyRegression.cs|验收新卵寄生不安装/不激活旧组件；营养寄生生命周期由NutritionEcologyRegression专项覆盖|
+|2026-11-07|精简后文件索引的meta数量仍包含删除项|只读取git缓存名单，未过滤删除项或纳入待提交新文件|Tools/generate_file_catalog.py|生成时列出未忽略的新文件并核对文件实际存在|

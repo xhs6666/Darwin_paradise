@@ -135,19 +135,16 @@ namespace DarwinPark.EditorTools
             var socialEgg=Spawn(new Vector3(5,320,0),("gene_population",80));socialEgg.gameObject.AddComponent<EggIncubation>().Begin(10);socialEgg.GetComponent<PopulationBehavior>().Advance(1);
             Check(!socialEgg.GetComponent<PopulationBehavior>().Active&&socialEgg.GetComponent<PopulationBehavior>().MemberCount==0,"孵化前不能加入种群或当领袖");
             restoredEgg.Genes.AdvanceSimulation(eggState.ecology.incubationRemaining+1);Check(!restoredEgg.GetComponent<EggIncubation>().Incubating&&restoredEgg.Genes.StageMutationChecks==1,"卵读档后孵化且出生只抽一次");Cleanup();
+            // ★ 修复（防Bug回归）：gene_parasitic已迁移为卵寄生；旧吸血/体外附着用例不能再把它当作旧ParasiteBehavior来源。
+            // 新营养寄生的吸收、成年脱离及读档由NutritionEcologyRegression专项覆盖；这里验收社会生态中的旧组件隔离。
             var host=Spawn(new Vector3(0,320,0),("gene_growth",20));host.GetComponent<EntityStats>().Modify("size",3,false);
-            var parasite=Spawn(new Vector3(1,320,0),("gene_parasitic",30));var behavior=parasite.GetComponent<ParasiteBehavior>();EmptyFood(parasite);
-            Check(behavior.TryAttach(host)&&parasite.GetComponent<Collider>().enabled&&parasite.GetComponent<Rigidbody>().isKinematic,"体外附着保留碰撞体且交出物理控制");
-            float hostFood=Food(host);behavior.Advance(1);Check(Mathf.Abs((hostFood-Food(host))-Food(parasite))<.001f&&Food(parasite)>0,"寄生实际营养转移守恒");
-            parasite.Genes.Evaluation.Attributes["hide_from_host"]=1;behavior.Advance(1.1f);Check(!EcologyMotion.Detectable(parasite,host.transform.position,100,host),"完全隐蔽阻止宿主自主发现");
-            parasite.Genes.Evaluation.Attributes["hide_from_host"]=0;behavior.Advance(1.1f);Check(EcologyMotion.Detectable(parasite,host.transform.position,100,host),"零隐蔽允许宿主发现");
-            var hostState=EntitySaveState.Capture(host);var parasiteState=JsonUtility.FromJson<EntitySaveState>(JsonUtility.ToJson(EntitySaveState.Capture(parasite)));host.gameObject.SetActive(false);parasite.gameObject.SetActive(false);
-            var loadedParasite=Restore(parasiteState);var loadedHost=Restore(hostState);var refs=new Dictionary<string,DarwinEntity>{{parasiteState.ecology.id,loadedParasite},{hostState.ecology.id,loadedHost}};
-            parasiteState.ecology.Resolve(loadedParasite,refs);hostState.ecology.Resolve(loadedHost,refs);behavior=loadedParasite.GetComponent<ParasiteBehavior>();Check(behavior.Host==loadedHost,"寄生体先加载仍能恢复宿主引用");
-            Check(behavior.DetectedByHost==parasiteState.ecology.hostDetected&&Mathf.Approximately(behavior.DetectionRemaining,parasiteState.ecology.hostDetectionRemaining),"宿主发现状态与抽样计时成对恢复");
-            Object.DestroyImmediate(loadedHost.gameObject);behavior.Advance(.1f);Check(loadedParasite!=null&&behavior.Host==null&&!loadedParasite.GetComponent<Rigidbody>().isKinematic,"宿主销毁不连带寄生体且恢复动态刚体");Cleanup();
-            host=Spawn(new Vector3(0,320,0),("gene_growth",20));host.GetComponent<EntityStats>().Modify("size",3,false);parasite=Spawn(new Vector3(1,320,0),("gene_parasitic",70));behavior=parasite.GetComponent<ParasiteBehavior>();
-            Check(behavior.TryAttach(host)&&parasite.GetComponentsInChildren<Renderer>().All(r=>!r.enabled),"体内寄生隐藏渲染但保留实体");behavior.Detach();Check(parasite.GetComponent<Collider>().enabled&&parasite.GetComponentsInChildren<Renderer>().All(r=>r.enabled),"脱离恢复渲染和碰撞");
+            var parasite=Spawn(new Vector3(1,320,0),("gene_parasitic",30));EmptyFood(parasite);
+            Check(parasite.GetComponent<ParasiteBehavior>()==null&&parasite.Genes.GetLogic(parasite.Genes.Genome.Genes.Single()) is EggParasiticGeneLogic,"卵寄生只挂新繁殖逻辑，不安装旧吸血组件");
+            var behavior=parasite.gameObject.AddComponent<ParasiteBehavior>();
+            Check(!behavior.Active&&!behavior.TryAttach(host),"旧组件残留也不能让卵寄生附着宿主");
+            float hostFood=Food(host);behavior.Advance(1);
+            Check(behavior.Host==null&&Mathf.Approximately(hostFood,Food(host))&&Food(parasite)==0,"新卵寄生不会通过旧组件消耗宿主营养");
+            Check(parasite.GetComponent<Collider>().enabled&&!parasite.GetComponent<Rigidbody>().isKinematic&&parasite.GetComponentsInChildren<Renderer>().All(r=>r.enabled),"未孕育的卵寄生个体保留正常渲染和独立物理");
             var data=new WorldSaveData{id=Guid.NewGuid().ToString("N"),name="生态存档回归",terrainParameters=JsonUtility.ToJson(Object.FindFirstObjectByType<PlanetTerrainMeshBuilder>()),environmentParameters=JsonUtility.ToJson(ServiceLocator.Get<DarwinPark.Environment.EnvironmentSystem>()),definitions=catalog.Select(p=>new SavedGeneDefinition{id=p.Key,json=p.Value}).ToList(),tree=GeneTreeStorage.Active,entities=Created.Where(EcologyQueries.Alive).Select(EntitySaveState.Capture).ToList()};
             data.ore=ore.CaptureAmounts();data.oreResolution=ore.mapResolution;
             string file=Path.Combine(Folder,"roundtrip.json");WorldSaveStore.Write(data,file);var read=WorldSaveStore.Read(file);Check(read.entities.Count==data.entities.Count&&read.entities.All(e=>e.ecology!=null),"生态字段完整写盘与读取校验");

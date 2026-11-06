@@ -4,7 +4,6 @@ using DarwinPark.Entities.Stats;
 using DarwinPark.Genetics;
 using DarwinPark.Genetics.Mutation;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -36,6 +35,13 @@ namespace DarwinPark.Entities
 
         private Dictionary<GeneInstance, IGeneLogic> _activeLogics = new();
         private readonly List<IGeneLogic> _simulationLogics=new List<IGeneLogic>();
+        private readonly Dictionary<string,GeneEvaluation> _evaluations=new Dictionary<string,GeneEvaluation>(StringComparer.Ordinal);
+        private readonly HashSet<GeneInstance> _genomeMembership=new HashSet<GeneInstance>();
+        private readonly List<GeneInstance> _removedLogics=new List<GeneInstance>();
+        private GeneEvaluation _nullIdEvaluation;
+        private int _snapshotRevision=-1;
+        public int LogicSnapshotBuilds {get;private set;}
+        private static NamePoolJson _namePool;private static bool _namePoolLoaded,_nameAssetMissing;
         private bool _isRecalculating = false;
         private EntityLifeCycle _life;private Ecology.CombatIntent _combat;private Ecology.EntityStateController _state;
         private int _mutatedStages;
@@ -82,7 +88,8 @@ namespace DarwinPark.Entities
                 // ★ 适配：独立状态机先按配置选择意图，所有复制行动基因随后共用一个行为写入者。
                 _state?.Advance(step);
                 // ★ 修复（防Bug回归）：仍使用逻辑快照防止重算时修改集合，但复用缓冲区，避免每个实体每个子步分配新列表。
-                _simulationLogics.Clear();_simulationLogics.AddRange(_activeLogics.Values);
+                // ★ 适配：优化重复计算，只在逻辑重算后重建快照；回调中的重算仅标记失效，不能修改正在遍历的列表。
+                if(_snapshotRevision!=LogicRevision){_simulationLogics.Clear();_simulationLogics.AddRange(_activeLogics.Values);_snapshotRevision=LogicRevision;LogicSnapshotBuilds++;}
                 foreach (var logic in _simulationLogics) logic.OnUpdate(step);
             }
         }
@@ -94,63 +101,79 @@ namespace DarwinPark.Entities
             GetComponent<Ecology.AntColonyMember>()?.EnforceGenome();
             _isRecalculating = true;
 
-            var currentGenes = new HashSet<GeneInstance>(Genome.Genes);
-
-            // ★ 修复（防Bug回归）：环境不适应时所有基因受抑；突变作用于遗传值，表达受抑仍可变异。
-            Evaluation = GeneValueResolver.Resolve(Genome, IsGestating, EnvironmentGeneSuppression,additionalSuppression:Ecology.AntColonyMember.ExpressionSuppression(this));
-
-            var stats = GetComponent<EntityStats>();
-            float size = 1f;
-            if (stats != null && stats.TryGet("size", out float s)) size = s;
-
-            Evaluation.Attributes = EntityAttributeProcessor.Process(
-                Evaluation.Attributes,
-                Evaluation.Genes,
-                CurrentAge,
-                size,
-                IsGestating
-            );
-
-            // ★ 2. 清理旧逻辑：如果基因被移除、被禁用，或者因为被抑制而失效，就删掉它的逻辑
-            var toRemove = new List<GeneInstance>();
-            foreach (var kvp in _activeLogics)
+            try
             {
-                var eval = Evaluation.Genes.Find(g => g.Gene.InstanceId == kvp.Key.InstanceId);
+                // ★ 适配：优化重复计算，重算复用成员表和移除缓冲，不为每次环境表达变动重新分配集合。
+                _genomeMembership.Clear();_genomeMembership.UnionWith(Genome.Genes);
 
-                // 如果基因不在了，或者未启用，或者被抑制到失效 (!eval.IsActive)
-                if (!currentGenes.Contains(kvp.Key) || !kvp.Key.Enabled || eval == null || !eval.IsActive ||
-                    kvp.Value.GetType().Name != eval.Definition.LogicScriptId)
+                // ★ 修复（防Bug回归）：环境不适应时所有基因受抑；突变作用于遗传值，表达受抑仍可变异。
+                Evaluation = GeneValueResolver.Resolve(Genome, IsGestating, EnvironmentGeneSuppression,additionalSuppression:Ecology.AntColonyMember.ExpressionSuppression(this));
+
+                // ★ 适配：优化重复计算，建立一次实例ID索引，供重算、行动及界面查询；重复/缺省ID保持原Find的首项语义。
+                _evaluations.Clear();_nullIdEvaluation=null;
+                foreach(var evaluation in Evaluation.Genes)
                 {
-                    toRemove.Add(kvp.Key);
+                    var id=evaluation.Gene.InstanceId;if(id==null){if(_nullIdEvaluation==null)_nullIdEvaluation=evaluation;}
+                    else if(!_evaluations.ContainsKey(id))_evaluations.Add(id,evaluation);
+                }
+
+                var stats = GetComponent<EntityStats>();
+                float size = 1f;
+                if (stats != null && stats.TryGet("size", out float s)) size = s;
+
+                Evaluation.Attributes = EntityAttributeProcessor.Process(
+                    Evaluation.Attributes,
+                    Evaluation.Genes,
+                    CurrentAge,
+                    size,
+                    IsGestating
+                );
+
+                // ★ 2. 清理旧逻辑：如果基因被移除、被禁用，或者因为被抑制而失效，就删掉它的逻辑
+                _removedLogics.Clear();
+                foreach (var kvp in _activeLogics)
+                {
+                    var eval = GetEvaluation(kvp.Key);
+
+                    // 如果基因不在了，或者未启用，或者被抑制到失效 (!eval.IsActive)
+                    if (!_genomeMembership.Contains(kvp.Key) || !kvp.Key.Enabled || eval == null || !eval.IsActive ||
+                        kvp.Value.GetType().Name != eval.Definition.LogicScriptId)
+                    {
+                        _removedLogics.Add(kvp.Key);
+                    }
+                }
+                // ★ 修复（防Bug回归）：出错变异会原地更换 DefinitionId，旧逻辑必须释放并重建，不能继续执行旧行动/旧事件。
+                foreach (var g in _removedLogics){if(_activeLogics[g] is IDisposable disposable)disposable.Dispose();_activeLogics.Remove(g);}
+
+                _removedLogics.Clear();
+                OnEvaluationChanged?.Invoke(Evaluation);
+
+                // 3. 挂载新逻辑：只挂载有效且还未挂载的基因
+                foreach (var gene in Genome.Genes)
+                {
+                    if (!gene.Enabled) continue;
+
+                    var eval = GetEvaluation(gene);
+                    if (eval == null || !eval.IsActive) continue; // 被抑制失效，不挂载
+
+                    if (_activeLogics.ContainsKey(gene)) continue;
+
+                    var def = GeneDatabase.Get(gene.DefinitionId);
+                    if (def == null || string.IsNullOrEmpty(def.LogicScriptId)) continue;
+
+                    var logic = GeneLogicRegistry.CreateLogic(def.LogicScriptId);
+                    if (logic != null)
+                    {
+                        logic.Initialize(this, gene);
+                        _activeLogics[gene] = logic;
+                    }
                 }
             }
-            // ★ 修复（防Bug回归）：出错变异会原地更换 DefinitionId，旧逻辑必须释放并重建，不能继续执行旧行动/旧事件。
-            foreach (var g in toRemove){if(_activeLogics[g] is IDisposable disposable)disposable.Dispose();_activeLogics.Remove(g);}
-
-            OnEvaluationChanged?.Invoke(Evaluation);
-
-            // 3. 挂载新逻辑：只挂载有效且还未挂载的基因
-            foreach (var gene in Genome.Genes)
+            finally
             {
-                if (!gene.Enabled) continue;
-
-                var eval = Evaluation.Genes.Find(g => g.Gene.InstanceId == gene.InstanceId);
-                if (eval == null || !eval.IsActive) continue; // 被抑制失效，不挂载
-
-                if (_activeLogics.ContainsKey(gene)) continue;
-
-                var def = GeneDatabase.Get(gene.DefinitionId);
-                if (def == null || string.IsNullOrEmpty(def.LogicScriptId)) continue;
-
-                var logic = GeneLogicRegistry.CreateLogic(def.LogicScriptId);
-                if (logic != null)
-                {
-                    logic.Initialize(this, gene);
-                    _activeLogics[gene] = logic;
-                }
+                // ★ 修复（防Bug回归）：订阅方/逻辑初始化失败后仍释放重算锁，并让下一子步重新捕获可能已变更的逻辑。
+                _isRecalculating=false;_snapshotRevision=-1;
             }
-
-            _isRecalculating = false;
             // ★ 适配：标签新增/移除、出错换基因或受抑后同步更新实体状态授权。
             Ecology.EntityStateController.Rebind(this);
             _state=GetComponent<Ecology.EntityStateController>();LogicRevision++;
@@ -181,6 +204,10 @@ namespace DarwinPark.Entities
             }
         }
 
+        // ★ 新增：统一按实例ID查询表达，不能让每个行动/生产子步各建闭包遍历整份基因列表。
+        public GeneEvaluation GetEvaluation(GeneInstance gene)
+        {if(gene==null)return null;return gene.InstanceId==null?_nullIdEvaluation:_evaluations.TryGetValue(gene.InstanceId,out var value)?value:null;}
+
         public IGeneLogic GetLogic(GeneInstance gene)
         {
             if (gene != null && _activeLogics.TryGetValue(gene, out var logic)) return logic;
@@ -191,7 +218,7 @@ namespace DarwinPark.Entities
         {
             // ★ 适配：纯 C# 逻辑在移除/销毁时释放；仅停用控制器冻结测试时仍保留可查询的评估与逻辑。
             foreach(var logic in _activeLogics.Values)if(logic is IDisposable disposable)disposable.Dispose();
-            _activeLogics.Clear();
+            _activeLogics.Clear();_simulationLogics.Clear();_evaluations.Clear();_genomeMembership.Clear();_removedLogics.Clear();_nullIdEvaluation=null;
         }
 
         public void LoadGenesFromJson(string jsonId)
@@ -211,16 +238,21 @@ namespace DarwinPark.Entities
             }
         }
 
+        // ★ 适配：优化重复计算，内置词库每个播放会话只解析一次；随机抽样顺序和正常命名结果与原实现一致。
         public string GetRandomName()
         {
-            var nameAsset = Resources.Load<TextAsset>("Names/name_pool");
-            if (nameAsset == null) return $"未知生物-{UnityEngine.Random.Range(100, 999)}";
-            var pool = JsonUtility.FromJson<NamePoolJson>(nameAsset.text);
-            if (pool == null || pool.familyNames == null || pool.familyNames.Count == 0) return "无名生物";
-            string f = pool.familyNames[UnityEngine.Random.Range(0, pool.familyNames.Count)];
-            string g = pool.givenNames[UnityEngine.Random.Range(0, pool.givenNames.Count)];
-            return $"{f}·{g}";
+            if(!_namePoolLoaded)
+            {
+                _namePoolLoaded=true;var asset=Resources.Load<TextAsset>("Names/name_pool");_nameAssetMissing=asset==null;
+                if(asset!=null)try{_namePool=JsonUtility.FromJson<NamePoolJson>(asset.text);}catch(Exception ex){Debug.LogWarning("[命名] 词库解析失败："+ex.Message);}
+                else Debug.LogWarning("[命名] 缺少 Names/name_pool，使用回退名称");
+            }
+            if(_nameAssetMissing)return $"未知生物-{UnityEngine.Random.Range(100,999)}";
+            if(_namePool?.familyNames==null||_namePool.familyNames.Count==0||_namePool.givenNames==null||_namePool.givenNames.Count==0)return "无名生物";
+            return _namePool.familyNames[UnityEngine.Random.Range(0,_namePool.familyNames.Count)]+"·"+_namePool.givenNames[UnityEngine.Random.Range(0,_namePool.givenNames.Count)];
         }
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetNamePool(){_namePool=null;_namePoolLoaded=_nameAssetMissing=false;}
 
         public float GetAttribute(string id)
         {

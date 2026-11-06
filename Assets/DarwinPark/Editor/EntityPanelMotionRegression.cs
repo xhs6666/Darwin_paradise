@@ -41,6 +41,8 @@ namespace DarwinPark.EditorTools
         }
         public static void RunBatch()
         {
+            // ★ 适配：隐藏窗口的自动回归仍需推进帧和截图，避免失焦后暂停造成假性超时。
+            Application.runInBackground=true;
             SessionState.SetBool(Key,true);EditorSceneManager.OpenScene("Assets/Scenes/SampleScene.unity");
             var view=EditorWindow.GetWindow(typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.GameView"));view.position=new Rect(20,20,1440,960);view.Show();EditorApplication.EnterPlaymode();
         }

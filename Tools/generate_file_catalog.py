@@ -2,7 +2,7 @@
 from pathlib import Path
 import hashlib,json,re,subprocess,sys
 root=Path(sys.argv[1]).resolve() if len(sys.argv)>1 else Path(__file__).resolve().parents[1];roles=json.loads((root/'Tools/file_catalog_roles.json').read_text('utf-8'))
-tracked=set(subprocess.check_output(['git','ls-files','-z'],cwd=root).decode('utf-8').split('\0'))-{''}
+tracked=set(subprocess.check_output(['git','ls-files','--cached','--others','--exclude-standard','-z'],cwd=root).decode('utf-8').split('\0'))-{''}
 cs={p.relative_to(root).as_posix() for p in (root/'Assets').rglob('*.cs')}
 missing=cs-set(roles['scripts'])
 if missing:raise SystemExit('请在Tools/file_catalog_roles.json补充脚本职责：\n'+'\n'.join(sorted(missing)))
@@ -11,7 +11,8 @@ if {p for p in flow_by_path if p.endswith('.cs')}!=cs:raise SystemExit('源码�
 extra={'Tools/generate_file_catalog.py','Tools/file_catalog_roles.json','Docs/开发设计/项目文件作用索引.md','Docs/运行流程图/file-catalog.js','Tools/FlowDocs/FlowDocs.csproj','Docs/验证记录/文件作用索引验证-2026-11-06.md'}
 files=(tracked|extra|set(roles['files']))
 files={p for p in files if (root/p).is_file() or p=='Docs/开发设计/项目文件作用索引.md'}
-meta=sum(p.endswith('.meta') for p in tracked)
+# ★ 修复（防Bug回归）：精简后排除已删除meta，同时纳入待提交的新文件，避免目录统计滞后于实际源码。
+meta=sum(p.endswith('.meta') and (root/p).is_file() for p in tracked)
 files={p for p in files if not p.endswith('.meta') and not p.startswith('Docs/运行流程图/脚本/') and not p.startswith('Tools/FlowDocs/obj/')}
 modules={'GameRoot':'启动与实体装配','Core':'公共基础服务','Genetics':'基因数据、表达与演化','Entities':'实体、生命与生态','AI':'AI决策模块','Environment':'环境参数与采样','Planet':'星球生成与视觉','UI':'界面、操控、世界与联机','Editor':'编辑器工具与回归','Tutorial':'Unity模板说明'}
 
@@ -96,7 +97,7 @@ if check_remaining:raise SystemExit('未编入目录：'+str(sorted(check_remain
 lines+=['','## 配套文件与容易混淆的地方','',
 f'- **`.meta`**：当前版本控制中有{meta}个。它们保存Unity资源GUID和导入设置，作用属于对应资源/目录，不是额外游戏功能；本索引不为每个副本重复一行。',
 '- **配置文件与存档快照不同**：Resources为内置默认，config/gameplay.json为外部调参，mods为编辑后的基因内容，world.json为某个世界已经保存的状态。不要假定只改一处就能改变所有旧档。',
-'- **同类文件不一定是当前主实现**：例如OreGenerator/OreNode属于旧矿石对象路径，当前主矿脉看PlanetOreSystem；旧ParasiticGeneLogic/ParasiteBehavior不要当作新的NutritionParasite。Shader实际选用由材质和天气组件决定。',
+'- **同类文件不一定是当前主实现**：例如Planet/Legacy内OreGenerator/OreNode只为旧恢复场景保留GUID兼容，正式场景当前主矿脉看PlanetOreSystem；旧ParasiticGeneLogic/ParasiteBehavior不要当作新的NutritionParasite。Shader实际选用由材质和天气组件决定。',
 '- **一个文件可能有多个类**：HeterotrophyGeneLogic.cs还包含食腐/卵寄生实现，GeneLogicRegistry.cs也定义IGeneLogic接口；logicScriptId不保证与文件名相同。',
 '- **界面与逻辑分开**：按钮界面负责编辑/提交请求，具体生成、繁殖、伤害与权限检查应追到Entities和LanSession等实际执行入口。',
 '- **流程图分图**：`Docs/运行流程图/脚本/*.md`每个对应一个源码文件，统一作用是保存该文件的方法图与调用链接，已由上面的“查看”列逐个关联。',

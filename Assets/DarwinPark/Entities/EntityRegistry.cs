@@ -11,13 +11,15 @@ namespace DarwinPark.Entities
     {
         private static readonly HashSet<DarwinEntity> _all = new();
 
+        // ★ 新增：成员数量相同也可能换了对象，版本供统计缓存可靠失效。
+        public static long MembershipRevision {get;private set;}
         public static IReadOnlyCollection<DarwinEntity> All => _all;
         public static event Action<DarwinEntity> OnRegistered;
         public static event Action<DarwinEntity> OnUnregistered;
 
         public static void Register(DarwinEntity e)
         {
-            if (e == null || !_all.Add(e)) return;
+            if (e == null || !_all.Add(e)) return;MembershipRevision++;
             // ★ 适配：先更新共享空间快照，再通知可能立即查询邻居的订阅方。
             Ecology.EntityNeighborhood.MembershipChanged(e,false);
             OnRegistered?.Invoke(e);
@@ -25,13 +27,13 @@ namespace DarwinPark.Entities
 
         public static void Unregister(DarwinEntity e)
         {
-            if (e == null || !_all.Remove(e)) return;
+            if (e == null || !_all.Remove(e)) return;MembershipRevision++;
             Ecology.EntityNeighborhood.MembershipChanged(e,true);
             StationaryBodyRest.Remove(e.GetComponent<UnityEngine.Rigidbody>());
             OnUnregistered?.Invoke(e);
         }
 
         // ★ 适配：换世界同步释放空间缓存，不能保留上一局引用。
-        public static void Clear(){_all.Clear();Ecology.EntityNeighborhood.Clear();StationaryBodyRest.Clear();}
+        public static void Clear(){_all.Clear();MembershipRevision++;Ecology.EntityNeighborhood.Clear();StationaryBodyRest.Clear();}
     }
 }

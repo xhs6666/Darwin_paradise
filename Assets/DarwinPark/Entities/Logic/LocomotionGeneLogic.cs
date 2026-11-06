@@ -39,7 +39,8 @@ namespace DarwinPark.Entities.Logic
             // ★ 修复（防Bug回归）：行动基因只有陆地推进，不能在水中继续追击/漫游充当游泳。
             if(_controller.GetComponent<DarwinPark.Entities.Vitals.EntityEnvironmentHazard>()?.IsSubmerged == true)
             { _target=null; return; }
-            var evaluated = _controller.Evaluation?.Genes.Find(g => g.Gene.InstanceId == _gene.InstanceId);
+            // ★ 适配：使用重算时建立的实例索引，行动子步不重复扫描和分配查询闭包。
+            var evaluated = _controller.GetEvaluation(_gene);
             // ★ 修复（防Bug回归）：行为状态共用面板评估结果，失效基因不执行行动。
             var state = evaluated?.State;
             // ★ 适配：手动控制期间 AI 不再抢写速度，只有玩家按攻击键才执行近距离进食。

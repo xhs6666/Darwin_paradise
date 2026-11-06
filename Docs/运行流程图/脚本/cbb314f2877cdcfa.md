@@ -2,7 +2,7 @@
 
 [返回总索引](../README.md) · `Editor` · `Assets/DarwinPark/Editor/EntityStateRegression.cs`
 
-[源文件](../../../Assets/DarwinPark/Editor/EntityStateRegression.cs) · 源码校验：`5b85e9fbc2234918fd08c5b32392bae9ec37743c80c2703a855cc4e7bdbe9bd0`
+[源文件](../../../Assets/DarwinPark/Editor/EntityStateRegression.cs) · 源码校验：`9bb1314c9454b9afe9692cac4663bb26b9a1184f1f0f8f1b022d7239eeab7733`
 
 方法按源文件位置排列。事件/回调引用不表示立即执行；分支与异常说明见总索引。完整源码与可点击关系图请打开离线手册。
 
@@ -273,55 +273,56 @@ flowchart TD
   b24["actor.Genes.Genome.Genes.Single().Value==20"]
   b25["actor.Genes.Evaluation.Genes.Single().State.StateId==&quot;patrol&quot;"]
   b26["Check(actor.Genes.Evaluation.Genes.Single().State.StateId==&quot;patrol&quot;&amp;&amp;actor.Genes.Genome.Genes.Single().Value==20,&quot;实体切换不改写领地基因巡逻分支或基因值&quot;);"]
-  b27{"判断：EcologyMotion.Directive(actor.Genes,out _,out target,out _)"}
-  b28["target==hunter"]
-  b29["EcologyMotion.Directive(actor.Genes,out _,out target,out _)"]
-  b30["Check(EcologyMotion.Directive(actor.Genes,out _,out target,out _)&amp;&amp;target==hunter,&quot;捕猎状态通过实际行动器锁定发现的捕猎者&quot;);"]
-  b31["hunter.GetComponent&lt;EntityStats&gt;().TryGet(&quot;health&quot;,out float hp);<br/>actor.Genes.AdvanceSimulation(.1f);<br/>hunter.GetComponent&lt;EntityStats&gt;().TryGet(&quot;health&quot;,out float after);<br/>Check(after&lt;hp,&quot;切换为捕猎后真实近身攻击生效&quot;);<br/>hunterGene=hunter.Genes.Genome.G…"]
-  b32{"判断：state.Current.id==registry.defaultStateId"}
-  b33["!state.Available.Any(s=&gt;s.id==patrol.id)"]
-  b34["state.Current.id==registry.defaultStateId"]
-  b35["Check(state.Current.id==registry.defaultStateId&amp;&amp;!state.Available.Any(s=&gt;s.id==patrol.id),&quot;基因禁用后撤销巡逻授权&quot;);"]
-  b36["actorGene.Enabled=true;<br/>actor.Genes.Recalculate();<br/>Food(actor,8);<br/>custom=EntityStateRegistry.Parse(originalJson)"]
-  b37["custom.states.SelectMany(s=&gt;s.entryAny.Concat(s.transitions.SelectMany(t=&gt;t.any))).SelectMany(r=&gt;r.all).Where(c=&gt;c.kind==&quot;stat&quot;)"]
-  b38{"判断：custom.states.SelectMany(s=&gt;s.entryAny.Concat(s.transitions.SelectMany(t=&gt;t.any))).SelectMany(r=&gt;r.all).Where(c=&gt;c.kind==&quot;stat&quot;)"}
-  b39["var<br/>condition.value=9;"]
-  b40{"判断：custom.states.SelectMany(s=&gt;s.entryAny.Concat(s.transitions.SelectMany(t=&gt;t.any))).SelectMany(r=&gt;r.all).Where(c=&gt;c.kind==&quot;stat&quot;)"}
-  b41["custom.states.SelectMany(s=&gt;s.entryAny.Concat(s.transitions.SelectMany(t=&gt;t.any))).SelectMany(r=&gt;r.all).Where(c=&gt;c.kind==&quot;stat&quot;)"]
-  b42["连接 / 离开区域"]
-  b43["customJson=JsonUtility.ToJson(custom)<br/>EntityStateRegistry.UseSnapshot(customJson);<br/>state.Advance(.1f);<br/>Check(state.Current.Behavior==EntityStateBehavior.Hunt,&quot;只修改 JSON 阈值为 9 即改变行为，运行逻辑没有写死 5&quot;);<br/>form=new GeneValueForm()<br/>form.Load(catalog[…"]
-  b44{"判断：upgraded.entityStateTags.Contains(patrol.id)"}
-  b45["upgraded.attributeCurves[0].maxValue==123"]
-  b46["upgraded.entityStateTags.Contains(patrol.id)"]
-  b47["Check(upgraded.entityStateTags.Contains(patrol.id)&amp;&amp;upgraded.attributeCurves[0].maxValue==123,&quot;旧 mods/旧世界只补标签且保留自定义数值&quot;);"]
-  b48["legacy.entityStateTagVersion=1;<br/>Check(JsonUtility.FromJson&lt;GeneDefinitionJson&gt;(GeneEntityStateTags.Upgrade(JsonUtility.ToJson(legacy))).entityStateTags.Count==0,&quot;显式空标签不会被旧档迁移重新补回&quot;);<br/>rejected=false<br/>legacy.entityStateTags.Add(&quot;unregistered…"]
-  b49["GeneEntityStateTags.Validate(legacy,custom);"]
-  b50["rejected=true;"]
-  b51["Check(rejected,&quot;未注册标签明确拒绝&quot;);<br/>invalid=EntityStateRegistry.Parse(customJson)<br/>invalid.states[0].behavior=&quot;UnregisteredBehavior&quot;;<br/>rejected=false;"]
-  b52["EntityStateRegistry.Parse(JsonUtility.ToJson(invalid));"]
-  b53["rejected=true;"]
-  b54["Check(rejected,&quot;未注册行为类型明确拒绝&quot;);<br/>inspector=Object.FindFirstObjectByType&lt;GeneInspectorUI&gt;()<br/>inspector.ShowEntityInfo(actor);"]
-  b55{"判断：EntityStatePresentation.Current(actor)==hunt.displayName"}
-  b56["inspector.GetComponentsInChildren&lt;Text&gt;().Any(t=&gt;t.name==&quot;EntityStateTags&quot;&amp;&amp;t.text.Contains(patrol.displayName))"]
-  b57["EntityStatePresentation.Current(actor)==hunt.displayName"]
-  b58["Check(EntityStatePresentation.Current(actor)==hunt.displayName&amp;&amp;inspector.GetComponentsInChildren&lt;Text&gt;().Any(t=&gt;t.name==&quot;EntityStateTags&quot;&amp;&amp;t.text.Contains(patrol.displayName)),&quot;实体面板分别展示当前活动与基因实体状态标签&quot;);"]
-  b59["new WorldSaveData{id=Guid.NewGuid().ToString(&quot;N&quot;),name=&quot;实体状态回归&quot;,terrainParameters=JsonUtility.ToJson(Object.FindFirstObjectByType&lt;PlanetTerrainMeshBuilder&gt;()),environmentParameters=JsonUtility.ToJson(ServiceLocator.Get&lt;DarwinPark.Environ…"]
-  b60["new List&lt;EntitySaveState&gt;{EntitySaveState.Capture(actor)}<br/>EntitySaveState.Capture(actor)<br/>entities=new List&lt;EntitySaveState&gt;{EntitySaveState.Capture(actor)}"]
-  b61["data=new WorldSaveData{id=Guid.NewGuid().ToString(&quot;N&quot;),name=&quot;实体状态回归&quot;,terrainParameters=JsonUtility.ToJson(Object.FindFirstObjectByType&lt;PlanetTerrainMeshBuilder&gt;()),environmentParameters=JsonUtility.ToJson(ServiceLocator.Get&lt;DarwinPark.En…"]
-  b62["file=Path.Combine(Folder,&quot;roundtrip.json&quot;)<br/>WorldSaveStore.Write(data,file);<br/>read=WorldSaveStore.Read(file)"]
-  b63{"判断：read.entityStateRegistry==customJson"}
-  b64["read.entities[0].ecology.entityStateId==hunt.id"]
-  b65["read.entityStateRegistry==customJson"]
-  b66["Check(read.entityStateRegistry==customJson&amp;&amp;read.entities[0].ecology.entityStateId==hunt.id,&quot;世界规则快照与实体活动状态成对写盘读取&quot;);"]
-  b67["actor.gameObject.SetActive(false);<br/>restored=Spawn(read.entities[0].position,&quot;gene_territory&quot;,20)<br/>read.entities[0].Restore(restored);<br/>Check(restored.GetComponent&lt;EntityStateController&gt;().Current.id==hunt.id,&quot;实体读档立即保留捕猎状态&quot;);<br/>exported=Path.…"]
-  b68{"判断：File.Exists(Path.Combine(exported,&quot;entity_states.json&quot;))"}
-  b69["EntityStateRegistry.Parse(File.ReadAllText(Path.Combine(exported,&quot;entity_states.json&quot;))).states.Single(s=&gt;s.id==patrol.id).entryAny[0].all[0].value==9"]
-  b70["File.Exists(Path.Combine(exported,&quot;entity_states.json&quot;))"]
-  b71["Check(File.Exists(Path.Combine(exported,&quot;entity_states.json&quot;))&amp;&amp;EntityStateRegistry.Parse(File.ReadAllText(Path.Combine(exported,&quot;entity_states.json&quot;))).states.Single(s=&gt;s.id==patrol.id).entryAny[0].all[0].value==9,&quot;工具导出基因和注册表保持相同阈值&quot;);"]
-  b72["EntityStateRegistry.UseSnapshot(originalJson);<br/>restored.GetComponent&lt;EntityStateController&gt;().Advance(.1f);<br/>Check(restored.GetComponent&lt;EntityStateController&gt;().Current.id==patrol.id,&quot;阈值恢复后按当前数据重新决策&quot;);<br/>read.entityStateRegistry=null;<br/>read…"]
-  b73["extended.states<br/>new EntityStateDefinition{id=&quot;rest_for_test&quot;,displayName=&quot;测试休息&quot;,behavior=&quot;None&quot;,priority=100}<br/>id=&quot;rest_for_test&quot;<br/>displayName=&quot;测试休息&quot;<br/>behavior=&quot;None&quot;<br/>priority=100<br/>extended.states.Add(new EntityStateDefinition{id=&quot;rest_for_t…"]
-  b74["EntityStateRegistry.UseSnapshot(JsonUtility.ToJson(extended));<br/>def=restored.Genes.Evaluation.Genes.Single().Definition<br/>tags=new List&lt;string&gt;(def.EntityStateTags)<br/>def.EntityStateTags.Add(&quot;rest_for_test&quot;);<br/>EntityStateController.Rebind(rest…"]
-  b75(["结束 / 返回"])
+  b27["Check(!NutritionTransfer.CanHuntForFood(actor.Genes),&quot;仅有领地状态不会凭空获得消化取食能力&quot;);<br/>nutrition=NutritionEcologySettings.Current<br/>digestDef=GeneDatabase.Get(nutrition.heterotrophyGene)<br/>digestion=GeneInstance.Create(digestDef.Id,digestDef.States.Sin…"]
+  b28{"判断：EcologyMotion.Directive(actor.Genes,out _,out target,out _)"}
+  b29["target==hunter"]
+  b30["EcologyMotion.Directive(actor.Genes,out _,out target,out _)"]
+  b31["Check(EcologyMotion.Directive(actor.Genes,out _,out target,out _)&amp;&amp;target==hunter,&quot;捕猎状态通过实际行动器锁定发现的捕猎者&quot;);"]
+  b32["hunter.GetComponent&lt;EntityStats&gt;().TryGet(&quot;health&quot;,out float hp);<br/>actor.Genes.AdvanceSimulation(.1f);<br/>hunter.GetComponent&lt;EntityStats&gt;().TryGet(&quot;health&quot;,out float after);<br/>Check(after&lt;hp,&quot;切换为捕猎后真实近身攻击生效&quot;);<br/>actor.Genes.Genome.Genes.Remove(…"]
+  b33{"判断：state.Current.id==registry.defaultStateId"}
+  b34["!state.Available.Any(s=&gt;s.id==patrol.id)"]
+  b35["state.Current.id==registry.defaultStateId"]
+  b36["Check(state.Current.id==registry.defaultStateId&amp;&amp;!state.Available.Any(s=&gt;s.id==patrol.id),&quot;基因禁用后撤销巡逻授权&quot;);"]
+  b37["actorGene.Enabled=true;<br/>actor.Genes.Recalculate();<br/>Food(actor,8);<br/>custom=EntityStateRegistry.Parse(originalJson)"]
+  b38["custom.states.SelectMany(s=&gt;s.entryAny.Concat(s.transitions.SelectMany(t=&gt;t.any))).SelectMany(r=&gt;r.all).Where(c=&gt;c.kind==&quot;stat&quot;)"]
+  b39{"判断：custom.states.SelectMany(s=&gt;s.entryAny.Concat(s.transitions.SelectMany(t=&gt;t.any))).SelectMany(r=&gt;r.all).Where(c=&gt;c.kind==&quot;stat&quot;)"}
+  b40["var<br/>condition.value=9;"]
+  b41{"判断：custom.states.SelectMany(s=&gt;s.entryAny.Concat(s.transitions.SelectMany(t=&gt;t.any))).SelectMany(r=&gt;r.all).Where(c=&gt;c.kind==&quot;stat&quot;)"}
+  b42["custom.states.SelectMany(s=&gt;s.entryAny.Concat(s.transitions.SelectMany(t=&gt;t.any))).SelectMany(r=&gt;r.all).Where(c=&gt;c.kind==&quot;stat&quot;)"]
+  b43["连接 / 离开区域"]
+  b44["customJson=JsonUtility.ToJson(custom)<br/>EntityStateRegistry.UseSnapshot(customJson);<br/>state.Advance(.1f);<br/>Check(state.Current.Behavior==EntityStateBehavior.Hunt,&quot;只修改 JSON 阈值为 9 即改变行为，运行逻辑没有写死 5&quot;);<br/>form=new GeneValueForm()<br/>form.Load(catalog[…"]
+  b45{"判断：upgraded.entityStateTags.Contains(patrol.id)"}
+  b46["upgraded.attributeCurves[0].maxValue==123"]
+  b47["upgraded.entityStateTags.Contains(patrol.id)"]
+  b48["Check(upgraded.entityStateTags.Contains(patrol.id)&amp;&amp;upgraded.attributeCurves[0].maxValue==123,&quot;旧 mods/旧世界只补标签且保留自定义数值&quot;);"]
+  b49["legacy.entityStateTagVersion=1;<br/>Check(JsonUtility.FromJson&lt;GeneDefinitionJson&gt;(GeneEntityStateTags.Upgrade(JsonUtility.ToJson(legacy))).entityStateTags.Count==0,&quot;显式空标签不会被旧档迁移重新补回&quot;);<br/>rejected=false<br/>legacy.entityStateTags.Add(&quot;unregistered…"]
+  b50["GeneEntityStateTags.Validate(legacy,custom);"]
+  b51["rejected=true;"]
+  b52["Check(rejected,&quot;未注册标签明确拒绝&quot;);<br/>invalid=EntityStateRegistry.Parse(customJson)<br/>invalid.states[0].behavior=&quot;UnregisteredBehavior&quot;;<br/>rejected=false;"]
+  b53["EntityStateRegistry.Parse(JsonUtility.ToJson(invalid));"]
+  b54["rejected=true;"]
+  b55["Check(rejected,&quot;未注册行为类型明确拒绝&quot;);<br/>inspector=Object.FindFirstObjectByType&lt;GeneInspectorUI&gt;()<br/>inspector.ShowEntityInfo(actor);"]
+  b56{"判断：EntityStatePresentation.Current(actor)==hunt.displayName"}
+  b57["inspector.GetComponentsInChildren&lt;Text&gt;().Any(t=&gt;t.name==&quot;EntityStateTags&quot;&amp;&amp;t.text.Contains(patrol.displayName))"]
+  b58["EntityStatePresentation.Current(actor)==hunt.displayName"]
+  b59["Check(EntityStatePresentation.Current(actor)==hunt.displayName&amp;&amp;inspector.GetComponentsInChildren&lt;Text&gt;().Any(t=&gt;t.name==&quot;EntityStateTags&quot;&amp;&amp;t.text.Contains(patrol.displayName)),&quot;实体面板分别展示当前活动与基因实体状态标签&quot;);"]
+  b60["new WorldSaveData{id=Guid.NewGuid().ToString(&quot;N&quot;),name=&quot;实体状态回归&quot;,terrainParameters=JsonUtility.ToJson(Object.FindFirstObjectByType&lt;PlanetTerrainMeshBuilder&gt;()),environmentParameters=JsonUtility.ToJson(ServiceLocator.Get&lt;DarwinPark.Environ…"]
+  b61["new List&lt;EntitySaveState&gt;{EntitySaveState.Capture(actor)}<br/>EntitySaveState.Capture(actor)<br/>entities=new List&lt;EntitySaveState&gt;{EntitySaveState.Capture(actor)}"]
+  b62["data=new WorldSaveData{id=Guid.NewGuid().ToString(&quot;N&quot;),name=&quot;实体状态回归&quot;,terrainParameters=JsonUtility.ToJson(Object.FindFirstObjectByType&lt;PlanetTerrainMeshBuilder&gt;()),environmentParameters=JsonUtility.ToJson(ServiceLocator.Get&lt;DarwinPark.En…"]
+  b63["file=Path.Combine(Folder,&quot;roundtrip.json&quot;)<br/>WorldSaveStore.Write(data,file);<br/>read=WorldSaveStore.Read(file)"]
+  b64{"判断：read.entityStateRegistry==customJson"}
+  b65["read.entities[0].ecology.entityStateId==hunt.id"]
+  b66["read.entityStateRegistry==customJson"]
+  b67["Check(read.entityStateRegistry==customJson&amp;&amp;read.entities[0].ecology.entityStateId==hunt.id,&quot;世界规则快照与实体活动状态成对写盘读取&quot;);"]
+  b68["actor.gameObject.SetActive(false);<br/>restored=Spawn(read.entities[0].position,&quot;gene_territory&quot;,20)<br/>read.entities[0].Restore(restored);<br/>Check(restored.GetComponent&lt;EntityStateController&gt;().Current.id==hunt.id,&quot;实体读档立即保留捕猎状态&quot;);<br/>exported=Path.…"]
+  b69{"判断：File.Exists(Path.Combine(exported,&quot;entity_states.json&quot;))"}
+  b70["EntityStateRegistry.Parse(File.ReadAllText(Path.Combine(exported,&quot;entity_states.json&quot;))).states.Single(s=&gt;s.id==patrol.id).entryAny[0].all[0].value==9"]
+  b71["File.Exists(Path.Combine(exported,&quot;entity_states.json&quot;))"]
+  b72["Check(File.Exists(Path.Combine(exported,&quot;entity_states.json&quot;))&amp;&amp;EntityStateRegistry.Parse(File.ReadAllText(Path.Combine(exported,&quot;entity_states.json&quot;))).states.Single(s=&gt;s.id==patrol.id).entryAny[0].all[0].value==9,&quot;工具导出基因和注册表保持相同阈值&quot;);"]
+  b73["EntityStateRegistry.UseSnapshot(originalJson);<br/>restored.GetComponent&lt;EntityStateController&gt;().Advance(.1f);<br/>Check(restored.GetComponent&lt;EntityStateController&gt;().Current.id==patrol.id,&quot;阈值恢复后按当前数据重新决策&quot;);<br/>read.entityStateRegistry=null;<br/>read…"]
+  b74["extended.states<br/>new EntityStateDefinition{id=&quot;rest_for_test&quot;,displayName=&quot;测试休息&quot;,behavior=&quot;None&quot;,priority=100}<br/>id=&quot;rest_for_test&quot;<br/>displayName=&quot;测试休息&quot;<br/>behavior=&quot;None&quot;<br/>priority=100<br/>extended.states.Add(new EntityStateDefinition{id=&quot;rest_for_t…"]
+  b75["EntityStateRegistry.UseSnapshot(JsonUtility.ToJson(extended));<br/>def=restored.Genes.Evaluation.Genes.Single().Definition<br/>tags=new List&lt;string&gt;(def.EntityStateTags)<br/>def.EntityStateTags.Add(&quot;rest_for_test&quot;);<br/>EntityStateController.Rebind(rest…"]
+  b76(["结束 / 返回"])
   b0 --> b1
   b1 --> b2
   b2 -->|"是"| b3
@@ -355,64 +356,65 @@ flowchart TD
   b24 --> b26
   b25 --> b26
   b26 --> b27
-  b27 -->|"是"| b28
-  b27 -->|"否"| b29
-  b28 --> b30
-  b29 --> b30
+  b27 --> b28
+  b28 -->|"是"| b29
+  b28 -->|"否"| b30
+  b29 --> b31
   b30 --> b31
   b31 --> b32
-  b32 -->|"是"| b33
-  b32 -->|"否"| b34
-  b33 --> b35
-  b34 --> b35
+  b32 --> b33
+  b33 -->|"是"| b34
+  b33 -->|"否"| b35
+  b34 --> b36
   b35 --> b36
   b36 --> b37
   b37 --> b38
-  b38 -->|"是"| b39
-  b38 -->|"否 · 经过finally 40"| b43
-  b39 --> b38
-  b40 -->|"否"| b41
-  b40 -->|"是"| b42
-  b41 --> b42
-  b43 --> b44
-  b44 -->|"是"| b45
-  b44 -->|"否"| b46
-  b45 --> b47
-  b46 --> b47
+  b38 --> b39
+  b39 -->|"是"| b40
+  b39 -->|"否 · 经过finally 41"| b44
+  b40 --> b39
+  b41 -->|"否"| b42
+  b41 -->|"是"| b43
+  b42 --> b43
+  b44 --> b45
+  b45 -->|"是"| b46
+  b45 -->|"否"| b47
+  b46 --> b48
   b47 --> b48
   b48 --> b49
-  b49 --> b51
-  b50 --> b51
+  b49 --> b50
+  b50 --> b52
   b51 --> b52
-  b52 --> b54
-  b53 --> b54
+  b52 --> b53
+  b53 --> b55
   b54 --> b55
-  b55 -->|"是"| b56
-  b55 -->|"否"| b57
-  b56 --> b58
-  b57 --> b58
+  b55 --> b56
+  b56 -->|"是"| b57
+  b56 -->|"否"| b58
+  b57 --> b59
   b58 --> b59
   b59 --> b60
   b60 --> b61
   b61 --> b62
   b62 --> b63
-  b63 -->|"是"| b64
-  b63 -->|"否"| b65
-  b64 --> b66
-  b65 --> b66
+  b63 --> b64
+  b64 -->|"是"| b65
+  b64 -->|"否"| b66
+  b65 --> b67
   b66 --> b67
   b67 --> b68
-  b68 -->|"是"| b69
-  b68 -->|"否"| b70
-  b69 --> b71
-  b70 --> b71
+  b68 --> b69
+  b69 -->|"是"| b70
+  b69 -->|"否"| b71
+  b70 --> b72
   b71 --> b72
   b72 --> b73
   b73 --> b74
   b74 --> b75
-  b38 -. "退出保护区时 finally（示意）" .-> b40
-  b49 -. "保护区可能异常（示意）" .-> b50
-  b52 -. "保护区可能异常（示意）" .-> b53
+  b75 --> b76
+  b39 -. "退出保护区时 finally（示意）" .-> b41
+  b50 -. "保护区可能异常（示意）" .-> b51
+  b53 -. "保护区可能异常（示意）" .-> b54
 
 ```
 
@@ -439,10 +441,15 @@ flowchart TD
 - [EcologyMotion.Directive · L10](6ed9d0eedb456d32.md#m1305a80f2f4f99b2)（方法）
 - [DarwinEntity.Genes.get · L14](70798dde169f2e8b.md#m622eb1adf401d431)（访问器）
 - [EntityStateController.DetectedTarget.get · L16](0f8869eb7018091e.md#m2d23280359000fb2)（访问器）
-- [EntityGeneController.Evaluation.get · L19](7494d53178552f0e.md#m2cb74e57d810ca42)（访问器）
+- [EntityGeneController.Evaluation.get · L18](7494d53178552f0e.md#mc0039c100a31b455)（访问器）
+- [NutritionTransfer.CanHuntForFood · L26](081d3b8ff683e442.md#m2962d3f47f91a266)（方法）
+- [NutritionEcologySettings.Current.get · L19](846a17351dbd6aa4.md#mb3eb930022e314f3)（访问器）
+- [GeneDatabase.Get · L135](ec0a03483435a863.md#m8f3bbfb35f3ca397)（方法）
+- [GeneInstance.Create · L20](f82e1498d67f5afd.md#m72e94c278de3cf8b)（方法）
+- [Genome.Add · L19](a2ef23f865bc7ee8.md#md9cfdc94b8b8d40f)（方法）
+- [EntityGeneController.Recalculate · L97](7494d53178552f0e.md#m65ea735c1e0e37a1)（方法）
 - [EntityStats.TryGet · L90](75aa86a368efdf24.md#m24ee1433e4a70d94)（方法）
-- [EntityGeneController.AdvanceSimulation · L60](7494d53178552f0e.md#m10b24df798096cab)（方法）
-- [EntityGeneController.Recalculate · L90](7494d53178552f0e.md#m93744c8f3039b93c)（方法）
+- [EntityGeneController.AdvanceSimulation · L66](7494d53178552f0e.md#m477fb905eeed3e79)（方法）
 - [EntityStats.Modify · L111](75aa86a368efdf24.md#m9c837be197158240)（方法）
 - [EntityStateRegistry.Parse · L57](440408d2db5c7d96.md#m4543a04396bcbc54)（方法）
 - [EntityStateRegistry.UseSnapshot · L52](440408d2db5c7d96.md#m6013e583cbf33e79)（方法）
@@ -464,13 +471,14 @@ flowchart TD
 - [EntityStateRegression.回调@71 · L71](cbb314f2877cdcfa.md#mbd5758518b63afb4)（回调/委托）
 - [EntityStateRegression.回调@77 · L77](cbb314f2877cdcfa.md#me15df24f88f07164)（回调/委托）
 - [EntityStateRegression.回调@77 · L77](cbb314f2877cdcfa.md#m0d31299b25971f56)（回调/委托）
-- [EntityStateRegression.回调@95 · L95](cbb314f2877cdcfa.md#m0f50ee46387eec72)（回调/委托）
-- [EntityStateRegression.回调@97 · L97](cbb314f2877cdcfa.md#m3c8a20c4eafd5ec5)（回调/委托）
-- [EntityStateRegression.回调@97 · L97](cbb314f2877cdcfa.md#m4aa5050ab14930db)（回调/委托）
-- [EntityStateRegression.回调@97 · L97](cbb314f2877cdcfa.md#mb762cc62b85fc5dc)（回调/委托）
-- [EntityStateRegression.回调@108 · L108](cbb314f2877cdcfa.md#m58e647273b8d2d64)（回调/委托）
-- [EntityStateRegression.回调@110 · L110](cbb314f2877cdcfa.md#m5e9934235f304f65)（回调/委托）
-- [EntityStateRegression.回调@116 · L116](cbb314f2877cdcfa.md#m7ca33b107f5ea765)（回调/委托）
+- [EntityStateRegression.回调@88 · L88](cbb314f2877cdcfa.md#me646688033e1df48)（回调/委托）
+- [EntityStateRegression.回调@101 · L101](cbb314f2877cdcfa.md#mabc51c7552488651)（回调/委托）
+- [EntityStateRegression.回调@103 · L103](cbb314f2877cdcfa.md#mec5823129093ce21)（回调/委托）
+- [EntityStateRegression.回调@103 · L103](cbb314f2877cdcfa.md#m4629c48581414e4f)（回调/委托）
+- [EntityStateRegression.回调@103 · L103](cbb314f2877cdcfa.md#m86014dcae38553f6)（回调/委托）
+- [EntityStateRegression.回调@114 · L114](cbb314f2877cdcfa.md#mc4cbd2abede80386)（回调/委托）
+- [EntityStateRegression.回调@116 · L116](cbb314f2877cdcfa.md#m6550adbb0020bec7)（回调/委托）
+- [EntityStateRegression.回调@122 · L122](cbb314f2877cdcfa.md#m3b2c57cbd5069207)（回调/委托）
 
 <a id="m92084cbce0768382"></a>
 
@@ -552,9 +560,29 @@ flowchart TD
 
 ```
 
-<a id="m0f50ee46387eec72"></a>
+<a id="me646688033e1df48"></a>
 
-## 回调@95 · L95
+## 回调@88 · L88
+
+`s … => 回调`
+
+
+
+### Editor · Roslyn编译器控制流
+
+```mermaid
+flowchart TD
+  b0(["入口"])
+  b1["结果：s.StateId==nutrition.digestState"]
+  b2(["结束 / 返回"])
+  b0 --> b1
+  b1 -->|"返回"| b2
+
+```
+
+<a id="mabc51c7552488651"></a>
+
+## 回调@101 · L101
 
 `s … => 回调`
 
@@ -572,9 +600,9 @@ flowchart TD
 
 ```
 
-<a id="m3c8a20c4eafd5ec5"></a>
+<a id="mec5823129093ce21"></a>
 
-## 回调@97 · L97
+## 回调@103 · L103
 
 `s … => 回调`
 
@@ -594,11 +622,11 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [EntityStateRegression.回调@97 · L97](cbb314f2877cdcfa.md#m4ca938c9a535f996)（回调/委托）
+- [EntityStateRegression.回调@103 · L103](cbb314f2877cdcfa.md#m36e7ae100af8d7de)（回调/委托）
 
-<a id="m4ca938c9a535f996"></a>
+<a id="m36e7ae100af8d7de"></a>
 
-## 回调@97 · L97
+## 回调@103 · L103
 
 `t … => 回调`
 
@@ -616,9 +644,9 @@ flowchart TD
 
 ```
 
-<a id="m4aa5050ab14930db"></a>
+<a id="m4629c48581414e4f"></a>
 
-## 回调@97 · L97
+## 回调@103 · L103
 
 `r … => 回调`
 
@@ -636,9 +664,9 @@ flowchart TD
 
 ```
 
-<a id="mb762cc62b85fc5dc"></a>
+<a id="m86014dcae38553f6"></a>
 
-## 回调@97 · L97
+## 回调@103 · L103
 
 `c … => 回调`
 
@@ -656,9 +684,9 @@ flowchart TD
 
 ```
 
-<a id="m58e647273b8d2d64"></a>
+<a id="mc4cbd2abede80386"></a>
 
-## 回调@108 · L108
+## 回调@114 · L114
 
 `t … => 回调`
 
@@ -683,9 +711,9 @@ flowchart TD
 
 ```
 
-<a id="m5e9934235f304f65"></a>
+<a id="m6550adbb0020bec7"></a>
 
-## 回调@110 · L110
+## 回调@116 · L116
 
 `d … => 回调`
 
@@ -703,9 +731,9 @@ flowchart TD
 
 ```
 
-<a id="m7ca33b107f5ea765"></a>
+<a id="m3b2c57cbd5069207"></a>
 
-## 回调@116 · L116
+## 回调@122 · L122
 
 `s … => 回调`
 
