@@ -1,0 +1,1206 @@
+[
+  {
+    "title": "01 · 启动、服务与界面",
+    "description": "初始化入口、时钟、生成委托、基因库和UI根节点。",
+    "nodes": [
+      {
+        "id": "n0",
+        "text": "Unity 加载与生命周期（引擎调度）",
+        "kind": "entry"
+      },
+      {
+        "id": "n1",
+        "text": "BeforeSceneLoad 日志初始化",
+        "target": "RuntimeFileLog.Initialize",
+        "kind": "step"
+      },
+      {
+        "id": "n2",
+        "text": "建立统一模拟时钟",
+        "target": "SimulationClock.Awake",
+        "kind": "step"
+      },
+      {
+        "id": "n3",
+        "text": "注册实体生成委托",
+        "target": "GameBootstrap.Awake",
+        "kind": "step"
+      },
+      {
+        "id": "n4",
+        "text": "装载基因定义库",
+        "target": "GeneDatabase.EnsureLoaded",
+        "kind": "step"
+      },
+      {
+        "id": "n5",
+        "text": "创建Canvas / EventSystem",
+        "target": "UIRoot.Awake",
+        "kind": "step"
+      },
+      {
+        "id": "n6",
+        "text": "主菜单与存档入口",
+        "target": "GameMainMenu.Start",
+        "kind": "step"
+      },
+      {
+        "id": "n7",
+        "text": "后续按模板创建实体",
+        "target": "EntityFactory.CreateFromTemplate",
+        "kind": "step"
+      }
+    ],
+    "edges": [
+      [
+        "n0",
+        "n1",
+        "",
+        "flow"
+      ],
+      [
+        "n0",
+        "n2",
+        "Awake",
+        "flow"
+      ],
+      [
+        "n0",
+        "n3",
+        "Awake",
+        "flow"
+      ],
+      [
+        "n3",
+        "n4",
+        "",
+        "flow"
+      ],
+      [
+        "n3",
+        "n7",
+        "委托稍后执行",
+        "exception"
+      ],
+      [
+        "n0",
+        "n5",
+        "Awake",
+        "flow"
+      ],
+      [
+        "n5",
+        "n6",
+        "界面生命周期",
+        "flow"
+      ]
+    ],
+    "note": "不规定不同组件Awake的全部先后顺序；图中同时包含服务依赖与注册后的后续触发。"
+  },
+  {
+    "title": "02 · 创建或读取世界",
+    "description": "暂停模拟后生成地形和气候，恢复资源、实体及世界状态。",
+    "nodes": [
+      {
+        "id": "n0",
+        "text": "新建世界及配置快照",
+        "target": "WorldSessionManager.Create",
+        "kind": "entry"
+      },
+      {
+        "id": "n1",
+        "text": "校验存档后打开",
+        "target": "WorldSessionManager.Open",
+        "kind": "step"
+      },
+      {
+        "id": "n2",
+        "text": "进入加载门控并暂停",
+        "target": "WorldSessionManager.Begin",
+        "kind": "step"
+      },
+      {
+        "id": "n3",
+        "text": "协程异常隔离",
+        "target": "WorldSessionManager.SafeLoad",
+        "kind": "step"
+      },
+      {
+        "id": "n4",
+        "text": "分帧加载主过程",
+        "target": "WorldSessionManager.Load",
+        "kind": "step"
+      },
+      {
+        "id": "n5",
+        "text": "后台生成地形数据",
+        "target": "PlanetTerrainGenerator.Generate",
+        "kind": "step"
+      },
+      {
+        "id": "n6",
+        "text": "主线程装配网格与碰撞",
+        "target": "PlanetTerrainMeshBuilder.ApplyGeneratedData",
+        "kind": "step"
+      },
+      {
+        "id": "n7",
+        "text": "后台计算气候",
+        "target": "PlanetClimateModel.Generate",
+        "kind": "step"
+      },
+      {
+        "id": "n8",
+        "text": "上传气候并绑定地表",
+        "target": "PlanetClimateMap.ApplyGeneratedClimate",
+        "kind": "step"
+      },
+      {
+        "id": "n9",
+        "text": "加载事件恢复界面和运行状态",
+        "target": "GameMainMenu.OnWorldLoaded",
+        "kind": "step"
+      },
+      {
+        "id": "n10",
+        "text": "原状态运行且为离线世界时恢复时钟",
+        "target": "GameMainMenu.Resume",
+        "kind": "step"
+      }
+    ],
+    "edges": [
+      [
+        "n0",
+        "n2",
+        "",
+        "flow"
+      ],
+      [
+        "n1",
+        "n2",
+        "",
+        "flow"
+      ],
+      [
+        "n2",
+        "n3",
+        "",
+        "flow"
+      ],
+      [
+        "n3",
+        "n4",
+        "",
+        "flow"
+      ],
+      [
+        "n4",
+        "n5",
+        "Task.Run",
+        "flow"
+      ],
+      [
+        "n5",
+        "n6",
+        "等待任务完成",
+        "flow"
+      ],
+      [
+        "n6",
+        "n7",
+        "",
+        "flow"
+      ],
+      [
+        "n7",
+        "n8",
+        "等待任务完成",
+        "flow"
+      ],
+      [
+        "n8",
+        "n9",
+        "恢复其他世界状态后",
+        "flow"
+      ],
+      [
+        "n9",
+        "n10",
+        "事件回调 / Resume",
+        "exception"
+      ]
+    ],
+    "note": ""
+  },
+  {
+    "title": "03 · 每帧模拟与基因行为",
+    "description": "模拟时间预算、实体子步、生命周期、意图和基因调度。",
+    "nodes": [
+      {
+        "id": "n0",
+        "text": "计算本帧模拟步长",
+        "target": "SimulationClock.Update",
+        "kind": "entry"
+      },
+      {
+        "id": "n1",
+        "text": "实体读取 GameDeltaTime",
+        "target": "EntityGeneController.Update",
+        "kind": "step"
+      },
+      {
+        "id": "n2",
+        "text": "按模拟子步推进实体",
+        "target": "EntityGeneController.AdvanceSimulation",
+        "kind": "step"
+      },
+      {
+        "id": "n3",
+        "text": "推进年龄和生命阶段",
+        "target": "EntityLifeCycle.Advance",
+        "kind": "step"
+      },
+      {
+        "id": "n4",
+        "text": "推进反击记忆",
+        "target": "CombatIntent.Advance",
+        "kind": "step"
+      },
+      {
+        "id": "n5",
+        "text": "按配置选择意图",
+        "target": "EntityStateController.Advance",
+        "kind": "step"
+      },
+      {
+        "id": "n6",
+        "text": "分派活动基因 OnUpdate",
+        "target": "IGeneLogic.OnUpdate",
+        "kind": "step"
+      },
+      {
+        "id": "n7",
+        "text": "基因/阶段变化后重新表达",
+        "target": "EntityGeneController.Recalculate",
+        "kind": "step"
+      },
+      {
+        "id": "n8",
+        "text": "解析数值、抑制与状态",
+        "target": "GeneValueResolver.Resolve",
+        "kind": "step"
+      }
+    ],
+    "edges": [
+      [
+        "n0",
+        "n1",
+        "共享数据；分别调度",
+        "exception"
+      ],
+      [
+        "n1",
+        "n2",
+        "",
+        "flow"
+      ],
+      [
+        "n2",
+        "n3",
+        "每个子步",
+        "flow"
+      ],
+      [
+        "n3",
+        "n4",
+        "存活时",
+        "flow"
+      ],
+      [
+        "n4",
+        "n5",
+        "",
+        "flow"
+      ],
+      [
+        "n5",
+        "n6",
+        "遍历逻辑快照",
+        "flow"
+      ],
+      [
+        "n7",
+        "n8",
+        "",
+        "flow"
+      ],
+      [
+        "n8",
+        "n6",
+        "刷新后续行为",
+        "exception"
+      ]
+    ],
+    "note": "IGeneLogic.OnUpdate的接口候选见“调用与被调用”。不把所有基因排成固定的跨实体执行顺序。"
+  },
+  {
+    "title": "04 · 攻击、消化、死亡与尸体",
+    "description": "查找真实伤害结算、单次死亡与剩余营养的去向。",
+    "nodes": [
+      {
+        "id": "n0",
+        "text": "行动逻辑选择行为",
+        "target": "LocomotionGeneLogic.OnUpdate",
+        "kind": "entry"
+      },
+      {
+        "id": "n1",
+        "text": "咬击判定与伤害",
+        "target": "LocomotionGeneLogic.TryBite",
+        "kind": "step"
+      },
+      {
+        "id": "n2",
+        "text": "统一攻击接收与实际伤害",
+        "target": "EntityCombat.Receive",
+        "kind": "step"
+      },
+      {
+        "id": "n3",
+        "text": "修改生命值",
+        "target": "EntityStats.Modify",
+        "kind": "step"
+      },
+      {
+        "id": "n4",
+        "text": "一次性死亡结算",
+        "target": "EntityDeathSettlement.Die",
+        "kind": "step"
+      },
+      {
+        "id": "n5",
+        "text": "攻击者消化营养",
+        "target": "NutritionTransfer.Digest",
+        "kind": "step"
+      },
+      {
+        "id": "n6",
+        "text": "剩余营养形成尸体",
+        "target": "ColonyResource.LeaveCorpse",
+        "kind": "step"
+      },
+      {
+        "id": "n7",
+        "text": "食腐消费尸体营养",
+        "target": "CorpseFeeding.Advance",
+        "kind": "step"
+      },
+      {
+        "id": "n8",
+        "text": "工匠搬运与交付",
+        "target": "AntColonyWorker.Advance",
+        "kind": "step"
+      },
+      {
+        "id": "n9",
+        "text": "饥饿/寿命等生命结算",
+        "target": "EntityVitals.AdvanceVitals",
+        "kind": "entry"
+      }
+    ],
+    "edges": [
+      [
+        "n0",
+        "n1",
+        "",
+        "flow"
+      ],
+      [
+        "n1",
+        "n2",
+        "",
+        "flow"
+      ],
+      [
+        "n2",
+        "n3",
+        "扣除实际生命值",
+        "flow"
+      ],
+      [
+        "n2",
+        "n4",
+        "致死时",
+        "flow"
+      ],
+      [
+        "n4",
+        "n5",
+        "",
+        "flow"
+      ],
+      [
+        "n5",
+        "n6",
+        "有剩余营养",
+        "flow"
+      ],
+      [
+        "n6",
+        "n7",
+        "符合食腐条件",
+        "exception"
+      ],
+      [
+        "n6",
+        "n8",
+        "可搬运且未占用",
+        "exception"
+      ],
+      [
+        "n9",
+        "n4",
+        "生命耗尽时",
+        "flow"
+      ]
+    ],
+    "note": "清场/读档销毁不等于生物死亡。守恒与判定的精确分支见方法内部流程。"
+  },
+  {
+    "title": "05 · 普通繁殖与孤雌生殖",
+    "description": "配偶、成年等待、储粮、孕育和统一出生入口。",
+    "nodes": [
+      {
+        "id": "n0",
+        "text": "普通繁殖逻辑推进",
+        "target": "ReproductionGeneLogic.OnUpdate",
+        "kind": "entry"
+      },
+      {
+        "id": "n1",
+        "text": "查找合法配偶",
+        "target": "ReproductionGeneLogic.FindMate",
+        "kind": "step"
+      },
+      {
+        "id": "n2",
+        "text": "长期无配偶的孤雌条件",
+        "target": "ParthenogenesisCondition.Advance",
+        "kind": "step"
+      },
+      {
+        "id": "n3",
+        "text": "比例导致的新孕育等待",
+        "target": "PopulationMaintenance.BreedingReady",
+        "kind": "step"
+      },
+      {
+        "id": "n4",
+        "text": "扣除营养开始孕育",
+        "target": "ReproductionGeneLogic.StartGestation",
+        "kind": "step"
+      },
+      {
+        "id": "n5",
+        "text": "孕育完成准备后代",
+        "target": "ReproductionGeneLogic.SpawnOffspring",
+        "kind": "step"
+      },
+      {
+        "id": "n6",
+        "text": "统一出生 / 卵生入口",
+        "target": "EcologyReproduction.Spawn",
+        "kind": "step"
+      }
+    ],
+    "edges": [
+      [
+        "n0",
+        "n1",
+        "需要配偶时",
+        "flow"
+      ],
+      [
+        "n1",
+        "n2",
+        "无配偶",
+        "flow"
+      ],
+      [
+        "n1",
+        "n3",
+        "有配偶或无需配偶",
+        "flow"
+      ],
+      [
+        "n2",
+        "n3",
+        "等待条件满足",
+        "flow"
+      ],
+      [
+        "n3",
+        "n4",
+        "资源等其他条件通过",
+        "flow"
+      ],
+      [
+        "n0",
+        "n5",
+        "已孕育且计时结束",
+        "flow"
+      ],
+      [
+        "n5",
+        "n6",
+        "",
+        "flow"
+      ]
+    ],
+    "note": "已孕育后代不会因维持比例超量被取消；蚁群王后走专用分工流程。"
+  },
+  {
+    "title": "06 · 蚁群、工匠、补给与站位",
+    "description": "分工、运输、真实进食半径、空位出生与移动避让。",
+    "nodes": [
+      {
+        "id": "n0",
+        "text": "推进蚁群成员与分工",
+        "target": "AntColonyMember.Advance",
+        "kind": "entry"
+      },
+      {
+        "id": "n1",
+        "text": "工匠任务与货物",
+        "target": "AntColonyWorker.Advance",
+        "kind": "step"
+      },
+      {
+        "id": "n2",
+        "text": "王后繁殖与专用配偶",
+        "target": "AntColonyReproduction.Advance",
+        "kind": "step"
+      },
+      {
+        "id": "n3",
+        "text": "检查育幼范围内出生空位",
+        "target": "ColonyFormation.TryBirthPosition",
+        "kind": "step"
+      },
+      {
+        "id": "n4",
+        "text": "休息/巡逻/跟随目的地",
+        "target": "AntColonyMember.Destination",
+        "kind": "step"
+      },
+      {
+        "id": "n5",
+        "text": "真实补给半径内取食",
+        "target": "ColonyFeeding.Destination",
+        "kind": "step"
+      },
+      {
+        "id": "n6",
+        "text": "成员独立分散站位",
+        "target": "ColonyFormation.Home",
+        "kind": "step"
+      },
+      {
+        "id": "n7",
+        "text": "移动时的同群切向避让",
+        "target": "ColonyFormation.Avoid",
+        "kind": "step"
+      }
+    ],
+    "edges": [
+      [
+        "n0",
+        "n1",
+        "工匠分工",
+        "flow"
+      ],
+      [
+        "n0",
+        "n2",
+        "王后分工",
+        "flow"
+      ],
+      [
+        "n2",
+        "n3",
+        "出生前",
+        "flow"
+      ],
+      [
+        "n4",
+        "n5",
+        "需要补给",
+        "flow"
+      ],
+      [
+        "n4",
+        "n6",
+        "休息/跟随",
+        "flow"
+      ],
+      [
+        "n6",
+        "n7",
+        "后续移动修正",
+        "exception"
+      ]
+    ],
+    "note": "没有空位时保留孕育。目标与避让不是瞬移；没有真实能量的补给点不产生活动圈。"
+  },
+  {
+    "title": "07 · 随机生成与维持比例",
+    "description": "两种来源、独立JSON条件、分帧补充和繁殖调节。",
+    "nodes": [
+      {
+        "id": "n0",
+        "text": "选择模板或基因条件",
+        "target": "RandomSpawnWorkbench.Open",
+        "kind": "entry"
+      },
+      {
+        "id": "n1",
+        "text": "命名保存条件 JSON",
+        "target": "RandomSpawnWorkbench.SaveCondition",
+        "kind": "step"
+      },
+      {
+        "id": "n2",
+        "text": "校验并保存比例规则",
+        "target": "RandomSpawnWorkbench.SaveRule",
+        "kind": "step"
+      },
+      {
+        "id": "n3",
+        "text": "模拟运行时轮询规则",
+        "target": "RandomPlanetSpawner.Update",
+        "kind": "step"
+      },
+      {
+        "id": "n4",
+        "text": "计算新增后分母与补充数",
+        "target": "PopulationMaintenance.Needed",
+        "kind": "step"
+      },
+      {
+        "id": "n5",
+        "text": "按来源发起生成",
+        "target": "RandomPlanetSpawner.StartRecipe",
+        "kind": "step"
+      },
+      {
+        "id": "n6",
+        "text": "分帧选择地表并生成",
+        "target": "RandomPlanetSpawner.Generate",
+        "kind": "step"
+      },
+      {
+        "id": "n7",
+        "text": "超量延长新孕育等待",
+        "target": "PopulationMaintenance.BreedingReady",
+        "kind": "step"
+      },
+      {
+        "id": "n8",
+        "text": "统一手动/维持任务启动入口",
+        "target": "RandomPlanetSpawner.StartInternal",
+        "kind": "step"
+      }
+    ],
+    "edges": [
+      [
+        "n0",
+        "n1",
+        "保存条件",
+        "flow"
+      ],
+      [
+        "n0",
+        "n2",
+        "显式启用规则",
+        "flow"
+      ],
+      [
+        "n0",
+        "n5",
+        "应用来源后手动生成",
+        "exception"
+      ],
+      [
+        "n2",
+        "n3",
+        "后续轮询",
+        "exception"
+      ],
+      [
+        "n3",
+        "n4",
+        "",
+        "flow"
+      ],
+      [
+        "n4",
+        "n8",
+        "不足时",
+        "flow"
+      ],
+      [
+        "n5",
+        "n8",
+        "",
+        "flow"
+      ],
+      [
+        "n8",
+        "n6",
+        "",
+        "flow"
+      ],
+      [
+        "n2",
+        "n7",
+        "繁殖逻辑查询",
+        "exception"
+      ]
+    ],
+    "note": "不自动删除超量实体；条件库跨世界复用，运行规则保留世界内快照。暂停、权限和数量上限仍生效。"
+  },
+  {
+    "title": "08 · 操控、输入与UI门控",
+    "description": "区分视角、物理、攻击目标和覆盖窗口的输入归属。",
+    "nodes": [
+      {
+        "id": "n0",
+        "text": "选择实体进入或退出视角",
+        "target": "EntityViewController.Update",
+        "kind": "entry"
+      },
+      {
+        "id": "n1",
+        "text": "读取移动/跳跃/攻击输入",
+        "target": "EntityPossessionInput.Tick",
+        "kind": "step"
+      },
+      {
+        "id": "n2",
+        "text": "固定物理步执行手动移动",
+        "target": "EntityManualControl.FixedUpdate",
+        "kind": "step"
+      },
+      {
+        "id": "n3",
+        "text": "攻击时选取实体",
+        "target": "EntityAttackAim.Pick",
+        "kind": "step"
+      },
+      {
+        "id": "n4",
+        "text": "暂停菜单阻止背景输入",
+        "target": "GameMainMenu.ShowPause",
+        "kind": "step"
+      },
+      {
+        "id": "n5",
+        "text": "来源窗口统一门控",
+        "target": "RandomSpawnWorkbench.Open",
+        "kind": "step"
+      },
+      {
+        "id": "n6",
+        "text": "关闭窗口恢复原状态",
+        "target": "RandomSpawnWorkbench.Close",
+        "kind": "step"
+      },
+      {
+        "id": "n7",
+        "text": "行动行为消费缓存的瞄准射线",
+        "target": "EntityManualControl.GetAttackTarget",
+        "kind": "step"
+      }
+    ],
+    "edges": [
+      [
+        "n0",
+        "n1",
+        "视角控制逻辑",
+        "flow"
+      ],
+      [
+        "n1",
+        "n2",
+        "缓存输入供物理步消费",
+        "flow"
+      ],
+      [
+        "n1",
+        "n7",
+        "攻击行为查询缓存射线",
+        "exception"
+      ],
+      [
+        "n7",
+        "n3",
+        "",
+        "flow"
+      ],
+      [
+        "n4",
+        "n1",
+        "阻止背景输入",
+        "exception"
+      ],
+      [
+        "n5",
+        "n1",
+        "阻止背景输入",
+        "exception"
+      ],
+      [
+        "n5",
+        "n6",
+        "",
+        "flow"
+      ]
+    ],
+    "note": "镜头、物理和界面按各自生命周期调度。输入框消费的按键不能穿透成为游戏动作。"
+  },
+  {
+    "title": "09 · 存档、重载与种群档案",
+    "description": "世界快照、磁盘读写、校验和历史恢复。",
+    "nodes": [
+      {
+        "id": "n0",
+        "text": "更新存活种群历史",
+        "target": "PopulationArchive.Observe",
+        "kind": "entry"
+      },
+      {
+        "id": "n1",
+        "text": "采集种群档案快照",
+        "target": "PopulationArchive.Capture",
+        "kind": "step"
+      },
+      {
+        "id": "n2",
+        "text": "采集世界与实体状态",
+        "target": "WorldSessionManager.SaveNow",
+        "kind": "step"
+      },
+      {
+        "id": "n3",
+        "text": "写入世界文件",
+        "target": "WorldSaveStore.Write",
+        "kind": "step"
+      },
+      {
+        "id": "n4",
+        "text": "读取存档 JSON",
+        "target": "WorldSaveStore.Read",
+        "kind": "step"
+      },
+      {
+        "id": "n5",
+        "text": "恢复前校验数据",
+        "target": "WorldSaveStore.Validate",
+        "kind": "step"
+      },
+      {
+        "id": "n6",
+        "text": "经加载过程恢复世界",
+        "target": "WorldSessionManager.Open",
+        "kind": "step"
+      },
+      {
+        "id": "n7",
+        "text": "恢复历史和显示配置",
+        "target": "PopulationArchive.Restore",
+        "kind": "step"
+      }
+    ],
+    "edges": [
+      [
+        "n0",
+        "n1",
+        "保存时采集",
+        "flow"
+      ],
+      [
+        "n1",
+        "n2",
+        "快照数据",
+        "flow"
+      ],
+      [
+        "n2",
+        "n3",
+        "",
+        "flow"
+      ],
+      [
+        "n4",
+        "n5",
+        "",
+        "flow"
+      ],
+      [
+        "n5",
+        "n6",
+        "",
+        "flow"
+      ],
+      [
+        "n6",
+        "n7",
+        "世界恢复的一部分",
+        "exception"
+      ]
+    ],
+    "note": "精确采集顺序见SaveNow与Load；不可把采集关系误读为独立的固定调度顺序。"
+  },
+  {
+    "title": "10 · 局域网权限、命令与副本",
+    "description": "房主判权执行，副本收快照，不独立推进生态。",
+    "nodes": [
+      {
+        "id": "n0",
+        "text": "界面提交编辑请求",
+        "target": "LanEditActions.Submit",
+        "kind": "entry"
+      },
+      {
+        "id": "n1",
+        "text": "客户端发送编辑命令",
+        "target": "LanSession.SubmitEdit",
+        "kind": "step"
+      },
+      {
+        "id": "n2",
+        "text": "房主处理命令与权限",
+        "target": "LanSession.ProcessCommand",
+        "kind": "step"
+      },
+      {
+        "id": "n3",
+        "text": "执行合法编辑操作",
+        "target": "LanEditExecutor.Apply",
+        "kind": "step"
+      },
+      {
+        "id": "n4",
+        "text": "采集世界增量快照",
+        "target": "LanWorldSnapshot.Frame",
+        "kind": "step"
+      },
+      {
+        "id": "n5",
+        "text": "副本应用快照",
+        "target": "LanSession.ApplyFrame",
+        "kind": "step"
+      },
+      {
+        "id": "n6",
+        "text": "推进前检查副本身份",
+        "target": "EntityGeneController.AdvanceSimulation",
+        "kind": "step"
+      }
+    ],
+    "edges": [
+      [
+        "n0",
+        "n1",
+        "联机客户端",
+        "flow"
+      ],
+      [
+        "n1",
+        "n2",
+        "网络传输及接收",
+        "exception"
+      ],
+      [
+        "n2",
+        "n3",
+        "权限通过",
+        "flow"
+      ],
+      [
+        "n3",
+        "n4",
+        "后续采样",
+        "exception"
+      ],
+      [
+        "n4",
+        "n5",
+        "网络接收",
+        "exception"
+      ],
+      [
+        "n5",
+        "n6",
+        "副本门控",
+        "exception"
+      ]
+    ],
+    "note": "虚线包括异步传输/数据依赖，不表示跨进程直接调用；离线直接执行见Submit。"
+  },
+  {
+    "title": "11 · 地形、气候、矿脉与GPU",
+    "description": "CPU生成数据，到网格、纹理和GPU渲染的关系。",
+    "nodes": [
+      {
+        "id": "n0",
+        "text": "地形逻辑数据生成",
+        "target": "PlanetTerrainGenerator.Generate",
+        "kind": "entry"
+      },
+      {
+        "id": "n1",
+        "text": "装配网格与碰撞体",
+        "target": "PlanetTerrainMeshBuilder.ApplyGeneratedData",
+        "kind": "step"
+      },
+      {
+        "id": "n2",
+        "text": "计算海岸、风与生物群落",
+        "target": "PlanetClimateModel.Generate",
+        "kind": "step"
+      },
+      {
+        "id": "n3",
+        "text": "上传气候并绑定材质",
+        "target": "PlanetClimateMap.ApplyGeneratedClimate",
+        "kind": "step"
+      },
+      {
+        "id": "n4",
+        "text": "生成矿脉数据及纹理",
+        "target": "PlanetOreSystem.GenerateOreMap",
+        "kind": "step"
+      },
+      {
+        "id": "n5",
+        "text": "GPU顶点/片元和HLSL函数（左侧GPU筛选）",
+        "kind": "step"
+      }
+    ],
+    "edges": [
+      [
+        "n0",
+        "n1",
+        "",
+        "flow"
+      ],
+      [
+        "n0",
+        "n2",
+        "地形数据输入",
+        "flow"
+      ],
+      [
+        "n2",
+        "n3",
+        "",
+        "flow"
+      ],
+      [
+        "n1",
+        "n5",
+        "网格/材质数据",
+        "exception"
+      ],
+      [
+        "n3",
+        "n5",
+        "气候纹理",
+        "exception"
+      ],
+      [
+        "n4",
+        "n5",
+        "矿脉纹理",
+        "exception"
+      ]
+    ],
+    "note": "GPU使用兼容语法控制结构。宏、URP外部include和着色器阶段仍以渲染管线为准。"
+  },
+  {
+    "title": "12 · 日志、崩溃诊断与导出",
+    "description": "日志事件、异步持久化、心跳与导出的入口关系。",
+    "nodes": [
+      {
+        "id": "n0",
+        "text": "接收 Unity 日志",
+        "target": "RuntimeFileLog.Receive",
+        "kind": "entry"
+      },
+      {
+        "id": "n1",
+        "text": "关键错误与异常记录",
+        "target": "RuntimeCrashDiagnostics.Receive",
+        "kind": "step"
+      },
+      {
+        "id": "n2",
+        "text": "更新诊断状态与心跳",
+        "target": "RuntimeCrashDiagnostics.Tick",
+        "kind": "step"
+      },
+      {
+        "id": "n3",
+        "text": "采样当前世界状态",
+        "target": "RuntimeDiagnosticWorldState.Sample",
+        "kind": "step"
+      },
+      {
+        "id": "n4",
+        "text": "导出诊断包",
+        "target": "RuntimeCrashDiagnostics.ExportAsync",
+        "kind": "step"
+      },
+      {
+        "id": "n5",
+        "text": "正常退出时刷新和关闭",
+        "target": "RuntimeFileLog.Shutdown",
+        "kind": "step"
+      }
+    ],
+    "edges": [
+      [
+        "n0",
+        "n1",
+        "关键日志转交",
+        "flow"
+      ],
+      [
+        "n2",
+        "n3",
+        "主线程采样",
+        "flow"
+      ],
+      [
+        "n1",
+        "n4",
+        "后续手动导出",
+        "exception"
+      ],
+      [
+        "n3",
+        "n4",
+        "状态文件输入",
+        "exception"
+      ],
+      [
+        "n0",
+        "n5",
+        "正常结束刷新",
+        "exception"
+      ]
+    ],
+    "note": "后台线程、主线程采样与未处理异常分别查看具体方法；异常退出不伪装为正常关闭。"
+  }
+]

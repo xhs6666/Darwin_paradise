@@ -113,3 +113,6 @@ InitTestScene*.unity*
 /Artifacts/
 /Assets/_Recovery/
 /Assets/_Recovery.meta
+
+# Offline flow-documentation generator local restore cache
+/Tools/FlowDocs/obj/

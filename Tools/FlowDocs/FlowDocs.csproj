@@ -1,0 +1,13 @@
+<Project>
+  <PropertyGroup><BaseIntermediateOutputPath>../../Artifacts/FlowDocs/obj/</BaseIntermediateOutputPath><MSBuildProjectExtensionsPath>../../Artifacts/FlowDocs/obj/</MSBuildProjectExtensionsPath></PropertyGroup>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+  <PropertyGroup>
+    <RestoreConfigFile>$(MSBuildThisFileDirectory)NuGet.Config</RestoreConfigFile><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>
+    <OutputPath>../../Artifacts/FlowDocs/bin/</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeAnalysis"><HintPath>$(MSBuildSDKsPath)/../Roslyn/bincore/Microsoft.CodeAnalysis.dll</HintPath></Reference>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp"><HintPath>$(MSBuildSDKsPath)/../Roslyn/bincore/Microsoft.CodeAnalysis.CSharp.dll</HintPath></Reference>
+  </ItemGroup>
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

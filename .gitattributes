@@ -170,3 +170,11 @@ Packages/packages-lock.json linguist-generated
 
 # Exceptions for .asset files such as lightning pre-baking
 LightingData.asset     binary
+
+# Source-derived flow documentation; review the generator and curated overview.
+Docs/运行流程图/atlas-data.js linguist-generated
+Docs/运行流程图/manifest.json linguist-generated
+Docs/运行流程图/coverage.json linguist-generated
+Docs/运行流程图/脚本/** linguist-generated
+Docs/运行流程图/** text eol=lf
+Tools/FlowDocs/** text eol=lf
