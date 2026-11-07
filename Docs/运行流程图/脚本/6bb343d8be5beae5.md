@@ -275,8 +275,8 @@ flowchart TD
 - [PopulationBehavior.LeaderFlag.get · L22](21e4f62f75a9a80f.md#m381bf45ebdf091a9)（访问器）
 - [PopulationGroupIndex.Earlier · L23](6bb343d8be5beae5.md#me1ad939202c72295)（方法）
 - [EcologySettings.Load · L18](90428a275d065ef6.md#mb0575490373edaf2)（方法）
-- [AntColonyMember.Role.get · L33](baebd85c05598377.md#mdf6df89f7116c7a3)（访问器）
-- [AntColonyMember.Population.get · L30](baebd85c05598377.md#m688c2c0dfb5a66d6)（访问器）
+- [AntColonyMember.Role.get · L35](baebd85c05598377.md#m496a7a58214d1166)（访问器）
+- [AntColonyMember.Population.get · L32](baebd85c05598377.md#m1c6bbec8e82e26dc)（访问器）
 
 <a id="m37d04d4079b6ece5"></a>
 
@@ -396,7 +396,7 @@ flowchart TD
 - [PopulationBehavior.GroupId.get · L20](21e4f62f75a9a80f.md#m5145936fa914ba8c)（访问器）
 - [EcologySettings.Load · L18](90428a275d065ef6.md#mb0575490373edaf2)（方法）
 - [PopulationGroupIndex.Get · L24](6bb343d8be5beae5.md#mc5dd4eb8610431ea)（方法）
-- [AntColonyMember.Role.get · L33](baebd85c05598377.md#mdf6df89f7116c7a3)（访问器）
+- [AntColonyMember.Role.get · L35](baebd85c05598377.md#m496a7a58214d1166)（访问器）
 - [PopulationGroupIndex.Invalidate · L20](6bb343d8be5beae5.md#m5e79b5692d858f7a)（方法）
 
 <a id="m3d1818b92838ee52"></a>
@@ -451,4 +451,4 @@ flowchart TD
 - [PopulationGroupIndex.Get · L24](6bb343d8be5beae5.md#mc5dd4eb8610431ea)（方法）
 - [PopulationGroupIndex.Invalidate · L20](6bb343d8be5beae5.md#m5e79b5692d858f7a)（方法）
 - [EcologySettings.Load · L18](90428a275d065ef6.md#mb0575490373edaf2)（方法）
-- [AntColonyMember.Population.get · L30](baebd85c05598377.md#m688c2c0dfb5a66d6)（访问器）
+- [AntColonyMember.Population.get · L32](baebd85c05598377.md#m1c6bbec8e82e26dc)（访问器）

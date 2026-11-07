@@ -75,6 +75,8 @@ namespace DarwinPark.UI
             if(data==null||data.version!=1||!Guid.TryParseExact(data.id,"N",out _)||string.IsNullOrWhiteSpace(data.name)||string.IsNullOrWhiteSpace(data.terrainParameters)||string.IsNullOrWhiteSpace(data.environmentParameters)||data.entities==null||data.definitions==null||data.definitions.Any(d=>d==null||string.IsNullOrEmpty(d.id)))throw new InvalidDataException("存档格式或版本无效");
             // ★ 适配：新快照在清场前完成检查；旧档缺少 colony/ant 字段仍可读取。
             data.gameSettings=WorldGameSettings.Normalize(data.gameSettings);
+            // ★ 适配：旧档的生态配置在清场前迁移/校验，规则列表仍按旧档恢复，不自动替换。
+            data.colony=DarwinPark.Entities.Ecology.EcologyDefaults.PrepareSnapshot(data.colony);
             DarwinPark.Entities.Ecology.ColonyWorldState.Validate(data.colony);
             foreach(var entity in data.entities)DarwinPark.Entities.Ecology.ColonyWorldState.ValidateMember(entity?.ecology?.ant);
             foreach(var entity in data.entities)DarwinPark.Entities.Ecology.ColonyWorldState.ValidateMotion(entity?.ecology);
@@ -87,6 +89,8 @@ namespace DarwinPark.UI
             if(environment==null||!Finite(environment.BaseTemperature)||!Finite(environment.BaseHumidity))throw new InvalidDataException("环境参数无效");
             var catalog=data.definitions.ToDictionary(d=>d.id,d=>d.json);if(catalog.Count==0)throw new InvalidDataException("存档基因配置为空");GeneTreeStorage.Validate(data.tree,catalog);
             PopulationMaintenance.Validate(data.maintenance,catalog.Keys);
+            // ★ 适配：默认生态模板中的基因也在清场前核对，错误外部配置不能损坏当前世界。
+            DarwinPark.Entities.Ecology.EcologyDefaults.ValidateCatalog(data.colony?.ecologyDefaults,catalog.Keys);
             // ★ 修复（防Bug回归）：已知旧关系迁移会同步修正父基因，必须写回快照；否则文件里的父定义与已迁移的出错连线不一致。
             foreach(var definition in data.definitions)definition.json=catalog[definition.id];
             // ★ 适配：新增营养定义成对写回快照，不能只更新树节点却遗漏基因JSON。

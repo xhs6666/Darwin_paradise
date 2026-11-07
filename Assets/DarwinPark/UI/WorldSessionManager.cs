@@ -51,7 +51,9 @@ namespace DarwinPark.UI
                 terrainParameters=JsonUtility.ToJson(_builder),environmentParameters=JsonUtility.ToJson(environment),planetRotation=Quaternion.identity,sunAngle=45,
                 definitions=definitions.Select(d=>new SavedGeneDefinition{id=d.Key,json=d.Value}).ToList(),tree=tree,entityStateRegistry=EntityStateRegistry.ReadConfiguredJson(),ecologyBalanceSettings=DarwinPark.Entities.Ecology.EcologyBalanceSettings.ReadConfiguredJson()};
             // ★ 适配：新世界保存自己使用的蚁群参数，不受之后 mods 修改影响。
-            data.colony=new DarwinPark.Entities.Ecology.ColonyWorldState{settings=DarwinPark.Entities.Ecology.AntColonySettings.ReadConfiguredJson()};
+            data.colony=new DarwinPark.Entities.Ecology.ColonyWorldState{settings=DarwinPark.Entities.Ecology.AntColonySettings.ReadConfiguredJson(),ecologyDefaults=DarwinPark.Entities.Ecology.EcologyDefaults.ReadConfiguredJson()};
+            // ★ 适配：只给新世界启用默认生态；读取旧档继续恢复其原有规则。
+            data.maintenance=DarwinPark.Entities.Ecology.EcologyDefaults.CreateRules(data.colony.ecologyDefaults);
             data.gameSettings=WorldGameSettings.Normalize(null);
             Begin(data,true);
         }

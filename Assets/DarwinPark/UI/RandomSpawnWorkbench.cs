@@ -74,7 +74,8 @@ namespace DarwinPark.UI
         public bool SaveRule(float percent)
         {
             if(!float.IsFinite(percent)||percent<0||percent>=100){Status("目标比例请输入0～99之间的百分数");return false;}
-            var rule=new PopulationMaintenanceRule{id=_editingId??Guid.NewGuid().ToString("N"),enabled=_ruleEnabled,ratio=percent/100f,landOnly=_landOnly,source=Draft};
+            var previous=PopulationMaintenance.Rules.FirstOrDefault(r=>r.id==_editingId);bool same=previous!=null&&SameSource(previous.source,_draft);
+            var rule=new PopulationMaintenanceRule{id=_editingId??Guid.NewGuid().ToString("N"),enabled=_ruleEnabled,ratio=percent/100f,landOnly=_landOnly,source=Draft,category=same?previous.category:PopulationRuleCategory.Source,minimumCount=same?previous.minimumCount:0};
             try
             {
                 var catalog=GeneDatabase.All.Select(d=>d.Id).ToArray();rule.source.Validate(catalog);var validation=PopulationMaintenance.Capture();validation.rules.RemoveAll(r=>r.id==rule.id);validation.rules.Add(rule);PopulationMaintenance.Validate(validation,catalog);
@@ -159,7 +160,10 @@ namespace DarwinPark.UI
             var left=Rect("Templates",_body.transform,0,0,.49f,0);var right=Rect("Conditions",_body.transform,.51f,0,1,0);
             Label(left,"Heading","方式一：完全按照实体模板",0,1,0,26,14);var templates=Scroll(left,"TemplatesList",0,1,32,34);float y=0;
             void AddTemplate(EntityTemplateData template){var source=Template(template);var button=Button(templates,"Template",source.name,0,1,y,32,()=>{SelectTemplate(template);RebuildBody();},_draft.method==RandomSpawnMethod.Template&&_draft.name==source.name);_templateButtons.Add((button,source.name));y+=38;}
-            AddTemplate(null);foreach(var template in EntityTemplateManager.Templates)AddTemplate(template);templates.sizeDelta=new Vector2(-18,y);
+            AddTemplate(null);foreach(var template in EntityTemplateManager.Templates)AddTemplate(template);
+            // ★ 适配：内置可繁衍生产者、移动消化者、创始王后和清道夫使用相同模板按钮与基因复制入口。
+            foreach(var item in EcologyDefaults.Current.templates){var source=item.Recipe();var button=Button(templates,"EcologyTemplate_"+item.id,source.name,0,1,y,32,()=>{_draft=Copy(source);_presetId=null;RebuildBody();},_draft.method==RandomSpawnMethod.Template&&_draft.name==source.name);_templateButtons.Add((button,source.name));y+=38;}
+            templates.sizeDelta=new Vector2(-18,y);
             var note=Label(left,"Hint","完整复制模板基因与数值，不添加随机基因。",0,1,0,30,13);note.rectTransform.anchorMin=new Vector2(0,0);note.rectTransform.anchorMax=new Vector2(1,0);note.rectTransform.anchoredPosition=new Vector2(0,30);note.color=UIVisualTheme.Muted;
             Label(right,"Heading","方式二：基因条件，其余随机",0,1,0,26,14);_useGenesButton=Button(right,"UseGenes",_draft.method==RandomSpawnMethod.Genes?"已选择基因条件随机":"使用基因条件随机",0,1,30,32,()=>{UseGeneRandom();RebuildBody();},_draft.method==RandomSpawnMethod.Genes);
             // ★ 修复（防Bug回归）：输入框保持原生生命周期，筛选仅重建其下方列表，不因结果行增减丢失光标或中文输入状态。
@@ -190,7 +194,8 @@ namespace DarwinPark.UI
         // ★ 新增：模板/保存条件自动成为可配置行，只有主动启用才建规则，避免每个模板默认30%导致比例冲突。
         public List<RandomSpawnRecipe> MaintenanceSources()
         {
-            var sources=new List<RandomSpawnRecipe>{Template(null)};sources.AddRange(EntityTemplateManager.Templates.Select(Template));sources.AddRange(_presets.Select(p=>Copy(p.source)));
+            // ★ 适配：生态基础模板无需用户先保存即可选用，列出不等于启用额外比例规则。
+            var sources=new List<RandomSpawnRecipe>{Template(null)};sources.AddRange(EcologyDefaults.Current.templates.Select(t=>t.Recipe()));sources.AddRange(EntityTemplateManager.Templates.Select(Template));sources.AddRange(_presets.Select(p=>Copy(p.source)));
             if(_draft.method==RandomSpawnMethod.Genes&&!sources.Any(s=>SameSource(s,_draft)))sources.Add(Draft);
             foreach(var rule in PopulationMaintenance.Rules)if(!sources.Any(s=>SameSource(s,rule.source)))sources.Add(Copy(rule.source));return sources;
         }
@@ -202,12 +207,14 @@ namespace DarwinPark.UI
         }
         private void DrawRules()
         {
-            Label(_body.transform,"RuleHint","模板与已保存条件自动列出 · 不足时生成，超量时减少繁殖",0,1,0,27,14);var content=Scroll(_body.transform,"MaintenanceSources",0,1,34,0);float y=0;
+            Label(_body.transform,"RuleHint","生态默认：生产者"+(EcologyDefaults.Current.producerRatio*100).ToString("0.#")+"% / 移动者"+(EcologyDefaults.Current.mobileRatio*100).ToString("0.#")+"%",0,.68f,0,27,14);
+            Button(_body.transform,"EcologyDefaults","应用生态默认项",.69f,1,0,28,()=>{if(LanEditActions.Submit(new LanCommand{kind="ecologyDefaults"})){Persist();RebuildBody();}else Status("未应用，请检查权限、规则上限或比例冲突");});
+            var content=Scroll(_body.transform,"MaintenanceSources",0,1,34,0);float y=0;
             foreach(var source in MaintenanceSources())
             {
                 var rule=PopulationMaintenance.Rules.FirstOrDefault(r=>SameSource(r.source,source));var row=UIFactory.NewRect("MaintenanceRow",content,typeof(Image)).GetComponent<RectTransform>();RowPlace(row,0,1,y,104);UIVisualTheme.Paint(row.GetComponent<Image>(),"field");
-                Label(row,"Name",source.name,0,.52f,4,28,16);var count=Label(row,"Count","",.52f,1,4,28,13);Action refresh=()=>{int total=EntityRegistry.All.Count(e=>EcologyQueries.Alive(e));int matched=EntityRegistry.All.Count(e=>EcologyQueries.Alive(e)&&source.Matches(e.Genes.Genome));count.text="当前 "+matched+" / "+total+"（"+(total>0?100f*matched/total:0).ToString("0.#")+"%）";};_countRefresh.Add(refresh);refresh();
-                Label(row,"Conditions",Description(source),0,1,34,28,13);Label(row,"RatioLabel","目标比例",0,.14f,69,28,13);var ratio=Field(row,"Ratio",rule==null?"30":(rule.ratio*100).ToString("0.#",CultureInfo.InvariantCulture),"百分比",.14f,.25f,69,28);ratio.contentType=InputField.ContentType.DecimalNumber;Label(row,"Percent","%",.25f,.29f,69,28);
+                Label(row,"Name",source.name,0,.52f,4,28,16);var count=Label(row,"Count","",.52f,1,4,28,13);Action refresh=()=>{int total=rule==null?EntityRegistry.All.Count(e=>EcologyQueries.Alive(e)):PopulationMaintenance.Denominator(rule);int matched=rule==null?EntityRegistry.All.Count(e=>EcologyQueries.Alive(e)&&source.Matches(e.Genes.Genome)):PopulationMaintenance.Count(rule);count.text="当前 "+matched+" / "+total+"（"+(total>0?100f*matched/total:0).ToString("0.#")+"%）";};_countRefresh.Add(refresh);refresh();
+                Label(row,"Conditions",rule?.category!=PopulationRuleCategory.Source&&rule!=null?EcologyMaintenancePolicy.Describe(rule):Description(source),0,1,34,28,13);Label(row,"RatioLabel","目标比例",0,.14f,69,28,13);var ratio=Field(row,"Ratio",rule==null?"30":(rule.ratio*100).ToString("0.#",CultureInfo.InvariantCulture),"百分比",.14f,.25f,69,28);ratio.contentType=InputField.ContentType.DecimalNumber;Label(row,"Percent","%",.25f,.29f,69,28);
                 Button(row,"ApplyRatio",rule==null?"启用维持":"保存比例",.3f,.47f,69,28,()=>{_draft=Copy(source);_editingId=rule?.id;_ruleEnabled=rule?.enabled??true;_landOnly=rule?.landOnly??_landOnly;if(float.TryParse(ratio.text,NumberStyles.Float,CultureInfo.InvariantCulture,out float value))SaveRule(value);else Status("请输入有效比例");});
                 if(rule!=null)
                 {

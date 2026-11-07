@@ -64,7 +64,8 @@ namespace DarwinPark.Entities.Ecology
             if(!EntityPopulationLimit.CanSpawn||sexual&&eligibleMate==null&&!parthenogenetic)return;
             if(!stats.TryGet("storedNutrient",out float reserve)||reserve<settings.queenBirthCost)return;
             // ★ 适配：维持比例超量时延长王后的新孕育间隔，不中断已开始的孕育。
-            if(!PopulationMaintenance.BreedingReady(genes,ref state.maintenanceWait,dt))return;state.maintenanceWait=0;
+            // ★ 适配：建群缺工匠时优先建立补给链，不能再被全局移动者超量的繁殖等待卡住；仍照常支付食物和孕育时间。
+            if(!ColonyFoundingSupport.NeedsWorker(queen)&&!PopulationMaintenance.BreedingReady(genes,ref state.maintenanceWait,dt))return;state.maintenanceWait=0;
             stats.Modify("storedNutrient",-settings.queenBirthCost);state.partnerGenome=sexual&&!parthenogenetic?Copy(eligibleMate.Genes.Genome):null;state.parthenogenetic=parthenogenetic;state.mateWait=0;state.reproductionTimer=settings.queenGestationSeconds;genes.IsGestating=true;genes.Recalculate();
         }
     }

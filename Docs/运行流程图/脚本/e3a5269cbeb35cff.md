@@ -257,29 +257,29 @@ flowchart TD
 
 - [ColonyResource.State.get · L22](293dbaecfff4b585.md#m341a1355f4d657bf)（访问器）
 - [ColonyFeedingTemplateRegression.Fill · L25](e3a5269cbeb35cff.md#m671c46cff06fdbf7)（方法）
-- [AntColonyMember.Destination · L134](baebd85c05598377.md#m8fbd14b933818c86)（方法）
+- [AntColonyMember.Destination · L138](baebd85c05598377.md#m241f26888616f5dd)（方法）
 - [ColonyFeedingTemplateRegression.Check · L22](e3a5269cbeb35cff.md#m34b9c42c0fe6e75b)（方法）
 - [EcologyQueries.Distance · L42](bdf7ccc2c9c0452f.md#mba9c3e3c95d0f2dd)（方法）
 - [AntColonySettings.Current.get · L31](cb0a937e97c8fbb3.md#mcd121159f407ccdf)（访问器）
-- [AntColonyMember.Role.get · L33](baebd85c05598377.md#mdf6df89f7116c7a3)（访问器）
-- [AntColonyMember.Advance · L77](baebd85c05598377.md#m29cff578dd85ff16)（方法）
+- [AntColonyMember.Role.get · L35](baebd85c05598377.md#m496a7a58214d1166)（访问器）
+- [AntColonyMember.Advance · L81](baebd85c05598377.md#maae3afcfd968ca55)（方法）
 - [ColonyFeedingTemplateRegression.Food · L23](e3a5269cbeb35cff.md#m74b4dc2173d9759d)（方法）
 - [ColonyResource.Feed · L85](293dbaecfff4b585.md#m1ed7b62042c6dda6)（方法）
-- [AntColonyMember.Entity.get · L29](baebd85c05598377.md#m4a0664814e72f13c)（访问器）
+- [AntColonyMember.Entity.get · L31](baebd85c05598377.md#m80b6e852bcc8a843)（访问器）
 - [ColonyResource.Create · L42](293dbaecfff4b585.md#ma07be53c3e3fff10)（方法）
 - [EcologyQueries.ToLocal · L39](bdf7ccc2c9c0452f.md#m1a07639eacf3aa47)（方法）
-- [AntColonyMember.State.get · L27](baebd85c05598377.md#mc8282e8cc823ceeb)（访问器）
-- [AntColonyMember.Activity.get · L43](baebd85c05598377.md#m033aa4a066e4fd8c)（访问器）
+- [AntColonyMember.State.get · L29](baebd85c05598377.md#mae4b8343e8179760)（访问器）
+- [AntColonyMember.Activity.get · L45](baebd85c05598377.md#m4a48e9d69d2b8791)（访问器）
 - [EcologyQueries.ToWorld · L40](bdf7ccc2c9c0452f.md#m320932c05ccecbf7)（方法）
 - [ColonyResource.Find · L26](293dbaecfff4b585.md#m8e52e678f4038a50)（方法）
 - [EntityStats.TryGet · L90](75aa86a368efdf24.md#m24ee1433e4a70d94)（方法）
 - [PopulationBehavior.JoinColony · L121](21e4f62f75a9a80f.md#mf185963e98c1e28c)（方法）
-- [AntColonyMember.Population.get · L30](baebd85c05598377.md#m688c2c0dfb5a66d6)（访问器）
+- [AntColonyMember.Population.get · L32](baebd85c05598377.md#m1c6bbec8e82e26dc)（访问器）
 - [EntityTemplateManager.SaveTemplate · L30](ab5e6457e8a7aba0.md#me559754bdf2cc955)（方法）
 - [EntityTemplateManager.Templates.get · L23](ab5e6457e8a7aba0.md#m45cc5b075f7bf4ec)（访问器）
 - [ColonyFeedingTemplateRegression.VerifyStoreRecovery · L93](e3a5269cbeb35cff.md#m93cf3c6eef6abdaf)（方法）
 - [EntityStats.RestoreValues · L88](75aa86a368efdf24.md#m774f994eaa3183ca)（方法）
-- [AntColonyMember.Restore · L191](baebd85c05598377.md#m7bfd664ed689f5c9)（方法）
+- [AntColonyMember.Restore · L196](baebd85c05598377.md#mdd533973e409efc5)（方法）
 - [ColonyFeedingTemplateRegression.回调@30 · L30](e3a5269cbeb35cff.md#med102d65212e2c31)（回调/委托）
 - [ColonyFeedingTemplateRegression.回调@31 · L31](e3a5269cbeb35cff.md#maf89cf4f4b0885cf)（回调/委托）
 - [ColonyFeedingTemplateRegression.回调@32 · L32](e3a5269cbeb35cff.md#mc4b8445a52b3cc47)（回调/委托）
@@ -352,7 +352,7 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [AntColonyMember.Capture · L189](baebd85c05598377.md#mdfb4ace9299cbaf0)（方法）
+- [AntColonyMember.Capture · L194](baebd85c05598377.md#mce36f30c5e0a4d52)（方法）
 
 <a id="me2b5740fc7a880ba"></a>
 

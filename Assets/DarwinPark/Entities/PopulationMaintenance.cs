@@ -62,7 +62,9 @@ namespace DarwinPark.Entities
         }
     }
     [Serializable] public sealed class PopulationMaintenanceRule
-    {public string id;public bool enabled=true,landOnly=true;public float ratio=.3f;public RandomSpawnRecipe source=new();}
+    {public string id;public bool enabled=true,landOnly=true;public float ratio=.3f;public RandomSpawnRecipe source=new();
+        // ★ 适配：普通来源规则保留旧语义；默认生态规则按实际能力统计，并可设置保底数量。
+        public PopulationRuleCategory category;public int minimumCount;}
     [Serializable] public sealed class PopulationMaintenanceState
     {public int version=1;public List<PopulationMaintenanceRule> rules=new();}
     [Serializable] public sealed class PopulationMaintenanceSettings
@@ -87,16 +89,22 @@ namespace DarwinPark.Entities
         public static void Refresh()
         {
             // ★ 修复（防Bug回归）：同帧移除再新增可保持总数不变，必须按注册版本失效，而非只比较数量。
-            if(_frame==Time.frameCount&&_membership==EntityRegistry.MembershipRevision)return;_frame=Time.frameCount;_membership=EntityRegistry.MembershipRevision;Total=0;Counts.Clear();foreach(var rule in Items)Counts[rule.id]=0;
-            foreach(var entity in EntityRegistry.All)if(EcologyQueries.Alive(entity)){Total++;foreach(var rule in Items)if(rule.source.Matches(entity.Genes.Genome))Counts[rule.id]++;}
+            if(_frame==Time.frameCount&&_membership==EntityRegistry.MembershipRevision)return;_frame=Time.frameCount;_membership=EntityRegistry.MembershipRevision;Total=0;EcologyMaintenancePolicy.ResetCounts();Counts.Clear();foreach(var rule in Items)Counts[rule.id]=0;
+            // ★ 适配：普通来源规则仍走原轻量匹配，只有生态分类规则存在时才计算实际生产/移动能力。
+            bool ecological=Items.Any(r=>r.category!=PopulationRuleCategory.Source);
+            foreach(var entity in EntityRegistry.All)if(EcologyQueries.Alive(entity)){Total++;var category=ecological?EcologyMaintenancePolicy.Observe(entity.Genes):PopulationRuleCategory.Source;foreach(var rule in Items)if(EcologyMaintenancePolicy.Matches(rule,entity.Genes,category))Counts[rule.id]++;}
         }
         public static int Count(PopulationMaintenanceRule rule){Refresh();return Counts.TryGetValue(rule.id,out int count)?count:0;}
+        // ★ 适配：生态70/30共享“生产者+移动者”分母，其他静止异养个体不导致两个分区无解。
+        public static int Denominator(PopulationMaintenanceRule rule){Refresh();return EcologyMaintenancePolicy.Denominator(rule,Total);}
         public static int Needed(PopulationMaintenanceRule rule)
         {
             // ★ 适配：优化重复计算，停用/零目标规则无需先统计全世界。
-            if(!rule.enabled||rule.ratio<=0)return 0;int count=Count(rule);if(Total==0)return Math.Min(PopulationMaintenanceSettings.Current.emptyWorldSeedCount,PopulationMaintenanceSettings.Current.maximumRefillPerCycle);if(count>=Total*rule.ratio)return 0;
+            if(!rule.enabled||rule.ratio<=0)return 0;int count=Count(rule),total=Denominator(rule);
+            if(count<rule.minimumCount)return Math.Min(rule.minimumCount-count,PopulationMaintenanceSettings.Current.maximumRefillPerCycle);
+            if(total==0)return Math.Min(PopulationMaintenanceSettings.Current.emptyWorldSeedCount,PopulationMaintenanceSettings.Current.maximumRefillPerCycle);if(count>=total*rule.ratio)return 0;
             // 新实体同时增加分子和分母，不能用ratio*当前总数直接补差。
-            return (int)Math.Min(PopulationMaintenanceSettings.Current.maximumRefillPerCycle,Math.Max(0,Math.Ceiling(((double)rule.ratio*Total-count)/(1d-rule.ratio))));
+            return (int)Math.Min(PopulationMaintenanceSettings.Current.maximumRefillPerCycle,Math.Max(0,Math.Ceiling(((double)rule.ratio*total-count)/(1d-rule.ratio))));
         }
         private static bool Disjoint(RandomSpawnRecipe a,RandomSpawnRecipe b)
         {
@@ -108,13 +116,13 @@ namespace DarwinPark.Entities
         {
             if(Needed(rule)==0)return false;int count=Count(rule);if(count==0)return true;
             // ★ 修复（防Bug回归）：完整互斥分区按一个实体的精度维持，避免33.3%/66.7%为追逐分母而交替无限补充。
-            return !RoundedPartitions.Contains(rule.id)||rule.ratio*Total-count>=1;
+            return count<rule.minimumCount||!RoundedPartitions.Contains(rule.id)||rule.ratio*Denominator(rule)-count>=1;
         }
         public static float BreedingScale(EntityGeneController genes)
         {
             // ★ 适配：优化重复计算，保留停用规则供界面查看，但没有有效调节规则时不扫描全体实体。
             bool active=false;for(int i=0;i<Items.Count;i++)if(Items[i].enabled){active=true;break;}if(!active)return 1;Refresh();float factor=1;
-            foreach(var rule in Items)if(rule.enabled&&rule.source.Matches(genes.Genome)&&Total>0){float share=Counts[rule.id]/(float)Total;if(share>rule.ratio)factor=Mathf.Min(factor,rule.ratio/share);}return factor;
+            foreach(var rule in Items)if(rule.enabled&&EcologyMaintenancePolicy.Matches(rule,genes)&&Denominator(rule)>0){float share=Counts[rule.id]/(float)Denominator(rule);if(share>rule.ratio)factor=Mathf.Min(factor,rule.ratio/share);}return factor;
         }
         public static bool BreedingReady(EntityGeneController genes,ref float waited,float dt)
         {
@@ -134,13 +142,13 @@ namespace DarwinPark.Entities
         {
             if(state==null||state.version==0&&(state.rules==null||state.rules.Count==0))return;
             if(state.version!=1||state.rules==null||state.rules.Count>PopulationMaintenanceSettings.Current.maximumRules)throw new InvalidDataException("数量维持规则版本或数量无效");var ids=new HashSet<string>();
-            foreach(var rule in state.rules){if(rule==null||!Guid.TryParseExact(rule.id,"N",out _)||!ids.Add(rule.id)||!float.IsFinite(rule.ratio)||rule.ratio<0||rule.ratio>=1||rule.source==null)throw new InvalidDataException("数量维持比例或来源无效（比例须小于100%）");rule.source.Validate(catalog);}
+            foreach(var rule in state.rules){if(rule==null||!Enum.IsDefined(typeof(PopulationRuleCategory),rule.category)||rule.minimumCount<0||rule.minimumCount>100000||!Guid.TryParseExact(rule.id,"N",out _)||!ids.Add(rule.id)||!float.IsFinite(rule.ratio)||rule.ratio<0||rule.ratio>=1||rule.source==null)throw new InvalidDataException("数量维持比例或来源无效（比例须小于100%）");rule.source.Validate(catalog);}
             // ★ 修复（防Bug回归）：互斥条件的目标总和超过100%无解，必须在写盘/启动生成前拒绝，而非一直补到世界上限。
             CheckPartitions(state.rules);
         }
         private static HashSet<string> CheckPartitions(IEnumerable<PopulationMaintenanceRule> rules)
         {
-            var result=new HashSet<string>();var enabled=rules.Where(r=>r.enabled).ToArray();var apart=new bool[enabled.Length,enabled.Length];for(int i=0;i<enabled.Length;i++)for(int j=0;j<i;j++)apart[i,j]=Disjoint(enabled[i].source,enabled[j].source);
+            var result=new HashSet<string>();var enabled=rules.Where(r=>r.enabled).ToArray();var apart=new bool[enabled.Length,enabled.Length];for(int i=0;i<enabled.Length;i++)for(int j=0;j<i;j++)apart[i,j]=EcologyMaintenancePolicy.Disjoint(enabled[i],enabled[j],Disjoint);
             for(int mask=1;mask<(1<<enabled.Length);mask++){double sum=0;bool clique=true;for(int i=0;i<enabled.Length&&clique;i++)if((mask&(1<<i))!=0){sum+=enabled[i].ratio;for(int j=0;j<i;j++)if((mask&(1<<j))!=0&&!apart[i,j]){clique=false;break;}}if(!clique)continue;if(sum>1.000001)throw new InvalidDataException("互斥维持规则的目标比例总和不能超过100%");if(Math.Abs(sum-1)<.000001)for(int i=0;i<enabled.Length;i++)if((mask&(1<<i))!=0)result.Add(enabled[i].id);}
             return result;
         }

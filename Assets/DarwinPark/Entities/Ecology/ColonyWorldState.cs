@@ -9,15 +9,18 @@ namespace DarwinPark.Entities.Ecology
     [Serializable] public sealed class ColonyWorldState
     {
         public int version=1;public string settings;
+        // ★ 适配：默认生态/建群配置随世界保存，外部调参不悄悄改写旧世界。
+        public string ecologyDefaults;
         public List<ColonyResourceSave> resources=new List<ColonyResourceSave>();
         public PopulationArchiveState population;
-        public bool IsEmpty=>version==0&&string.IsNullOrEmpty(settings)&&(resources==null||resources.Count==0)&&population==null;
-        public static ColonyWorldState Capture()=>new ColonyWorldState{settings=AntColonySettings.CurrentJson,resources=ColonyResource.All.Select(r=>r.Capture()).ToList(),population=PopulationArchive.Capture()};
+        public bool IsEmpty=>version==0&&string.IsNullOrEmpty(settings)&&string.IsNullOrEmpty(ecologyDefaults)&&(resources==null||resources.Count==0)&&population==null;
+        public static ColonyWorldState Capture()=>new ColonyWorldState{settings=AntColonySettings.CurrentJson,ecologyDefaults=EcologyDefaults.CurrentJson,resources=ColonyResource.All.Select(r=>r.Capture()).ToList(),population=PopulationArchive.Capture()};
         public static void Validate(ColonyWorldState state)
         {
             if(state==null||state.IsEmpty)return;
             // ★ 适配：颜色、历史及谱系在世界清场前校验，旧档缺字段仍可加载。
             PopulationArchive.Validate(state.population);
+            if(!string.IsNullOrWhiteSpace(state.ecologyDefaults))EcologyDefaults.Parse(state.ecologyDefaults);
             if(state.version!=1||state.resources==null)throw new InvalidDataException("蚁群世界快照版本或资源列表无效");
             if(!string.IsNullOrEmpty(state.settings))AntColonySettings.Parse(state.settings);
             var ids=new HashSet<string>();
@@ -26,7 +29,7 @@ namespace DarwinPark.Entities.Ecology
                     throw new InvalidDataException("蚁群资源标识、位置或能量无效");
         }
         private static bool Finite(Vector3 p)=>!float.IsNaN(p.x)&&!float.IsInfinity(p.x)&&!float.IsNaN(p.y)&&!float.IsInfinity(p.y)&&!float.IsNaN(p.z)&&!float.IsInfinity(p.z);
-        public static void Prepare(ColonyWorldState state){Validate(state);ColonyResource.ClearWorld();AntColonySettings.UseSnapshot(state?.settings);PopulationArchive.Restore(state?.population);PopulationArchiveObserver.Ensure();}
+        public static void Prepare(ColonyWorldState state){Validate(state);ColonyResource.ClearWorld();AntColonySettings.UseSnapshot(state?.settings);EcologyDefaults.UseSnapshot(state?.ecologyDefaults);PopulationArchive.Restore(state?.population);PopulationArchiveObserver.Ensure();}
         public static void Restore(ColonyWorldState state)
         {
             if(state?.resources!=null)foreach(var resource in state.resources)ColonyResource.Create(JsonUtility.FromJson<ColonyResourceSave>(JsonUtility.ToJson(resource)));
@@ -36,6 +39,8 @@ namespace DarwinPark.Entities.Ecology
         public static void ValidateMember(AntColonyMemberSave state)
         {
             if(state==null||!state.HasData)return;
+            // ★ 适配：新字段也在清场前校验，旧档缺省表示尚未领取。
+            ColonyFoundingSupport.Validate(state.startup);
             // ★ 修复（防Bug回归）：数字形式的未定义角色和非有限运输坐标也必须在清场前拒绝，不能等到恢复角色时崩溃。
             if(!Enum.TryParse<AntRole>(state.role,out var role)||!Enum.IsDefined(typeof(AntRole),role)||role==AntRole.None||state.supplyPoints==null||state.supplyPoints.Any(p=>!Finite(p))||!Finite(state.foundingPoint)||!Finite(state.deliveryPoint))throw new InvalidDataException("蚁群分工、运输位置或补给点无效");
             foreach(float value in new[]{state.scan,state.patrolRemaining,state.restRemaining,state.circleAngle,state.reproductionTimer,state.reproductionCooldown,state.mateWait,state.maintenanceWait})

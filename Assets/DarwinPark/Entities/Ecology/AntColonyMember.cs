@@ -16,6 +16,8 @@ namespace DarwinPark.Entities.Ecology
         public Vector3 foundingPoint,deliveryPoint;
         public List<Vector3> supplyPoints=new List<Vector3>();
         public Genome partnerGenome;
+        // ★ 适配：创业储粮领取记录随分工保存，重载和重算不能重复领取。
+        public ColonyFoundingSave startup;
         public bool HasData=>!string.IsNullOrEmpty(role);
     }
     public enum ColonyActivity { Rest,Patrol,Hunt,Collect,Transport,Feed,Reproduce,Founding,Young,Mate }
@@ -68,6 +70,8 @@ namespace DarwinPark.Entities.Ecology
         }
         public AntRole ChooseBirthRole()
         {
+            // ★ 适配：前几胎先补齐工匠，避免随机连续出生士兵/繁殖个体形成补给死循环。
+            if(ColonyFoundingSupport.NeedsWorker(this))return AntRole.Worker;
             var settings=AntColonySettings.Current;
             if(Group.Count()>=settings.reproductivePopulationThreshold&&Group.Count(m=>m.Role==AntRole.Reproductive)<settings.minimumReproductives)return AntRole.Reproductive;
             var choices=settings.roles.Where(r=>r.birthWeight>0&&(r.Role!=AntRole.Reproductive||Group.Count(m=>m.Role==AntRole.Reproductive)<settings.maximumReproductives)).ToArray();
@@ -90,7 +94,7 @@ namespace DarwinPark.Entities.Ecology
                 {State.founding=false;EnsureSupplyPoints();GetComponent<TerritoryBehavior>()?.Restore(EcologyQueries.ToLocal(transform.position),true,0,Vector3.zero);}
                 return;
             }
-            if(Role==AntRole.Queen){Activity=ColonyActivity.Reproduce;AntColonyReproduction.Advance(this,dt);return;}
+            if(Role==AntRole.Queen){Activity=ColonyActivity.Reproduce;ColonyFoundingSupport.Advance(this,dt);AntColonyReproduction.Advance(this,dt);return;}
             if(Role==AntRole.Worker){AntColonyWorker.Advance(this,dt);return;}
             if(Role==AntRole.Mate){Activity=ColonyActivity.Mate;return;}
             AdvanceSoldier(dt);
@@ -139,7 +143,8 @@ namespace DarwinPark.Entities.Ecology
             if(ColonyFeeding.Destination(this,out point))return true;
             // ★ 修复（防Bug回归）：跟随终点是各自站位，不能让同群成员持续向王后的身体中心挤压。
             if(Young||Role==AntRole.Mate){point=ColonyFormation.Home(this,Center,AntColonySettings.Current.feedRadius*.8f);return true;}
-            if(Role==AntRole.Worker){point=AntColonyWorker.Destination(this);return true;}
+            // ★ 适配：工匠成年前王后可以临时执行采集/运输，继续共用原有实际货物与扣粮路径。
+            if(Role==AntRole.Worker||ColonyFoundingSupport.Collecting(this)){point=AntColonyWorker.Destination(this);return true;}
             if(Role==AntRole.Soldier&&EcologyQueries.Alive(HuntTarget)){target=HuntTarget;point=target.transform.position;return true;}
             if(Role==AntRole.Soldier&&State.patrolRemaining>0)
             {

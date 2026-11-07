@@ -53,6 +53,8 @@ namespace DarwinPark.UI
                 case "randomRecipe":return RandomPlanetSpawner.Ensure(ServiceLocator.Get<SimulationClock>().gameObject).StartRecipe(command.recipe,command.count,command.landOnly);
                 case "maintenanceSet":return PopulationMaintenance.Set(command.maintenanceRule);
                 case "maintenanceRemove":return PopulationMaintenance.Remove(command.target);
+                // ★ 适配：默认规则由房主一次性校验/应用，客户端不自行创建另一份生态。
+                case "ecologyDefaults":return EcologyDefaults.ApplyRules();
                 case "randomCancel":RandomPlanetSpawner.Ensure(ServiceLocator.Get<SimulationClock>().gameObject).Cancel();return true;
                 case "time":
                     if(!LanSession.Finite(command.scale)||command.scale<0||command.scale>LanSettings.Current.maximumTimeScale)return false;var clock=ServiceLocator.Get<SimulationClock>();clock.SetTimeScale(command.scale);if(command.running)clock.Play();else clock.Pause();return true;

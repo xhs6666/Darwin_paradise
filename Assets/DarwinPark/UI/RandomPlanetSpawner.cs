@@ -4,6 +4,7 @@ using System.Linq;
 using DarwinPark.Core;
 using DarwinPark.Genetics;
 using DarwinPark.Entities;
+using DarwinPark.Entities.Ecology;
 using DarwinPark.Planet;
 using UnityEngine;
 using Random=UnityEngine.Random;
@@ -35,7 +36,8 @@ namespace DarwinPark.UI
             if(LanSession.Instance?.IsClient==true){if(automatic!=null)return false;Requested=Mathf.Clamp(count,1,maxCount);Spawned=0;IsBusy=true;Status="已请求管理员生成…";LanSession.Instance.SendCommand(new LanCommand{kind="randomRecipe",recipe=source,count=Requested,landOnly=landOnly});return true;}
             var planet=FindFirstObjectByType<PlanetTerrainMeshBuilder>();var surface=planet!=null?planet.GetComponent<MeshCollider>():null;
             if(planet==null||planet.Data==null||surface==null){Status="地表尚未就绪";return false;}
-            EntityViewController.Instance?.ExitView();EntityPlacementTool.Instance?.CancelPlacement();
+            // ★ 修复（防Bug回归）：自动维持现在默认持续运行，不能复用手动生成的模式切换而周期性打断操控/放置。
+            if(automatic==null){EntityViewController.Instance?.ExitView();EntityPlacementTool.Instance?.CancelPlacement();}
             Requested=Mathf.Clamp(count,1,maxCount);Spawned=0;IsBusy=true;Status="随机生成中…";
             _automaticRule=automatic?.id;
             // ★ 新增：成批任务只输出开始与结束，避免数量越多日志越慢。
@@ -57,7 +59,9 @@ namespace DarwinPark.UI
                 }
                 // ★ 适配：联机房主的Esc只暂停自己的输入，不应阻止其他管理员权限成员的生成任务。
                 if(GameInputGate.Blocked&&!WorldAuthority.Online){yield return null;continue;}
-                attempted++;slice++;var direction=Random.onUnitSphere;float outside=surface.bounds.extents.magnitude+spawnHeight;
+                // ★ 适配：默认生产者优先补到缺粮种群活动区，仍走真实地表/陆地检查。
+                attempted++;slice++;var ruleForPlacement=_automaticRule==null?null:PopulationMaintenance.Rules.FirstOrDefault(r=>r.id==_automaticRule);
+                var direction=EcologyMaintenancePolicy.SpawnDirection(ruleForPlacement,planet.transform.position);float outside=surface.bounds.extents.magnitude+spawnHeight;
                 if(surface.Raycast(new Ray(planet.transform.position+direction*outside,-direction),out var hit,outside*2)&&
                     (!landOnly||(hit.point-planet.transform.position).magnitude>planet.WaterRadius+landClearance)&&
                     Spawn(source.CreateGenome(),hit.point+direction*spawnHeight))Spawned++;

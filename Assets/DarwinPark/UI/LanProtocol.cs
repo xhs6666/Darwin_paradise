@@ -26,6 +26,8 @@ namespace DarwinPark.UI
         public WorldGameSettings gameSettings;
         public PopulationArchiveState population;
         public PopulationMaintenanceState maintenance;
+        // ★ 适配：低频同步生态配置，客户端显示与房主应用的默认项一致。
+        public string ecologyDefaults;
         public Quaternion rotation;public List<LanActor> actors=new List<LanActor>();
         public List<ColonyResourceSave> resources=new List<ColonyResourceSave>();
         public bool randomBusy;public int randomSpawned,randomRequested;public string randomStatus;

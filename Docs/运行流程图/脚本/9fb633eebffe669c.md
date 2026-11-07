@@ -2,7 +2,7 @@
 
 [返回总索引](../README.md) · `Runtime` · `Assets/DarwinPark/UI/LanSession.cs`
 
-[源文件](../../../Assets/DarwinPark/UI/LanSession.cs) · 源码校验：`1ff19ec11ee25e5b652b01d09480c651658d39129e86ac1a607a150257dcfdb0`
+[源文件](../../../Assets/DarwinPark/UI/LanSession.cs) · 源码校验：`164bcd966efbcb93d5bf78a4d99fa41631bb18d8748ad846117e811b76a89433`
 
 方法按源文件位置排列。事件/回调引用不表示立即执行；分支与异常说明见总索引。完整源码与可点击关系图请打开离线手册。
 
@@ -1124,7 +1124,7 @@ flowchart TD
 项目内调用/回调引用：
 
 - [EcologyIdentity.Find · L20](bdf7ccc2c9c0452f.md#m58f756a3ba9ec990)（方法）
-- [AntColonyMember.Role.get · L33](baebd85c05598377.md#mdf6df89f7116c7a3)（访问器）
+- [AntColonyMember.Role.get · L35](baebd85c05598377.md#m496a7a58214d1166)（访问器）
 
 <a id="m0ea9caea7490455d"></a>
 
@@ -2367,7 +2367,7 @@ flowchart TD
 - [EcologyIdentity.Find · L20](bdf7ccc2c9c0452f.md#m58f756a3ba9ec990)（方法）
 - [EntityManualControl.Release · L37](a6969896da35e1f0.md#m87aa0efacece2c5b)（方法）
 - [LanSession.Roster · L186](9fb633eebffe669c.md#mafeddb5e9882547a)（方法）
-- [LanSession.LeaveToMenu · L290](9fb633eebffe669c.md#m107974d8a60df554)（方法）
+- [LanSession.LeaveToMenu · L292](9fb633eebffe669c.md#m00e936ab853b36f8)（方法）
 - [WorldSessionManager.Busy.get · L24](08741c7b7b9d9344.md#m4483e2e4f28f7c85)（访问器）
 - [EcologyQueries.Alive · L38](bdf7ccc2c9c0452f.md#mb2877c487f449970)（方法）
 - [LanSession.SendMessage · L89](9fb633eebffe669c.md#m6d646648c755fb11)（方法）
@@ -2574,7 +2574,7 @@ flowchart TD
 - [LanSession.LocalId.get · L29](9fb633eebffe669c.md#me99d6c84140bddb3)（访问器）
 - [EntityViewController.Instance.get · L15](0ad0345f83229ef0.md#mb3b8144b56e80842)（访问器）
 - [EntityViewController.ExitView · L105](0ad0345f83229ef0.md#mca8619c7f27942c9)（方法）
-- [WorldSessionManager.Open · L58](08741c7b7b9d9344.md#m0a8e69a8a4fbc512)（方法）
+- [WorldSessionManager.Open · L60](08741c7b7b9d9344.md#m7bd56ef45131b4e5)（方法）
 - [LanSession.OwnedEntityId.set · L30](9fb633eebffe669c.md#mab85f356abbbcca4)（访问器）
 - [LanSession.OwnedEntityId.get · L30](9fb633eebffe669c.md#m5adc535c48d20cbe)（访问器）
 - [EcologyIdentity.Find · L20](bdf7ccc2c9c0452f.md#m58f756a3ba9ec990)（方法）
@@ -2601,52 +2601,54 @@ flowchart TD
   b4{"判断：frame.gameSettings.version==1"}
   b5{"EntityPopulationLimit.UseSnapshot(frame.gameSettings);<br/>判断：_world.Current!=null"}
   b6["_world.Current.gameSettings=EntityPopulationLimit.Capture();"]
-  b7{"判断：frame.population!=null"}
-  b8["PopulationArchive.Restore(frame.population);"]
-  b9["ServiceLocator.Get&lt;SimulationClock&gt;().ApplyRemoteState(frame.time,frame.scale,frame.running);<br/>FindFirstObjectByType&lt;SunSystem&gt;().OrbitAngle=frame.sun;<br/>EcologyQueries.Planet.transform.rotation=frame.rotation;<br/>ids=new HashSet&lt;string&gt;()"]
-  b10["frame.actors"]
-  b11{"判断：frame.actors"}
-  b12["var"]
-  b13{"state=incoming.state<br/>id=state.ecology.id<br/>ids.Add(id);<br/>entity=EcologyIdentity.Find(id)<br/>判断：entity==null"}
-  b14["before=EntityRegistry.All.ToArray()<br/>DarwinEntity.Spawner(state.genome,state.position,state.name);<br/>entity=EntityRegistry.All.Single(e=&gt;!before.Contains(e));<br/>state.Restore(entity);"]
-  b15{"entity.GetComponent&lt;LanReplicaActor&gt;()<br/>判断：entity.GetComponent&lt;LanReplicaActor&gt;()"}
-  b16["entity.GetComponent&lt;LanReplicaActor&gt;()"]
-  b17["entity.gameObject.AddComponent&lt;LanReplicaActor&gt;()"]
-  b18["(entity.GetComponent&lt;LanReplicaActor&gt;()??entity.gameObject.AddComponent&lt;LanReplicaActor&gt;()).Apply(incoming);"]
-  b19["frame.actors"]
-  b20["EntityRegistry.All.ToArray()"]
-  b21{"判断：EntityRegistry.All.ToArray()"}
-  b22{"var<br/>判断：ids.Contains(EcologyIdentity.Of(entity))"}
-  b23["entity.gameObject.SetActive(false);<br/>Destroy(entity.gameObject);"]
-  b24{"EntityRegistry.All.ToArray()<br/>判断：EntityRegistry.All.ToArray()"}
-  b25["EntityRegistry.All.ToArray()"]
-  b26["连接 / 离开区域"]
-  b27["resources=new HashSet&lt;string&gt;()"]
-  b28["frame.resources"]
-  b29{"判断：frame.resources"}
-  b30["var"]
-  b31{"resources.Add(saved.id);<br/>resource=ColonyResource.Find(saved.id)<br/>判断：resource==null"}
-  b32["ColonyResource.Create(saved);"]
-  b33["resource.State.energy=saved.energy;<br/>resource.State.group=saved.group;<br/>resource.State.claim=saved.claim;<br/>resource.CarryTo(EcologyQueries.ToWorld(saved.local));"]
-  b34["frame.resources"]
-  b35["ColonyResource.All.ToArray()"]
-  b36{"判断：ColonyResource.All.ToArray()"}
-  b37{"var<br/>判断：resources.Contains(resource.State.id)"}
-  b38["resource.Remove();"]
-  b39{"ColonyResource.All.ToArray()<br/>判断：ColonyResource.All.ToArray()"}
-  b40["ColonyResource.All.ToArray()"]
-  b41["连接 / 离开区域"]
-  b42{"RandomPlanetSpawner.Ensure(ServiceLocator.Get&lt;SimulationClock&gt;().gameObject).ApplyRemoteProgress(frame.randomBusy,frame.randomSpawned,frame.randomRequested,frame.randomStatus);<br/>判断：frame.maintenance!=null"}
-  b43["PopulationMaintenance.Restore(frame.maintenance);"]
-  b44{"判断：frame.oreResolution&gt;0"}
-  b45{"判断：frame.ore!=null"}
-  b46{"判断：frame.ore.Length==(long)frame.oreResolution*frame.oreResolution"}
-  b47["PlanetOreSystem.Instance.RestoreAmounts(frame.ore,frame.oreResolution);<br/>PlanetOreSystem.Instance.RegenTimer=frame.oreTimer;"]
-  b48(["结束 / 返回"])
+  b7{"判断：string.IsNullOrWhiteSpace(frame.ecologyDefaults)"}
+  b8["EcologyDefaults.UseSnapshot(frame.ecologyDefaults);"]
+  b9{"判断：frame.population!=null"}
+  b10["PopulationArchive.Restore(frame.population);"]
+  b11["ServiceLocator.Get&lt;SimulationClock&gt;().ApplyRemoteState(frame.time,frame.scale,frame.running);<br/>FindFirstObjectByType&lt;SunSystem&gt;().OrbitAngle=frame.sun;<br/>EcologyQueries.Planet.transform.rotation=frame.rotation;<br/>ids=new HashSet&lt;string&gt;()"]
+  b12["frame.actors"]
+  b13{"判断：frame.actors"}
+  b14["var"]
+  b15{"state=incoming.state<br/>id=state.ecology.id<br/>ids.Add(id);<br/>entity=EcologyIdentity.Find(id)<br/>判断：entity==null"}
+  b16["before=EntityRegistry.All.ToArray()<br/>DarwinEntity.Spawner(state.genome,state.position,state.name);<br/>entity=EntityRegistry.All.Single(e=&gt;!before.Contains(e));<br/>state.Restore(entity);"]
+  b17{"entity.GetComponent&lt;LanReplicaActor&gt;()<br/>判断：entity.GetComponent&lt;LanReplicaActor&gt;()"}
+  b18["entity.GetComponent&lt;LanReplicaActor&gt;()"]
+  b19["entity.gameObject.AddComponent&lt;LanReplicaActor&gt;()"]
+  b20["(entity.GetComponent&lt;LanReplicaActor&gt;()??entity.gameObject.AddComponent&lt;LanReplicaActor&gt;()).Apply(incoming);"]
+  b21["frame.actors"]
+  b22["EntityRegistry.All.ToArray()"]
+  b23{"判断：EntityRegistry.All.ToArray()"}
+  b24{"var<br/>判断：ids.Contains(EcologyIdentity.Of(entity))"}
+  b25["entity.gameObject.SetActive(false);<br/>Destroy(entity.gameObject);"]
+  b26{"EntityRegistry.All.ToArray()<br/>判断：EntityRegistry.All.ToArray()"}
+  b27["EntityRegistry.All.ToArray()"]
+  b28["连接 / 离开区域"]
+  b29["resources=new HashSet&lt;string&gt;()"]
+  b30["frame.resources"]
+  b31{"判断：frame.resources"}
+  b32["var"]
+  b33{"resources.Add(saved.id);<br/>resource=ColonyResource.Find(saved.id)<br/>判断：resource==null"}
+  b34["ColonyResource.Create(saved);"]
+  b35["resource.State.energy=saved.energy;<br/>resource.State.group=saved.group;<br/>resource.State.claim=saved.claim;<br/>resource.CarryTo(EcologyQueries.ToWorld(saved.local));"]
+  b36["frame.resources"]
+  b37["ColonyResource.All.ToArray()"]
+  b38{"判断：ColonyResource.All.ToArray()"}
+  b39{"var<br/>判断：resources.Contains(resource.State.id)"}
+  b40["resource.Remove();"]
+  b41{"ColonyResource.All.ToArray()<br/>判断：ColonyResource.All.ToArray()"}
+  b42["ColonyResource.All.ToArray()"]
+  b43["连接 / 离开区域"]
+  b44{"RandomPlanetSpawner.Ensure(ServiceLocator.Get&lt;SimulationClock&gt;().gameObject).ApplyRemoteProgress(frame.randomBusy,frame.randomSpawned,frame.randomRequested,frame.randomStatus);<br/>判断：frame.maintenance!=null"}
+  b45["PopulationMaintenance.Restore(frame.maintenance);"]
+  b46{"判断：frame.oreResolution&gt;0"}
+  b47{"判断：frame.ore!=null"}
+  b48{"判断：frame.ore.Length==(long)frame.oreResolution*frame.oreResolution"}
+  b49["PlanetOreSystem.Instance.RestoreAmounts(frame.ore,frame.oreResolution);<br/>PlanetOreSystem.Instance.RegenTimer=frame.oreTimer;"]
+  b50(["结束 / 返回"])
   b0 --> b1
   b1 -->|"否"| b2
-  b1 -->|"是"| b48
-  b2 -->|"是"| b48
+  b1 -->|"是"| b50
+  b2 -->|"是"| b50
   b2 -->|"否"| b3
   b3 -->|"是"| b4
   b3 -->|"否"| b7
@@ -2655,63 +2657,66 @@ flowchart TD
   b5 -->|"是"| b6
   b5 -->|"否"| b7
   b6 --> b7
-  b7 -->|"是"| b8
-  b7 -->|"否"| b9
+  b7 -->|"否"| b8
+  b7 -->|"是"| b9
   b8 --> b9
-  b9 --> b10
+  b9 -->|"是"| b10
+  b9 -->|"否"| b11
   b10 --> b11
-  b11 -->|"是"| b12
-  b11 -->|"否 · 经过finally 19"| b20
+  b11 --> b12
   b12 --> b13
   b13 -->|"是"| b14
-  b13 -->|"否"| b15
+  b13 -->|"否 · 经过finally 21"| b22
   b14 --> b15
-  b15 -->|"否"| b16
-  b15 -->|"是"| b17
-  b16 --> b18
-  b17 --> b18
-  b18 --> b11
-  b20 --> b21
-  b21 -->|"是"| b22
-  b21 -->|"否 · 经过finally 24"| b27
-  b22 -->|"否"| b23
-  b22 -->|"是"| b21
-  b23 --> b21
+  b15 -->|"是"| b16
+  b15 -->|"否"| b17
+  b16 --> b17
+  b17 -->|"否"| b18
+  b17 -->|"是"| b19
+  b18 --> b20
+  b19 --> b20
+  b20 --> b13
+  b22 --> b23
+  b23 -->|"是"| b24
+  b23 -->|"否 · 经过finally 26"| b29
   b24 -->|"否"| b25
-  b24 -->|"是"| b26
-  b25 --> b26
+  b24 -->|"是"| b23
+  b25 --> b23
+  b26 -->|"否"| b27
+  b26 -->|"是"| b28
   b27 --> b28
-  b28 --> b29
-  b29 -->|"是"| b30
-  b29 -->|"否 · 经过finally 34"| b35
+  b29 --> b30
   b30 --> b31
   b31 -->|"是"| b32
-  b31 -->|"否"| b33
-  b32 --> b29
-  b33 --> b29
-  b35 --> b36
-  b36 -->|"是"| b37
-  b36 -->|"否 · 经过finally 39"| b42
-  b37 -->|"否"| b38
-  b37 -->|"是"| b36
-  b38 --> b36
+  b31 -->|"否 · 经过finally 36"| b37
+  b32 --> b33
+  b33 -->|"是"| b34
+  b33 -->|"否"| b35
+  b34 --> b31
+  b35 --> b31
+  b37 --> b38
+  b38 -->|"是"| b39
+  b38 -->|"否 · 经过finally 41"| b44
   b39 -->|"否"| b40
-  b39 -->|"是"| b41
-  b40 --> b41
-  b42 -->|"是"| b43
-  b42 -->|"否"| b44
-  b43 --> b44
+  b39 -->|"是"| b38
+  b40 --> b38
+  b41 -->|"否"| b42
+  b41 -->|"是"| b43
+  b42 --> b43
   b44 -->|"是"| b45
-  b44 -->|"否"| b48
-  b45 -->|"是"| b46
-  b45 -->|"否"| b48
+  b44 -->|"否"| b46
+  b45 --> b46
   b46 -->|"是"| b47
-  b46 -->|"否"| b48
-  b47 --> b48
-  b11 -. "退出保护区时 finally（示意）" .-> b19
-  b21 -. "退出保护区时 finally（示意）" .-> b24
-  b29 -. "退出保护区时 finally（示意）" .-> b34
-  b36 -. "退出保护区时 finally（示意）" .-> b39
+  b46 -->|"否"| b50
+  b47 -->|"是"| b48
+  b47 -->|"否"| b50
+  b48 -->|"是"| b49
+  b48 -->|"否"| b50
+  b49 --> b50
+  b13 -. "退出保护区时 finally（示意）" .-> b21
+  b23 -. "退出保护区时 finally（示意）" .-> b26
+  b31 -. "退出保护区时 finally（示意）" .-> b36
+  b38 -. "退出保护区时 finally（示意）" .-> b41
 
 ```
 
@@ -2720,6 +2725,7 @@ flowchart TD
 - [EntityPopulationLimit.UseSnapshot · L30](44f717c5df79d270.md#m735185cedc969868)（方法）
 - [WorldSessionManager.Current.get · L21](08741c7b7b9d9344.md#m5d26a5eb846a8504)（访问器）
 - [EntityPopulationLimit.Capture · L29](44f717c5df79d270.md#m9d42f19642677139)（方法）
+- [EcologyDefaults.UseSnapshot · L67](5b565b57de741d98.md#m5bc9f872fc491c57)（方法）
 - [PopulationArchive.Restore · L123](084e119b69cdd751.md#ma1030dfe5b5f2565)（方法）
 - [SimulationClock.ApplyRemoteState · L76](a8f444aec9614b0a.md#m2a1c12e8c6ba769d)（方法）
 - [ServiceLocator.Get · L33](f2fdbe9f9ccd93cb.md#m2ae625299520c56d)（方法）
@@ -2734,17 +2740,17 @@ flowchart TD
 - [ColonyResource.CarryTo · L77](293dbaecfff4b585.md#mf1b53d872114d3a5)（方法）
 - [EcologyQueries.ToWorld · L40](bdf7ccc2c9c0452f.md#m320932c05ccecbf7)（方法）
 - [ColonyResource.Remove · L99](293dbaecfff4b585.md#m3e346b425034ee3a)（方法）
-- [RandomPlanetSpawner.ApplyRemoteProgress · L92](1c13222a547b265c.md#mf0ff742b53144e65)（方法）
-- [RandomPlanetSpawner.Ensure · L24](1c13222a547b265c.md#mccefd1367aa9ded3)（方法）
-- [PopulationMaintenance.Restore · L147](923ccc4e86c4786c.md#mfc640b9c7ef9df02)（方法）
+- [RandomPlanetSpawner.ApplyRemoteProgress · L96](1c13222a547b265c.md#m271ca1fe80c1758b)（方法）
+- [RandomPlanetSpawner.Ensure · L25](1c13222a547b265c.md#m2f7496d9d5575b34)（方法）
+- [PopulationMaintenance.Restore · L155](923ccc4e86c4786c.md#m239f01f9bc44dc27)（方法）
 - [PlanetOreSystem.RestoreAmounts · L111](86b3fbb4d9436121.md#mf32079659fe75cd5)（方法）
 - [PlanetOreSystem.Instance.get · L8](86b3fbb4d9436121.md#m53f6a6af4b6dc252)（访问器）
 - [PlanetOreSystem.RegenTimer.set · L110](86b3fbb4d9436121.md#ma831f663fb815b50)（访问器）
-- [LanSession.回调@271 · L271](9fb633eebffe669c.md#m4acc16de4a8ff24b)（回调/委托）
+- [LanSession.回调@273 · L273](9fb633eebffe669c.md#m96eede3f49d7a46e)（回调/委托）
 
-<a id="m4acc16de4a8ff24b"></a>
+<a id="m96eede3f49d7a46e"></a>
 
-## 回调@271 · L271
+## 回调@273 · L273
 
 `e … => 回调`
 
@@ -2762,9 +2768,9 @@ flowchart TD
 
 ```
 
-<a id="m3103a146e52db72d"></a>
+<a id="m7507ff22288cb80e"></a>
 
-## CloseHost · L286
+## CloseHost · L288
 
 `public void CloseHost()`
 
@@ -2818,9 +2824,9 @@ flowchart TD
 - [LanSession.Status.set · L31](9fb633eebffe669c.md#m5f42294bb375d2f9)（访问器）
 - [LanSession.Status.get · L31](9fb633eebffe669c.md#md8607b7380abb030)（访问器）
 
-<a id="m107974d8a60df554"></a>
+<a id="m00e936ab853b36f8"></a>
 
-## LeaveToMenu · L290
+## LeaveToMenu · L292
 
 `public void LeaveToMenu(string reason="已离开局域网")`
 
@@ -2864,19 +2870,19 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [LanSession.CancelConnecting · L297](9fb633eebffe669c.md#mf8c495f22f88c713)（方法）
+- [LanSession.CancelConnecting · L299](9fb633eebffe669c.md#mcfcb9a748cd4e6d6)（方法）
 - [LanConnection.Dispose · L62](872c2b8da417200e.md#mcbbf7592b2503d1f)（方法）
-- [LanSession.CloseHost · L286](9fb633eebffe669c.md#m3103a146e52db72d)（方法）
-- [WorldSessionManager.ReturnToMenu · L136](08741c7b7b9d9344.md#m6b1d0d11a045709c)（方法）
+- [LanSession.CloseHost · L288](9fb633eebffe669c.md#m7507ff22288cb80e)（方法）
+- [WorldSessionManager.ReturnToMenu · L138](08741c7b7b9d9344.md#mcb01308c92e39728)（方法）
 - [LanSession.OwnedEntityId.set · L30](9fb633eebffe669c.md#mab85f356abbbcca4)（访问器）
 - [LanSession.Cheats.set · L27](9fb633eebffe669c.md#mea5d3063d84d0e75)（访问器）
 - [WorldAuthority.Reset · L18](2361e41ab2baa157.md#m85b42b819afac5cb)（方法）
 - [LanSession.Status.set · L31](9fb633eebffe669c.md#m5f42294bb375d2f9)（访问器）
 - [GameMainMenu.ShowNetworkMain · L292](a1f1791f9e7a8035.md#m5ea332104f26fa79)（方法）
 
-<a id="mf8c495f22f88c713"></a>
+<a id="mcfcb9a748cd4e6d6"></a>
 
-## CancelConnecting · L297
+## CancelConnecting · L299
 
 `private void CancelConnecting()`
 
@@ -2901,9 +2907,9 @@ flowchart TD
 
 ```
 
-<a id="mfdaf7252563e6717"></a>
+<a id="m9c166150653864be"></a>
 
-## OnApplicationQuit · L298
+## OnApplicationQuit · L300
 
 `private void OnApplicationQuit()`
 
@@ -2942,13 +2948,13 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [LanSession.CancelConnecting · L297](9fb633eebffe669c.md#mf8c495f22f88c713)（方法）
+- [LanSession.CancelConnecting · L299](9fb633eebffe669c.md#mcfcb9a748cd4e6d6)（方法）
 - [LanConnection.Dispose · L62](872c2b8da417200e.md#mcbbf7592b2503d1f)（方法）
 - [LanListener.Dispose · L73](872c2b8da417200e.md#m5f6403734e035e45)（方法）
 
-<a id="m59ce2f078cb7bc30"></a>
+<a id="m07b899e10e5f7350"></a>
 
-## OnDestroy · L299
+## OnDestroy · L301
 
 `private void OnDestroy()`
 
@@ -2997,7 +3003,7 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [LanSession.CancelConnecting · L297](9fb633eebffe669c.md#mf8c495f22f88c713)（方法）
+- [LanSession.CancelConnecting · L299](9fb633eebffe669c.md#mcfcb9a748cd4e6d6)（方法）
 - [LanConnection.Dispose · L62](872c2b8da417200e.md#mcbbf7592b2503d1f)（方法）
 - [LanListener.Dispose · L73](872c2b8da417200e.md#m5f6403734e035e45)（方法）
 - [LanSession.Instance.get · L23](9fb633eebffe669c.md#mbf83306994878383)（访问器）

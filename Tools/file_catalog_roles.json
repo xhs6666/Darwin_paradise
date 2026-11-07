@@ -279,7 +279,11 @@
     "Assets/DarwinPark/AI/Modules/BuiltinAIModules.cs": "保留旧飞行/自养模块的公开类型和ID；实际行为由基因逻辑执行，这些兼容模块不需要每帧回调。",
     "Assets/DarwinPark/Planet/Legacy/OreGenerator.cs": "旧矿石对象生成器，仅为旧恢复场景保留GUID兼容；正式场景已移除该组件，当前矿脉由PlanetOreSystem生成。",
     "Assets/DarwinPark/Planet/Legacy/OreNode.cs": "旧矿石对象数据组件，与Legacy/OreGenerator配套保留兼容。",
-    "Assets/DarwinPark/Editor/ProjectOptimizationRegression.cs": "验证精简后的表达索引、快照、AI生命周期及比例缓存，并测量旧/新命名与基因匹配的耗时和分配。"
+    "Assets/DarwinPark/Editor/ProjectOptimizationRegression.cs": "验证精简后的表达索引、快照、AI生命周期及比例缓存，并测量旧/新命名与基因匹配的耗时和分配。",
+    "Assets/DarwinPark/Entities/Ecology/EcologyDefaults.cs": "读取带注释的外部生态默认项，创建70/30及数量保底规则，提供基础模板并保存世界配置快照。",
+    "Assets/DarwinPark/Entities/Ecology/EcologyMaintenancePolicy.cs": "按实际生产/移动能力分类统计比例，并将默认生产者优先补充到缺少植物的蚁群活动区。",
+    "Assets/DarwinPark/Entities/Ecology/ColonyFoundingSupport.cs": "为新王后提供一次性有限育幼储粮，首批优先工匠，缺工匠时王后临时采集并持久化创业状态。",
+    "Assets/DarwinPark/Editor/ColonyContinuityRegression.cs": "验证默认生态自动生成、原生规则界面、存档/联机快照、创业防重领、长期物理繁衍及自动补充保留操控/放置状态。"
   },
   "files": {
     "Assets/Scenes/SampleScene.unity": "主要运行场景：挂载星球、环境、时钟、UI和游戏启动组件。",
@@ -396,6 +400,10 @@
     "Assets/DarwinPark/Planet/Terrain/PlanetSurfaceDetail.hlsl": "地表多频噪声和细节颜色辅助函数。",
     "Assets/DarwinPark/Planet/Terrain/PopulationRangeOverlay.hlsl": "同群活动圆先求并集，再绘制半透明填色或外沿，支持各群不透明度。",
     "Docs/开发设计/项目精简与优化.md": "精简范围、兼容保留、缓存失效规则与后续维护约束。",
-    "Docs/验证记录/项目精简优化验证-2026-11-06.md": "本次精简的引用审计、等价对照、耗时/分配和回归结果。"
+    "Docs/验证记录/项目精简优化验证-2026-11-06.md": "本次精简的引用审计、等价对照、耗时/分配和回归结果。",
+    "Assets/Resources/Entities/ecology_defaults.json": "内置生态默认值：生产者70%、移动实体30%、100个体保底、基础繁衍模板和有限建群保障。",
+    "config/ecology_defaults.json": "可在游戏外编辑的生态默认配置，支持中文注释；新世界及显式应用默认项时使用。",
+    "Docs/操作指南/生态默认与建群保障.md": "说明默认比例、基础模板、建群储粮与工匠交接、旧世界应用和外部调参。",
+    "Docs/验证记录/生态默认与种群延续验证-2026-11-07.md": "本次70/30生态、建群补给、持久化、长期模拟和兼容回归的验证记录。"
   }
 }

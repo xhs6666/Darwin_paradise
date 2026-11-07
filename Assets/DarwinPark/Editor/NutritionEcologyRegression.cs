@@ -175,7 +175,12 @@ namespace DarwinPark.EditorTools
             var replicaState=EcologySaveState.Capture(parasite);NutritionReplicaPresentation.Apply(child,replicaState);Check(child.GetComponentsInChildren<Renderer>().All(r=>!r.enabled)&&child.GetComponentsInChildren<Collider>().All(c=>!c.enabled),"成员副本隐藏寄生渲染与碰撞");NutritionReplicaPresentation.Apply(child,new EcologySaveState());Check(child.GetComponentsInChildren<Renderer>().Any(r=>r.enabled)&&child.GetComponentsInChildren<Collider>().Any(c=>c.enabled),"副本解除寄生恢复渲染与碰撞");
 
             var display=FrameRateDisplay.Instance;Check(display!=null&&display.backgroundOpacity<=.25f,"FPS默认背景半透明");display.backgroundOpacity=0;yield return Capture("fps-transparent");display.backgroundOpacity=.18f;
-            var filter=Object.FindFirstObjectByType<MapEntityGeneFilterUI>(FindObjectsInactive.Include);filter.minimumWidth=0;yield return null;var dropdown=filter.Card.Find("IncludeGenes").GetComponent<Dropdown>();dropdown.Show();yield return null;yield return null;
+            // ★ 修复（防Bug回归）：窗口可能窄于常驻卡片布局，必须先像玩家一样打开筛选；仅把minimumWidth改为0仍可能没有可用宽度。
+            typeof(SimulationControlPanel).GetMethod("SwitchPage",Private).Invoke(Object.FindFirstObjectByType<SimulationControlPanel>(),new object[]{0});
+            var filter=Object.FindFirstObjectByType<MapEntityGeneFilterUI>(FindObjectsInactive.Include);filter.minimumWidth=0;
+            filter.GetComponentsInChildren<Button>(true).Single(b=>b.name=="OpenEntityFilter").onClick.Invoke();filter.RefreshNow();Canvas.ForceUpdateCanvases();yield return null;yield return null;
+            Check(filter.Card.gameObject.activeInHierarchy,"窄窗口也通过实际筛选按钮打开卡片");
+            var dropdown=filter.Card.Find("IncludeGenes").GetComponent<Dropdown>();dropdown.Show();yield return null;yield return null;
             var list=dropdown.transform.Find("Dropdown List");Check(list!=null,"实际展开组合筛选下拉菜单");Check(list.GetComponentsInChildren<Toggle>(true).All(t=>t.graphic==null||!t.graphic.enabled),"展开项没有默认绿色勾选色块");Check(list.GetComponentsInChildren<Scrollbar>(true).All(s=>s.GetComponent<Image>().sprite!=null&&s.handleRect.GetComponent<Image>().sprite!=null),"展开滚动条使用主题精灵，不出现白块");yield return Capture("dropdown-themed");dropdown.Hide();
         }
     }

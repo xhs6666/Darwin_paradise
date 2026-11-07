@@ -37,7 +37,7 @@ namespace DarwinPark.UI
             frame.maintenance=PopulationMaintenance.Capture();
             var random=Object.FindFirstObjectByType<RandomPlanetSpawner>();if(random!=null){frame.randomBusy=random.IsBusy;frame.randomSpawned=random.Spawned;frame.randomRequested=random.Requested;frame.randomStatus=random.Status;}
             // ★ 适配：历史与显示配置随低频快照同步，不把整份长期档案塞进每次移动同步。
-            if(includeOre){frame.population=PopulationArchive.Capture();frame.ore=PlanetOreSystem.Instance.CaptureAmounts();frame.oreResolution=PlanetOreSystem.Instance.mapResolution;frame.oreTimer=PlanetOreSystem.Instance.RegenTimer;}return frame;
+            if(includeOre){frame.ecologyDefaults=EcologyDefaults.CurrentJson;frame.population=PopulationArchive.Capture();frame.ore=PlanetOreSystem.Instance.CaptureAmounts();frame.oreResolution=PlanetOreSystem.Instance.mapResolution;frame.oreTimer=PlanetOreSystem.Instance.RegenTimer;}return frame;
         }
     }
 }
