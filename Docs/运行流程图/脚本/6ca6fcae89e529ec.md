@@ -522,7 +522,7 @@ flowchart TD
 - [PopulationWorkbench.SelectedId.get · L16](6ca6fcae89e529ec.md#mef0f87781fb55d79)（访问器）
 - [PopulationArchive.Find · L49](084e119b69cdd751.md#mf1aef4e3d3c3efca)（方法）
 - [PopulationArchive.OpacityFor · L107](084e119b69cdd751.md#m97824b788cf7f2ff)（方法）
-- [WorldSessionManager.SaveNow · L159](08741c7b7b9d9344.md#m750fe992c0cd477a)（方法）
+- [WorldSessionManager.SaveNow · L161](08741c7b7b9d9344.md#m182352444e7d2f8e)（方法）
 
 <a id="m09bed70d853d69f9"></a>
 

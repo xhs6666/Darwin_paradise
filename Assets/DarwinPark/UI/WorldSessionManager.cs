@@ -130,6 +130,8 @@ namespace DarwinPark.UI
             if(isNew){var position=_builder.transform.position+new Vector3(0,.35f,-1).normalized*orbit.distance;orbit.RestoreView(position,Quaternion.LookRotation(_builder.transform.position-position,Vector3.up),orbit.distance);}
             else orbit.RestoreView(data.cameraPosition,data.cameraRotation,data.cameraDistance);
             ServiceLocator.Get<SimulationClock>().RestoreState(data.gameTime,data.timeScale);
+            // ★ 适配：旧控件可见不代表回调仍有效，加载结束前重新建立本世界交互。
+            WorldHudInputLifecycle.PrepareWorldControls();
             Current=data;Progress=.98f;Status="完成画面与界面准备";yield return null;yield return new WaitForEndOfFrame();
             if(isNew)SaveNow();Progress=1;Status="加载完成";yield return null;
             Busy=false;WorldRuntimeGate.Loading=false;WorldRuntimeGate.Ready=true;_autoSave=0;Debug.Log("[世界] 加载完成 id="+data.id+"，实体="+EntityRegistry.All.Count);Loaded?.Invoke();

@@ -72,6 +72,17 @@ namespace DarwinPark.UI
             Log.Warn(Log.Tag.UI, "底部控制栏停止等待：组件已禁用");
         }
 
+        // ★ 修复（防Bug回归）：运行时按钮的非持久回调可能在脚本重载后丢失；读档前重建本世界控件，不能仅信任_uiBuilt。
+        public void RebuildForWorld()
+        {
+            if(!ServiceLocator.TryGet<UIRoot>(out var root))return;
+            if(_buildRoutine!=null){StopCoroutine(_buildRoutine);_buildRoutine=null;}
+            if(_clock!=null)_clock.OnRunningChanged-=OnRunningChanged;
+            DestroyMenus();
+            if(_bottomPanel!=null){_bottomPanel.SetActive(false);Destroy(_bottomPanel);_bottomPanel=null;}
+            // 重建只更新回调，保留读档前的分页，不能把第二页窗口的使用者留在已停用的旧控件上。
+            int page=_currentPage;_uiBuilt=false;_uiRoot=root;_layerOrder.Clear();BuildAll(root);SwitchPage(page);
+        }
         private void BuildAll(UIRoot root)
         {
             if (_uiBuilt) return;

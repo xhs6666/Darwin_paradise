@@ -4,7 +4,7 @@
 
 [12条业务主流程](主流程.md) · [生成工具与维护说明](../../Tools/FlowDocs/README.md)
 
-覆盖 **294 个C#脚本、10 个Shader/HLSL文件、3223 个方法/构造/访问器/局部函数/回调/GPU函数**。没有显式方法的数据脚本也在索引中。未扫描Unity Packages/Library生成文件；Tools为离线生成器，不进入游戏运行图。
+覆盖 **297 个C#脚本、10 个Shader/HLSL文件、3269 个方法/构造/访问器/局部函数/回调/GPU函数**。没有显式方法的数据脚本也在索引中。未扫描Unity Packages/Library生成文件；Tools为离线生成器，不进入游戏运行图。
 
 
 ## 阅读与维护
@@ -78,6 +78,7 @@
 |Editor|[Assets/DarwinPark/Editor/EntityViewPreview.cs](脚本/7ed4c5d34534a614.md)|Editor|5|
 |Editor|[Assets/DarwinPark/Editor/GameplayHudRegression.cs](脚本/b9dfefd1ee0945a8.md)|Editor|12|
 |Editor|[Assets/DarwinPark/Editor/GeneTreeWorkbenchRegression.cs](脚本/b594bef24a5dce2b.md)|Editor|3|
+|Editor|[Assets/DarwinPark/Editor/HudInputRegression.cs](脚本/795f355c3f14dbd5.md)|Editor|24|
 |Editor|[Assets/DarwinPark/Editor/InteractionUXRegression.cs](脚本/7bb23131e3b3865d.md)|Editor|14|
 |Editor|[Assets/DarwinPark/Editor/LanMultiplayerRegression.cs](脚本/140d316a72ec89d5.md)|Editor|64|
 |Editor|[Assets/DarwinPark/Editor/LayersSettingsRegression.cs](脚本/74c9e2e7a7587584.md)|Editor|15|
@@ -276,12 +277,13 @@
 |UI|[Assets/DarwinPark/UI/EntityTemplateStore.cs](脚本/2a560a9e3c003e7b.md)|Runtime|5|
 |UI|[Assets/DarwinPark/UI/EntityViewController.cs](脚本/0ad0345f83229ef0.md)|Runtime|13|
 |UI|[Assets/DarwinPark/UI/FrameRateDisplay.cs](脚本/4e898f3c11cb4578.md)|Runtime|15|
-|UI|[Assets/DarwinPark/UI/GameMainMenu.cs](脚本/a1f1791f9e7a8035.md)|Runtime|33|
+|UI|[Assets/DarwinPark/UI/GameMainMenu.cs](脚本/a1f1791f9e7a8035.md)|Runtime|35|
 |UI|[Assets/DarwinPark/UI/GeneEntityStateTagEditor.cs](脚本/d1c0ab279fe0493c.md)|Runtime|1|
 |UI|[Assets/DarwinPark/UI/GeneGraphViewport.cs](脚本/744cdf6c09e0913f.md)|Runtime|5|
 |UI|[Assets/DarwinPark/UI/GeneInspectorUI.cs](脚本/924e27c34e7b1f0a.md)|Runtime|35|
 |UI|[Assets/DarwinPark/UI/GeneTreeWorkbench.cs](脚本/7b98ef3da23a85cb.md)|Runtime|39|
 |UI|[Assets/DarwinPark/UI/GeneValueForm.cs](脚本/1a57b2a63a2f76d5.md)|Runtime|4|
+|UI|[Assets/DarwinPark/UI/HudRegressionInput.cs](脚本/95e6aef4a5b1bb2e.md)|Runtime|10|
 |UI|[Assets/DarwinPark/UI/LanEditActions.cs](脚本/2816321496f6360e.md)|Runtime|17|
 |UI|[Assets/DarwinPark/UI/LanLobbyUI.cs](脚本/8878a8bd4aace59a.md)|Runtime|9|
 |UI|[Assets/DarwinPark/UI/LanProtocol.cs](脚本/81bc7a833c81dd46.md)|Runtime|0|
@@ -314,9 +316,10 @@
 |UI|[Assets/DarwinPark/UI/RuntimeDropdownDismissal.cs](脚本/bab72c915cc299c5.md)|Runtime|13|
 |UI|[Assets/DarwinPark/UI/RuntimeDropdownSkin.cs](脚本/4e9d66f8395f54ec.md)|Runtime|1|
 |UI|[Assets/DarwinPark/UI/RuntimeMenuTheme.cs](脚本/b9d8455882f2a532.md)|Runtime|24|
-|UI|[Assets/DarwinPark/UI/SimulationControlPanel.cs](脚本/76bc7add9187fd1f.md)|Runtime|36|
+|UI|[Assets/DarwinPark/UI/SimulationControlPanel.cs](脚本/76bc7add9187fd1f.md)|Runtime|37|
 |UI|[Assets/DarwinPark/UI/WorldEntityActions.cs](脚本/afe657f09857fa47.md)|Runtime|2|
 |UI|[Assets/DarwinPark/UI/WorldGameSettingsPanel.cs](脚本/6df051f7f7177d08.md)|Runtime|13|
+|UI|[Assets/DarwinPark/UI/WorldHudInputLifecycle.cs](脚本/f3fd2d972c3899f1.md)|Runtime|9|
 |UI|[Assets/DarwinPark/UI/WorldInspectablePicker.cs](脚本/b30f6db5375f9436.md)|Runtime|3|
 |UI|[Assets/DarwinPark/UI/WorldLoadingView.cs](脚本/4db2e9fa805980b7.md)|Runtime|1|
 |UI|[Assets/DarwinPark/UI/WorldParameterUpdate.cs](脚本/4087d9be2a65e96f.md)|Runtime|22|

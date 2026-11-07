@@ -712,7 +712,7 @@ flowchart TD
 - [ReproductionGeneLogic.RestoreState · L37](ac319ea70bd8b723.md#m774f9d1fdc13aa95)（方法）
 - [WorldEntityActions.SetLimit · L12](afe657f09857fa47.md#md5c2fa4e19f790fe)（方法）
 - [EntityPopulationLimit.RestoreScope · L32](44f717c5df79d270.md#m58883b4959fd76ed)（方法）
-- [WorldSessionManager.SaveNow · L159](08741c7b7b9d9344.md#m750fe992c0cd477a)（方法）
+- [WorldSessionManager.SaveNow · L161](08741c7b7b9d9344.md#m182352444e7d2f8e)（方法）
 - [WorldSessionManager.Open · L60](08741c7b7b9d9344.md#m7bd56ef45131b4e5)（方法）
 - [SimulationClock.IsRunning.get · L22](a8f444aec9614b0a.md#m10f4fe307faca0f0)（访问器）
 - [WorldEntityActions.ClearAll · L23](afe657f09857fa47.md#m6f4e8f1fb05f5b38)（方法）

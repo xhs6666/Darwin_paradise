@@ -294,7 +294,10 @@
     "Assets/DarwinPark/Entities/Simulation/GlobalMutationManager.cs": "管理自然阶段变异的全局每帧预算、近邻组代表抽样与诊断计数。",
     "Assets/DarwinPark/Genetics/MultipleBirthEvolutionUpgrade.cs": "一次性补齐多胎定义和繁殖出错连线，同时保留用户后续树编辑。",
     "Assets/DarwinPark/Editor/EntityPlanningMergeRegression.cs": "真实实体对照、分组/拆组、时间欠账、五级能量、多胎上限及磁盘读档、补给计划专项回归。",
-    "Assets/DarwinPark/Entities/Ecology/ColonyContinuityPriority.cs": "建群后继繁殖个体优先和有限王后出生名额，防止自动生成/光合繁殖占满全局上限。"
+    "Assets/DarwinPark/Entities/Ecology/ColonyContinuityPriority.cs": "建群后继繁殖个体优先和有限王后出生名额，防止自动生成/光合繁殖占满全局上限。",
+    "Assets/DarwinPark/UI/WorldHudInputLifecycle.cs": "读档后检查并恢复HUD画布、点击射线、唯一事件系统、输入模块与焦点；保护合法弹窗、加载和只读门控。",
+    "Assets/DarwinPark/UI/HudRegressionInput.cs": "仅Editor编译的回归鼠标输入源，由真实StandaloneInputModule处理完整按下/松开，不直接调用按钮回调。",
+    "Assets/DarwinPark/Editor/HudInputRegression.cs": "使用隔离存档副本验证读档回调重建、原生输入模块点击、丢失/禁用恢复、弹窗防穿透和权限。"
   },
   "files": {
     "Assets/Scenes/SampleScene.unity": "主要运行场景：挂载星球、环境、时钟、UI和游戏启动组件。",
@@ -422,6 +425,7 @@
     "config/energy_levels.json": "可在游戏外编辑的能量块等级阈值和颜色，支持中文注释。",
     "Docs/开发设计/实体任务与近邻合并计算.md": "任务补给计划、共享计算边界、时间守恒、变异抽样和多胎持久化维护说明。",
     "Docs/操作指南/任务补给能量等级与多胎.md": "补给优先级、五级能量、多胎和外部数值调整方法。",
-    "Docs/验证记录/实体计划近邻合并与多胎验证-2026-11-08.md": "本次专项、原有行为兼容、种群延续、编译与Windows构建验证证据。"
+    "Docs/验证记录/实体计划近邻合并与多胎验证-2026-11-08.md": "本次专项、原有行为兼容、种群延续、编译与Windows构建验证证据。",
+    "Docs/验证记录/读档后按钮无响应验证-2026-11-08.md": "读档后HUD回调丢失与输入基础设施恢复的复现范围、回归和发布构建记录。"
   }
 }

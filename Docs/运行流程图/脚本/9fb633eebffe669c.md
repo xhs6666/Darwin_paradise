@@ -2873,12 +2873,12 @@ flowchart TD
 - [LanSession.CancelConnecting · L299](9fb633eebffe669c.md#mcfcb9a748cd4e6d6)（方法）
 - [LanConnection.Dispose · L62](872c2b8da417200e.md#mcbbf7592b2503d1f)（方法）
 - [LanSession.CloseHost · L288](9fb633eebffe669c.md#m7507ff22288cb80e)（方法）
-- [WorldSessionManager.ReturnToMenu · L138](08741c7b7b9d9344.md#mcb01308c92e39728)（方法）
+- [WorldSessionManager.ReturnToMenu · L140](08741c7b7b9d9344.md#m7c4a37702ecd425d)（方法）
 - [LanSession.OwnedEntityId.set · L30](9fb633eebffe669c.md#mab85f356abbbcca4)（访问器）
 - [LanSession.Cheats.set · L27](9fb633eebffe669c.md#mea5d3063d84d0e75)（访问器）
 - [WorldAuthority.Reset · L18](2361e41ab2baa157.md#m85b42b819afac5cb)（方法）
 - [LanSession.Status.set · L31](9fb633eebffe669c.md#m5f42294bb375d2f9)（访问器）
-- [GameMainMenu.ShowNetworkMain · L292](a1f1791f9e7a8035.md#m5ea332104f26fa79)（方法）
+- [GameMainMenu.ShowNetworkMain · L304](a1f1791f9e7a8035.md#mc5d74a696306f00d)（方法）
 
 <a id="mcfcb9a748cd4e6d6"></a>
 

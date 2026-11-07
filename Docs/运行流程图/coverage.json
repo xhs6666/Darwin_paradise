@@ -1,16 +1,16 @@
 {
   "stats": {
-    "scripts": 304,
-    "csharp": 294,
+    "scripts": 307,
+    "csharp": 297,
     "gpu": 10,
-    "methods": 3223,
-    "graphs": 3226,
-    "profileGraphs": 5550,
-    "nodes": 30038,
-    "calls": 41461,
-    "internalLinks": 11841,
+    "methods": 3269,
+    "graphs": 3272,
+    "profileGraphs": 5608,
+    "nodes": 30475,
+    "calls": 42082,
+    "internalLinks": 11998,
     "unresolved": 9,
-    "hash": "006d6c56c0d33161"
+    "hash": "0cc3f00b08c0d4c2"
   },
   "diagnostics": [
     {
@@ -367,6 +367,13 @@
       "Scope": "Editor",
       "methods": 3,
       "Hash": "f7796a122068defc4c84048044b25f33a080ee9f69f268d6ba3b0047f659d1ba"
+    },
+    {
+      "Id": "795f355c3f14dbd5",
+      "Path": "Assets/DarwinPark/Editor/HudInputRegression.cs",
+      "Scope": "Editor",
+      "methods": 24,
+      "Hash": "72ec426e25f37e4107e212c31d27cf354f8bbd41375285a892bbaaea9d90e5b9"
     },
     {
       "Id": "7bb23131e3b3865d",
@@ -1758,8 +1765,8 @@
       "Id": "a1f1791f9e7a8035",
       "Path": "Assets/DarwinPark/UI/GameMainMenu.cs",
       "Scope": "Runtime",
-      "methods": 33,
-      "Hash": "fd1cb80157e2a66a3465751ba37d9201cdf0c3f8193e3984144bbbe1b009f5e5"
+      "methods": 35,
+      "Hash": "74f85fa560083a15ec113cadfa949dab296133580771e9a4e201a211eb599ddf"
     },
     {
       "Id": "d1c0ab279fe0493c",
@@ -1795,6 +1802,13 @@
       "Scope": "Runtime",
       "methods": 4,
       "Hash": "6ad7bf89e20bb2b008b2fd0c7435ad34f985d7b6513ce53cfcfb4c6597fe2811"
+    },
+    {
+      "Id": "95e6aef4a5b1bb2e",
+      "Path": "Assets/DarwinPark/UI/HudRegressionInput.cs",
+      "Scope": "Runtime",
+      "methods": 10,
+      "Hash": "87013360f0b1dec5823e228c82617db8edc86aa0c9f6327b844923304c2db7b9"
     },
     {
       "Id": "2816321496f6360e",
@@ -2024,8 +2038,8 @@
       "Id": "76bc7add9187fd1f",
       "Path": "Assets/DarwinPark/UI/SimulationControlPanel.cs",
       "Scope": "Runtime",
-      "methods": 36,
-      "Hash": "d2ebea168cdf0755eb213cf97d655667daf924d721f0567225ad52471fc73416"
+      "methods": 37,
+      "Hash": "33b4ad4ce282862d72409771029a3a4c42829c722746126bcb1df8a11577c42d"
     },
     {
       "Id": "afe657f09857fa47",
@@ -2040,6 +2054,13 @@
       "Scope": "Runtime",
       "methods": 13,
       "Hash": "20d11046b0d8cc7ded1a5e68a86dd69f45157ec08c47c02dad77f2c92ed0d7e1"
+    },
+    {
+      "Id": "f3fd2d972c3899f1",
+      "Path": "Assets/DarwinPark/UI/WorldHudInputLifecycle.cs",
+      "Scope": "Runtime",
+      "methods": 9,
+      "Hash": "f60f2544c906d9a2c06e63d29216463c033f47265be9a5b8291606d1c12aaf35"
     },
     {
       "Id": "b30f6db5375f9436",
@@ -2081,7 +2102,7 @@
       "Path": "Assets/DarwinPark/UI/WorldSessionManager.cs",
       "Scope": "Runtime",
       "methods": 30,
-      "Hash": "c850d8c3647f8aea3e8ddfad88315f91e99c9a40d1040b92effe8dd9bfbcba90"
+      "Hash": "e027159112e5fe972727fa6150033226bddbd828f0b87116c721febd6113c53e"
     },
     {
       "Id": "1cdf171274f22a47",
@@ -2157,11 +2178,11 @@
   "modes": [
     {
       "mode": "Roslyn\u7F16\u8BD1\u5668\u63A7\u5236\u6D41",
-      "count": 2715
+      "count": 2755
     },
     {
       "mode": "\u8BED\u6CD5\u63A7\u5236\u7ED3\u6784 / \u58F0\u660E\uFF08\u975ECFG\uFF09",
-      "count": 485
+      "count": 491
     },
     {
       "mode": "GPU\u63A7\u5236\u7ED3\u6784\uFF08\u540D\u79F0\u94FE\u63A5\uFF0C\u4E0D\u4F5CC#\u7C7B\u578B\u63A8\u65AD\uFF09",

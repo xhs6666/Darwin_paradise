@@ -38,7 +38,7 @@ namespace DarwinPark.UI
             _tools = GetComponent<GeneTreeWorkbench>();
             _session = GetComponent<WorldSessionManager>();
             _background = GetComponent<MainMenuBackground>();
-            _session.Loaded += OnWorldLoaded; _session.Failed += OnLoadFailed;
+
             // ★ 适配：局域网和RTS各用独立组件，菜单只提供入口。
             LanSession.Ensure(gameObject);
             // ★ 新增：FPS独立于模拟与菜单Canvas，即使暂停或打开菜单也显示实际渲染帧率。
@@ -49,7 +49,17 @@ namespace DarwinPark.UI
             if (PlayerPrefs.HasKey("FullScreen")) Screen.fullScreen = PlayerPrefs.GetInt("FullScreen") != 0;
             if (PlayerPrefs.HasKey("QualityLevel")) QualitySettings.SetQualityLevel(Mathf.Clamp(PlayerPrefs.GetInt("QualityLevel"), 0, QualitySettings.names.Length - 1), true);
         }
-        private void Start() { Capture(); }
+        // ★ 适配：在UIRoot初始化后安装读档输入恢复，旧开关快照不能成为HUD永久不可点击的状态。
+        // ★ 修复（防Bug回归）：脚本重载不会重跑Awake，普通C#事件也不会持久化；每次启用成对重绑读档完成通知。
+        private void OnEnable()
+        {
+            if(_session==null)_session=GetComponent<WorldSessionManager>();
+            _session.Loaded-=OnWorldLoaded;_session.Loaded+=OnWorldLoaded;
+            _session.Failed-=OnLoadFailed;_session.Failed+=OnLoadFailed;
+        }
+        private void OnDisable()
+        {if(_session!=null){_session.Loaded-=OnWorldLoaded;_session.Failed-=OnLoadFailed;}}
+        private void Start() { WorldHudInputLifecycle.Ensure(this);Capture(); }
         private void Capture()
         {
             if (ServiceLocator.TryGet<SimulationClock>(out var clock)) { _wasRunning = clock.IsRunning;if(LanSession.Instance?.Online!=true)clock.Pause(); }
@@ -102,6 +112,8 @@ namespace DarwinPark.UI
             if (!WorldRuntimeGate.Ready || _session.Busy) return;
             _visible = false; _tools.Close(); GameInputGate.Blocked = false;
             RestoreHud();
+            // ★ 适配：恢复发生在菜单释放遮挡之后，不依赖Loaded事件订阅顺序或等到下一帧才可点击。
+            GetComponent<WorldHudInputLifecycle>()?.Recover();
             if (_wasRunning && LanSession.Instance?.Online!=true&&ServiceLocator.TryGet<SimulationClock>(out var clock)) clock.Play();
         }
         private void RestoreHud()

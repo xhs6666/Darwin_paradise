@@ -284,3 +284,10 @@
 |2026-11-08|新增繁殖分支未孕育时也压制成长|旧求值器只对基础繁殖ID按孕育开关抑制|GeneDefinitionJson.cs、GeneDatabase.cs、GeneValueResolver.cs、gene_multiple_birth.json|用配置声明suppressionOnlyWhileGestating，未成年也能正常成长；升级和用户定义保持兼容|
 |2026-11-08|长期模拟到上限后王后完成孕育却无法生产，小群没有后继|自动维持/普通繁殖占满名额，繁殖分工只在较大群体或随机抽中时出现|ColonyContinuityPriority.cs、AntColonyMember.cs、EcologyReproduction.cs、RandomPlanetSpawner.cs|开启建群保障时有限保留真实空位、首批工匠后优先培养繁殖个体；不突破全局上限、不删除实体；长期物理模拟验收|
 |2026-11-08|修复重复扣粮，且溺水时可能被第二套修复抵消|修复基因和Vitals均计算修复，前者未遵守环境限制|RepairGeneLogic.cs、EntityVitals.cs|修复统一在Vitals，基因仅提供属性和提示；共享核和活跃路径共用结算|
+
+
+## 2026-11-08 读档后的界面交互恢复台账
+
+|日期|现象|根因/覆盖的恢复缺口|修复文件|防复发要点|
+|---|---|---|---|---|
+|2026-11-08|读档后底栏、筛选和种群入口可见但无响应|旧_uiBuilt只证明节点存在，不能证明运行时UnityEvent还有效；菜单仅Awake订阅Loaded；缓存的关闭状态和缺失输入组件缺少恢复路径|WorldHudInputLifecycle.cs、SimulationControlPanel.cs、WorldSessionManager.cs、GameMainMenu.cs、HudInputRegression.cs|加载遮罩结束前重建回调并保留分页；菜单成对重绑；补齐或启用唯一事件系统、射线和模块；不覆盖合法弹窗、Esc防穿透与只读权限；真实存档副本和完整指针状态机回归；未将冷启动正常直接当成现场根因已唯一确定|
