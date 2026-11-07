@@ -16,6 +16,8 @@ namespace DarwinPark.Entities.Logic
         private float _mateWaitTimer;
         private bool _parthenogenetic;
         private float _maintenanceWait;
+        // ★ 适配：固定本胎总数和剩余数量，满额/空间不足时保留，不重复生产已出生子代。
+        private MultipleBirthState _litter;
 
         private LifeCycleSettings _settings;
 
@@ -30,9 +32,9 @@ namespace DarwinPark.Entities.Logic
         }
 
         // ★ 适配：孕育计时、产后冷却与配偶基因组一起保存，不能读档后立即生产或丢失后代遗传。
-        public ReproductionSaveState CaptureState()=>new ReproductionSaveState{gene=_gene.InstanceId,gestation=_gestationTimer,cooldown=_cooldownTimer,partner=_partnerGenome,mateWait=_mateWaitTimer,maintenanceWait=_maintenanceWait,parthenogenetic=_parthenogenetic};
+        public ReproductionSaveState CaptureState()=>new ReproductionSaveState{gene=_gene.InstanceId,gestation=_gestationTimer,cooldown=_cooldownTimer,partner=_partnerGenome,mateWait=_mateWaitTimer,maintenanceWait=_maintenanceWait,parthenogenetic=_parthenogenetic,litter=MultipleBirthPolicy.Copy(_litter)};
         // ★ 修复（防Bug回归）：Unity内联序列化可能把null配偶恢复为空Genome，不能因此把单亲孕育误判为有性。
-        public void RestoreState(ReproductionSaveState state){_gestationTimer=state.gestation;_cooldownTimer=state.cooldown;_partnerGenome=state.partner?.Genes?.Count>0?state.partner:null;_mateWaitTimer=state.mateWait;_maintenanceWait=state.maintenanceWait;_parthenogenetic=state.parthenogenetic;}
+        public void RestoreState(ReproductionSaveState state){MultipleBirthPolicy.Validate(state.litter);_litter=MultipleBirthPolicy.Copy(state.litter);_gestationTimer=state.gestation;_cooldownTimer=state.cooldown;_partnerGenome=state.partner?.Genes?.Count>0?state.partner:null;_mateWaitTimer=state.mateWait;_maintenanceWait=state.maintenanceWait;_parthenogenetic=state.parthenogenetic;}
         public void OnUpdate(float dt)
         {
             if(dt<=0||DarwinPark.Core.WorldAuthority.IsReplica)return;
@@ -49,18 +51,18 @@ namespace DarwinPark.Entities.Logic
             {
                 _mateWaitTimer=0;
                 // ★ 适配：满额后完成的孕育等待空位，不伪造出生或重复消耗孕育营养。
-                if(_gestationTimer<=0&&!EntityPopulationLimit.CanSpawn)return;
+                if(_gestationTimer<=0&&!Ecology.ColonyContinuityPriority.CanSpawn(_controller))return;
                 _gestationTimer -= dt;
                 // ★ 适配：孕育额外营养开销与生态收支共用配置，避免长孕育必然饿死。
-                stats.Modify("nutrient", -Ecology.EcologyBalanceSettings.Current.gestationFoodPerSecond * dt);
+                stats.Modify("nutrient", -Ecology.EcologyBalanceSettings.Current.gestationFoodPerSecond * dt*DarwinPark.Core.GameplayTuning.Current.baseMetabolismMultiplier);
 
                 if (_gestationTimer <= 0f)
                 {
-                    if(!SpawnOffspring())return;
+                    if(!MultipleBirthPolicy.Deliver(ref _litter,SpawnOffspring,()=>stats.Modify("nutrient",-Ecology.EcologyBalanceSettings.Current.birthFoodCost)))return;
                     _controller.IsGestating = false;
                     _controller.Recalculate();
                     _cooldownTimer = Ecology.EcologyReproductionTiming.CooldownSeconds(_controller);
-                    stats.Modify("nutrient", -Ecology.EcologyBalanceSettings.Current.birthFoodCost);
+                    _litter=null;
                     _partnerGenome = null;
                     _parthenogenetic=false;
                 }
@@ -82,7 +84,7 @@ namespace DarwinPark.Entities.Logic
             float size = 1f;
             // ★ 适配：实际扣款与提前储粮采用同一体型下限，微型实体不会准备不足的繁殖预算。
             if (stats.TryGet("size", out var s)) size = Mathf.Max(Ecology.EcologyBalanceSettings.Current.minimumReproductionSize, s);
-            float requiredNutrient = _settings.nutrientCost * size;
+            float requiredNutrient = _settings.nutrientCost * size * MultipleBirthPolicy.Count(_controller);
             // ★ 适配：超过维持目标只延长新孕育的间隔；已有孕育在上面的独立分支正常完成。
             bool maintenanceReady=PopulationMaintenance.BreedingReady(_controller,ref _maintenanceWait,dt);
 
@@ -96,7 +98,7 @@ namespace DarwinPark.Entities.Logic
             // ★ 新增：成年无配偶等待独立于储粮积累；超时只免除配偶要求，不能绕过营养预算和数量上限。
             bool parthenogenetic=ParthenogenesisCondition.Advance(_controller,ref _mateWaitTimer,!sexual||mate!=null,dt);
             if(sexual&&mate==null&&!parthenogenetic){Ecology.EcologyDiagnostics.Blocked(Ecology.EcologyDiagnostics.ReproductionBlock.Mate);return;}
-            if(!EntityPopulationLimit.CanSpawn)return;
+            if(!Ecology.ColonyContinuityPriority.CanSpawn(_controller))return;
 
             // ★ 检查条件：必须是储存营养 (storedNutrient) 足够
             if (!stats.TryGet("storedNutrient", out var stored) || stored < requiredNutrient)
@@ -133,6 +135,7 @@ namespace DarwinPark.Entities.Logic
 
         private void StartGestation(EntityStats stats, Genome partnerGenome, float size,bool parthenogenetic=false)
         {
+            _litter=MultipleBirthPolicy.Begin(_controller);
             _partnerGenome = partnerGenome;
             _parthenogenetic=parthenogenetic;_mateWaitTimer=0;
             _maintenanceWait=0;
@@ -227,7 +230,7 @@ namespace DarwinPark.Entities.Logic
             if (_controller.IsGestating)
             {
                 string mode = _parthenogenetic?"孤雌孕育":_partnerGenome == null ? "无性孕育" : "有性孕育";
-                return $"<color=#FF6B6B>{mode}中: {(_gestationTimer / _settings.secondsPerDay):F0} 天</color>";
+                return $"<color=#FF6B6B>{mode}中（待出生 {_litter?.remaining??1} / {_litter?.planned??1}）: {(_gestationTimer / _settings.secondsPerDay):F0} 天</color>";
             }
             if(ParthenogenesisCondition.Enabled(_controller)&&_controller.CurrentAge==AgeState.Adult)return $"等待合适配偶: {_mateWaitTimer/_settings.secondsPerDay:F1} / {ParthenogenesisCondition.WaitSeconds/_settings.secondsPerDay:F1} 天（超时尝试孤雌孕育，需储粮）";
             return "状态: 待机（需成年且储存营养充足）";

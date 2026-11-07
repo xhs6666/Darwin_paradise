@@ -40,7 +40,7 @@ namespace DarwinPark.Entities.Ecology
         {
             if(state==null||!state.HasData)return;
             // ★ 适配：新字段也在清场前校验，旧档缺省表示尚未领取。
-            ColonyFoundingSupport.Validate(state.startup);
+            ColonyFoundingSupport.Validate(state.startup);EntityTaskPlan.Validate(state.plan);Logic.MultipleBirthPolicy.Validate(state.litter);
             // ★ 修复（防Bug回归）：数字形式的未定义角色和非有限运输坐标也必须在清场前拒绝，不能等到恢复角色时崩溃。
             if(!Enum.TryParse<AntRole>(state.role,out var role)||!Enum.IsDefined(typeof(AntRole),role)||role==AntRole.None||state.supplyPoints==null||state.supplyPoints.Any(p=>!Finite(p))||!Finite(state.foundingPoint)||!Finite(state.deliveryPoint))throw new InvalidDataException("蚁群分工、运输位置或补给点无效");
             foreach(float value in new[]{state.scan,state.patrolRemaining,state.restRemaining,state.circleAngle,state.reproductionTimer,state.reproductionCooldown,state.mateWait,state.maintenanceWait})

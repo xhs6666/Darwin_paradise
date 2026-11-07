@@ -270,3 +270,17 @@
 |2026-11-07|外部生态配置无效时，旧档可能清场后才发现|旧档缺配置，加载时才读取当前外部默认|EcologyDefaults.cs、WorldSaveStore.cs|先固定并校验配置快照与基因引用，再开始清场；旧档规则列表保持原样|
 |2026-11-07|营养回归在窄Game窗口下无法展开下拉框|夹具只改minimumWidth，实际卡片仍处于折叠状态|NutritionEcologyRegression.cs|先切回第一页并点击真实筛选入口，确认卡片可见再测试下拉菜单|
 |2026-11-07|自动生态补充会退出实体视角或取消放置|后台维持复用手动随机生成入口，无条件切换玩家模式|RandomPlanetSpawner.cs|只有手动生成退出/取消模式；真实自动补充前后验证操控与放置仍有效|
+
+
+## 2026-11-08 实体计划与近邻合并计算台账
+
+|日期|现象|根因|修复文件|防复发要点|
+|---|---|---|---|---|
+|2026-11-08|成员在运输/巡逻与补给之间反复折返|开始与结束补给共用同一饥饿阈值，寻路每次重新选最近资源|EntityTaskPlan.cs、ColonyFeeding.cs、AntColonyMember.cs|保存计划和目标；恢复线高于开始线；目标失效才重选；保留货物和原任务；吃饱后恢复运输|
+|2026-11-08|静止同基因近邻逐体重复计算，合并时可能重复扣粮或丢失时间|没有全局调度归属、欠账状态及个体副作用边界|EntityWorkScheduler.cs、StationaryCohortKernel.cs、EntitySaveState.cs、Vitals适配|代表变化量只应用于兼容近邻；原Update当帧跳过；个体寿命与孕育独立；欠算时间成对保存；受伤/移动/状态/基因变化拆组；启停组件不混组|
+|2026-11-08|高优先级杀死后续快照成员后，死者仍可能推进孕育|调度快照完成后没有再次检查对象是否仍启用|EntityWorkScheduler.cs、EntityPlanningMergeRegression.cs|执行每个活跃条目前复核生命周期；原生回归验证先死亡后不能产生后代|
+|2026-11-08|副本可能在房主快照之间额外扣粮和受到环境伤害|基因有权威保护，Vitals/环境Update缺少同样保护|EntityVitals.cs、EntityEnvironmentHazard.cs|副本仅展示；原Update和共享入口各验权，原生反射调用Update验证不耗粮|
+|2026-11-08|多胎存档读回被判损坏或重复交付|Unity把null内联对象恢复为全零；缺少总数和待出生数|MultipleBirthPolicy.cs、ReproductionGeneLogic.cs、AntColonyReproduction.cs、WorldSaveStore.cs|全零按旧单胎兼容；每实际出生才扣剩余数；上限/空间不足保留；坏胎数清场前拒绝；实际磁盘往返|
+|2026-11-08|新增繁殖分支未孕育时也压制成长|旧求值器只对基础繁殖ID按孕育开关抑制|GeneDefinitionJson.cs、GeneDatabase.cs、GeneValueResolver.cs、gene_multiple_birth.json|用配置声明suppressionOnlyWhileGestating，未成年也能正常成长；升级和用户定义保持兼容|
+|2026-11-08|长期模拟到上限后王后完成孕育却无法生产，小群没有后继|自动维持/普通繁殖占满名额，繁殖分工只在较大群体或随机抽中时出现|ColonyContinuityPriority.cs、AntColonyMember.cs、EcologyReproduction.cs、RandomPlanetSpawner.cs|开启建群保障时有限保留真实空位、首批工匠后优先培养繁殖个体；不突破全局上限、不删除实体；长期物理模拟验收|
+|2026-11-08|修复重复扣粮，且溺水时可能被第二套修复抵消|修复基因和Vitals均计算修复，前者未遵守环境限制|RepairGeneLogic.cs、EntityVitals.cs|修复统一在Vitals，基因仅提供属性和提示；共享核和活跃路径共用结算|

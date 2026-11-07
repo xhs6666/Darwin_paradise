@@ -76,7 +76,7 @@ flowchart TD
 
 - [Genome.Add · L19](a2ef23f865bc7ee8.md#md9cfdc94b8b8d40f)（方法）
 - [GeneInstance.Create · L20](f82e1498d67f5afd.md#m72e94c278de3cf8b)（方法）
-- [GeneDatabase.Get · L135](ec0a03483435a863.md#m8f3bbfb35f3ca397)（方法）
+- [GeneDatabase.Get · L136](ec0a03483435a863.md#me6a5fefe6c3492f9)（方法）
 - [DarwinEntity.Genes.get · L14](70798dde169f2e8b.md#m622eb1adf401d431)（访问器）
 - [EntityStateRegression.回调@32 · L32](cbb314f2877cdcfa.md#m9e0cf1ebd8f13a93)（回调/委托）
 
@@ -230,7 +230,7 @@ flowchart TD
 - [GeneInspectorUI.HideEntityInfo · L316](924e27c34e7b1f0a.md#m11944eddcac871c2)（方法）
 - [EntityStateRegistry.Clear · L55](440408d2db5c7d96.md#m5fc8abc9b81cad68)（方法）
 - [GeneRuntimeProfile.Clear · L9](f1a7d6e7b41d5a91.md#m3e3a434df6550039)（方法）
-- [GeneDatabase.Reload · L145](ec0a03483435a863.md#mbf775d68c402c10e)（方法）
+- [GeneDatabase.Reload · L146](ec0a03483435a863.md#mf11496816a817e0e)（方法）
 - [GeneDatabase.EnsureLoaded · L12](ec0a03483435a863.md#mc3e6357b9ca440f5)（方法）
 - [AntColonySettings.Clear · L63](cb0a937e97c8fbb3.md#m3139fd188f0f2c2b)（方法）
 
@@ -425,8 +425,8 @@ flowchart TD
 - [AntColonySettings.Parse · L40](cb0a937e97c8fbb3.md#mb52d89914d989e58)（方法）
 - [AntColonySettings.CurrentJson.get · L32](cb0a937e97c8fbb3.md#maa4463e90fdc2684)（访问器）
 - [AntColonySettings.UseSnapshot · L62](cb0a937e97c8fbb3.md#m50cd0fd034f16b81)（方法）
-- [GeneTreeStorage.ReadCatalog · L27](a885bad0d7dedee8.md#m89083f320ec287c0)（方法）
-- [GeneDatabase.Reload · L145](ec0a03483435a863.md#mbf775d68c402c10e)（方法）
+- [GeneTreeStorage.ReadCatalog · L29](a885bad0d7dedee8.md#m9fdcb15884053f59)（方法）
+- [GeneDatabase.Reload · L146](ec0a03483435a863.md#mf11496816a817e0e)（方法）
 - [GeneDatabase.EnsureLoaded · L12](ec0a03483435a863.md#mc3e6357b9ca440f5)（方法）
 - [EntityStateRegistry.Current.get · L41](440408d2db5c7d96.md#m61b7aa1a54b9a56c)（访问器）
 - [EntityStateRegistry.CurrentJson.get · L43](440408d2db5c7d96.md#m32449837062f8705)（访问器）
@@ -442,14 +442,14 @@ flowchart TD
 - [DarwinEntity.Genes.get · L14](70798dde169f2e8b.md#m622eb1adf401d431)（访问器）
 - [EntityStateController.DetectedTarget.get · L16](0f8869eb7018091e.md#m2d23280359000fb2)（访问器）
 - [EntityGeneController.Evaluation.get · L18](7494d53178552f0e.md#mc0039c100a31b455)（访问器）
-- [NutritionTransfer.CanHuntForFood · L26](081d3b8ff683e442.md#m2962d3f47f91a266)（方法）
+- [NutritionTransfer.CanHuntForFood · L27](081d3b8ff683e442.md#m6302d01073c28891)（方法）
 - [NutritionEcologySettings.Current.get · L19](846a17351dbd6aa4.md#mb3eb930022e314f3)（访问器）
-- [GeneDatabase.Get · L135](ec0a03483435a863.md#m8f3bbfb35f3ca397)（方法）
+- [GeneDatabase.Get · L136](ec0a03483435a863.md#me6a5fefe6c3492f9)（方法）
 - [GeneInstance.Create · L20](f82e1498d67f5afd.md#m72e94c278de3cf8b)（方法）
 - [Genome.Add · L19](a2ef23f865bc7ee8.md#md9cfdc94b8b8d40f)（方法）
-- [EntityGeneController.Recalculate · L97](7494d53178552f0e.md#m65ea735c1e0e37a1)（方法）
+- [EntityGeneController.Recalculate · L101](7494d53178552f0e.md#m3b78ff9955767303)（方法）
 - [EntityStats.TryGet · L90](75aa86a368efdf24.md#m24ee1433e4a70d94)（方法）
-- [EntityGeneController.AdvanceSimulation · L66](7494d53178552f0e.md#m477fb905eeed3e79)（方法）
+- [EntityGeneController.AdvanceSimulation · L70](7494d53178552f0e.md#m8d432f097da8bbf7)（方法）
 - [EntityStats.Modify · L111](75aa86a368efdf24.md#m9c837be197158240)（方法）
 - [EntityStateRegistry.Parse · L57](440408d2db5c7d96.md#m4543a04396bcbc54)（方法）
 - [EntityStateRegistry.UseSnapshot · L52](440408d2db5c7d96.md#m6013e583cbf33e79)（方法）
@@ -459,14 +459,14 @@ flowchart TD
 - [GeneEntityStateTags.Validate · L24](d87d75eb0b331d5c.md#m07abded73ee4a80f)（方法）
 - [GeneInspectorUI.ShowEntityInfo · L385](924e27c34e7b1f0a.md#mea69a0457b885287)（方法）
 - [EntityStatePresentation.Current · L11](cedd13b7a8825ed4.md#mb284f7b351983ca5)（方法）
-- [GeneTreeStorage.Load · L53](a885bad0d7dedee8.md#m60e52e1c6f841f94)（方法）
-- [EntitySaveState.Capture · L21](a1ec8fcd9d7d3ddb.md#mc67502b381bc2751)（方法）
-- [WorldSaveStore.Write · L121](d67a35e5e3814c15.md#m2921b5af0a46f93b)（方法）
+- [GeneTreeStorage.Load · L55](a885bad0d7dedee8.md#m095aec82bcb2500e)（方法）
+- [EntitySaveState.Capture · L22](a1ec8fcd9d7d3ddb.md#md994065ded6697b7)（方法）
+- [WorldSaveStore.Write · L124](d67a35e5e3814c15.md#m1efa639a0390b006)（方法）
 - [WorldSaveStore.Read · L72](d67a35e5e3814c15.md#mca362c7675a5800c)（方法）
-- [EntitySaveState.Restore · L31](a1ec8fcd9d7d3ddb.md#m047b691a146deabd)（方法）
-- [GeneTreeStorage.SaveTo · L96](a885bad0d7dedee8.md#m44f80bc754af0f5a)（方法）
+- [EntitySaveState.Restore · L32](a1ec8fcd9d7d3ddb.md#md1cca8b8dd3628a4)（方法）
+- [GeneTreeStorage.SaveTo · L98](a885bad0d7dedee8.md#mccb317faa8451097)（方法）
 - [EntityStateController.Rebind · L22](0f8869eb7018091e.md#m40a5ae44229a22cf)（方法）
-- [EntityStateController.Restore · L100](0f8869eb7018091e.md#m5c730db919104ae6)（方法）
+- [EntityStateController.Restore · L101](0f8869eb7018091e.md#mfb6f0009ca582cf9)（方法）
 - [EntityStateRegression.回调@70 · L70](cbb314f2877cdcfa.md#m92084cbce0768382)（回调/委托）
 - [EntityStateRegression.回调@71 · L71](cbb314f2877cdcfa.md#mbd5758518b63afb4)（回调/委托）
 - [EntityStateRegression.回调@77 · L77](cbb314f2877cdcfa.md#me15df24f88f07164)（回调/委托）

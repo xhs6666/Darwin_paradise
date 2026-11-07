@@ -50,23 +50,20 @@ namespace DarwinPark.Entities.Ecology
                 state.mateWait=0;
                 state.reproductionTimer=Mathf.Max(0,state.reproductionTimer-dt);
                 if(state.reproductionTimer>0||DarwinEntity.Spawner==null)return;
-                // ★ 修复（防Bug回归）：只在育幼范围空位出生；拥挤时保留孕育，不继续向已有身体上方堆叠后代。
-                if(!ColonyFormation.TryBirthPosition(queen,out var point))return;
-                var child=Copy(genes.Genome);
-                if(state.partnerGenome!=null)
-                    foreach(var gene in child.Genes){var partner=state.partnerGenome.Genes.FirstOrDefault(g=>g.DefinitionId==gene.DefinitionId);if(partner!=null)gene.Value=(gene.Value+partner.Value)*.5f;}
-                // 使用原出生入口，卵生/孵化和分工继承仍由同一个入口处理。
-                if(!EcologyReproduction.Spawn(genes,child,point))return;genes.IsGestating=false;state.partnerGenome=null;state.parthenogenetic=false;state.reproductionCooldown=settings.queenCooldownSeconds;genes.Recalculate();return;
+                // ★ 适配：共享多胎交付策略，每个已出生子代立即扣减待出生数，读档不重复。
+                if(!MultipleBirthPolicy.Deliver(ref state.litter,()=>QueenBirthDelivery.TrySpawn(queen)))return;
+                state.litter=null;genes.IsGestating=false;state.partnerGenome=null;state.parthenogenetic=false;state.reproductionCooldown=settings.queenCooldownSeconds;genes.Recalculate();return;
             }
             if(state.reproductionCooldown>0){state.mateWait=0;return;}
             var eligibleMate=mates.FirstOrDefault(m=>EcologyQueries.Distance(queen.transform.position,m.transform.position)<=settings.feedRadius);
             bool parthenogenetic=ParthenogenesisCondition.Advance(genes,ref state.mateWait,!sexual||eligibleMate!=null,dt);
             if(!EntityPopulationLimit.CanSpawn||sexual&&eligibleMate==null&&!parthenogenetic)return;
-            if(!stats.TryGet("storedNutrient",out float reserve)||reserve<settings.queenBirthCost)return;
+            if(!stats.TryGet("storedNutrient",out float reserve)||reserve<settings.queenBirthCost*MultipleBirthPolicy.Count(genes))return;
             // ★ 适配：维持比例超量时延长王后的新孕育间隔，不中断已开始的孕育。
             // ★ 适配：建群缺工匠时优先建立补给链，不能再被全局移动者超量的繁殖等待卡住；仍照常支付食物和孕育时间。
             if(!ColonyFoundingSupport.NeedsWorker(queen)&&!PopulationMaintenance.BreedingReady(genes,ref state.maintenanceWait,dt))return;state.maintenanceWait=0;
-            stats.Modify("storedNutrient",-settings.queenBirthCost);state.partnerGenome=sexual&&!parthenogenetic?Copy(eligibleMate.Genes.Genome):null;state.parthenogenetic=parthenogenetic;state.mateWait=0;state.reproductionTimer=settings.queenGestationSeconds;genes.IsGestating=true;genes.Recalculate();
+            // ★ 适配：受孕时固定总胎数和对应预算，不让后续变异/调参改变已经付款的这一胎。
+            state.litter=MultipleBirthPolicy.Begin(genes);stats.Modify("storedNutrient",-settings.queenBirthCost*state.litter.planned);state.partnerGenome=sexual&&!parthenogenetic?Copy(eligibleMate.Genes.Genome):null;state.parthenogenetic=parthenogenetic;state.mateWait=0;state.reproductionTimer=settings.queenGestationSeconds;genes.IsGestating=true;genes.Recalculate();
         }
     }
 }

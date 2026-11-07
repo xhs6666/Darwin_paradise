@@ -17,6 +17,8 @@ namespace DarwinPark.Entities
         public Genome Genome = new();
         public GenomeEvaluation Evaluation { get; private set; }
         public int LogicRevision {get;private set;}
+        // ★ 适配：欠算的模拟时间属于个体，存档后继续补算，不能因拆组/读档丢失。
+        [HideInInspector] public float PendingSimulationTime;
         public event Action<GenomeEvaluation> OnEvaluationChanged;
 
         [Header("成长设置")]
@@ -60,7 +62,9 @@ namespace DarwinPark.Entities
         {
             // ★ 修复（防Bug回归）：基因逻辑、成长及突变共用模拟时间，不能只让日历加速。
             float dt = ServiceLocator.TryGet<SimulationClock>(out var clock) ? clock.GameDeltaTime : Time.deltaTime;
-            AdvanceSimulation(dt);
+            // ★ 适配：全局调度已按优先级推进；停用调度后沿原入口补清欠下时间。
+            if(Simulation.EntityWorkScheduler.Handled(this))return;
+            Simulation.EntityWorkScheduler.AdvanceUnscheduled(this,dt);
         }
 
         public void AdvanceSimulation(float dt)
@@ -97,6 +101,7 @@ namespace DarwinPark.Entities
         public void Recalculate()
         {
             if (_isRecalculating) return;
+            Simulation.EntityWorkScheduler.Wake(this);
             // ★ 适配：固定分工先还原出生遗传快照，编辑和阶段变异不能改写士兵/工匠基因。
             GetComponent<Ecology.AntColonyMember>()?.EnforceGenome();
             _isRecalculating = true;
@@ -270,7 +275,7 @@ namespace DarwinPark.Entities
                 //（最高 +25%），否则玩家很难观察到适应基因被优先突变。
                 float effectiveMutationChance = Mathf.Clamp01(
                     mutationChance + EnvironmentMutationChance * 0.25f);
-                if (GetComponent<Ecology.AntColonyMember>()?.Frozen!=true&&UnityEngine.Random.value < effectiveMutationChance)
+                if (GetComponent<Ecology.AntColonyMember>()?.Frozen!=true&&Simulation.GlobalMutationManager.Permit(this)&&UnityEngine.Random.value < effectiveMutationChance)
                 {
                     var settings = GeneMutationSettings.CreateDefault();
                     settings.AdaptationGeneId = EnvironmentGeneId;

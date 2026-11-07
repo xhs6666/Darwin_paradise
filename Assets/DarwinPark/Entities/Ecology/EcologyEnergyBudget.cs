@@ -5,6 +5,7 @@ using DarwinPark.Genetics;
 using DarwinPark.Planet;
 using UnityEngine;
 
+// ★ 适配：降低获取速度时只扣实际转移量，避免营养凭空损失。
 namespace DarwinPark.Entities.Ecology
 {
     // ★ 新增：生产只有一个入口，溢出统一入库；移动开销按实际切向速度与模拟倍率换算。
@@ -47,9 +48,9 @@ namespace DarwinPark.Entities.Ecology
             var settings=EcologyBalanceSettings.Current;float efficiency=genes.GetAttribute(settings.absorptionAttribute);
             if(efficiency<=0||state==null)return;
             // ★ 适配：生产者分类已由帧共享快照计算，不能在每个子步再次遍历表达并读取同一组移动修饰组件。
-            if(state.StateId==settings.photoState)stats.Feed(efficiency*settings.photoProductionRate*dt/EntityNeighborhood.ProductionCompetition(genes));
+            if(state.StateId==settings.photoState)stats.Feed(efficiency*settings.photoProductionRate*dt*GameplayTuning.Current.nutritionGainMultiplier/EntityNeighborhood.ProductionCompetition(genes));
             else if(state.StateId==settings.chemicalState&&PlanetOreSystem.Instance!=null)
-                stats.Feed(PlanetOreSystem.Instance.ConsumeOre(genes.transform.position,efficiency*settings.mineralExtractionRate*dt));
+                stats.Feed(PlanetOreSystem.Instance.ConsumeOre(genes.transform.position,efficiency*settings.mineralExtractionRate*dt*GameplayTuning.Current.nutritionGainMultiplier));
         }
         public static float Consumption(EntityGeneController genes,float baseRate,float movementRate)
         {

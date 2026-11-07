@@ -233,8 +233,8 @@
     "note": ""
   },
   {
-    "title": "03 · 每帧模拟与基因行为",
-    "description": "模拟时间预算、实体子步、生命周期、意图和基因调度。",
+    "title": "03 · 全局优先级、近邻合并与实体行为",
+    "description": "时钟驱动优先调度，静止同基因近邻共享基础变化，个体寿命、孕育和身份仍各自保留。",
     "nodes": [
       {
         "id": "n0",
@@ -244,7 +244,7 @@
       },
       {
         "id": "n1",
-        "text": "实体读取 GameDeltaTime",
+        "text": "普通Update确认当帧调度归属",
         "target": "EntityGeneController.Update",
         "kind": "step"
       },
@@ -289,19 +289,103 @@
         "text": "解析数值、抑制与状态",
         "target": "GeneValueResolver.Resolve",
         "kind": "step"
+      },
+      {
+        "id": "n9",
+        "text": "全局调度Unity入口",
+        "target": "EntityWorkScheduler.Update",
+        "kind": "entry"
+      },
+      {
+        "id": "n10",
+        "text": "按优先级推进 / 空间兼容分组 / 预算与欠账",
+        "target": "EntityWorkScheduler.Advance",
+        "kind": "step"
+      },
+      {
+        "id": "n11",
+        "text": "代表计算生产、环境和代谢变化",
+        "target": "StationaryCohortKernel.Sample",
+        "kind": "step"
+      },
+      {
+        "id": "n12",
+        "text": "向兼容近邻应用基础变化",
+        "target": "StationaryCohortKernel.Apply",
+        "kind": "step"
+      },
+      {
+        "id": "n13",
+        "text": "各成员独立推进寿命和阶段",
+        "target": "EntityLifeCycle.AdvanceShared",
+        "kind": "step"
+      },
+      {
+        "id": "n14",
+        "text": "各成员独立推进孕育和真实出生",
+        "target": "StationaryCohortKernel.Reproduce",
+        "kind": "step"
+      },
+      {
+        "id": "n15",
+        "text": "全局阶段变异预算与近邻代表抽样",
+        "target": "GlobalMutationManager.Permit",
+        "kind": "step"
       }
     ],
     "edges": [
       [
         "n0",
+        "n9",
+        "共享时间，独立Unity回调",
+        "exception"
+      ],
+      [
+        "n9",
+        "n10",
+        "",
+        "flow"
+      ],
+      [
+        "n0",
         "n1",
-        "共享数据；分别调度",
+        "共享时间，独立Unity回调",
         "exception"
       ],
       [
         "n1",
         "n2",
-        "",
+        "无全局归属时沿原入口补算",
+        "flow"
+      ],
+      [
+        "n10",
+        "n2",
+        "优先：手动 / 受伤 / 其他活跃实体",
+        "flow"
+      ],
+      [
+        "n10",
+        "n11",
+        "安全静止近邻组；达到结算时间且有预算",
+        "flow"
+      ],
+      [
+        "n11",
+        "n12",
+        "同组共享变化量",
+        "flow"
+      ],
+      [
+        "n12",
+        "n13",
+        "各自处理阶段和死亡",
+        "flow"
+      ],
+      [
+        "n13",
+        "n14",
+        "独立伙伴、营养、胎数和后代",
         "flow"
       ],
       [
@@ -325,8 +409,26 @@
       [
         "n5",
         "n6",
-        "遍历逻辑快照",
+        "按逻辑快照",
         "flow"
+      ],
+      [
+        "n3",
+        "n15",
+        "首次生命阶段",
+        "exception"
+      ],
+      [
+        "n13",
+        "n15",
+        "首次生命阶段",
+        "exception"
+      ],
+      [
+        "n15",
+        "n7",
+        "阶段检查后重新表达",
+        "exception"
       ],
       [
         "n7",
@@ -337,11 +439,11 @@
       [
         "n8",
         "n6",
-        "刷新后续行为",
+        "表达变化后各逻辑按新快照执行",
         "exception"
       ]
     ],
-    "note": "IGeneLogic.OnUpdate的接口候选见“调用与被调用”。不把所有基因排成固定的跨实体执行顺序。"
+    "note": "此图是业务导航，不把独立Unity消息排成固定跨组件顺序。共享分支只处理兼容近邻；受伤、基因或状态变化即拆组。实际子步、上限、事件与接口调用以对应方法图为准。"
   },
   {
     "title": "04 · 攻击、消化、死亡与尸体",

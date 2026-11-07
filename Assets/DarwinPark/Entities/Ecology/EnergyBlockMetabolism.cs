@@ -5,6 +5,7 @@ using DarwinPark.Entities.Logic;
 using DarwinPark.Entities.Stats;
 using UnityEngine;
 
+// ★ 适配：降低获取速度时只扣实际转移量，避免营养凭空损失。
 namespace DarwinPark.Entities.Ecology
 {
     // ★ 新增：普通实体的能量块吸收/吐出与蚁群运输分离，所有流转均从实际营养扣减，不再免费生成。
@@ -38,7 +39,7 @@ namespace DarwinPark.Entities.Ecology
             var resource=Find(true);if(resource==null)return;
             var stats=GetComponent<EntityStats>();var settings=NutrientUtilizationSettings.Current;
             float room=stats.CaptureValues().Where(v=>v.id==settings.nutrientAttribute||v.id==settings.reserveAttribute).Sum(v=>Mathf.Max(0,v.max-v.value));
-            float amount=Mathf.Min(room,resource.State.energy,_genes.GetAttribute(settings.absorptionAttribute)*dt);if(amount<=0)return;
+            float amount=Mathf.Min(room,resource.State.energy,_genes.GetAttribute(settings.absorptionAttribute)*dt*DarwinPark.Core.GameplayTuning.Current.nutritionGainMultiplier);if(amount<=0)return;
             stats.Feed(amount);resource.State.energy-=amount;if(resource.State.energy<=0)resource.Remove();
         }
         public bool TryRelease(Vector3 forward,out ColonyResource resource)

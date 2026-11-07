@@ -8,13 +8,23 @@ namespace DarwinPark.Core
     [Serializable] public sealed class GameplayTuning
     {
         public int version=1;
-        public float baseMetabolismMultiplier=1, movementMetabolismMultiplier=1;
+        public float baseMetabolismMultiplier=.5f, movementMetabolismMultiplier=.5f;
         public float repairFoodPerHealth=.5f, starvationDamagePerSecond=1;
         public float manualAimPadding=.85f, manualHitboxScale=1.5f, manualAttackReachBonus=.35f;
         public float supplyActivityRadiusRatio=1;
         public float colonyActivityRadiusMultiplier=.35f, populationFillOpacity=.22f;
         // ★ 新增：成年且无合适配偶的连续等待天数，外部配置可热更新。
         public float parthenogenesisWaitDays=5;
+        // ★ 新增：收支一起放慢；补给使用吃饱恢复线，避免阈值附近反复折返。
+        public float nutritionGainMultiplier=.5f, memberFeedResume=9.5f, queenReserveBuffer=10;
+        // ★ 新增：相近同基因静止实体共享基础结算；受伤/移动立即退出，繁殖仍逐个计算。
+        public bool mergeStationaryEntities=true;
+        public float mergeRadius=6, mergeInterval=.5f, mergeQuietSeconds=2, mergeMaximumMembers=32;
+        public float mergeGroupsPerFrame=128, mutationAttemptsPerFrame=16, mergedMutationFraction=.125f;
+        public float multipleBirthMaximum=5;
+        public float colonyBirthReservedSlots=2, colonySuccessorPopulation=3;
+        public float mergeMaximumCatchupSeconds=5;
+        public float mergeFoodTolerance=.25f, mergeReserveTolerance=2, mergeWakeDistance=.1f;
         private static GameplayTuning _current;
         private static long _stamp;private static float _nextPoll;
         public static string FilePath=>Path.Combine(GamePaths.Root,"config","gameplay.json");
@@ -26,6 +36,7 @@ namespace DarwinPark.Core
             foreach(var field in typeof(GameplayTuning).GetFields())if(field.FieldType==typeof(float))
             {float n=(float)field.GetValue(value);if(float.IsNaN(n)||float.IsInfinity(n)||n<0)throw new InvalidDataException("数值必须为非负有限数："+field.Name);}
             if(value.manualHitboxScale<1||value.supplyActivityRadiusRatio<=0||value.colonyActivityRadiusMultiplier<=0||value.populationFillOpacity>1)throw new InvalidDataException("判定框倍率至少为1，活动半径倍率必须大于0，透明度须在0到1之间");
+            if(value.mergeMaximumCatchupSeconds<value.mergeInterval||value.mergeMaximumCatchupSeconds>30||value.colonyBirthReservedSlots>32||value.colonySuccessorPopulation<1||value.colonySuccessorPopulation>100000||value.mergeFoodTolerance<.001f||value.mergeFoodTolerance>10||value.mergeReserveTolerance<.001f||value.mergeWakeDistance<=0||value.memberFeedResume>10||value.mergeRadius<=0||value.mergeInterval<.1f||value.mergeInterval>2||value.mergeMaximumMembers<1||value.mergeMaximumMembers>128||value.mergeGroupsPerFrame<1||value.mergeGroupsPerFrame>100000||value.mutationAttemptsPerFrame<1||value.mutationAttemptsPerFrame>100000||value.mergedMutationFraction>1||value.multipleBirthMaximum<1||value.multipleBirthMaximum>16)throw new InvalidDataException("任务或合并计算数值超出有效范围");
             return value;
         }
         public static void Reload()

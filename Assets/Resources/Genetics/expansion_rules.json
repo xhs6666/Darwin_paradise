@@ -58,6 +58,14 @@
       "minValue": 0,
       "maxValue": 100,
       "requiredGenes": []
+    },
+    {
+      "source": "gene_reproduction",
+      "target": "gene_multiple_birth",
+      "kind": "error",
+      "minValue": 0,
+      "maxValue": 100,
+      "requiredGenes": []
     }
   ]
 }

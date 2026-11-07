@@ -3,6 +3,7 @@ using DarwinPark.Entities.Stats;
 using DarwinPark.Genetics;
 using UnityEngine;
 
+// ★ 适配：降低获取速度时只扣实际转移量，避免营养凭空损失。
 namespace DarwinPark.Entities.Ecology
 {
     // ★ 新增：食腐是独立食性，不靠行动基因伤害凭空获得营养；只吃未被工匠领取的尸体。
@@ -24,7 +25,7 @@ namespace DarwinPark.Entities.Ecology
                 foreach(var resource in ColonyResource.All)if(Valid(resource)){float d=(resource.transform.position-transform.position).sqrMagnitude;if(d<best){best=d;_target=resource;}}
             }
             if(!Valid(_target)||EcologyQueries.Distance(transform.position,_target.transform.position)>settings.feedingReach)return;
-            float amount=NutritionTransfer.Feed(_stats,Mathf.Min(_target.State.energy,_genes.GetAttribute(settings.scavengeAttribute)*dt));
+            float amount=NutritionTransfer.Feed(_stats,Mathf.Min(_target.State.energy,_genes.GetAttribute(settings.scavengeAttribute)*dt*GameplayTuning.Current.nutritionGainMultiplier));
             _target.State.energy-=amount;if(_target.State.energy<=0)_target.Remove();
         }
         public bool Destination(out Vector3 point)

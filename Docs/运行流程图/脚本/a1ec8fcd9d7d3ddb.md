@@ -2,13 +2,13 @@
 
 [返回总索引](../README.md) · `Runtime` · `Assets/DarwinPark/Entities/EntitySaveState.cs`
 
-[源文件](../../../Assets/DarwinPark/Entities/EntitySaveState.cs) · 源码校验：`eff3b07a82ee727f6e7f7ff021dc769a74bc87f7f58171bb91542566e18c0140`
+[源文件](../../../Assets/DarwinPark/Entities/EntitySaveState.cs) · 源码校验：`1b61fa482a944a2ce9a89e81979f2d5561892eb2f6738ba51aab30e42787c61d`
 
 方法按源文件位置排列。事件/回调引用不表示立即执行；分支与异常说明见总索引。完整源码与可点击关系图请打开离线手册。
 
-<a id="mc67502b381bc2751"></a>
+<a id="md994065ded6697b7"></a>
 
-## Capture · L21
+## Capture · L22
 
 `public static EntitySaveState Capture(DarwinEntity entity)`
 
@@ -28,7 +28,7 @@ flowchart TD
   b7["entity.GetComponent&lt;EntityLifeCycle&gt;()?.Progress"]
   b8["0"]
   b9["lifeProgress=entity.GetComponent&lt;EntityLifeCycle&gt;()?.Progress??0"]
-  b10["mutationChance=genes.mutationChance<br/>mutatedStages=genes.MutatedStageMask<br/>stageChecks=genes.StageMutationChecks<br/>gestating=genes.IsGestating<br/>energy=entity.Energy<br/>traits=new List&lt;string&gt;(entity.Traits)<br/>stats=entity.GetComponent&lt;EntityStats&gt;…"]
+  b10["pendingSimulationTime=genes.PendingSimulationTime<br/>mutationChance=genes.mutationChance<br/>mutatedStages=genes.MutatedStageMask<br/>stageChecks=genes.StageMutationChecks<br/>gestating=genes.IsGestating<br/>energy=entity.Energy<br/>traits=new List&lt;string&gt;(ent…"]
   b11["genes.Genome.Genes"]
   b12{"判断：genes.Genome.Genes"}
   b13["var"]
@@ -65,17 +65,17 @@ flowchart TD
 项目内调用/回调引用：
 
 - [DarwinEntity.Genes.get · L14](70798dde169f2e8b.md#m622eb1adf401d431)（访问器）
-- [EntityGeneController.CurrentAge.get · L34](7494d53178552f0e.md#m83a42c16950b22a4)（访问器）
+- [EntityGeneController.CurrentAge.get · L36](7494d53178552f0e.md#me8997b269f94cf38)（访问器）
 - [EntityLifeCycle.Progress.get · L10](9f4138bfbae654b7.md#m178185fd5f5a0d74)（访问器）
-- [EntityGeneController.StageMutationChecks.get · L48](7494d53178552f0e.md#ma27bd0556514825b)（访问器）
+- [EntityGeneController.StageMutationChecks.get · L50](7494d53178552f0e.md#m8fc131477515d1c0)（访问器）
 - [EntityStats.CaptureValues · L86](75aa86a368efdf24.md#mbf54fc67f0d07a99)（方法）
-- [EntityGeneController.GetLogic · L211](7494d53178552f0e.md#maadb710e89e60395)（方法）
-- [ReproductionGeneLogic.CaptureState · L33](ac319ea70bd8b723.md#mb3b414bac984dd2e)（方法）
+- [EntityGeneController.GetLogic · L216](7494d53178552f0e.md#m13c006db1e31b2bc)（方法）
+- [ReproductionGeneLogic.CaptureState · L35](ac319ea70bd8b723.md#m634822c7a94e59a3)（方法）
 - [EcologySaveState.Capture · L29](dd1dde4b4c192659.md#m25ad9f5dc9a5059e)（方法）
 
-<a id="m047b691a146deabd"></a>
+<a id="md1cca8b8dd3628a4"></a>
 
-## Restore · L31
+## Restore · L32
 
 `public void Restore(DarwinEntity entity)`
 
@@ -86,7 +86,7 @@ flowchart TD
 ```mermaid
 flowchart TD
   b0(["入口"])
-  b1["entity.transform.SetPositionAndRotation(position,rotation);<br/>entity.transform.localScale=scale;<br/>entity.DisplayName=name;<br/>genes=entity.Genes<br/>genes.mutationChance=mutationChance;<br/>genes.IsGestating=gestating;<br/>genes.RestoreStageState(age,muta…"]
+  b1["entity.transform.SetPositionAndRotation(position,rotation);<br/>entity.transform.localScale=scale;<br/>entity.DisplayName=name;<br/>genes=entity.Genes<br/>genes.PendingSimulationTime=pendingSimulationTime;<br/>genes.mutationChance=mutationChance;<br/>genes.IsGe…"]
   b2["reproduction"]
   b3{"判断：reproduction"}
   b4["var"]
@@ -127,13 +127,13 @@ flowchart TD
 项目内调用/回调引用：
 
 - [DarwinEntity.Genes.get · L14](70798dde169f2e8b.md#m622eb1adf401d431)（访问器）
-- [EntityGeneController.RestoreStageState · L51](7494d53178552f0e.md#m6264213de2a5ca6f)（方法）
-- [EntityLifeCycle.RestoreProgress · L48](9f4138bfbae654b7.md#mfc75121476d49679)（方法）
-- [EntityGeneController.Recalculate · L97](7494d53178552f0e.md#m65ea735c1e0e37a1)（方法）
+- [EntityGeneController.RestoreStageState · L53](7494d53178552f0e.md#m79f314a95ddba9bf)（方法）
+- [EntityLifeCycle.RestoreProgress · L50](9f4138bfbae654b7.md#m1e9381f9a38ed7be)（方法）
+- [EntityGeneController.Recalculate · L101](7494d53178552f0e.md#m3b78ff9955767303)（方法）
 - [EntityStats.RestoreValues · L88](75aa86a368efdf24.md#m774f994eaa3183ca)（方法）
 - [Genome.Find · L11](a2ef23f865bc7ee8.md#mfd5b2c58563def29)（方法）
-- [EntityGeneController.GetLogic · L211](7494d53178552f0e.md#maadb710e89e60395)（方法）
-- [ReproductionGeneLogic.RestoreState · L35](ac319ea70bd8b723.md#m2e3c6341cef3b9c0)（方法）
+- [EntityGeneController.GetLogic · L216](7494d53178552f0e.md#m13c006db1e31b2bc)（方法）
+- [ReproductionGeneLogic.RestoreState · L37](ac319ea70bd8b723.md#m774f9d1fdc13aa95)（方法）
 - [DarwinEntity.EnableTrait · L34](70798dde169f2e8b.md#meef47c363e5995a8)（方法）
 - [DarwinEntity.AddEnergy · L38](70798dde169f2e8b.md#m6d61b27a87e2f477)（方法）
 - [EcologySaveState.Restore · L42](dd1dde4b4c192659.md#m91672bc75a4694f7)（方法）

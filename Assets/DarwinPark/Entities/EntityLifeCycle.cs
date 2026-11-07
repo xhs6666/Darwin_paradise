@@ -22,16 +22,18 @@ namespace DarwinPark.Entities
             _genes.CurrentAge=AgeState.Infant;
             _genes.TryStageMutation(AgeState.Infant);_genes.Recalculate();
         }
-        public void Advance(float dt)
+        public void Advance(float dt)=>AdvanceShared(dt,null);
+        // ★ 适配：相近同基因组只计算一次成长速度，个体仍独立过阶段、变异、结算死亡。
+        public void AdvanceShared(float dt,float? sharedSpeed)
         {
             if(dt<=0 || HasDied)return;
             InitializeBirth();
             if(_stats.TryGet("health",out float hp) && hp<=0)return;
             var settings=LifeCycleSettings.Load();
             // 孕育仍可抑制幼年成长；老化不能因为基因失效而无限暂停。
-            float speed=_genes.CurrentAge==AgeState.Elder
+            float speed=sharedSpeed??(_genes.CurrentAge==AgeState.Elder
                 ?Mathf.Max(settings.minimumAgingSpeed,_genes.GetAttribute("agingSpeed"))*settings.agingProgressScale
-                :Mathf.Max(0,_genes.GetAttribute("growthSpeed"))*settings.growthProgressScale;
+                :Mathf.Max(0,_genes.GetAttribute("growthSpeed"))*settings.growthProgressScale);
             Progress=Mathf.Min(settings.deathProgress,Progress+speed*dt);
             if(Progress>=settings.adultProgress && _genes.CurrentAge==AgeState.Infant)EnterStage(AgeState.Adult);
             if(Progress>=settings.elderProgress && _genes.CurrentAge==AgeState.Adult)EnterStage(AgeState.Elder);

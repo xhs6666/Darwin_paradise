@@ -103,7 +103,8 @@ namespace DarwinPark.EditorTools
             var nutritionLogic=plant.Genes.GetLogic(nutrition);nutritionLogic.OnUpdate(1);stats.TryGet("storedNutrient",out float afterReserve);
             Check(afterReserve>beforeReserve,"植物营养生产溢出进入储存，能够积累繁殖预算");
             var duplicate=GeneInstance.Create("gene_nutrition",50,0);plant.Genes.Genome.Add(duplicate);plant.Genes.Recalculate();stats.Modify("storedNutrient",-1000,false);
-            float expected=plant.Genes.GetAttribute(settings.absorptionAttribute)*settings.photoProductionRate;
+            // ★ 适配：获取倍率已成为外部配置，主表达去重按同一真实预算验收。
+            float expected=plant.Genes.GetAttribute(settings.absorptionAttribute)*settings.photoProductionRate*GameplayTuning.Current.nutritionGainMultiplier;
             plant.Genes.GetLogic(nutrition).OnUpdate(1);plant.Genes.GetLogic(duplicate).OnUpdate(1);stats.TryGet("storedNutrient",out float produced);
             Check(Mathf.Abs(produced-expected)<.001f,"复制营养基因仅表达叠加，不重复执行生产");
             Cleanup();var actor=Spawn(new Vector3(0,400,0),true,true);var prey=Spawn(new Vector3(1.2f,400,0));

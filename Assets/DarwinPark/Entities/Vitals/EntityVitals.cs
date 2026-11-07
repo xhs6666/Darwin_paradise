@@ -23,6 +23,10 @@ namespace DarwinPark.Entities.Vitals
 
         private void Update()
         {
+            // ★ 修复（防Bug回归）：副本仅展示房主快照，不能额外结算本机营养或环境伤害。
+            if(WorldAuthority.IsReplica)return;
+            // ★ 适配：静止合并组由代表结算，不能同帧再扣一次个体代谢。
+            if(Simulation.EntityWorkScheduler.Dormant(_genes))return;
             bool running = !ServiceLocator.TryGet<SimulationClock>(out var clock) || clock.IsRunning;
             if (!running) return;
 
@@ -38,6 +42,9 @@ namespace DarwinPark.Entities.Vitals
                 AdvanceVitals(step);
             }
         }
+
+        // ★ 适配：供代表和醒来补算使用，与普通Update共用小步逻辑。
+        public void AdvanceShared(float dt){int steps=Mathf.CeilToInt(dt/.1f);for(int i=0;i<steps;i++)AdvanceVitals(Mathf.Min(.1f,dt-i*.1f));}
 
         private void AdvanceVitals(float dt)
         {

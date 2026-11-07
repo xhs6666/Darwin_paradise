@@ -6,19 +6,16 @@ namespace DarwinPark.Entities.Ecology
     // ★ 修复（防Bug回归）：进食与寻路共用资格和饥饿判断，避免有补给却一直运输、追猎或停在王后旧位置。
     public static class ColonyFeeding
     {
-        public static bool WantsFood(AntColonyMember member)
-        {
-            if(member==null||!member.Active||member.GetComponent<EggIncubation>()?.Incubating==true)return false;
-            var stats=member.GetComponent<EntityStats>();var settings=AntColonySettings.Current;
-            if(stats==null||!stats.TryGet("nutrient",out float food))return false;
-            if(member.Role!=AntRole.Queen)return food<settings.memberFeedThreshold;
-            stats.TryGet("storedNutrient",out float reserve);
-            return food<settings.queenFeedThreshold||reserve<settings.queenReserveTarget;
-        }
+        // ★ 适配：所有消费和寻路入口读取同一份持久化计划。
+        public static bool WantsFood(AntColonyMember member)=>EntityTaskPlan.Feeding(member);
         public static ColonyResource Find(AntColonyMember member,bool nearbyOnly)
         {
             if(!WantsFood(member))return null;
             var kind=member.Role==AntRole.Queen||member.Young?ColonyResourceKind.Nursery:ColonyResourceKind.Supply;
+            var locked=ColonyResource.Find(member.State.plan.supply);
+            if(locked!=null&&(locked.State.kind==kind||locked.State.kind==ColonyResourceKind.Energy)&&ColonyResourceOwnership.Available(locked,member)&&AvailableEnergy(locked,member)>0)
+                return !nearbyOnly||EcologyQueries.Distance(locked.transform.position,member.transform.position)<=AntColonySettings.Current.feedRadius?locked:null;
+            member.State.plan.supply=null;
             ColonyResource nearest=null;float best=float.PositiveInfinity;Vector3 point=member.transform.position;
             foreach(var resource in ColonyResource.All)
             {
@@ -28,7 +25,7 @@ namespace DarwinPark.Entities.Ecology
                 if(distance>=best||nearbyOnly&&EcologyQueries.Distance(resource.transform.position,point)>AntColonySettings.Current.feedRadius)continue;
                 best=distance;nearest=resource;
             }
-            return nearest;
+            if(nearest!=null)member.State.plan.supply=nearest.State.id;return nearest;
         }
         public static float AvailableEnergy(ColonyResource resource,AntColonyMember member)
         {

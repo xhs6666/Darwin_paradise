@@ -62,6 +62,8 @@ namespace DarwinPark.Genetics
 
     public class GeneDefinition
     {
+        // ★ 适配：由定义配置孕育条件，不把新增基因ID写死在求值器。
+        public bool SuppressionOnlyWhileGestating;
         public string Id;
         public string DisplayName;
         public GeneCategory Category;

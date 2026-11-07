@@ -60,7 +60,8 @@ namespace DarwinPark.EditorTools
                 worker.State.deliveryPoint=EcologyQueries.ToLocal(nursery.transform.position);Fill(worker,0);
                 worker.transform.position=positions[2];worker.Advance(.1f);worker.Destination(out feedingPoint,out _,out _);
                 Check(worker.Activity==ColonyActivity.Feed&&EcologyQueries.Distance(feedingPoint,supply.transform.position)<=AntColonySettings.Current.feedRadius&&worker.State.carriedResource==corpse.State.id&&corpse.State.claim==worker.Id,"饥饿工匠暂停运输去补给并保留独占货物");
-                worker.transform.position=supply.transform.position;worker.Advance(1);worker.Advance(1);
+                worker.transform.position=supply.transform.position;// ★ 适配：以补给计划完成验收，降低获取速度后不能再假定固定两秒足够。
+                for(int i=0;i<100&&ColonyFeeding.WantsFood(worker);i++)worker.Advance(.1f);
                 Check(Food(worker)>AntColonySettings.Current.memberFeedThreshold,"繁忙工匠通过实际分工更新吃饱");
                 worker.Destination(out var delivery,out _,out _);Check(delivery==EcologyQueries.ToWorld(worker.State.deliveryPoint),"工匠吃饱后自动恢复原运输目的地");
                 worker.transform.position=delivery;worker.Advance(.1f);Check(ColonyResource.Find(corpse.State.id)==null&&string.IsNullOrEmpty(worker.State.carriedResource),"补给后运输完成且尸体仅转换一次");

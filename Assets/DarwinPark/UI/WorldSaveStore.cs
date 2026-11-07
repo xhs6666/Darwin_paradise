@@ -105,6 +105,9 @@ namespace DarwinPark.UI
                 if(entity?.ecology?.IsEmpty==true)entity.ecology=null;
                 if(entity.genome==null||entity.genome.Genes==null||entity.stats==null||entity.reproduction==null||entity.traits==null)throw new InvalidDataException("实体存档不完整");
                 // ★ 适配：新增等待计时与孤雌孕育标记在清场前检查；旧档缺字段按0/false兼容。
+                // ★ 适配：坏胎数在清场前拒绝，旧档缺省单胎。
+                if(!Finite(entity.pendingSimulationTime)||entity.pendingSimulationTime<0)throw new InvalidDataException("实体合并计算时间无效");
+                foreach(var reproduction in entity.reproduction)DarwinPark.Entities.Logic.MultipleBirthPolicy.Validate(reproduction?.litter);
                 if(entity.reproduction.Any(r=>r==null||!Finite(r.mateWait)||r.mateWait<0||!Finite(r.maintenanceWait)||r.maintenanceWait<0||r.parthenogenetic&&r.partner?.Genes?.Count>0))throw new InvalidDataException("繁殖等待状态无效");
                 if(entity.genome.Genes.Any(g=>!catalog.ContainsKey(g.DefinitionId)))throw new InvalidDataException("实体引用缺失基因");
                 // ★ 适配：外来卵不能略过后代基因校验；寄生宿主标识独立校验。

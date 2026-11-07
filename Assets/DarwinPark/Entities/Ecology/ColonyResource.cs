@@ -4,6 +4,7 @@ using System.Linq;
 using DarwinPark.Entities.Stats;
 using UnityEngine;
 
+// ★ 适配：降低获取速度时只扣实际转移量，避免营养凭空损失。
 namespace DarwinPark.Entities.Ecology
 {
     // ★ 适配：通用能量块独立于育幼/成年专用补给，旧存档枚举编号保持不变。
@@ -60,7 +61,9 @@ namespace DarwinPark.Entities.Ecology
             {var light=obj.AddComponent<Light>();light.type=LightType.Point;light.color=energy;light.intensity=AntColonySettings.Current.glowIntensity;light.range=AntColonySettings.Current.glowRange;light.shadows=LightShadows.None;}
             var resource=obj.AddComponent<ColonyResource>();resource.State=data;ById[data.id]=resource;
             // ★ 适配：尸体增加无碰撞的明确标记；右键几何拾取不增加物理负担。
-            if(data.kind==ColonyResourceKind.Corpse){resource._presentation=obj.AddComponent<ColonyResourcePresentation>();resource._presentation.Build();}return resource;
+            if(data.kind==ColonyResourceKind.Corpse){resource._presentation=obj.AddComponent<ColonyResourcePresentation>();resource._presentation.Build();}
+            // ★ 适配：仅能量块挂载等级外观，尸体保留原标记；按剩余能量恢复等级。
+            else obj.AddComponent<EnergyBlockGradeVisual>().Refresh();return resource;
         }
         public bool Claim(AntColonyMember worker)
         {
@@ -91,7 +94,7 @@ namespace DarwinPark.Entities.Ecology
             var stats=member.GetComponent<EntityStats>();var settings=AntColonySettings.Current;
             // ★ 修复（防Bug回归）：按实际剩余容量扣块能量，不能让满仓的成员吞掉共享储备。
             var capacity=stats.CaptureValues();float room=capacity.Where(v=>v.id=="nutrient"||v.id=="storedNutrient").Sum(v=>Mathf.Max(0,v.max-v.value));
-            float amount=Mathf.Min(ColonyFeeding.AvailableEnergy(resource,member),settings.feedRate*dt,room);if(amount<=0)return;
+            float amount=Mathf.Min(ColonyFeeding.AvailableEnergy(resource,member),settings.feedRate*dt*DarwinPark.Core.GameplayTuning.Current.nutritionGainMultiplier,room);if(amount<=0)return;
             // ★ 修复（防Bug回归）：只有实际抵达进食才领取废弃资源，寻路预览不能抢走别群正在回收的补给；新归属沿原存档字段保存。
             resource.State.group=member.GroupId;
             resource.State.energy-=amount;stats.Feed(amount);if(resource.State.energy<=0)resource.Remove();

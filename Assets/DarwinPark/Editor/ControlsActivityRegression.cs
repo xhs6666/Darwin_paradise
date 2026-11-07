@@ -104,7 +104,8 @@ namespace DarwinPark.EditorTools
 
             // ★ 适配：暂停时运动代谢为零；先启动模拟，才能核实运行中的配置倍率。
             clock.Play();var tuning=GameplayTuning.Current;var body=self.GetComponent<Rigidbody>();body.isKinematic=false;body.linearVelocity=Vector3.forward*2;float baseCost=EcologyEnergyBudget.Consumption(self.Genes,0,1);
-            string config=File.ReadAllText(GameplayTuning.FilePath);var modified=GameplayTuning.Parse(config);modified.movementMetabolismMultiplier=2;File.WriteAllText(GameplayTuning.FilePath,JsonUtility.ToJson(modified,true));GameplayTuning.Reload();
+            string config=File.ReadAllText(GameplayTuning.FilePath);var modified=GameplayTuning.Parse(config);// ★ 适配：默认行动消耗已经减半，翻倍回归应以当前配置为基准，不能仍假定基准固定为1。
+            modified.movementMetabolismMultiplier=tuning.movementMetabolismMultiplier*2;File.WriteAllText(GameplayTuning.FilePath,JsonUtility.ToJson(modified,true));GameplayTuning.Reload();
             Check(Mathf.Approximately(EcologyEnergyBudget.Consumption(self.Genes,0,1),baseCost*2)&&baseCost>0,"外部配置令实际行动饱食消耗翻倍");
             modified.movementMetabolismMultiplier=0;File.WriteAllText(GameplayTuning.FilePath,JsonUtility.ToJson(modified));GameplayTuning.Reload();Check(EcologyEnergyBudget.Consumption(self.Genes,0,1)==0,"零倍率关闭行动消耗且不影响基础参数");
             bool rejected=false;try{GameplayTuning.Parse("{\"version\":1,\"movementMetabolismMultiplier\":-1}");}catch(InvalidDataException){rejected=true;}Check(rejected,"负数配置被明确拒绝");

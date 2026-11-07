@@ -54,6 +54,8 @@ namespace DarwinPark.Entities.Vitals
 
         private void Update()
         {
+            // ★ 修复（防Bug回归）：副本仅展示房主快照，不能额外结算本机营养或环境伤害。
+            if(WorldAuthority.IsReplica)return;
             if (ServiceLocator.TryGet<SimulationClock>(out var clock) && !clock.IsRunning) return;
             if (_stats == null) return;
 
@@ -61,6 +63,17 @@ namespace DarwinPark.Entities.Vitals
             float dt = clock != null ? clock.GameDeltaTime : Time.deltaTime;
             if (dt <= 0f) return;
 
+            // ★ 适配：休眠时冻结个体感知，由近邻代表取样；活跃者仍逐帧检查自身环境。
+            if(!Simulation.EntityWorkScheduler.Dormant(_genes))AdvanceShared(dt);
+        }
+        public void CopySharedReadings(EntityEnvironmentHazard source)
+        {
+            CurrentTemperature=source.CurrentTemperature;CurrentHumidity=source.CurrentHumidity;IsDrowning=source.IsDrowning;StressLevel=source.StressLevel;
+            _genes.ApplyEnvironmentPressure(source._genes.EnvironmentGeneSuppression,source._genes.EnvironmentMutationChance,source._genes.EnvironmentGeneId,source._genes.EnvironmentAdaptationTarget);
+        }
+        public void AdvanceShared(float dt)
+        {
+            if(dt<=0||_stats==null)return;
             if (_config == null && ServiceLocator.TryGet<EnvironmentSystem>(out var env))
                 _config = env.Config;
             if (_config == null)
@@ -144,7 +157,7 @@ namespace DarwinPark.Entities.Vitals
             if (damageScale <= 0f) return;
 
             // 环境压力同时消耗饱食度和生命值。用 Modify(..., false) 避免每帧闪红。
-            _stats.Modify("nutrient", -_config.temperatureNutrientDrainPerSecond * damageScale * dt, false);
+            _stats.Modify("nutrient", -_config.temperatureNutrientDrainPerSecond * damageScale * dt*GameplayTuning.Current.baseMetabolismMultiplier, false);
             _stats.Modify("health", -_config.temperatureHealthDamagePerSecond * damageScale * dt, false);
         }
 
@@ -174,7 +187,7 @@ namespace DarwinPark.Entities.Vitals
             _lastDrowningSeverity = severity;
 
             // ★ 新增：溺水伤害。环境抵抗力不抵消溺水，避免耐热/耐寒基因意外获得水下呼吸。
-            _stats.Modify("nutrient", -_config.drowningNutrientDrainPerSecond * severity * dt, false);
+            _stats.Modify("nutrient", -_config.drowningNutrientDrainPerSecond * severity * dt*GameplayTuning.Current.baseMetabolismMultiplier, false);
             _stats.Modify("health", -_config.drowningHealthDamagePerSecond * severity * dt, false);
         }
 

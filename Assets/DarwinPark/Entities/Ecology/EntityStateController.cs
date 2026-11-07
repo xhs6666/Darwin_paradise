@@ -55,7 +55,8 @@ namespace DarwinPark.Entities.Ecology
             Set(EntityStateRegistry.Current.defaultStateId,null);
         }
         private void Set(string id,DarwinEntity detected)
-        {if(_current!=id)HuntTarget=null;_current=id;DetectedTarget=detected;}
+        {// ★ 适配：任务状态改变必须退出原近邻共享计划。
+            if(_current!=id){Simulation.EntityWorkScheduler.Wake(_genes);HuntTarget=null;}_current=id;DetectedTarget=detected;}
         private bool Matches(List<EntityStateRule> any,out DarwinEntity detected)
         {
             detected=null;if(any.Count==0)return true;

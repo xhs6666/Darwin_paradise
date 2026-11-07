@@ -108,7 +108,8 @@ namespace DarwinPark.EditorTools
             Fill(eater,10,100000);var fullPrey=Spawn(At(3),("gene_growth",50));available=ColonyResource.Biomass(fullPrey);int beforeCorpses=ColonyResource.All.Count();EntityCombat.Ensure(fullPrey.gameObject).Receive(eater,1000);
             var fullCorpse=ColonyResource.All.Last();Near(fullCorpse.State.energy,available,"满仓击败保留全部营养为尸体");Check(ColonyResource.All.Count()==beforeCorpses+1,"满仓击败也只生成一具尸体");
             Fill(eater,0);Stats(eater).SetMax("nutrient",10000);Stats(eater).SetMax("storedNutrient",10000);eater.Genes.Genome.Genes.Single(g=>g.DefinitionId=="gene_heterotrophy").Value=100;eater.Genes.Recalculate();
-            var allPrey=Spawn(At(4),("gene_growth",50));beforeCorpses=ColonyResource.All.Count();EntityCombat.Ensure(allPrey.gameObject).Receive(eater,1000);Check(ColonyResource.All.Count()==beforeCorpses,"完全吸收后没有零营养尸体");
+            var allPrey=Spawn(At(4),("gene_growth",50));beforeCorpses=ColonyResource.All.Count();EntityCombat.Ensure(allPrey.gameObject).Receive(eater,1000);// ★ 适配：只有最终预算能覆盖全部营养时才无尸体；半速获取保留未消化部分。
+            Check(GameplayTuning.Current.nutritionGainMultiplier>=1?ColonyResource.All.Count()==beforeCorpses:ColonyResource.All.Count()==beforeCorpses+1,"消化预算覆盖全部营养才没有尸体，否则保留剩余营养");
             var mover=Spawn(At(5),("gene_locomotion",75));Check(!NutritionTransfer.CanHuntForFood(mover.Genes),"只有行动能力不自动获得消化食性");
             eater.Genes.Genome.Genes.Single(g=>g.DefinitionId=="gene_locomotion").Value=25;eater.Genes.Recalculate();
             Check(!NutritionTransfer.FoodTargetAllowed(eater.Genes,mover)&&NutritionTransfer.FoodTargetAllowed(eater.Genes,Spawn(At(6),("gene_growth",50))),"食草倾向只选择静止猎物");

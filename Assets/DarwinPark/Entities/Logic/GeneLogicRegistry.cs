@@ -27,6 +27,8 @@ namespace DarwinPark.Entities.Logic
                 case "EggParasiticGeneLogic": return new EggParasiticGeneLogic();
                 case "StorageGeneLogic": return new StorageGeneLogic();     // ★ 补上这个
                 case "LocomotionGeneLogic": return new LocomotionGeneLogic();
+                // ★ 适配：多胎沿用繁殖状态并接入独立胎数策略。
+                case "MultipleBirthGeneLogic": return new MultipleBirthGeneLogic();
                 case "ReproductionGeneLogic": return new ReproductionGeneLogic();
                 case "EnvironmentAdaptationGeneLogic": return new EnvironmentAdaptationGeneLogic();
                 // ★ 新增：三种社会/寄生逻辑和卵生前置均显式注册，避免配置存在但运行无行为。

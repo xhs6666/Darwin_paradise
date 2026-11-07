@@ -5,6 +5,7 @@ using DarwinPark.Entities.Stats;
 using DarwinPark.Genetics;
 using UnityEngine;
 
+// ★ 适配：降低获取速度时只扣实际转移量，避免营养凭空损失。
 namespace DarwinPark.Entities.Ecology
 {
     [Serializable] public sealed class NutritionParasiteSave {public string host;public bool originalKinematic,originalDetect=true;}
@@ -38,7 +39,7 @@ namespace DarwinPark.Entities.Ecology
             if(Host!=null)
             {
                 var stats=Host.GetComponent<EntityStats>();stats.TryGet("nutrient",out float food);
-                float amount=Mathf.Min(Mathf.Max(0,food-settings.hostProtectedNutrient),Mathf.Max(0,_genes.GetAttribute(settings.parasiteDrainAttribute))*dt,NutritionTransfer.Room(_stats));
+                float amount=Mathf.Min(Mathf.Max(0,food-settings.hostProtectedNutrient),Mathf.Max(0,_genes.GetAttribute(settings.parasiteDrainAttribute))*dt*DarwinPark.Core.GameplayTuning.Current.nutritionGainMultiplier,NutritionTransfer.Room(_stats));
                 if(amount>0){stats.Modify("nutrient",-amount,false);_stats.Feed(amount);}Follow();return;
             }
             _scan-=dt;if(_scan<=0)

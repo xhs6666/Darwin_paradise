@@ -8,6 +8,8 @@ namespace DarwinPark.Entities.Ecology
         // ★ 新增：卵生后代先作为可攻击的独立卵存在，孵化前不进入普通生命周期。
         public static bool Spawn(EntityGeneController parent,Genome genome,Vector3 position)
         {
+            // ★ 适配：保留有限建群出生名额，实际出生仍受全局总上限约束。
+            if(!ColonyContinuityPriority.CanSpawn(parent))return false;
             // ★ 适配：卵寄生将亲本已组合的后代基因放入外来孕育载荷，不读取或修改宿主的基因。
             if(EcologyQueries.Active(parent,NutritionEcologySettings.Current.eggGene)!=null)return EggHostPregnancy.TryDeposit(parent,genome);
             // ★ 适配：出生上限与投放共用，拒绝时保留母体孕育。

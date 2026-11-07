@@ -283,7 +283,18 @@
     "Assets/DarwinPark/Entities/Ecology/EcologyDefaults.cs": "读取带注释的外部生态默认项，创建70/30及数量保底规则，提供基础模板并保存世界配置快照。",
     "Assets/DarwinPark/Entities/Ecology/EcologyMaintenancePolicy.cs": "按实际生产/移动能力分类统计比例，并将默认生产者优先补充到缺少植物的蚁群活动区。",
     "Assets/DarwinPark/Entities/Ecology/ColonyFoundingSupport.cs": "为新王后提供一次性有限育幼储粮，首批优先工匠，缺工匠时王后临时采集并持久化创业状态。",
-    "Assets/DarwinPark/Editor/ColonyContinuityRegression.cs": "验证默认生态自动生成、原生规则界面、存档/联机快照、创业防重领、长期物理繁衍及自动补充保留操控/放置状态。"
+    "Assets/DarwinPark/Editor/ColonyContinuityRegression.cs": "验证默认生态自动生成、原生规则界面、存档/联机快照、创业防重领、长期物理繁衍及自动补充保留操控/放置状态。",
+    "Assets/DarwinPark/Entities/Ecology/EntityTaskPlan.cs": "实体补给计划、恢复线、固定资源目标、优先级和存档校验，避免运输/巡逻临界折返。",
+    "Assets/DarwinPark/Entities/Ecology/EnergyBlockGrades.cs": "五级蓝到红能量阈值、颜色定义、外部配置校验与剩余能量分级。",
+    "Assets/DarwinPark/Entities/Ecology/EnergyBlockGradeVisual.cs": "按能量等级更新独立材质属性块、光源颜色及大小，不影响尸体或其他物件。",
+    "Assets/DarwinPark/Entities/Ecology/QueenBirthDelivery.cs": "王后每个多胎后代独立继承基因、检查出生空位并提交真实出生。",
+    "Assets/DarwinPark/Entities/Logic/MultipleBirthPolicy.cs": "多胎数量、分批交付、旧档兼容和总数/待出生数量校验；注册多胎繁殖逻辑。",
+    "Assets/DarwinPark/Entities/Simulation/EntityWorkScheduler.cs": "全局实体计算优先级、空间兼容组、代表调度、预算延期、受伤唤醒和个人欠算时间。",
+    "Assets/DarwinPark/Entities/Simulation/StationaryCohortKernel.cs": "近邻静止同基因实体共享生产/环境/代谢变化，独立保留寿命阶段与孕育。",
+    "Assets/DarwinPark/Entities/Simulation/GlobalMutationManager.cs": "管理自然阶段变异的全局每帧预算、近邻组代表抽样与诊断计数。",
+    "Assets/DarwinPark/Genetics/MultipleBirthEvolutionUpgrade.cs": "一次性补齐多胎定义和繁殖出错连线，同时保留用户后续树编辑。",
+    "Assets/DarwinPark/Editor/EntityPlanningMergeRegression.cs": "真实实体对照、分组/拆组、时间欠账、五级能量、多胎上限及磁盘读档、补给计划专项回归。",
+    "Assets/DarwinPark/Entities/Ecology/ColonyContinuityPriority.cs": "建群后继繁殖个体优先和有限王后出生名额，防止自动生成/光合繁殖占满全局上限。"
   },
   "files": {
     "Assets/Scenes/SampleScene.unity": "主要运行场景：挂载星球、环境、时钟、UI和游戏启动组件。",
@@ -404,6 +415,13 @@
     "Assets/Resources/Entities/ecology_defaults.json": "内置生态默认值：生产者70%、移动实体30%、100个体保底、基础繁衍模板和有限建群保障。",
     "config/ecology_defaults.json": "可在游戏外编辑的生态默认配置，支持中文注释；新世界及显式应用默认项时使用。",
     "Docs/操作指南/生态默认与建群保障.md": "说明默认比例、基础模板、建群储粮与工匠交接、旧世界应用和外部调参。",
-    "Docs/验证记录/生态默认与种群延续验证-2026-11-07.md": "本次70/30生态、建群补给、持久化、长期模拟和兼容回归的验证记录。"
+    "Docs/验证记录/生态默认与种群延续验证-2026-11-07.md": "本次70/30生态、建群补给、持久化、长期模拟和兼容回归的验证记录。",
+    "Assets/Resources/Genes/gene_multiple_birth.json": "繁殖基因多胎出错定义，保留有性/无性状态，仅在孕育时抑制成长。",
+    "Assets/Resources/Genetics/multiple_birth.json": "多胎迁移所需的源基因与目标ID。",
+    "Assets/Resources/Entities/energy_levels.json": "五级蓝绿黄橙红能量阈值、色值和大小的内置默认表。",
+    "config/energy_levels.json": "可在游戏外编辑的能量块等级阈值和颜色，支持中文注释。",
+    "Docs/开发设计/实体任务与近邻合并计算.md": "任务补给计划、共享计算边界、时间守恒、变异抽样和多胎持久化维护说明。",
+    "Docs/操作指南/任务补给能量等级与多胎.md": "补给优先级、五级能量、多胎和外部数值调整方法。",
+    "Docs/验证记录/实体计划近邻合并与多胎验证-2026-11-08.md": "本次专项、原有行为兼容、种群延续、编译与Windows构建验证证据。"
   }
 }

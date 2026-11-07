@@ -18,6 +18,9 @@ namespace DarwinPark.Entities.Ecology
         public Genome partnerGenome;
         // ★ 适配：创业储粮领取记录随分工保存，重载和重算不能重复领取。
         public ColonyFoundingSave startup;
+        // ★ 适配：保存补给任务和固定资源，读档不会在任务间反复抢占。
+        public EntityTaskPlanSave plan;
+        public Logic.MultipleBirthState litter;
         public bool HasData=>!string.IsNullOrEmpty(role);
     }
     public enum ColonyActivity { Rest,Patrol,Hunt,Collect,Transport,Feed,Reproduce,Founding,Young,Mate }
@@ -42,7 +45,10 @@ namespace DarwinPark.Entities.Ecology
         public Vector3 Center {get{var queen=Queen;return queen!=null?queen.transform.position:transform.position;}}
         public float Radius=>Mathf.Max(AntColonySettings.Current.minimumColonyRadius,Genes.GetAttribute("territory_radius"),AntColonySettings.Current.colonyRadius)*DarwinPark.Core.GameplayTuning.Current.colonyActivityRadiusMultiplier;
         public bool Frozen=>Active&&Role!=AntRole.None&&AntColonySettings.Current.Rule(Role).frozenGenome;
-        public ColonyActivity Activity {get;internal set;}
+        // ★ 适配：面板和行动共用计划优先级，避免补给中显示运输/繁殖。
+        private ColonyActivity _activity;
+        public ColonyActivity Activity {get=>!State.founding&&EntityTaskPlan.Feeding(this)&&ColonyResource.Find(State.plan?.supply)!=null?ColonyActivity.Feed:_activity;internal set=>_activity=value;}
+        public int TaskPriority=>EntityTaskPlan.Priority(Activity);
         internal DarwinEntity HuntTarget;
         private readonly Dictionary<string,float> _suppression=new Dictionary<string,float>();
         private string _suppressionRole;
@@ -72,6 +78,8 @@ namespace DarwinPark.Entities.Ecology
         {
             // ★ 适配：前几胎先补齐工匠，避免随机连续出生士兵/繁殖个体形成补给死循环。
             if(ColonyFoundingSupport.NeedsWorker(this))return AntRole.Worker;
+            // ★ 适配：先工匠再繁殖后继，不靠大种群随机抽取来维持小群谱系。
+            if(ColonyContinuityPriority.NeedsSuccessor(this))return AntRole.Reproductive;
             var settings=AntColonySettings.Current;
             if(Group.Count()>=settings.reproductivePopulationThreshold&&Group.Count(m=>m.Role==AntRole.Reproductive)<settings.minimumReproductives)return AntRole.Reproductive;
             var choices=settings.roles.Where(r=>r.birthWeight>0&&(r.Role!=AntRole.Reproductive||Group.Count(m=>m.Role==AntRole.Reproductive)<settings.maximumReproductives)).ToArray();
@@ -179,6 +187,7 @@ namespace DarwinPark.Entities.Ecology
                 member._suppression.Clear();foreach(var id in AntColonySettings.Current.Rule(member.Role).suppressedGenes)member._suppression[id]=AntColonySettings.Current.geneSuppression;
                 // ★ 适配：旧角色配置已禁用有性繁殖时，其新增出错分支也应禁用，避免工匠/配偶显示可繁殖能力。
                 if(member._suppression.ContainsKey(ParthenogenesisEvolutionUpgrade.SourceGeneId))member._suppression[ParthenogenesisEvolutionUpgrade.GeneId]=AntColonySettings.Current.geneSuppression;
+                if(member._suppression.ContainsKey(MultipleBirthEvolutionUpgrade.SourceGeneId))member._suppression[MultipleBirthEvolutionUpgrade.GeneId]=AntColonySettings.Current.geneSuppression;
                 member._suppressionRole=member.State.role;
             }
             return member._suppression;

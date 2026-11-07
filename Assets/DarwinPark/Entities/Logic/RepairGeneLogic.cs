@@ -14,25 +14,8 @@ namespace DarwinPark.Entities.Logic
             _gene = gene;
         }
 
-        public void OnUpdate(float dt)
-        {
-            float repairEfficiency = _controller.GetAttribute("repairEfficiency");
-            float repairCapability = _controller.GetAttribute("repairCapability");
-
-            var stats = _controller.GetComponent<DarwinPark.Entities.Stats.EntityStats>();
-            if (stats == null) return;
-
-            if (stats.TryGet("health", out var hp) && stats.TryGet("nutrient", out var nutrient))
-            {
-                // 如果生命值低于100，大于最低修复阈值，且营养大于5
-                if (hp < 100f && hp > repairCapability && nutrient > 5f && repairEfficiency > 0f)
-                {
-                    float hpToRepair = repairEfficiency * dt;
-                    stats.Modify("health", hpToRepair);
-                    stats.Modify("nutrient", -hpToRepair * 0.5f);
-                }
-            }
-        }
+        // ★ 修复（防Bug回归）：EntityVitals已经统一修复，基因再次修复会重复扣粮并绕过溺水限制。
+        public void OnUpdate(float dt) { }
 
         public string GetTooltipInfo()
         {

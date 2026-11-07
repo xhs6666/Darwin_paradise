@@ -32,6 +32,7 @@ namespace DarwinPark.UI
             if(IsBusy||!WorldRuntimeGate.Ready||WorldRuntimeGate.Loading||automatic==null&&(!WorldAuthority.CanEdit||GameInputGate.Blocked&&!WorldAuthority.RemoteCommand))return false;
             try{if(source==null)return false;source.Validate(GeneDatabase.All.Select(d=>d.Id).ToArray());}catch(Exception ex){Status=ex.Message;return false;}
             if(!WorldAuthority.IsReplica&&!EntityPopulationLimit.CanSpawn){Status="已达到存档实体上限";return false;}
+            if(automatic!=null&&!ColonyContinuityPriority.CanSpawn()){Status="已为王后繁衍保留出生空位";return false;}
             // ★ 适配：作弊成员也由房主生成，客户端不创建无权威来源的实体。
             if(LanSession.Instance?.IsClient==true){if(automatic!=null)return false;Requested=Mathf.Clamp(count,1,maxCount);Spawned=0;IsBusy=true;Status="已请求管理员生成…";LanSession.Instance.SendCommand(new LanCommand{kind="randomRecipe",recipe=source,count=Requested,landOnly=landOnly});return true;}
             var planet=FindFirstObjectByType<PlanetTerrainMeshBuilder>();var surface=planet!=null?planet.GetComponent<MeshCollider>():null;
@@ -49,7 +50,9 @@ namespace DarwinPark.UI
             int attempted=0,budget=Requested*Mathf.Max(1,attemptsPerEntity),slice=0;
             while(Spawned<Requested&&attempted<budget)
             {
+                // ★ 适配：后台补充让出有限王后出生名额，不会影响手动指定投放。
                 if(!EntityPopulationLimit.CanSpawn){Finish("已达到存档实体上限，已生成 "+Spawned+" 个实体");yield break;}
+                if(_automaticRule!=null&&!ColonyContinuityPriority.CanSpawn()){Finish("为王后繁衍保留空位，已生成 "+Spawned+" 个实体");yield break;}
                 if(!WorldRuntimeGate.Ready||WorldRuntimeGate.Loading||planet==null||surface==null){Finish("已停止：世界已切换");yield break;}
                 if(_automaticRule!=null)
                 {
@@ -73,7 +76,7 @@ namespace DarwinPark.UI
         private bool Spawn(Genome genome,Vector3 point)
         {
             // ★ 适配：已由管理员授权的世界规则由房主推进，不借客户端生成接口执行第二份模拟。
-            if(WorldAuthority.IsReplica||_automaticRule==null&&!WorldAuthority.CanEdit||DarwinEntity.Spawner==null||!EntityPopulationLimit.CanSpawn)return false;
+            if(WorldAuthority.IsReplica||_automaticRule==null&&!WorldAuthority.CanEdit||DarwinEntity.Spawner==null||!EntityPopulationLimit.CanSpawn||_automaticRule!=null&&!ColonyContinuityPriority.CanSpawn())return false;
             DarwinEntity created=null;void Registered(DarwinEntity entity)=>created=entity;EntityRegistry.OnRegistered+=Registered;
             try{DarwinEntity.Spawner(genome,point,"");}finally{EntityRegistry.OnRegistered-=Registered;}
             if(created==null)return false;

@@ -26,6 +26,8 @@ namespace DarwinPark.GameRoot
 
         private void Start()
         {
+            // ★ 适配：全局调度随游戏根节点安装，不依赖编辑器域重载或修改预制实体。
+            Entities.Simulation.EntityWorkScheduler.Ensure(gameObject);
             if (entityPrefab == null)
             {
                 Debug.LogError("[Bootstrap] 没有指定实体预制体！请把预制体拖到 GameRoot 的 Inspector 面板里");

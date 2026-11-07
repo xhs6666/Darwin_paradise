@@ -12,6 +12,8 @@ namespace DarwinPark.Genetics
         public string parentGeneId = "";
         public string baseGeneId = "";
         public bool isBaseGene;
+        // ★ 适配：繁殖变体可声明仅孕育时抑制，不能在幼年永久压住生长。
+        public bool suppressionOnlyWhileGestating;
         public int tier;
         public string logicScriptId = ""; // 基因逻辑脚本
         public string aiModuleId = "";

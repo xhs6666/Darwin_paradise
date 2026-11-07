@@ -113,6 +113,8 @@ namespace DarwinPark.Entities.Stats
             if (_stats.ContainsKey(id))
             {
                 float max = _maxStats.ContainsKey(id) ? _maxStats[id] : 100f;
+                // ★ 适配：任何来源的生命损失都唤醒个体，下帧不再沿用近邻的健康结算。
+                if(id=="health"&&delta<0)Simulation.EntityWorkScheduler.Wake(GetComponent<EntityGeneController>());
                 float before=_stats[id];_stats[id] = Mathf.Clamp(before + delta, 0f, max);
                 // ★ 适配：同帧死亡或恢复立刻失效邻居计数；普通扣血不重建空间数据。
                 if(id=="health"&&(before>0)!=(_stats[id]>0))Ecology.EntityNeighborhood.Changed(GetComponent<EntityGeneController>());

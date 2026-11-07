@@ -2,9 +2,9 @@
   // 配置版本请勿修改。支持 // 行注释及 /* 块注释 */；保存后约2秒自动生效，也可在设置页重新载入。
   "version": 1,
   // 基础饱食消耗倍率：0关闭，0.5减半，2翻倍。
-  "baseMetabolismMultiplier": 1.0,
+  "baseMetabolismMultiplier": 0.5,
   // 行动饱食消耗倍率，按实际移动速度及模拟时间结算。
-  "movementMetabolismMultiplier": 1.0,
+  "movementMetabolismMultiplier": 0.5,
   // 每修复1生命所需饱食度，以及饱食耗尽后每模拟秒生命损失。
   "repairFoodPerHealth": 0.5,
   "starvationDamagePerSecond": 1.0,
@@ -19,5 +19,35 @@
   // 种群范围填色不透明度：0完全透明，1完全不透明。
   "populationFillOpacity": 0.22,
   // 孤雌生殖：成年且连续找不到合适配偶多少游戏日后尝试自主孕育；0为立即，仍需营养及数量空位。
-  "parthenogenesisWaitDays": 5
+  "parthenogenesisWaitDays": 5,
+  // 营养获取速度/消化效率倍率；只扣实际吸收的源能量，剩余营养保留。
+  "nutritionGainMultiplier": 0.5,
+  // 补给开始沿蚁群配置的饥饿线，持续到恢复线后再返回原任务；王后额外储备缓冲。
+  "memberFeedResume": 9.5,
+  "queenReserveBuffer": 10,
+  // 相近同基因、同生命阶段、健康且非移动实体合并基础计算。关闭可恢复逐实体计算。
+  "mergeStationaryEntities": true,
+  "mergeRadius": 6,
+  // 合并组每隔多少模拟秒结算；只冻结行为/感知，生命、营养、成长、繁殖继续。
+  "mergeInterval": 0.5,
+  "mergeQuietSeconds": 2,
+  "mergeMaximumMembers": 32,
+  // 每帧最多共享组数；超预算者保留欠下时间，下帧补算，不丢生命周期。
+  "mergeGroupsPerFrame": 128,
+  // 轮到组时补算累计时间，每次最多5模拟秒；避免大量组高倍率下始终追不上日历，也限制单次工作量。
+  "mergeMaximumCatchupSeconds": 5,
+  // 全局每帧阶段变异预算；同一空间同基因组只抽部分代表，不把一个变异复制到全组。
+  "mutationAttemptsPerFrame": 16,
+  "mergedMutationFraction": 0.125,
+  // 多胎基因最高胎数；受基因表达和食物预算约束，已怀孕胎数固定保存。
+  "multipleBirthMaximum": 5,
+  // 开启生态建群保障时，为王后保留少量真实出生空位；不突破总上限，不限制手动投放。
+  "colonyBirthReservedSlots": 2,
+  // 已有首批工匠且达到此成员数，优先出生繁殖个体，避免旧王后去世前没有后继种群。
+  "colonySuccessorPopulation": 3,
+  // 仅把饱食/储备在同一数值小区间的近邻合并；越小越精确但共享机会越少。
+  "mergeFoodTolerance": 0.25,
+  "mergeReserveTolerance": 2,
+  // 超过此位置变化量即唤醒；真实移动能力、被搬运、受伤者始终逐体计算。
+  "mergeWakeDistance": 0.1
 }

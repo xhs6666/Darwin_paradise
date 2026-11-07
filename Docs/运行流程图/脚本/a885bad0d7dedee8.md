@@ -2,13 +2,13 @@
 
 [返回总索引](../README.md) · `Runtime` · `Assets/DarwinPark/Genetics/GeneTreeStorage.cs`
 
-[源文件](../../../Assets/DarwinPark/Genetics/GeneTreeStorage.cs) · 源码校验：`8062251c390308e23e9936c7a8021876d2ea2a0da74ff62062b9e3e8e9b6c216`
+[源文件](../../../Assets/DarwinPark/Genetics/GeneTreeStorage.cs) · 源码校验：`cee1bfadccafa721bfdfd81c46ab70953d298383478ec1740d9fdea5a0099016`
 
 方法按源文件位置排列。事件/回调引用不表示立即执行；分支与异常说明见总索引。完整源码与可点击关系图请打开离线手册。
 
-<a id="m4330d6af5427b828"></a>
+<a id="m176fc2eaeebe5d4f"></a>
 
-## Folder.get · L24
+## Folder.get · L26
 
 `public static string Folder`
 
@@ -26,9 +26,9 @@ flowchart TD
 
 ```
 
-<a id="mc19a5b1d5f28ef3d"></a>
+<a id="mbcdbd8ade2f1fafd"></a>
 
-## GenesFolder.get · L25
+## GenesFolder.get · L27
 
 `public static string GenesFolder`
 
@@ -46,9 +46,9 @@ flowchart TD
 
 ```
 
-<a id="mcd6b1d82c9cf8f5c"></a>
+<a id="mfe1f8a5bbc21d980"></a>
 
-## Active.get · L26
+## Active.get · L28
 
 `get`
 
@@ -66,9 +66,9 @@ flowchart TD
 
 ```
 
-<a id="mf0de4f332af140af"></a>
+<a id="mb72337c0c2541101"></a>
 
-## Active.set · L26
+## Active.set · L28
 
 `private set`
 
@@ -86,9 +86,9 @@ flowchart TD
 
 ```
 
-<a id="m89083f320ec287c0"></a>
+<a id="m9fdcb15884053f59"></a>
 
-## ReadCatalog · L27
+## ReadCatalog · L29
 
 `public static Dictionary<string,string> ReadCatalog(string directory=null)`
 
@@ -150,11 +150,11 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [GeneTreeStorage.Add · L40](a885bad0d7dedee8.md#mfdfd46dfe0299377)（方法）
+- [GeneTreeStorage.Add · L42](a885bad0d7dedee8.md#md9b2b155243e6c48)（方法）
 
-<a id="mfdfd46dfe0299377"></a>
+<a id="md9b2b155243e6c48"></a>
 
-## Add · L40
+## Add · L42
 
 `private static void Add(Dictionary<string,string> map,string text,string name)`
 
@@ -241,9 +241,9 @@ flowchart TD
 - [GeneEntityStateTags.Validate · L24](d87d75eb0b331d5c.md#m07abded73ee4a80f)（方法）
 - [EntityStateRegistry.Current.get · L41](440408d2db5c7d96.md#m61b7aa1a54b9a56c)（访问器）
 
-<a id="m60e52e1c6f841f94"></a>
+<a id="m095aec82bcb2500e"></a>
 
-## Load · L53
+## Load · L55
 
 `public static GeneTreeDocument Load()`
 
@@ -263,12 +263,12 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [GeneTreeStorage.Active.set · L26](a885bad0d7dedee8.md#mf0de4f332af140af)（访问器）
-- [GeneTreeStorage.LoadFrom · L54](a885bad0d7dedee8.md#mc2371aed207c1d6a)（方法）
+- [GeneTreeStorage.Active.set · L28](a885bad0d7dedee8.md#mb72337c0c2541101)（访问器）
+- [GeneTreeStorage.LoadFrom · L56](a885bad0d7dedee8.md#m983add8b79f15ea3)（方法）
 
-<a id="mc2371aed207c1d6a"></a>
+<a id="m983add8b79f15ea3"></a>
 
-## LoadFrom · L54
+## LoadFrom · L56
 
 `public static GeneTreeDocument LoadFrom(string folder)`
 
@@ -307,9 +307,9 @@ flowchart TD
 
 ```
 
-<a id="m3371bf1e3c5ae267"></a>
+<a id="m6d65229e98b963db"></a>
 
-## Validate · L67
+## Validate · L69
 
 `public static void Validate(GeneTreeDocument doc,Dictionary<string,string> catalog)`
 
@@ -320,7 +320,7 @@ flowchart TD
 ```mermaid
 flowchart TD
   b0(["入口"])
-  b1{"NutrientUtilizationEvolutionUpgrade.Apply(doc,catalog);<br/>NutritionEvolutionUpgrade.Apply(doc,catalog);<br/>ParthenogenesisEvolutionUpgrade.Apply(doc,catalog);<br/>判断：doc==null"}
+  b1{"NutrientUtilizationEvolutionUpgrade.Apply(doc,catalog);<br/>NutritionEvolutionUpgrade.Apply(doc,catalog);<br/>ParthenogenesisEvolutionUpgrade.Apply(doc,catalog);<br/>MultipleBirthEvolutionUpgrade.Apply(doc,catalog);<br/>判断：doc==null"}
   b2{"判断：doc.nodes==null"}
   b3{"判断：doc.edges==null"}
   b4["结果：new InvalidDataException(&quot;无效基因树&quot;)"]
@@ -415,12 +415,13 @@ flowchart TD
 - [NutrientUtilizationEvolutionUpgrade.Apply · L15](31507b5a0e171a28.md#mc03cba57fe71e4fe)（方法）
 - [NutritionEvolutionUpgrade.Apply · L10](02dbee4dabe4bc85.md#md1d08580fa5cdf72)（方法）
 - [ParthenogenesisEvolutionUpgrade.Apply · L28](9270126d968c1a50.md#m34aca29b443343d1)（方法）
+- [MultipleBirthEvolutionUpgrade.Apply · L28](a27ba78849d972a7.md#m68ff0e5c2d3bbd11)（方法）
 - [GeneEvolutionRules.Allows · L25](95d3abc5e23f05d3.md#m56e7f05bb0fe9159)（方法）
-- [GeneTreeStorage.Visit · L85](a885bad0d7dedee8.md#m4ccdebfae3291496)（方法）
+- [GeneTreeStorage.Visit · L87](a885bad0d7dedee8.md#mf02f4dee4599e235)（方法）
 
-<a id="m4ccdebfae3291496"></a>
+<a id="mf02f4dee4599e235"></a>
 
-## Visit · L85
+## Visit · L87
 
 `private static void Visit(string id,GeneTreeDocument doc,HashSet<string> path,HashSet<string> done)`
 
@@ -463,12 +464,12 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [GeneTreeStorage.Visit · L85](a885bad0d7dedee8.md#m4ccdebfae3291496)（方法）
-- [GeneTreeStorage.回调@89 · L89](a885bad0d7dedee8.md#m6f20e6092cda103f)（回调/委托）
+- [GeneTreeStorage.Visit · L87](a885bad0d7dedee8.md#mf02f4dee4599e235)（方法）
+- [GeneTreeStorage.回调@91 · L91](a885bad0d7dedee8.md#m548b0112aeb7e16c)（回调/委托）
 
-<a id="m6f20e6092cda103f"></a>
+<a id="m548b0112aeb7e16c"></a>
 
-## 回调@89 · L89
+## 回调@91 · L91
 
 `e … => 回调`
 
@@ -493,9 +494,9 @@ flowchart TD
 
 ```
 
-<a id="m92ca7c9be670a39c"></a>
+<a id="m8aff154d4d528226"></a>
 
-## Save · L92
+## Save · L94
 
 `public static void Save(GeneTreeDocument doc,Dictionary<string,string> catalog)`
 
@@ -515,12 +516,12 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [GeneTreeStorage.SaveTo · L96](a885bad0d7dedee8.md#m44f80bc754af0f5a)（方法）
-- [GeneTreeStorage.Active.set · L26](a885bad0d7dedee8.md#mf0de4f332af140af)（访问器）
+- [GeneTreeStorage.SaveTo · L98](a885bad0d7dedee8.md#mccb317faa8451097)（方法）
+- [GeneTreeStorage.Active.set · L28](a885bad0d7dedee8.md#mb72337c0c2541101)（访问器）
 
-<a id="m44f80bc754af0f5a"></a>
+<a id="mccb317faa8451097"></a>
 
-## SaveTo · L96
+## SaveTo · L98
 
 `public static void SaveTo(string folder,GeneTreeDocument doc,Dictionary<string,string> catalog)`
 
@@ -562,14 +563,14 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [GeneTreeStorage.Validate · L67](a885bad0d7dedee8.md#m3371bf1e3c5ae267)（方法）
-- [GeneTreeStorage.Add · L40](a885bad0d7dedee8.md#mfdfd46dfe0299377)（方法）
-- [GeneTreeStorage.Write · L108](a885bad0d7dedee8.md#m1c51177a976c0727)（方法）
+- [GeneTreeStorage.Validate · L69](a885bad0d7dedee8.md#m6d65229e98b963db)（方法）
+- [GeneTreeStorage.Add · L42](a885bad0d7dedee8.md#md9b2b155243e6c48)（方法）
+- [GeneTreeStorage.Write · L110](a885bad0d7dedee8.md#m45266c2b764f9cd1)（方法）
 - [EntityStateRegistry.CurrentJson.get · L43](440408d2db5c7d96.md#m32449837062f8705)（访问器）
 
-<a id="m1c51177a976c0727"></a>
+<a id="m45266c2b764f9cd1"></a>
 
-## Write · L108
+## Write · L110
 
 `private static void Write(string path,string text)`
 
@@ -592,9 +593,9 @@ flowchart TD
 
 ```
 
-<a id="m3b680cb19d835ce7"></a>
+<a id="ma2fea3238f216a0e"></a>
 
-## RuntimeAssets · L110
+## RuntimeAssets · L112
 
 `public static IEnumerable<TextAsset> RuntimeAssets()`
 
@@ -628,16 +629,16 @@ flowchart TD
 
 - [GeneEntityStateTags.UpgradeCatalog · L22](d87d75eb0b331d5c.md#m648749d3ce7da216)（方法）
 - [EcologyGeneDefaults.UpgradeCatalog · L30](ce4f4683a31b001c.md#mf8204e9a94d6e72f)（方法）
-- [GeneTreeStorage.Active.set · L26](a885bad0d7dedee8.md#mf0de4f332af140af)（访问器）
-- [GeneTreeStorage.ReadCatalog · L27](a885bad0d7dedee8.md#m89083f320ec287c0)（方法）
-- [GeneTreeStorage.Load · L53](a885bad0d7dedee8.md#m60e52e1c6f841f94)（方法）
-- [GeneTreeStorage.Validate · L67](a885bad0d7dedee8.md#m3371bf1e3c5ae267)（方法）
-- [GeneTreeStorage.Active.get · L26](a885bad0d7dedee8.md#mcd6b1d82c9cf8f5c)（访问器）
-- [GeneTreeStorage.回调@115 · L115](a885bad0d7dedee8.md#m7cd441e4771f6a41)（回调/委托）
+- [GeneTreeStorage.Active.set · L28](a885bad0d7dedee8.md#mb72337c0c2541101)（访问器）
+- [GeneTreeStorage.ReadCatalog · L29](a885bad0d7dedee8.md#m9fdcb15884053f59)（方法）
+- [GeneTreeStorage.Load · L55](a885bad0d7dedee8.md#m095aec82bcb2500e)（方法）
+- [GeneTreeStorage.Validate · L69](a885bad0d7dedee8.md#m6d65229e98b963db)（方法）
+- [GeneTreeStorage.Active.get · L28](a885bad0d7dedee8.md#mfe1f8a5bbc21d980)（访问器）
+- [GeneTreeStorage.回调@117 · L117](a885bad0d7dedee8.md#mc117b1664b6cbeb9)（回调/委托）
 
-<a id="m7cd441e4771f6a41"></a>
+<a id="mc117b1664b6cbeb9"></a>
 
-## 回调@115 · L115
+## 回调@117 · L117
 
 `k … => 回调`
 
@@ -655,9 +656,9 @@ flowchart TD
 
 ```
 
-<a id="ma58a13a0fae63ad6"></a>
+<a id="m02be63d3306fad6d"></a>
 
-## ApplyInfluences · L117
+## ApplyInfluences · L119
 
 `public static void ApplyInfluences(GeneDefinition definition)`
 
@@ -702,12 +703,12 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [GeneTreeStorage.Active.get · L26](a885bad0d7dedee8.md#mcd6b1d82c9cf8f5c)（访问器）
-- [GeneTreeStorage.回调@119 · L119](a885bad0d7dedee8.md#md04608867ce82829)（回调/委托）
+- [GeneTreeStorage.Active.get · L28](a885bad0d7dedee8.md#mfe1f8a5bbc21d980)（访问器）
+- [GeneTreeStorage.回调@121 · L121](a885bad0d7dedee8.md#mcf6efedd197c2ea1)（回调/委托）
 
-<a id="md04608867ce82829"></a>
+<a id="mcf6efedd197c2ea1"></a>
 
-## 回调@119 · L119
+## 回调@121 · L121
 
 `e … => 回调`
 
@@ -737,9 +738,9 @@ flowchart TD
 
 ```
 
-<a id="m5b6c0b3324290975"></a>
+<a id="m5fc50e077375a502"></a>
 
-## Successor · L122
+## Successor · L124
 
 `public static string Successor(string id,string kind,float sourceValue=float.NaN,Genome genome=null)`
 
@@ -783,13 +784,13 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [GeneTreeStorage.Active.get · L26](a885bad0d7dedee8.md#mcd6b1d82c9cf8f5c)（访问器）
-- [GeneTreeStorage.回调@124 · L124](a885bad0d7dedee8.md#m3e2872c2c5ef9ea0)（回调/委托）
-- [GeneTreeStorage.回调@125 · L125](a885bad0d7dedee8.md#m4852ecebeaf5997f)（回调/委托）
+- [GeneTreeStorage.Active.get · L28](a885bad0d7dedee8.md#mfe1f8a5bbc21d980)（访问器）
+- [GeneTreeStorage.回调@126 · L126](a885bad0d7dedee8.md#m25c348a4ffd18dfb)（回调/委托）
+- [GeneTreeStorage.回调@127 · L127](a885bad0d7dedee8.md#m5d803069d2b5c11a)（回调/委托）
 
-<a id="m3e2872c2c5ef9ea0"></a>
+<a id="m25c348a4ffd18dfb"></a>
 
-## 回调@124 · L124
+## 回调@126 · L126
 
 `e … => 回调`
 
@@ -824,9 +825,9 @@ flowchart TD
 
 - [GeneEvolutionRules.Allows · L25](95d3abc5e23f05d3.md#m56e7f05bb0fe9159)（方法）
 
-<a id="m4852ecebeaf5997f"></a>
+<a id="m5d803069d2b5c11a"></a>
 
-## 回调@125 · L125
+## 回调@127 · L127
 
 `e … => 回调`
 

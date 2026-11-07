@@ -4,6 +4,7 @@ using DarwinPark.Entities.Logic;
 using DarwinPark.Genetics;
 using UnityEngine;
 
+// ★ 适配：降低获取速度时只扣实际转移量，避免营养凭空损失。
 namespace DarwinPark.Entities.Ecology
 {
     // ★ 新增：吸收只扣实际增加的营养，满仓、部分消化及群体分配不能凭空吞掉剩余尸体。
@@ -38,7 +39,7 @@ namespace DarwinPark.Entities.Ecology
         {
             if(!EcologyQueries.Alive(attacker)||!CanDigest(attacker.Genes))return 0;
             var soldier=attacker.GetComponent<AntColonyMember>();if(soldier!=null&&soldier.Active&&soldier.Role==AntRole.Soldier)return 0;
-            float budget=available*Mathf.Clamp01(attacker.Genes.GetAttribute(NutritionEcologySettings.Current.digestionAttribute));
+            float budget=available*Mathf.Min(1,DarwinPark.Core.GameplayTuning.Current.nutritionGainMultiplier*Mathf.Clamp01(attacker.Genes.GetAttribute(NutritionEcologySettings.Current.digestionAttribute)));
             var population=attacker.GetComponent<PopulationBehavior>();float absorbed=0;
             if(population!=null&&population.Active)
             {

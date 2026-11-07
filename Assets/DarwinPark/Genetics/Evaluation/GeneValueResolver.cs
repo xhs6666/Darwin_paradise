@@ -42,7 +42,8 @@ namespace DarwinPark.Genetics
                 if (def == null || def.SuppressionRules == null) continue;
 
                 // 如果是繁殖基因，且不在孕育期，则不产生抑制
-                if (gene.DefinitionId == "gene_reproduction" && !isGestating)
+                // ★ 修复（防Bug回归）：新增繁殖分支也遵守孕育抑制条件，未成年时不能冻结生长。
+                if ((gene.DefinitionId == "gene_reproduction"||def.SuppressionOnlyWhileGestating) && !isGestating)
                     continue;
 
                 foreach (var rule in def.SuppressionRules)

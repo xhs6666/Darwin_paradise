@@ -2,7 +2,7 @@
 
 [返回总索引](../README.md) · `Editor` · `Assets/DarwinPark/Editor/ColonyFeedingTemplateRegression.cs`
 
-[源文件](../../../Assets/DarwinPark/Editor/ColonyFeedingTemplateRegression.cs) · 源码校验：`fe12132a3cf935cbfd301f3ecf8040f9d499a9232f6a8fc026eada3958678133`
+[源文件](../../../Assets/DarwinPark/Editor/ColonyFeedingTemplateRegression.cs) · 源码校验：`2c8c4f31d4321427731adc64b381b68b17007aeed90c5b60960f127c74c43e16`
 
 方法按源文件位置排列。事件/回调引用不表示立即执行；分支与异常说明见总索引。完整源码与可点击关系图请打开离线手册。
 
@@ -150,31 +150,36 @@ flowchart TD
   b34["corpse.State.claim==worker.Id"]
   b35["worker.Activity==ColonyActivity.Feed&amp;&amp;EcologyQueries.Distance(feedingPoint,supply.transform.position)&lt;=AntColonySettings.Current.feedRadius&amp;&amp;worker.State.carriedResource==corpse.State.id&amp;&amp;corpse.State.claim==worker.Id"]
   b36["Check(worker.Activity==ColonyActivity.Feed&amp;&amp;EcologyQueries.Distance(feedingPoint,supply.transform.position)&lt;=AntColonySettings.Current.feedRadius&amp;&amp;worker.State.carriedResource==corpse.State.id&amp;&amp;corpse.State.claim==worker.Id,&quot;饥饿工匠暂停运输去补给并…"]
-  b37["worker.transform.position=supply.transform.position;<br/>worker.Advance(1);<br/>Check(Food(worker)&gt;AntColonySettings.Current.memberFeedThreshold,&quot;繁忙工匠通过实际分工更新吃饱&quot;);<br/>worker.Destination(out var delivery,out _,out _);<br/>Check(delivery==EcologyQueries.…"]
-  b38{"判断：ColonyResource.Find(corpse.State.id)==null"}
-  b39["string.IsNullOrEmpty(worker.State.carriedResource)"]
-  b40["ColonyResource.Find(corpse.State.id)==null"]
-  b41["Check(ColonyResource.Find(corpse.State.id)==null&amp;&amp;string.IsNullOrEmpty(worker.State.carriedResource),&quot;补给后运输完成且尸体仅转换一次&quot;);"]
-  b42["Fill(soldier,0);<br/>soldier.transform.position=supply.transform.position;<br/>vitals=soldier.GetComponent&lt;DarwinPark.Entities.Vitals.EntityVitals&gt;()<br/>advance=typeof(DarwinPark.Entities.Vitals.EntityVitals).GetMethod(&quot;AdvanceVitals&quot;,BindingFlags.…"]
-  b43["i=0"]
-  b44{"判断：i&lt;1200"}
-  b45["soldier.Advance(.1f);<br/>advance.Invoke(vitals,new object[]{.1f});<br/>i++"]
-  b46["soldier.GetComponent&lt;EntityStats&gt;().TryGet(&quot;health&quot;,out float afterHealth);"]
-  b47{"判断：Food(soldier)&gt;0"}
-  b48["afterHealth&gt;=health"]
-  b49["Food(soldier)&gt;0"]
-  b50["Check(Food(soldier)&gt;0&amp;&amp;afterHealth&gt;=health,&quot;士兵营养基因受抑仍连续120秒吸收补给且不因饥饿掉血&quot;);"]
-  b51["Fill(soldier,0);<br/>queenGroup=queen.GroupId<br/>foreignGroup=Guid.NewGuid().ToString(&quot;N&quot;)<br/>queen.Population.JoinColony(foreignGroup,true);<br/>supply.State.group=foreignGroup;<br/>ColonyResource.Feed(soldier,1);<br/>Check(Food(soldier)==0,&quot;不能吸收存活外群的能量块&quot;);<br/>…"]
-  b52{"判断：File.Exists(EntityTemplateStore.FilePath)"}
-  b53["EntityTemplateManager.Templates.Count(t=&gt;t.templateName==name)==1"]
-  b54["File.Exists(EntityTemplateStore.FilePath)"]
-  b55["Check(File.Exists(EntityTemplateStore.FilePath)&amp;&amp;EntityTemplateManager.Templates.Count(t=&gt;t.templateName==name)==1,&quot;模板实际落盘且同名保存不重复&quot;);"]
-  b56["File.WriteAllText(Path.Combine(Folder,&quot;fixture.json&quot;),JsonUtility.ToJson(EntityTemplateManager.Templates.Single(t=&gt;t.templateName==name)));<br/>VerifyStoreRecovery();<br/>File.WriteAllText(Path.Combine(Folder,&quot;result.txt&quot;),&quot;PASS\n&quot;+string.Join(&quot;…"]
-  b57["i=0"]
-  b58{"判断：i&lt;members.Length"}
-  b59["members[i].transform.position=positions[i];<br/>members[i].GetComponent&lt;EntityStats&gt;().RestoreValues(stats[i]);<br/>members[i].Restore(states[i]);<br/>i++"]
-  b60["nursery.State.energy=nurseryEnergy;<br/>supply.State.energy=supplyEnergy;"]
-  b61(["结束 / 返回"])
+  b37["worker.transform.position=supply.transform.position;"]
+  b38["i=0"]
+  b39{"判断：i&lt;100"}
+  b40{"判断：ColonyFeeding.WantsFood(worker)"}
+  b41["worker.Advance(.1f);<br/>i++"]
+  b42["Check(Food(worker)&gt;AntColonySettings.Current.memberFeedThreshold,&quot;繁忙工匠通过实际分工更新吃饱&quot;);<br/>worker.Destination(out var delivery,out _,out _);<br/>Check(delivery==EcologyQueries.ToWorld(worker.State.deliveryPoint),&quot;工匠吃饱后自动恢复原运输目的地&quot;);<br/>worker.transform…"]
+  b43{"判断：ColonyResource.Find(corpse.State.id)==null"}
+  b44["string.IsNullOrEmpty(worker.State.carriedResource)"]
+  b45["ColonyResource.Find(corpse.State.id)==null"]
+  b46["Check(ColonyResource.Find(corpse.State.id)==null&amp;&amp;string.IsNullOrEmpty(worker.State.carriedResource),&quot;补给后运输完成且尸体仅转换一次&quot;);"]
+  b47["Fill(soldier,0);<br/>soldier.transform.position=supply.transform.position;<br/>vitals=soldier.GetComponent&lt;DarwinPark.Entities.Vitals.EntityVitals&gt;()<br/>advance=typeof(DarwinPark.Entities.Vitals.EntityVitals).GetMethod(&quot;AdvanceVitals&quot;,BindingFlags.…"]
+  b48["i=0"]
+  b49{"判断：i&lt;1200"}
+  b50["soldier.Advance(.1f);<br/>advance.Invoke(vitals,new object[]{.1f});<br/>i++"]
+  b51["soldier.GetComponent&lt;EntityStats&gt;().TryGet(&quot;health&quot;,out float afterHealth);"]
+  b52{"判断：Food(soldier)&gt;0"}
+  b53["afterHealth&gt;=health"]
+  b54["Food(soldier)&gt;0"]
+  b55["Check(Food(soldier)&gt;0&amp;&amp;afterHealth&gt;=health,&quot;士兵营养基因受抑仍连续120秒吸收补给且不因饥饿掉血&quot;);"]
+  b56["Fill(soldier,0);<br/>queenGroup=queen.GroupId<br/>foreignGroup=Guid.NewGuid().ToString(&quot;N&quot;)<br/>queen.Population.JoinColony(foreignGroup,true);<br/>supply.State.group=foreignGroup;<br/>ColonyResource.Feed(soldier,1);<br/>Check(Food(soldier)==0,&quot;不能吸收存活外群的能量块&quot;);<br/>…"]
+  b57{"判断：File.Exists(EntityTemplateStore.FilePath)"}
+  b58["EntityTemplateManager.Templates.Count(t=&gt;t.templateName==name)==1"]
+  b59["File.Exists(EntityTemplateStore.FilePath)"]
+  b60["Check(File.Exists(EntityTemplateStore.FilePath)&amp;&amp;EntityTemplateManager.Templates.Count(t=&gt;t.templateName==name)==1,&quot;模板实际落盘且同名保存不重复&quot;);"]
+  b61["File.WriteAllText(Path.Combine(Folder,&quot;fixture.json&quot;),JsonUtility.ToJson(EntityTemplateManager.Templates.Single(t=&gt;t.templateName==name)));<br/>VerifyStoreRecovery();<br/>File.WriteAllText(Path.Combine(Folder,&quot;result.txt&quot;),&quot;PASS\n&quot;+string.Join(&quot;…"]
+  b62["i=0"]
+  b63{"判断：i&lt;members.Length"}
+  b64["members[i].transform.position=positions[i];<br/>members[i].GetComponent&lt;EntityStats&gt;().RestoreValues(stats[i]);<br/>members[i].Restore(states[i]);<br/>i++"]
+  b65["nursery.State.energy=nurseryEnergy;<br/>supply.State.energy=supplyEnergy;"]
+  b66(["结束 / 返回"])
   b0 --> b1
   b1 --> b2
   b2 --> b3
@@ -221,70 +226,78 @@ flowchart TD
   b35 --> b36
   b36 --> b37
   b37 --> b38
-  b38 -->|"是"| b39
-  b38 -->|"否"| b40
-  b39 --> b41
-  b40 --> b41
-  b41 --> b42
+  b38 --> b39
+  b39 -->|"是"| b40
+  b39 -->|"否"| b42
+  b40 -->|"是"| b41
+  b40 -->|"否"| b42
+  b41 --> b39
   b42 --> b43
-  b43 --> b44
-  b44 -->|"是"| b45
-  b44 -->|"否"| b46
-  b45 --> b44
+  b43 -->|"是"| b44
+  b43 -->|"否"| b45
+  b44 --> b46
+  b45 --> b46
   b46 --> b47
-  b47 -->|"是"| b48
-  b47 -->|"否"| b49
-  b48 --> b50
-  b49 --> b50
-  b50 --> b51
+  b47 --> b48
+  b48 --> b49
+  b49 -->|"是"| b50
+  b49 -->|"否"| b51
+  b50 --> b49
   b51 --> b52
   b52 -->|"是"| b53
   b52 -->|"否"| b54
   b53 --> b55
   b54 --> b55
   b55 --> b56
-  b56 -->|"经过finally 57"| b61
-  b57 --> b58
-  b58 -->|"是"| b59
-  b58 -->|"否"| b60
-  b59 --> b58
+  b56 --> b57
+  b57 -->|"是"| b58
+  b57 -->|"否"| b59
+  b58 --> b60
+  b59 --> b60
+  b60 --> b61
+  b61 -->|"经过finally 62"| b66
+  b62 --> b63
+  b63 -->|"是"| b64
+  b63 -->|"否"| b65
+  b64 --> b63
   b3 -. "退出保护区时 finally（示意）" .-> b15
-  b2 -. "退出保护区时 finally（示意）" .-> b57
+  b2 -. "退出保护区时 finally（示意）" .-> b62
 
 ```
 
 项目内调用/回调引用：
 
-- [ColonyResource.State.get · L22](293dbaecfff4b585.md#m341a1355f4d657bf)（访问器）
+- [ColonyResource.State.get · L23](293dbaecfff4b585.md#m65ff21bb6da1a2da)（访问器）
 - [ColonyFeedingTemplateRegression.Fill · L25](e3a5269cbeb35cff.md#m671c46cff06fdbf7)（方法）
-- [AntColonyMember.Destination · L138](baebd85c05598377.md#m241f26888616f5dd)（方法）
+- [AntColonyMember.Destination · L146](baebd85c05598377.md#md506909791322add)（方法）
 - [ColonyFeedingTemplateRegression.Check · L22](e3a5269cbeb35cff.md#m34b9c42c0fe6e75b)（方法）
 - [EcologyQueries.Distance · L42](bdf7ccc2c9c0452f.md#mba9c3e3c95d0f2dd)（方法）
 - [AntColonySettings.Current.get · L31](cb0a937e97c8fbb3.md#mcd121159f407ccdf)（访问器）
-- [AntColonyMember.Role.get · L35](baebd85c05598377.md#m496a7a58214d1166)（访问器）
-- [AntColonyMember.Advance · L81](baebd85c05598377.md#maae3afcfd968ca55)（方法）
+- [AntColonyMember.Role.get · L38](baebd85c05598377.md#mab30d459d599e4df)（访问器）
+- [AntColonyMember.Advance · L89](baebd85c05598377.md#m9debe7e325e53fdb)（方法）
 - [ColonyFeedingTemplateRegression.Food · L23](e3a5269cbeb35cff.md#m74b4dc2173d9759d)（方法）
-- [ColonyResource.Feed · L85](293dbaecfff4b585.md#m1ed7b62042c6dda6)（方法）
-- [AntColonyMember.Entity.get · L31](baebd85c05598377.md#m80b6e852bcc8a843)（访问器）
-- [ColonyResource.Create · L42](293dbaecfff4b585.md#ma07be53c3e3fff10)（方法）
+- [ColonyResource.Feed · L88](293dbaecfff4b585.md#m3cb929efc923f233)（方法）
+- [AntColonyMember.Entity.get · L34](baebd85c05598377.md#m490b8793043471d0)（访问器）
+- [ColonyResource.Create · L43](293dbaecfff4b585.md#mf280b568255d1f55)（方法）
 - [EcologyQueries.ToLocal · L39](bdf7ccc2c9c0452f.md#m1a07639eacf3aa47)（方法）
-- [AntColonyMember.State.get · L29](baebd85c05598377.md#mae4b8343e8179760)（访问器）
-- [AntColonyMember.Activity.get · L45](baebd85c05598377.md#m4a48e9d69d2b8791)（访问器）
+- [AntColonyMember.State.get · L32](baebd85c05598377.md#m426db6a7c12dd7aa)（访问器）
+- [AntColonyMember.Activity.get · L50](baebd85c05598377.md#m50ece4c10946f98c)（访问器）
+- [ColonyFeeding.WantsFood · L10](2cb56c08d08ff8ec.md#m56d2edeb3860f143)（方法）
 - [EcologyQueries.ToWorld · L40](bdf7ccc2c9c0452f.md#m320932c05ccecbf7)（方法）
-- [ColonyResource.Find · L26](293dbaecfff4b585.md#m8e52e678f4038a50)（方法）
+- [ColonyResource.Find · L27](293dbaecfff4b585.md#m67d4286733d518a2)（方法）
 - [EntityStats.TryGet · L90](75aa86a368efdf24.md#m24ee1433e4a70d94)（方法）
 - [PopulationBehavior.JoinColony · L121](21e4f62f75a9a80f.md#mf185963e98c1e28c)（方法）
-- [AntColonyMember.Population.get · L32](baebd85c05598377.md#m1c6bbec8e82e26dc)（访问器）
+- [AntColonyMember.Population.get · L35](baebd85c05598377.md#mbb8ec90c4baa2d1c)（访问器）
 - [EntityTemplateManager.SaveTemplate · L30](ab5e6457e8a7aba0.md#me559754bdf2cc955)（方法）
 - [EntityTemplateManager.Templates.get · L23](ab5e6457e8a7aba0.md#m45cc5b075f7bf4ec)（访问器）
-- [ColonyFeedingTemplateRegression.VerifyStoreRecovery · L93](e3a5269cbeb35cff.md#m93cf3c6eef6abdaf)（方法）
+- [ColonyFeedingTemplateRegression.VerifyStoreRecovery · L94](e3a5269cbeb35cff.md#ma3af956f578f4615)（方法）
 - [EntityStats.RestoreValues · L88](75aa86a368efdf24.md#m774f994eaa3183ca)（方法）
-- [AntColonyMember.Restore · L196](baebd85c05598377.md#mdd533973e409efc5)（方法）
+- [AntColonyMember.Restore · L205](baebd85c05598377.md#m5cdac8abf6ee2817)（方法）
 - [ColonyFeedingTemplateRegression.回调@30 · L30](e3a5269cbeb35cff.md#med102d65212e2c31)（回调/委托）
 - [ColonyFeedingTemplateRegression.回调@31 · L31](e3a5269cbeb35cff.md#maf89cf4f4b0885cf)（回调/委托）
 - [ColonyFeedingTemplateRegression.回调@32 · L32](e3a5269cbeb35cff.md#mc4b8445a52b3cc47)（回调/委托）
-- [ColonyFeedingTemplateRegression.回调@81 · L81](e3a5269cbeb35cff.md#me2b5740fc7a880ba)（回调/委托）
-- [ColonyFeedingTemplateRegression.回调@82 · L82](e3a5269cbeb35cff.md#m5a9a5c2a829b502d)（回调/委托）
+- [ColonyFeedingTemplateRegression.回调@82 · L82](e3a5269cbeb35cff.md#m53151f69d88255ee)（回调/委托）
+- [ColonyFeedingTemplateRegression.回调@83 · L83](e3a5269cbeb35cff.md#me94438a90ef18594)（回调/委托）
 
 <a id="med102d65212e2c31"></a>
 
@@ -352,29 +365,9 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [AntColonyMember.Capture · L194](baebd85c05598377.md#mce36f30c5e0a4d52)（方法）
+- [AntColonyMember.Capture · L203](baebd85c05598377.md#m2214e831635c4fcc)（方法）
 
-<a id="me2b5740fc7a880ba"></a>
-
-## 回调@81 · L81
-
-`t … => 回调`
-
-
-
-### Editor · Roslyn编译器控制流
-
-```mermaid
-flowchart TD
-  b0(["入口"])
-  b1["结果：t.templateName==name"]
-  b2(["结束 / 返回"])
-  b0 --> b1
-  b1 -->|"返回"| b2
-
-```
-
-<a id="m5a9a5c2a829b502d"></a>
+<a id="m53151f69d88255ee"></a>
 
 ## 回调@82 · L82
 
@@ -394,9 +387,29 @@ flowchart TD
 
 ```
 
-<a id="m93cf3c6eef6abdaf"></a>
+<a id="me94438a90ef18594"></a>
 
-## VerifyStoreRecovery · L93
+## 回调@83 · L83
+
+`t … => 回调`
+
+
+
+### Editor · Roslyn编译器控制流
+
+```mermaid
+flowchart TD
+  b0(["入口"])
+  b1["结果：t.templateName==name"]
+  b2(["结束 / 返回"])
+  b0 --> b1
+  b1 -->|"返回"| b2
+
+```
+
+<a id="ma3af956f578f4615"></a>
+
+## VerifyStoreRecovery · L94
 
 `private static void VerifyStoreRecovery()`
 
@@ -464,9 +477,9 @@ flowchart TD
 - [ColonyFeedingTemplateRegression.Check · L22](e3a5269cbeb35cff.md#m34b9c42c0fe6e75b)（方法）
 - [EntityTemplateStore.Load · L34](2a560a9e3c003e7b.md#m8c4dc64a4aa5668b)（方法）
 
-<a id="m670cf57098f803f7"></a>
+<a id="m648ceee9fd8eb9d6"></a>
 
-## VerifyAfterRestart · L101
+## VerifyAfterRestart · L102
 
 `public static void VerifyAfterRestart()`
 
@@ -497,12 +510,12 @@ flowchart TD
 
 - [EntityTemplateManager.Templates.get · L23](ab5e6457e8a7aba0.md#m45cc5b075f7bf4ec)（访问器）
 - [EntityTemplateStore.Save · L51](2a560a9e3c003e7b.md#m853c3cfd96f490b9)（方法）
-- [ColonyFeedingTemplateRegression.回调@106 · L106](e3a5269cbeb35cff.md#m50c07866fc15662d)（回调/委托）
-- [ColonyFeedingTemplateRegression.回调@110 · L110](e3a5269cbeb35cff.md#m7ddfe9964da3e3e1)（回调/委托）
+- [ColonyFeedingTemplateRegression.回调@107 · L107](e3a5269cbeb35cff.md#mda47d590aa140074)（回调/委托）
+- [ColonyFeedingTemplateRegression.回调@111 · L111](e3a5269cbeb35cff.md#m39732eb6356ea2b1)（回调/委托）
 
-<a id="m50c07866fc15662d"></a>
+<a id="mda47d590aa140074"></a>
 
-## 回调@106 · L106
+## 回调@107 · L107
 
 `t … => 回调`
 
@@ -520,9 +533,9 @@ flowchart TD
 
 ```
 
-<a id="m7ddfe9964da3e3e1"></a>
+<a id="m39732eb6356ea2b1"></a>
 
-## 回调@110 · L110
+## 回调@111 · L111
 
 `t … => 回调`
 

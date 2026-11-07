@@ -104,6 +104,9 @@ namespace DarwinPark.EditorTools
             entity.GetComponent<EntityLifeCycle>().InitializeBirth();var pop=entity.GetComponent<PopulationBehavior>();if(pop!=null){pop.enabled=false;pop.EnsureMembership();}
             entity.GetComponent<Rigidbody>().interpolation=RigidbodyInterpolation.None;
         }
+        // ★ 适配：长期验证记录真实生命/粮食/任务，区分被捕食、断粮与上限等待。
+        private static string StationaryValues(AntColonyMember member)
+        {var stats=member.GetComponent<EntityStats>();stats.TryGet("health",out var hp);stats.TryGet("nutrient",out var food);stats.TryGet("storedNutrient",out var reserve);return "hp="+hp+",food="+food+",reserve="+reserve+",task="+member.Activity;}
         private static IEnumerator Sustain(AntColonyMember queen,SimulationClock clock,PlanetTerrainMeshBuilder planet)
         {
             // ★ 新增：实际地形碰撞、移动、生命周期、代谢、生产、采集和默认自动补充；仅隔离环境伤害与随机变异，便于定位补给链路。
@@ -125,7 +128,7 @@ namespace DarwinPark.EditorTools
                     }
                     peak=Mathf.Max(peak,AntColonyMember.All.Count());Physics.SyncTransforms();Physics.Simulate(dt);
                     if(step%20==0){refill.Invoke(spawner,null);yield return null;}
-                    if(step%1000==0){trace.Add("t="+time+" alive="+EntityRegistry.All.Count+" ants="+AntColonyMember.All.Count()+" workers="+AntColonyMember.All.Count(m=>m.Role==AntRole.Worker&&!m.Young)+" resources="+ColonyResource.All.Sum(r=>r.State.energy)+" queenCollected="+queenCollected+" workerCollected="+workerCollected+" queen="+string.Join(";",AntColonyMember.All.Where(m=>m.Role==AntRole.Queen).Select(m=>m.Id.Substring(0,4)+"/"+m.Genes.IsGestating+"/"+m.State.reproductionTimer+"/"+m.GetComponent<EntityLifeCycle>().Progress)));File.WriteAllLines(Path.Combine(Folder,"continuity-trace.txt"),trace);}
+                    if(step%1000==0){trace.Add("t="+time+" alive="+EntityRegistry.All.Count+" ants="+AntColonyMember.All.Count()+" workers="+AntColonyMember.All.Count(m=>m.Role==AntRole.Worker&&!m.Young)+" resources="+ColonyResource.All.Sum(r=>r.State.energy)+" queenCollected="+queenCollected+" workerCollected="+workerCollected+" queen="+string.Join(";",AntColonyMember.All.Where(m=>m.Role==AntRole.Queen).Select(m=>m.Id.Substring(0,4)+"/"+m.Genes.IsGestating+"/"+m.State.reproductionTimer+"/"+m.GetComponent<EntityLifeCycle>().Progress+"/"+StationaryValues(m))));File.WriteAllLines(Path.Combine(Folder,"continuity-trace.txt"),trace);}
                 }
                 clock.Pause();
                 Check(firstRoles.Count>=2&&firstRoles.Take(2).All(role=>role==AntRole.Worker),"实际前两胎均为工匠，未靠预生成成年工匠跳过成长");

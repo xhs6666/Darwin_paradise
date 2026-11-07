@@ -26,7 +26,8 @@ namespace DarwinPark.Genetics
             GeneTreeStorage.Validate(result,merged);
             // ★ 修复（防Bug回归）：校验时迁移了旧卵寄生定义，既有条目也要成对写回，不能只保存新增ID。
             foreach(var entry in merged)catalog[entry.Key]=entry.Value;
-            tree.nodes=result.nodes;tree.edges=result.edges;tree.nutritionVersion=result.nutritionVersion;
+            // ★ 修复（防Bug回归）：迁移版本与树一起写回，防止读档后反复补回用户主动删除的分支。
+            tree.nodes=result.nodes;tree.edges=result.edges;tree.nutritionVersion=result.nutritionVersion;tree.parthenogenesisVersion=result.parthenogenesisVersion;tree.multipleBirthVersion=result.multipleBirthVersion;
             return missing.Count;
         }
     }

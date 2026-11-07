@@ -1,0 +1,9 @@
+{
+  "levels": [
+    {"name":"蓝色", "color":"#328AFF", "minimumEnergy":0, "scale":1.0},
+    {"name":"绿色", "color":"#35D977", "minimumEnergy":20, "scale":1.1},
+    {"name":"黄色", "color":"#FFDD42", "minimumEnergy":60, "scale":1.2},
+    {"name":"橙色", "color":"#FF932F", "minimumEnergy":180, "scale":1.3},
+    {"name":"红色", "color":"#FF4545", "minimumEnergy":540, "scale":1.4}
+  ]
+}

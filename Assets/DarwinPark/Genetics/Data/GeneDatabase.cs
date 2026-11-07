@@ -49,6 +49,7 @@ namespace DarwinPark.Genetics
                         AttributeCurves = new List<AttributeCurve>(),
                         Linkages = new List<AttributeLinkage>(), // ★ 确保这里初始化了
                         States = new List<GeneStateDefinition>(),
+                        SuppressionOnlyWhileGestating=json.suppressionOnlyWhileGestating,
                         SuppressionRules = new List<GeneSuppressionRule>()
                     };
 

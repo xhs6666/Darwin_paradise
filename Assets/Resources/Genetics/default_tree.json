@@ -145,6 +145,14 @@
         "y": 420
       },
       "error": true
+    },
+    {
+      "id": "gene_multiple_birth",
+      "position": {
+        "x": 270,
+        "y": 380
+      },
+      "error": true
     }
   ],
   "edges": [
@@ -213,7 +221,14 @@
       "to": "gene_parthenogenesis",
       "kind": "error",
       "value": 100
+    },
+    {
+      "from": "gene_reproduction",
+      "to": "gene_multiple_birth",
+      "kind": "error",
+      "value": 100
     }
   ],
-  "parthenogenesisVersion": 1
+  "parthenogenesisVersion": 1,
+  "multipleBirthVersion": 1
 }
