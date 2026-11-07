@@ -1,16 +1,16 @@
 {
   "stats": {
-    "scripts": 307,
-    "csharp": 297,
+    "scripts": 308,
+    "csharp": 298,
     "gpu": 10,
-    "methods": 3269,
-    "graphs": 3272,
-    "profileGraphs": 5608,
-    "nodes": 30475,
-    "calls": 42082,
-    "internalLinks": 11998,
+    "methods": 3294,
+    "graphs": 3297,
+    "profileGraphs": 5639,
+    "nodes": 30794,
+    "calls": 42463,
+    "internalLinks": 12098,
     "unresolved": 9,
-    "hash": "0cc3f00b08c0d4c2"
+    "hash": "1597f277a4566429"
   },
   "diagnostics": [
     {
@@ -330,15 +330,15 @@
       "Id": "763da58492f54d4c",
       "Path": "Assets/DarwinPark/Editor/EntityPlanningMergeRegression.cs",
       "Scope": "Editor",
-      "methods": 36,
-      "Hash": "a7df613a1a0c9e4acaff80af686bb64a2c7a3315b5c5cc0dc6bd5f40b4f8ab37"
+      "methods": 37,
+      "Hash": "632e3e7e384410c9b510a3b74cb73d459f0073a3c428a8e835ca6dc34a2a3a20"
     },
     {
       "Id": "cbb314f2877cdcfa",
       "Path": "Assets/DarwinPark/Editor/EntityStateRegression.cs",
       "Scope": "Editor",
-      "methods": 21,
-      "Hash": "9bb1314c9454b9afe9692cac4663bb26b9a1184f1f0f8f1b022d7239eeab7733"
+      "methods": 25,
+      "Hash": "06ccc9401e9c51fc0808ee431d36d0c56f6ae309ff677b7a0b3eb471a658e20b"
     },
     {
       "Id": "dff4959d34187962",
@@ -493,6 +493,13 @@
       "Scope": "Editor",
       "methods": 21,
       "Hash": "79a056ed27a9941ce6a6aca541a101b5a883861886b998cbf21ba20a7356c4e9"
+    },
+    {
+      "Id": "0a17f5e2b9d73a74",
+      "Path": "Assets/DarwinPark/Editor/SchedulerPerformanceRegression.cs",
+      "Scope": "Editor",
+      "methods": 14,
+      "Hash": "4dc97ead1f748fca4db8a12ba61ff2f0095bc5f06a63d90a6f429916be2b0fcd"
     },
     {
       "Id": "845c11bed26d879e",
@@ -1170,8 +1177,8 @@
       "Id": "465ccdbb260bcac2",
       "Path": "Assets/DarwinPark/Entities/Simulation/EntityWorkScheduler.cs",
       "Scope": "Runtime",
-      "methods": 31,
-      "Hash": "f3fbd7baebf0035f202fa43e242476e85c334c8e4de8c38cf0997b7bd549af53"
+      "methods": 34,
+      "Hash": "ec96b07f09fda12eb58506df9f664dd071c5f829d0e97ee5818330ce96214b3c"
     },
     {
       "Id": "debf58c0eabf33e3",
@@ -1184,8 +1191,8 @@
       "Id": "9d3f50e550ab5beb",
       "Path": "Assets/DarwinPark/Entities/Simulation/StationaryCohortKernel.cs",
       "Scope": "Runtime",
-      "methods": 7,
-      "Hash": "4c3695ee17e8dc96f4439a38a9918aedb859a154789b7927cb52a2a4dd89ee7f"
+      "methods": 10,
+      "Hash": "3d4748ae4e33e3edcc39d8bddc78807004a14acb67ec434dfc5ad1b7ac5f3aca"
     },
     {
       "Id": "19e6d310d5522440",
@@ -2178,11 +2185,11 @@
   "modes": [
     {
       "mode": "Roslyn\u7F16\u8BD1\u5668\u63A7\u5236\u6D41",
-      "count": 2755
+      "count": 2777
     },
     {
       "mode": "\u8BED\u6CD5\u63A7\u5236\u7ED3\u6784 / \u58F0\u660E\uFF08\u975ECFG\uFF09",
-      "count": 491
+      "count": 494
     },
     {
       "mode": "GPU\u63A7\u5236\u7ED3\u6784\uFF08\u540D\u79F0\u94FE\u63A5\uFF0C\u4E0D\u4F5CC#\u7C7B\u578B\u63A8\u65AD\uFF09",

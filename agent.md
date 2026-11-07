@@ -291,3 +291,10 @@
 |日期|现象|根因/覆盖的恢复缺口|修复文件|防复发要点|
 |---|---|---|---|---|
 |2026-11-08|读档后底栏、筛选和种群入口可见但无响应|旧_uiBuilt只证明节点存在，不能证明运行时UnityEvent还有效；菜单仅Awake订阅Loaded；缓存的关闭状态和缺失输入组件缺少恢复路径|WorldHudInputLifecycle.cs、SimulationControlPanel.cs、WorldSessionManager.cs、GameMainMenu.cs、HudInputRegression.cs|加载遮罩结束前重建回调并保留分页；菜单成对重绑；补齐或启用唯一事件系统、射线和模块；不覆盖合法弹窗、Esc防穿透与只读权限；真实存档副本和完整指针状态机回归；未将冷启动正常直接当成现场根因已唯一确定|
+
+
+## 2026-11-08 合并计算性能退化台账
+
+|日期|现象|根因|修复文件|防复发要点|
+|---|---|---|---|---|
+|2026-11-08|本地延迟，合并计算后帧耗时反而上升|活跃优先级排序重复查组件；到期分组拼接长键、创建临时列表；共享小步重复验证与查询；单成员无共享收益却走完整代表路径|EntityWorkScheduler.cs、StationaryCohortKernel.cs、SchedulerPerformanceRegression.cs、EntityPlanningMergeRegression.cs|线性优先级、值类型预散列、组与桶复用、单成员逐体补算；保留死亡/权限/欠账/变异边界；签名只保留活跃引用；公平计入两条路径的生命与代谢，并采样真实存档副本，不用代表次数或恒零的Mono分配计数替代性能验证|

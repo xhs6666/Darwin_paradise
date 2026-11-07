@@ -28,11 +28,15 @@ namespace DarwinPark.Entities.Simulation
             return genes.CurrentAge==AgeState.Elder?Mathf.Max(settings.minimumAgingSpeed,genes.GetAttribute("agingSpeed"))*settings.agingProgressScale:Mathf.Max(0,genes.GetAttribute("growthSpeed"))*settings.growthProgressScale;
         }
         public static Vector3 Sample(EntityGeneController genes,float dt)
+            =>Sample(genes,genes.GetComponent<EntityStats>(),genes.GetComponent<EntityEnvironmentHazard>(),genes.GetComponent<EntityVitals>(),dt);
+        // ★ 适配：调度已有生命周期内组件引用，代表和成员的小步不能再重复查询同一组件。
+        internal static Vector3 Sample(EntityGeneController genes,EntityStats stats,EntityEnvironmentHazard environment,EntityVitals vitals,float dt)
         {
-            var stats=genes.GetComponent<EntityStats>();var before=Values(stats);
+            var before=Values(stats);
             // ★ 适配：冻结无意义的被动Update/感知，保留真正的生产与环境/代谢结算。
             foreach(var gene in genes.Genome.Genes)if(genes.GetLogic(gene) is NutritionGeneLogic nutrition)nutrition.OnUpdate(dt);
-            AdvanceCore(genes,dt);
+            if(environment!=null&&environment.isActiveAndEnabled)environment.AdvanceShared(dt);
+            if(vitals!=null&&vitals.isActiveAndEnabled)vitals.AdvanceShared(dt);
             return Values(stats)-before;
         }
         // ★ 修复（防Bug回归）：共享、拆组补算均尊重组件启停，不能把已关闭的环境/代谢重新运行。
@@ -44,18 +48,21 @@ namespace DarwinPark.Entities.Simulation
         public static Vector3 Values(EntityStats stats)
         {stats.TryGet("health",out var health);stats.TryGet("nutrient",out var food);stats.TryGet("storedNutrient",out var reserve);return new Vector3(health,food,reserve);}
         public static void Apply(EntityGeneController representative,EntityGeneController genes,Vector3 delta)
+            =>Apply(representative.GetComponent<EntityEnvironmentHazard>(),genes,genes.GetComponent<EntityStats>(),genes.GetComponent<EntityEnvironmentHazard>(),genes.GetComponent<DarwinEntity>(),delta);
+        internal static void Apply(EntityEnvironmentHazard source,EntityGeneController genes,EntityStats stats,EntityEnvironmentHazard environment,DarwinEntity entity,Vector3 delta)
         {
-            var stats=genes.GetComponent<EntityStats>();stats.Modify("health",delta.x,false);stats.Modify("nutrient",delta.y,false);stats.Modify("storedNutrient",delta.z,false);
-            var source=representative.GetComponent<EntityEnvironmentHazard>();if(source!=null&&source.isActiveAndEnabled)genes.GetComponent<EntityEnvironmentHazard>()?.CopySharedReadings(source);
-            if(stats.TryGet("health",out var health)&&health<=0)EntityDeathSettlement.Die(genes.GetComponent<DarwinEntity>());
+            stats.Modify("health",delta.x,false);stats.Modify("nutrient",delta.y,false);stats.Modify("storedNutrient",delta.z,false);
+            if(source!=null&&source.isActiveAndEnabled)environment?.CopySharedReadings(source);
+            if(stats.TryGet("health",out var health)&&health<=0)EntityDeathSettlement.Die(entity);
         }
-        public static void Reproduce(EntityGeneController genes,float dt)
+        public static void Reproduce(EntityGeneController genes,float dt)=>PrimaryReproduction(genes)?.OnUpdate(dt);
+        internal static ReproductionGeneLogic PrimaryReproduction(EntityGeneController genes)
         {
             // ★ 修复（防Bug回归）：复制逻辑可能在孕育/出生回调中重算基因，先保留当前逻辑引用再调用。
             ReproductionGeneLogic primary=null;
             foreach(var gene in genes.Genome.Genes)
                 if(genes.GetLogic(gene) is ReproductionGeneLogic logic&&GeneBehaviorAuthority.IsPrimary<ReproductionGeneLogic>(genes,gene)){primary=logic;break;}
-            primary?.OnUpdate(dt);
+            return primary;
         }
     }
 }

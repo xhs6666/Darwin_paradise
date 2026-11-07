@@ -182,7 +182,7 @@ flowchart TD
 项目内调用/回调引用：
 
 - [GameplayTuning.Current.get · L31](db546e5713b32d53.md#m557c9ecc76cc372d)（访问器）
-- [EntityWorkScheduler.TryCohortOrdinal · L47](465ccdbb260bcac2.md#m36ac33e732b6538a)（方法）
+- [EntityWorkScheduler.TryCohortOrdinal · L78](465ccdbb260bcac2.md#mb819ba724b68267a)（方法）
 - [GlobalMutationManager.MergedSkipped.set · L11](debf58c0eabf33e3.md#m729fec21f34fd1a6)（访问器）
 - [GlobalMutationManager.MergedSkipped.get · L11](debf58c0eabf33e3.md#m380d4fa8cff8bd88)（访问器）
 - [GlobalMutationManager.BudgetSkipped.set · L12](debf58c0eabf33e3.md#m1d09a05b22718d06)（访问器）

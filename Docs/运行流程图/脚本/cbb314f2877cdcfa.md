@@ -2,13 +2,13 @@
 
 [返回总索引](../README.md) · `Editor` · `Assets/DarwinPark/Editor/EntityStateRegression.cs`
 
-[源文件](../../../Assets/DarwinPark/Editor/EntityStateRegression.cs) · 源码校验：`9bb1314c9454b9afe9692cac4663bb26b9a1184f1f0f8f1b022d7239eeab7733`
+[源文件](../../../Assets/DarwinPark/Editor/EntityStateRegression.cs) · 源码校验：`06ccc9401e9c51fc0808ee431d36d0c56f6ae309ff677b7a0b3eb471a658e20b`
 
 方法按源文件位置排列。事件/回调引用不表示立即执行；分支与异常说明见总索引。完整源码与可点击关系图请打开离线手册。
 
-<a id="m123d4ba9ac96b070"></a>
+<a id="m016910d0874e5f5d"></a>
 
-## Folder.get · L26
+## Folder.get · L27
 
 `private static string Folder`
 
@@ -26,9 +26,127 @@ flowchart TD
 
 ```
 
-<a id="m179c1a45aee10507"></a>
+<a id="m4c34e1b500d602d7"></a>
 
-## Check · L27
+## EntityStateRegression.ctor · L30
+
+`static EntityStateRegression()`
+
+★ 适配：旧回归只提供播放中的菜单入口；自动性能回归必须显式进入播放并等待实际报告，不能把缺少入口当成游戏失败。
+
+### Editor · Roslyn编译器控制流
+
+```mermaid
+flowchart TD
+  b0(["入口"])
+  b1["EditorApplication.update+=()=&gt;{if(Application.isPlaying&amp;&amp;SessionState.GetBool(BatchKey,false)&amp;&amp;LanSession.Instance!=null){SessionState.SetBool(BatchKey,false);Validate();LanSession.Instance.StartCoroutine(ExitBatch());}};"]
+  b2(["结束 / 返回"])
+  b0 --> b1
+  b1 --> b2
+
+```
+
+项目内调用/回调引用：
+
+- [EntityStateRegression.回调@30 · L30](cbb314f2877cdcfa.md#m5caf787a482a7d56)（回调/委托）
+
+<a id="m5caf787a482a7d56"></a>
+
+## 回调@30 · L30
+
+`( … => 回调`
+
+
+
+### Editor · Roslyn编译器控制流
+
+```mermaid
+flowchart TD
+  b0(["入口"])
+  b1{"判断：Application.isPlaying"}
+  b2{"判断：SessionState.GetBool(BatchKey,false)"}
+  b3{"判断：LanSession.Instance!=null"}
+  b4["SessionState.SetBool(BatchKey,false);<br/>Validate();<br/>LanSession.Instance.StartCoroutine(ExitBatch());"]
+  b5(["结束 / 返回"])
+  b0 --> b1
+  b1 -->|"是"| b2
+  b1 -->|"否"| b5
+  b2 -->|"是"| b3
+  b2 -->|"否"| b5
+  b3 -->|"是"| b4
+  b3 -->|"否"| b5
+  b4 --> b5
+
+```
+
+项目内调用/回调引用：
+
+- [LanSession.Instance.get · L23](9fb633eebffe669c.md#mbf83306994878383)（访问器）
+- [EntityStateRegression.Validate · L51](cbb314f2877cdcfa.md#meb77f0d53bc8b303)（方法）
+- [EntityStateRegression.ExitBatch · L36](cbb314f2877cdcfa.md#m3ec39721ef46887b)（方法）
+
+<a id="m26c74b001a3e3604"></a>
+
+## RunBatch · L31
+
+`public static void RunBatch()`
+
+
+
+### Editor · Roslyn编译器控制流
+
+```mermaid
+flowchart TD
+  b0(["入口"])
+  b1["Directory.CreateDirectory(Folder);<br/>File.WriteAllText(Path.Combine(Folder,&quot;result.txt&quot;),&quot;RUNNING&quot;);<br/>Application.runInBackground=true;<br/>SessionState.SetBool(BatchKey,true);<br/>EditorSceneManager.OpenScene(&quot;Assets/Scenes/SampleScene.unity&quot;);<br/>Ed…"]
+  b2(["结束 / 返回"])
+  b0 --> b1
+  b1 --> b2
+
+```
+
+<a id="m3ec39721ef46887b"></a>
+
+## ExitBatch · L36
+
+`private static IEnumerator ExitBatch()`
+
+
+
+### Editor · Roslyn编译器控制流
+
+```mermaid
+flowchart TD
+  b0(["入口"])
+  b1["began=EditorApplication.timeSinceStartup"]
+  b2{"判断：(result=File.ReadAllText(Path.Combine(Folder,&quot;result.txt&quot;))).StartsWith(&quot;RUNNING&quot;)"}
+  b3{"判断：EditorApplication.timeSinceStartup-began&gt;90"}
+  b4["EditorApplication.Exit(1);"]
+  b5["yield return null;"]
+  b6{"判断：result.StartsWith(&quot;PASS&quot;)"}
+  b7["0"]
+  b8["1"]
+  b9["EditorApplication.Exit(result.StartsWith(&quot;PASS&quot;)?0:1);"]
+  b10(["结束 / 返回"])
+  b0 --> b1
+  b1 --> b2
+  b2 -->|"是"| b3
+  b2 -->|"否"| b6
+  b3 -->|"是"| b4
+  b3 -->|"否"| b5
+  b4 --> b10
+  b5 --> b2
+  b6 -->|"是"| b7
+  b6 -->|"否"| b8
+  b7 --> b9
+  b8 --> b9
+  b9 --> b10
+
+```
+
+<a id="md030758e4c599692"></a>
+
+## Check · L43
 
 `private static void Check(bool condition,string message)`
 
@@ -52,9 +170,9 @@ flowchart TD
 
 ```
 
-<a id="m89b2a8dd21f677cb"></a>
+<a id="m99a222067f50298e"></a>
 
-## Spawn · L28
+## Spawn · L44
 
 `private static DarwinEntity Spawn(Vector3 point,string gene,float value)`
 
@@ -78,11 +196,11 @@ flowchart TD
 - [GeneInstance.Create · L20](f82e1498d67f5afd.md#m72e94c278de3cf8b)（方法）
 - [GeneDatabase.Get · L136](ec0a03483435a863.md#me6a5fefe6c3492f9)（方法）
 - [DarwinEntity.Genes.get · L14](70798dde169f2e8b.md#m622eb1adf401d431)（访问器）
-- [EntityStateRegression.回调@32 · L32](cbb314f2877cdcfa.md#m9e0cf1ebd8f13a93)（回调/委托）
+- [EntityStateRegression.回调@48 · L48](cbb314f2877cdcfa.md#m90a2ecdb79dcdd9d)（回调/委托）
 
-<a id="m9e0cf1ebd8f13a93"></a>
+<a id="m90a2ecdb79dcdd9d"></a>
 
-## 回调@32 · L32
+## 回调@48 · L48
 
 `e … => 回调`
 
@@ -100,9 +218,9 @@ flowchart TD
 
 ```
 
-<a id="m8496a9114ed684a2"></a>
+<a id="m6035e51d631cd66a"></a>
 
-## Food · L34
+## Food · L50
 
 `private static void Food(DarwinEntity entity,float value)`
 
@@ -124,9 +242,9 @@ flowchart TD
 
 - [EntityStats.Modify · L111](75aa86a368efdf24.md#m9c837be197158240)（方法）
 
-<a id="m3b72bea1a79f877c"></a>
+<a id="meb77f0d53bc8b303"></a>
 
-## Validate · L35
+## Validate · L51
 
 `[MenuItem("Tools/Darwin Park/Validate Entity States %&F11")] public static void Validate()`
 
@@ -163,12 +281,12 @@ flowchart TD
 
 - [WorldSessionManager.Current.get · L21](08741c7b7b9d9344.md#m5d26a5eb846a8504)（访问器）
 - [WorldSessionManager.Busy.get · L24](08741c7b7b9d9344.md#m4483e2e4f28f7c85)（访问器）
-- [EntityStateRegression.Guard · L42](cbb314f2877cdcfa.md#mbafe88f2f3ad2d01)（方法）
-- [EntityStateRegression.Run · L63](cbb314f2877cdcfa.md#me948e5f94ac3ee07)（方法）
+- [EntityStateRegression.Guard · L58](cbb314f2877cdcfa.md#m330191b1e4328445)（方法）
+- [EntityStateRegression.Run · L79](cbb314f2877cdcfa.md#m611cf48bde00abc1)（方法）
 
-<a id="mbafe88f2f3ad2d01"></a>
+<a id="m330191b1e4328445"></a>
 
-## Guard · L42
+## Guard · L58
 
 `private static IEnumerator Guard(IEnumerator operation)`
 
@@ -234,9 +352,9 @@ flowchart TD
 - [GeneDatabase.EnsureLoaded · L12](ec0a03483435a863.md#mc3e6357b9ca440f5)（方法）
 - [AntColonySettings.Clear · L63](cb0a937e97c8fbb3.md#m3139fd188f0f2c2b)（方法）
 
-<a id="me948e5f94ac3ee07"></a>
+<a id="m611cf48bde00abc1"></a>
 
-## Run · L63
+## Run · L79
 
 `private static IEnumerator Run()`
 
@@ -430,10 +548,10 @@ flowchart TD
 - [GeneDatabase.EnsureLoaded · L12](ec0a03483435a863.md#mc3e6357b9ca440f5)（方法）
 - [EntityStateRegistry.Current.get · L41](440408d2db5c7d96.md#m61b7aa1a54b9a56c)（访问器）
 - [EntityStateRegistry.CurrentJson.get · L43](440408d2db5c7d96.md#m32449837062f8705)（访问器）
-- [EntityStateRegression.Check · L27](cbb314f2877cdcfa.md#m179c1a45aee10507)（方法）
+- [EntityStateRegression.Check · L43](cbb314f2877cdcfa.md#md030758e4c599692)（方法）
 - [EntityStateDocument.Get · L32](440408d2db5c7d96.md#m52cb41ccf0c9d3c9)（方法）
-- [EntityStateRegression.Spawn · L28](cbb314f2877cdcfa.md#m89b2a8dd21f677cb)（方法）
-- [EntityStateRegression.Food · L34](cbb314f2877cdcfa.md#m8496a9114ed684a2)（方法）
+- [EntityStateRegression.Spawn · L44](cbb314f2877cdcfa.md#m99a222067f50298e)（方法）
+- [EntityStateRegression.Food · L50](cbb314f2877cdcfa.md#m6035e51d631cd66a)（方法）
 - [TerritoryBehavior.Advance · L23](19d504dcdc8bc624.md#me9363af362e5c02e)（方法）
 - [PatrolRhythm.Restore · L35](f55940fd5773d413.md#md5ed7e3a5cd3b705)（方法）
 - [PatrolRhythm.Ensure · L13](f55940fd5773d413.md#m47ee8c1a397958a4)（方法）
@@ -467,22 +585,22 @@ flowchart TD
 - [GeneTreeStorage.SaveTo · L98](a885bad0d7dedee8.md#mccb317faa8451097)（方法）
 - [EntityStateController.Rebind · L22](0f8869eb7018091e.md#m40a5ae44229a22cf)（方法）
 - [EntityStateController.Restore · L101](0f8869eb7018091e.md#mfb6f0009ca582cf9)（方法）
-- [EntityStateRegression.回调@70 · L70](cbb314f2877cdcfa.md#m92084cbce0768382)（回调/委托）
-- [EntityStateRegression.回调@71 · L71](cbb314f2877cdcfa.md#mbd5758518b63afb4)（回调/委托）
-- [EntityStateRegression.回调@77 · L77](cbb314f2877cdcfa.md#me15df24f88f07164)（回调/委托）
-- [EntityStateRegression.回调@77 · L77](cbb314f2877cdcfa.md#m0d31299b25971f56)（回调/委托）
-- [EntityStateRegression.回调@88 · L88](cbb314f2877cdcfa.md#me646688033e1df48)（回调/委托）
-- [EntityStateRegression.回调@101 · L101](cbb314f2877cdcfa.md#mabc51c7552488651)（回调/委托）
-- [EntityStateRegression.回调@103 · L103](cbb314f2877cdcfa.md#mec5823129093ce21)（回调/委托）
-- [EntityStateRegression.回调@103 · L103](cbb314f2877cdcfa.md#m4629c48581414e4f)（回调/委托）
-- [EntityStateRegression.回调@103 · L103](cbb314f2877cdcfa.md#m86014dcae38553f6)（回调/委托）
-- [EntityStateRegression.回调@114 · L114](cbb314f2877cdcfa.md#mc4cbd2abede80386)（回调/委托）
-- [EntityStateRegression.回调@116 · L116](cbb314f2877cdcfa.md#m6550adbb0020bec7)（回调/委托）
-- [EntityStateRegression.回调@122 · L122](cbb314f2877cdcfa.md#m3b2c57cbd5069207)（回调/委托）
+- [EntityStateRegression.回调@86 · L86](cbb314f2877cdcfa.md#me85dbbc3187b5901)（回调/委托）
+- [EntityStateRegression.回调@87 · L87](cbb314f2877cdcfa.md#me6c6cc606b278c30)（回调/委托）
+- [EntityStateRegression.回调@93 · L93](cbb314f2877cdcfa.md#m1fe512af8d93a6a7)（回调/委托）
+- [EntityStateRegression.回调@93 · L93](cbb314f2877cdcfa.md#m0f827902d3604f2e)（回调/委托）
+- [EntityStateRegression.回调@104 · L104](cbb314f2877cdcfa.md#mf8781a8371c3a503)（回调/委托）
+- [EntityStateRegression.回调@117 · L117](cbb314f2877cdcfa.md#m903b960f89459568)（回调/委托）
+- [EntityStateRegression.回调@119 · L119](cbb314f2877cdcfa.md#m5df65a764ebd970c)（回调/委托）
+- [EntityStateRegression.回调@119 · L119](cbb314f2877cdcfa.md#m752dbe5c49717ba1)（回调/委托）
+- [EntityStateRegression.回调@119 · L119](cbb314f2877cdcfa.md#m0cea104adfeab784)（回调/委托）
+- [EntityStateRegression.回调@130 · L130](cbb314f2877cdcfa.md#m38fd4ebfb3fedc97)（回调/委托）
+- [EntityStateRegression.回调@132 · L132](cbb314f2877cdcfa.md#m719a5b9e2afcf0cc)（回调/委托）
+- [EntityStateRegression.回调@138 · L138](cbb314f2877cdcfa.md#m566853f0fe624219)（回调/委托）
 
-<a id="m92084cbce0768382"></a>
+<a id="me85dbbc3187b5901"></a>
 
-## 回调@70 · L70
+## 回调@86 · L86
 
 `s … => 回调`
 
@@ -500,9 +618,9 @@ flowchart TD
 
 ```
 
-<a id="mbd5758518b63afb4"></a>
+<a id="me6c6cc606b278c30"></a>
 
-## 回调@71 · L71
+## 回调@87 · L87
 
 `s … => 回调`
 
@@ -520,9 +638,9 @@ flowchart TD
 
 ```
 
-<a id="me15df24f88f07164"></a>
+<a id="m1fe512af8d93a6a7"></a>
 
-## 回调@77 · L77
+## 回调@93 · L93
 
 `s … => 回调`
 
@@ -540,9 +658,9 @@ flowchart TD
 
 ```
 
-<a id="m0d31299b25971f56"></a>
+<a id="m0f827902d3604f2e"></a>
 
-## 回调@77 · L77
+## 回调@93 · L93
 
 `s … => 回调`
 
@@ -560,9 +678,9 @@ flowchart TD
 
 ```
 
-<a id="me646688033e1df48"></a>
+<a id="mf8781a8371c3a503"></a>
 
-## 回调@88 · L88
+## 回调@104 · L104
 
 `s … => 回调`
 
@@ -580,9 +698,9 @@ flowchart TD
 
 ```
 
-<a id="mabc51c7552488651"></a>
+<a id="m903b960f89459568"></a>
 
-## 回调@101 · L101
+## 回调@117 · L117
 
 `s … => 回调`
 
@@ -600,9 +718,9 @@ flowchart TD
 
 ```
 
-<a id="mec5823129093ce21"></a>
+<a id="m5df65a764ebd970c"></a>
 
-## 回调@103 · L103
+## 回调@119 · L119
 
 `s … => 回调`
 
@@ -622,11 +740,11 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [EntityStateRegression.回调@103 · L103](cbb314f2877cdcfa.md#m36e7ae100af8d7de)（回调/委托）
+- [EntityStateRegression.回调@119 · L119](cbb314f2877cdcfa.md#m60afb1c6650d9dd5)（回调/委托）
 
-<a id="m36e7ae100af8d7de"></a>
+<a id="m60afb1c6650d9dd5"></a>
 
-## 回调@103 · L103
+## 回调@119 · L119
 
 `t … => 回调`
 
@@ -644,9 +762,9 @@ flowchart TD
 
 ```
 
-<a id="m4629c48581414e4f"></a>
+<a id="m752dbe5c49717ba1"></a>
 
-## 回调@103 · L103
+## 回调@119 · L119
 
 `r … => 回调`
 
@@ -664,9 +782,9 @@ flowchart TD
 
 ```
 
-<a id="m86014dcae38553f6"></a>
+<a id="m0cea104adfeab784"></a>
 
-## 回调@103 · L103
+## 回调@119 · L119
 
 `c … => 回调`
 
@@ -684,9 +802,9 @@ flowchart TD
 
 ```
 
-<a id="mc4cbd2abede80386"></a>
+<a id="m38fd4ebfb3fedc97"></a>
 
-## 回调@114 · L114
+## 回调@130 · L130
 
 `t … => 回调`
 
@@ -711,9 +829,9 @@ flowchart TD
 
 ```
 
-<a id="m6550adbb0020bec7"></a>
+<a id="m719a5b9e2afcf0cc"></a>
 
-## 回调@116 · L116
+## 回调@132 · L132
 
 `d … => 回调`
 
@@ -731,9 +849,9 @@ flowchart TD
 
 ```
 
-<a id="m3b2c57cbd5069207"></a>
+<a id="m566853f0fe624219"></a>
 
-## 回调@122 · L122
+## 回调@138 · L138
 
 `s … => 回调`
 

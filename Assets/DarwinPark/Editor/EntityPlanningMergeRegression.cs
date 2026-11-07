@@ -94,6 +94,18 @@ namespace DarwinPark.EditorTools
             // 满预算时只延期，不能把其他组的时间直接丢掉。
             tuning.mergeGroupsPerFrame=1;scheduler.Advance(.5f);Check(EntityRegistry.All.Any(e=>e.Genes.PendingSimulationTime>=.49f),"全局共享预算不足时保留其他组的模拟时间");tuning.mergeGroupsPerFrame=128;
             Clear();yield return null;
+            // ★ 修复（防Bug回归）：孤立实体改走逐体补算后，仍必须结清寿命/营养；热循环不能反复分配分组对象。
+            var singleton=Spawn(producer,home);Food(singleton,10,30);var initialSingle=EntitySaveState.Capture(singleton);
+            scheduler.Advance(.5f);int warmedPool=scheduler.CohortPoolSize;
+            scheduler.Advance(.5f);scheduler.Advance(.5f);
+            var singleValues=StationaryCohortKernel.Values(singleton.GetComponent<EntityStats>());float singleLife=singleton.GetComponent<EntityLifeCycle>().Progress;
+            Check(scheduler.CohortPoolSize==warmedPool,"重复结算孤立实体复用分组对象，不逐帧分配新组");
+            initialSingle.Restore(singleton);
+            for(int i=0;i<3;i++){singleton.Genes.AdvanceSimulation(.5f);StationaryCohortKernel.AdvanceCore(singleton.Genes,.5f);}
+            Check((singleValues-StationaryCohortKernel.Values(singleton.GetComponent<EntityStats>())).sqrMagnitude<.000001f&&Mathf.Abs(singleLife-singleton.GetComponent<EntityLifeCycle>().Progress)<.00001f,"孤立实体批量补算与原逐体生命/营养结算一致");
+            singleton.Genes.Genome.Genes.First(g=>g.DefinitionId=="gene_repair").Value+=1;singleton.Genes.Recalculate();scheduler.Advance(.5f);
+            Check(scheduler.SignatureCacheSize==1,"基因变化后签名缓存回收旧版本，只保留当前实体引用");
+            Clear();scheduler.Advance(.1f);Check(scheduler.SignatureCacheSize==0,"世界清场后签名缓存不保留已注销实体");yield return null;
             var killer=Spawn(producer,home,AgeState.Infant);killer.GetComponent<EntityLifeCycle>().RestoreProgress(LifeCycleSettings.Load().adultProgress-.001f);var manual=killer.gameObject.AddComponent<EntityManualControl>();manual.BeginControl(planet.transform);
             var ghost=Spawn(EcologyDefaults.Template("producer").CreateGenome(),home+Vector3.right*5);ghost.Genes.IsGestating=true;ghost.Genes.Recalculate();var ready=Reproduction(ghost).CaptureState();ready.gestation=0;Reproduction(ghost).RestoreState(ready);ghost.GetComponent<EntityStats>().Modify("health",-5,false);
             killer.Genes.OnEvaluationChanged+=_=>{if(EcologyQueries.Alive(ghost))EntityDeathSettlement.Die(ghost);};scheduler.Advance(.1f);

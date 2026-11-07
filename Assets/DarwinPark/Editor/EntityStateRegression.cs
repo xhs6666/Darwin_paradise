@@ -12,6 +12,7 @@ using DarwinPark.Genetics;
 using DarwinPark.Planet;
 using DarwinPark.UI;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.UI;
 using Object=UnityEngine.Object;
@@ -19,11 +20,26 @@ using Object=UnityEngine.Object;
 namespace DarwinPark.EditorTools
 {
     // ★ 新增：独立测试世界外的实体，验证标签授权、饱食边界、捕猎感知、配置改阈值及存档快照。
-    public static class EntityStateRegression
+    [InitializeOnLoad] public static class EntityStateRegression
     {
         private static readonly List<DarwinEntity> Created=new List<DarwinEntity>();
         private static readonly List<string> Passed=new List<string>();
         private static string Folder=>Path.GetFullPath("Artifacts/EntityStateReview");
+        private const string BatchKey="DarwinPark.EntityStateBatch";
+        // ★ 适配：旧回归只提供播放中的菜单入口；自动性能回归必须显式进入播放并等待实际报告，不能把缺少入口当成游戏失败。
+        static EntityStateRegression(){EditorApplication.update+=()=>{if(Application.isPlaying&&SessionState.GetBool(BatchKey,false)&&LanSession.Instance!=null){SessionState.SetBool(BatchKey,false);Validate();LanSession.Instance.StartCoroutine(ExitBatch());}};}
+        public static void RunBatch()
+        {
+            Directory.CreateDirectory(Folder);File.WriteAllText(Path.Combine(Folder,"result.txt"),"RUNNING");Application.runInBackground=true;SessionState.SetBool(BatchKey,true);
+            EditorSceneManager.OpenScene("Assets/Scenes/SampleScene.unity");EditorApplication.EnterPlaymode();
+        }
+        private static IEnumerator ExitBatch()
+        {
+            double began=EditorApplication.timeSinceStartup;string result;
+            while((result=File.ReadAllText(Path.Combine(Folder,"result.txt"))).StartsWith("RUNNING"))
+            {if(EditorApplication.timeSinceStartup-began>90){EditorApplication.Exit(1);yield break;}yield return null;}
+            EditorApplication.Exit(result.StartsWith("PASS")?0:1);
+        }
         private static void Check(bool condition,string message){if(!condition)throw new InvalidOperationException(message);Passed.Add(message);}
         private static DarwinEntity Spawn(Vector3 point,string gene,float value)
         {
