@@ -88,6 +88,8 @@ namespace DarwinPark.Entities.Simulation
         private void Update()=>Advance(ServiceLocator.TryGet<SimulationClock>(out var clock)?clock.GameDeltaTime:Time.deltaTime);
         public void Advance(float dt)
         {
+            // ★ 适配：只在主动性能采样期间计时，定位完整场景的实际消耗。
+            using var performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.Scheduler);
             if(dt<=0||WorldAuthority.IsReplica)return;
             if(_membership!=EntityRegistry.MembershipRevision)
             {
@@ -237,6 +239,8 @@ namespace DarwinPark.Entities.Simulation
         }
         private static string Signature(EntityGeneController genes)
         {
+            // ★ 适配：按需区分重算、签名与实际行为成本。
+            using var performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.GeneSignature);
             var text=new StringBuilder();
             foreach(var gene in genes.Genome.Genes)
             {

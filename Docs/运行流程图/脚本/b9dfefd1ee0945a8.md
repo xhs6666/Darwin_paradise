@@ -263,7 +263,7 @@ flowchart TD
 - [LifeCycleSettings.Load · L16](ace76969fe8f61de.md#mbd2925785484f343)（方法）
 - [EntityLifeCycle.RestoreProgress · L50](9f4138bfbae654b7.md#m1e9381f9a38ed7be)（方法）
 - [EntityGeneController.RestoreStageState · L53](7494d53178552f0e.md#m79f314a95ddba9bf)（方法）
-- [EntityGeneController.Recalculate · L101](7494d53178552f0e.md#m3b78ff9955767303)（方法）
+- [EntityGeneController.Recalculate · L103](7494d53178552f0e.md#m13975e03f6ef0e23)（方法）
 - [GameplayHudRegression.回调@44 · L44](b9dfefd1ee0945a8.md#m7c105fb695ba3b55)（回调/委托）
 
 <a id="m7c105fb695ba3b55"></a>
@@ -588,10 +588,10 @@ flowchart TD
 - [MapEntityStatisticsUI.SelectGene · L69](da03211264cb6014.md#me708d870d6cec0dd)（方法）
 - [MapEntityStatisticsUI.Carriers.get · L17](da03211264cb6014.md#m3360c926666cd49d)（访问器）
 - [MapEntityStatisticsUI.Expressed.get · L18](da03211264cb6014.md#m3a1b8654b32e9613)（访问器）
-- [GeneInspectorUI.ShowEntityInfo · L385](924e27c34e7b1f0a.md#mea69a0457b885287)（方法）
+- [GeneInspectorUI.ShowEntityInfo · L386](924e27c34e7b1f0a.md#m24b40ff7fada9604)（方法）
 - [EntityStats.Modify · L111](75aa86a368efdf24.md#m9c837be197158240)（方法）
 - [DarwinEntity.Genes.get · L14](70798dde169f2e8b.md#m622eb1adf401d431)（访问器）
-- [EntityGeneController.Recalculate · L101](7494d53178552f0e.md#m3b78ff9955767303)（方法）
+- [EntityGeneController.Recalculate · L103](7494d53178552f0e.md#m13975e03f6ef0e23)（方法）
 - [UIRoot.MainCanvas.get · L14](9c1421378791f0e0.md#maa2cc9baf1248477)（访问器）
 - [LanSession.SetRtsMode · L113](9fb633eebffe669c.md#md00374cca68a1203)（方法）
 - [LanSession.Instance.get · L23](9fb633eebffe669c.md#mbf83306994878383)（访问器）
@@ -606,7 +606,7 @@ flowchart TD
 - [SimulationClock.RestoreState · L74](a8f444aec9614b0a.md#m8f617e95e1282846)（方法）
 - [SimulationStepBudget.Consume · L9](0ec4b354aeb329c1.md#me5418cddb06e3e3b)（方法）
 - [EntityPlacementUtility.IsPointerOverUI · L16](6d2c32e632b9c147.md#m126e7f8ff0d0a893)（方法）
-- [GeneInspectorUI.HideEntityInfo · L316](924e27c34e7b1f0a.md#m11944eddcac871c2)（方法）
+- [GeneInspectorUI.HideEntityInfo · L316](924e27c34e7b1f0a.md#m6a781763d46739f9)（方法）
 - [GameplayHudRegression.回调@70 · L70](b9dfefd1ee0945a8.md#m9229cc43566e39ea)（回调/委托）
 - [GameplayHudRegression.回调@72 · L72](b9dfefd1ee0945a8.md#mf9b8f1b162acb042)（回调/委托）
 

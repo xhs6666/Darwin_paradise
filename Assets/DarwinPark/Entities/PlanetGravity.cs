@@ -40,6 +40,8 @@ namespace DarwinPark.Entities
 
         void FixedUpdate()
         {
+            // ★ 适配：只在主动性能采样期间计时，定位完整场景的实际消耗。
+            using var performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.Gravity);
             // ★ 适配：附着寄生体由宿主跟随控制，不能向运动学刚体施力或清速度。
             if(_rb==null||_rb.isKinematic)return;
 

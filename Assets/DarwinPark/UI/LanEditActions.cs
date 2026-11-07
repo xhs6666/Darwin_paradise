@@ -30,6 +30,9 @@ namespace DarwinPark.UI
             var entity=EcologyIdentity.Find(command.entity);
             switch(command.kind)
             {
+                // ★ 适配：年龄及数值也经过同一服务端权限检查。
+                case "entityStage":return EntityStateEditor.SetStage(entity,(AgeState)command.count);
+                case "entityStat":return EntityStateEditor.SetStat(entity,command.parameter,command.value);
                 case "worldSettings":return WorldEntityActions.SetLimit(command.count,command.running);
                 case "clearEntities":return WorldEntityActions.ClearAll();
                 case "gene":

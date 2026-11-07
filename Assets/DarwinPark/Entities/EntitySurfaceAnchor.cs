@@ -46,6 +46,8 @@ namespace DarwinPark.Entities
 
         private void FixedUpdate()
         {
+            // ★ 适配：只在主动性能采样期间计时，定位完整场景的实际消耗。
+            using var performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.GroundAnchor);
             if (ServiceLocator.TryGet<SimulationClock>(out var clock) && !clock.IsRunning) return;
             if (_rb == null || _rb.isKinematic) return;
             // ★ 适配：已接触地表的静止刚体无需每个物理步重新采样高度；碰撞/行动唤醒后仍保留高空救援。

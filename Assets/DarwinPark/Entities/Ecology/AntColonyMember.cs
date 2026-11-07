@@ -88,6 +88,8 @@ namespace DarwinPark.Entities.Ecology
         }
         public void Advance(float dt)
         {
+            // ★ 适配：只在主动性能采样期间计时，定位完整场景的实际消耗。
+            using var performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.ColonyTasks);
             if(!Active||dt<=0)return;
             if(Role==AntRole.None)Assign(Population.LeaderFlag?AntRole.Queen:ChooseBirthRole());
             State.scan-=dt;State.reproductionCooldown=Mathf.Max(0,State.reproductionCooldown-dt);

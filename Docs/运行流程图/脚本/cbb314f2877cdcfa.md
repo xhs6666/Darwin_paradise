@@ -345,7 +345,7 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [GeneInspectorUI.HideEntityInfo · L316](924e27c34e7b1f0a.md#m11944eddcac871c2)（方法）
+- [GeneInspectorUI.HideEntityInfo · L316](924e27c34e7b1f0a.md#m6a781763d46739f9)（方法）
 - [EntityStateRegistry.Clear · L55](440408d2db5c7d96.md#m5fc8abc9b81cad68)（方法）
 - [GeneRuntimeProfile.Clear · L9](f1a7d6e7b41d5a91.md#m3e3a434df6550039)（方法）
 - [GeneDatabase.Reload · L146](ec0a03483435a863.md#mf11496816a817e0e)（方法）
@@ -565,7 +565,7 @@ flowchart TD
 - [GeneDatabase.Get · L136](ec0a03483435a863.md#me6a5fefe6c3492f9)（方法）
 - [GeneInstance.Create · L20](f82e1498d67f5afd.md#m72e94c278de3cf8b)（方法）
 - [Genome.Add · L19](a2ef23f865bc7ee8.md#md9cfdc94b8b8d40f)（方法）
-- [EntityGeneController.Recalculate · L101](7494d53178552f0e.md#m3b78ff9955767303)（方法）
+- [EntityGeneController.Recalculate · L103](7494d53178552f0e.md#m13975e03f6ef0e23)（方法）
 - [EntityStats.TryGet · L90](75aa86a368efdf24.md#m24ee1433e4a70d94)（方法）
 - [EntityGeneController.AdvanceSimulation · L70](7494d53178552f0e.md#m8d432f097da8bbf7)（方法）
 - [EntityStats.Modify · L111](75aa86a368efdf24.md#m9c837be197158240)（方法）
@@ -575,7 +575,7 @@ flowchart TD
 - [GeneValueForm.Export · L38](1a57b2a63a2f76d5.md#m733739ea591391d9)（方法）
 - [GeneEntityStateTags.Upgrade · L11](d87d75eb0b331d5c.md#m2462e83f788e9dea)（方法）
 - [GeneEntityStateTags.Validate · L24](d87d75eb0b331d5c.md#m07abded73ee4a80f)（方法）
-- [GeneInspectorUI.ShowEntityInfo · L385](924e27c34e7b1f0a.md#mea69a0457b885287)（方法）
+- [GeneInspectorUI.ShowEntityInfo · L386](924e27c34e7b1f0a.md#m24b40ff7fada9604)（方法）
 - [EntityStatePresentation.Current · L11](cedd13b7a8825ed4.md#mb284f7b351983ca5)（方法）
 - [GeneTreeStorage.Load · L55](a885bad0d7dedee8.md#m095aec82bcb2500e)（方法）
 - [EntitySaveState.Capture · L22](a1ec8fcd9d7d3ddb.md#md994065ded6697b7)（方法）
@@ -584,7 +584,7 @@ flowchart TD
 - [EntitySaveState.Restore · L32](a1ec8fcd9d7d3ddb.md#md1cca8b8dd3628a4)（方法）
 - [GeneTreeStorage.SaveTo · L98](a885bad0d7dedee8.md#mccb317faa8451097)（方法）
 - [EntityStateController.Rebind · L22](0f8869eb7018091e.md#m40a5ae44229a22cf)（方法）
-- [EntityStateController.Restore · L101](0f8869eb7018091e.md#mfb6f0009ca582cf9)（方法）
+- [EntityStateController.Restore · L103](0f8869eb7018091e.md#m49ec3f43431642b0)（方法）
 - [EntityStateRegression.回调@86 · L86](cbb314f2877cdcfa.md#me85dbbc3187b5901)（回调/委托）
 - [EntityStateRegression.回调@87 · L87](cbb314f2877cdcfa.md#me6c6cc606b278c30)（回调/委托）
 - [EntityStateRegression.回调@93 · L93](cbb314f2877cdcfa.md#m1fe512af8d93a6a7)（回调/委托）

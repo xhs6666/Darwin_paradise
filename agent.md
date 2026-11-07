@@ -298,3 +298,12 @@
 |日期|现象|根因|修复文件|防复发要点|
 |---|---|---|---|---|
 |2026-11-08|本地延迟，合并计算后帧耗时反而上升|活跃优先级排序重复查组件；到期分组拼接长键、创建临时列表；共享小步重复验证与查询；单成员无共享收益却走完整代表路径|EntityWorkScheduler.cs、StationaryCohortKernel.cs、SchedulerPerformanceRegression.cs、EntityPlanningMergeRegression.cs|线性优先级、值类型预散列、组与桶复用、单成员逐体补算；保留死亡/权限/欠账/变异边界；签名只保留活跃引用；公平计入两条路径的生命与代谢，并采样真实存档副本，不用代表次数或恒零的Mono分配计数替代性能验证|
+
+
+## 2026-11-08 完整现场卡顿与统一实体检查台账
+
+|日期|现象|根因|修复文件|防复发要点|
+|---|---|---|---|---|
+|2026-11-08|同数量下合并优化后仍有本地延迟|早期208实体副本不是最新385实体现场；工匠/临时王后的资源筛选对每具尸体重新枚举所有资源生成活动圆，成为平方级搜索|AntColonyWorker.cs、ColonyActivityRange.cs、RuntimePerformance.cs、FullScenePerformanceRegression.cs|使用最新存档、完整地形与固定数量做分项计时；每次同步搜索复用圆列表；保留球面资格与原最近目标排序；1500远处尸体和高度差用例防回归；不以实体数或调度次数替代实际帧耗时|
+|2026-11-08|需要锁帧与可复用性能证据|缺少目标帧率设置及游戏分项报告|FramePacingSettings.cs、RuntimePerformanceCapture.cs、GameMainMenu.cs|画质后应用、与VSync协调、保存恢复；空闲不采样、结束释放；不可用指标明示，不相加父子耗时|
+|2026-11-08|失效原因不明、尸体详情布局不同、生命阶段不可编辑|检查界面只显示布尔状态；资源没有生前档案；缺少权威阶段入口|GeneFailureReasons.cs、GeneValueResolver.cs、CorpseEntityRecord.cs、GeneInspectorUI.Corpse.cs、EntityEditPopup.cs、EntityStateEditor.cs|不改运行求值；禁用基因补只读条目；复用原布局，无伪活体；旧档全零对象兼容与损坏档案区分；阶段/数值成对保存；幼年先释放运输；遵守服务端权限和合法输入门控|

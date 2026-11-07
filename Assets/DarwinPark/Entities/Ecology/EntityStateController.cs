@@ -40,6 +40,8 @@ namespace DarwinPark.Entities.Ecology
         }
         public void Advance(float dt)
         {
+            // ★ 适配：只在主动性能采样期间计时，定位完整场景的实际消耗。
+            using var performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.StatePerception);
             if(dt<=0)return;
             RebuildGrants();DetectedTarget=null;
             // ★ 修复（防Bug回归）：蚁群已有独占分工决策，普通巡逻/捕猎感知的结果会被覆盖，不能再为每名成员重复扫描世界。

@@ -2,13 +2,13 @@
 
 [返回总索引](../README.md) · `Runtime` · `Assets/DarwinPark/Genetics/Evaluation/GeneValueResolver.cs`
 
-[源文件](../../../Assets/DarwinPark/Genetics/Evaluation/GeneValueResolver.cs) · 源码校验：`382438490eb82515910125bb8eca91196eaeca03e1a56a4ff18941f048fedadc`
+[源文件](../../../Assets/DarwinPark/Genetics/Evaluation/GeneValueResolver.cs) · 源码校验：`b79f319d6f79699ade8463e1421139b6c7d6fb7256ba3f763aa08ad92bfcf443`
 
 方法按源文件位置排列。事件/回调引用不表示立即执行；分支与异常说明见总索引。完整源码与可点击关系图请打开离线手册。
 
-<a id="mb9f01f6a053abe5c"></a>
+<a id="m677371b155e67c41"></a>
 
-## IsActive.get · L15
+## IsActive.get · L17
 
 `public bool IsActive`
 
@@ -19,16 +19,16 @@
 ```mermaid
 flowchart TD
   n2(["入口"])
-  n1["EffectiveStrength &gt;= 10f"]
+  n1["EffectiveStrength &gt;= MinimumActiveStrength"]
   n0(["结束 / 返回"])
   n1 --> n0
   n2 --> n1
 
 ```
 
-<a id="md4b9129afb709ddb"></a>
+<a id="m063abac8252cd4e8"></a>
 
-## Resolve · L30
+## Resolve · L32
 
 `public static GenomeEvaluation Resolve(Genome genome, bool isGestating = false, float globalSuppression = 0f, string suppressExemptGeneId = null,IReadOnlyDictionary<string,float> additionalSuppression=null)`
 
@@ -69,9 +69,9 @@ flowchart TD
   b28["var"]
   b29{"判断：gene.Enabled"}
   b30{"def = GeneDatabase.Get(gene.DefinitionId)<br/>判断：def == null"}
-  b31{"suppressions.TryGetValue(gene, out var sup);<br/>判断：additionalSuppression!=null"}
+  b31{"suppressions.TryGetValue(gene, out var sup);<br/>role=0<br/>判断：additionalSuppression!=null"}
   b32{"判断：additionalSuppression.TryGetValue(gene.DefinitionId,out float extra)"}
-  b33["sup+=Mathf.Max(0,extra);"]
+  b33["role=Mathf.Max(0,extra);<br/>sup+=role;"]
   b34{"判断：string.IsNullOrEmpty(suppressExemptGeneId)"}
   b35["gene.DefinitionId == suppressExemptGeneId"]
   b36["!string.IsNullOrEmpty(suppressExemptGeneId)"]
@@ -81,7 +81,7 @@ flowchart TD
   b40["Mathf.Max(0f, globalSuppression)"]
   b41["global = exempt ? 0f : Mathf.Max(0f, globalSuppression)"]
   b42["effectiveValue = Mathf.Max(0f, gene.Value - sup - global)"]
-  b43["new GeneEvaluation { Gene = gene, Definition = def, State = def.ResolveState(gene.Value, gene.MissingStateIds), // ★ 修复（防Bug回归）：面板同时显示环境抑制，保证有效值与抑制值一致。 SuppressionAmount = sup + global, EffectiveStrength = effectiveValue }<br/>Gene = gene<br/>De…"]
+  b43["new GeneEvaluation { Gene = gene, Definition = def, State = def.ResolveState(gene.Value, gene.MissingStateIds), // ★ 修复（防Bug回归）：面板同时显示环境抑制，保证有效值与抑制值一致。 SuppressionAmount = sup + global, // ★ 适配：仅记录来源数值供界面解释，不额外拼接字符串或改变求值。 EnvironmentSupp…"]
   b44["result.Genes.Add(eval);"]
   b45["genome.Genes"]
   b46["result.Attributes = GeneAttributeInheritance.Accumulate(result.Genes);<br/>结果：result"]

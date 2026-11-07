@@ -48,6 +48,8 @@ namespace DarwinPark.UI
             _=GameplayTuning.Current;
             if (PlayerPrefs.HasKey("FullScreen")) Screen.fullScreen = PlayerPrefs.GetInt("FullScreen") != 0;
             if (PlayerPrefs.HasKey("QualityLevel")) QualitySettings.SetQualityLevel(Mathf.Clamp(PlayerPrefs.GetInt("QualityLevel"), 0, QualitySettings.names.Length - 1), true);
+            // ★ 适配：在画质恢复之后应用锁帧，避免画质档位覆盖帧率节奏。
+            FramePacingSettings.Apply();RuntimePerformanceCapture.Ensure(this);
         }
         // ★ 适配：在UIRoot初始化后安装读档输入恢复，旧开关快照不能成为HUD永久不可点击的状态。
         // ★ 修复（防Bug回归）：脚本重载不会重跑Awake，普通C#事件也不会持久化；每次启用成对重绑读档完成通知。
@@ -86,7 +88,7 @@ namespace DarwinPark.UI
             }
             // ★ 修复（防Bug回归）：Esc 由最早更新的菜单消费，同一帧不再触发退出操控或底层工具取消；F10 无动作。
             // ★ 适配：参数进度与存档设置自行处理输入，Esc不能再打开叠加的暂停菜单。
-            if (_controls.Waiting.HasValue || !Input.GetKeyDown(KeyCode.Escape) || _session.Busy || WorldRuntimeGate.Loading || WorldGameSettingsPanel.Instance?.Visible==true || PopulationWorkbench.Instance?.Visible==true || RandomSpawnWorkbench.Instance?.Visible==true || WorldRuntimeGate.Recording) return;
+            if (EntityEditPopup.Instance?.Visible==true || _controls.Waiting.HasValue || !Input.GetKeyDown(KeyCode.Escape) || _session.Busy || WorldRuntimeGate.Loading || WorldGameSettingsPanel.Instance?.Visible==true || PopulationWorkbench.Instance?.Visible==true || RandomSpawnWorkbench.Instance?.Visible==true || WorldRuntimeGate.Recording) return;
             // ★ 修复（防Bug回归）：Esc先收起下拉，不能同帧打开暂停菜单、关闭HUD后留下独立排序的列表。
             if(RuntimeDropdownDismissal.CloseOpenPopups()){GameInputGate.ConsumeEscape();return;}
             if (!_visible && WorldRuntimeGate.Ready) ShowPause();
@@ -269,8 +271,9 @@ namespace DarwinPark.UI
             GUILayout.EndHorizontal();if (full != Screen.fullScreen) Screen.fullScreen = full;
             GUILayout.Label("画质"); var names = QualitySettings.names; int quality=QualitySettings.GetQualityLevel();
             GUILayout.BeginHorizontal();for(int i=0;i<names.Length;i++)if(GUILayout.Button(names[i],i==quality?RuntimeMenuTheme.Primary:GUI.skin.button,GUILayout.Height(36)))quality=i;GUILayout.EndHorizontal();
-            if (quality != QualitySettings.GetQualityLevel()) QualitySettings.SetQualityLevel(quality, true);
-            if (RuntimeMenuTheme.Button("保存设置","save",true,40)) { PlayerPrefs.SetFloat("MasterVolume", _volume); PlayerPrefs.SetInt("FullScreen", Screen.fullScreen ? 1 : 0); PlayerPrefs.SetInt("QualityLevel", QualitySettings.GetQualityLevel()); PlayerPrefs.Save(); _message = "设置已保存"; }
+            if (quality != QualitySettings.GetQualityLevel()){QualitySettings.SetQualityLevel(quality,true);FramePacingSettings.Apply();}
+            FramePacingSettings.Draw();
+            if (RuntimeMenuTheme.Button("保存设置","save",true,40)) { FramePacingSettings.Save(); PlayerPrefs.SetFloat("MasterVolume", _volume); PlayerPrefs.SetInt("FullScreen", Screen.fullScreen ? 1 : 0); PlayerPrefs.SetInt("QualityLevel", QualitySettings.GetQualityLevel()); PlayerPrefs.Save(); _message = "设置已保存"; }
             GUILayout.Label("游戏数值配置："+GameplayTuning.FilePath,new GUIStyle(RuntimeMenuTheme.Muted){wordWrap=true});
             if(RuntimeMenuTheme.Button("重新载入数值配置",null,false,32)){GameplayTuning.Reload();_message="已载入有效配置；外部修改也会自动生效";}
         }
@@ -283,7 +286,7 @@ namespace DarwinPark.UI
                 if(RuntimeMenuTheme.Button("打开日志文件夹",null,false,36))RuntimeFileLog.OpenDirectory();
             }
             // ★ 适配：写盘启动失败也必须在设置里显示原因，不能以目录为空为由隐藏故障。
-            RuntimeDiagnosticsUI.Draw();
+            RuntimeDiagnosticsUI.Draw();RuntimePerformanceCapture.Draw();
         }
         private void Back(string page) { if (RuntimeMenuTheme.Button("返回","back",false,38)) { if(_page=="multiplayer"&&LanSession.Instance?.Online==true)LanSession.Instance.LeaveToMenu("已取消连接");else{_page = page; _message = "";} } }
         // ★ 修复（防Bug回归）：暂停页原先只有退出程序，补齐保存并卸载世界的导航路径。

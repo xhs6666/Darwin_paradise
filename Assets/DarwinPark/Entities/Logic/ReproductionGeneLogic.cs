@@ -37,6 +37,8 @@ namespace DarwinPark.Entities.Logic
         public void RestoreState(ReproductionSaveState state){MultipleBirthPolicy.Validate(state.litter);_litter=MultipleBirthPolicy.Copy(state.litter);_gestationTimer=state.gestation;_cooldownTimer=state.cooldown;_partnerGenome=state.partner?.Genes?.Count>0?state.partner:null;_mateWaitTimer=state.mateWait;_maintenanceWait=state.maintenanceWait;_parthenogenetic=state.parthenogenetic;}
         public void OnUpdate(float dt)
         {
+            // ★ 适配：按需区分重算、签名与实际行为成本。
+            using var performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.Reproduction);
             if(dt<=0||DarwinPark.Core.WorldAuthority.IsReplica)return;
             // ★ 适配：蚁群王后走独立孕育流程，其余分工不得运行普通繁殖逻辑。
             if(Ecology.AntColonyReproduction.BlocksOrdinary(_controller)){_mateWaitTimer=0;return;}

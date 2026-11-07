@@ -12,7 +12,9 @@ namespace DarwinPark.Genetics
         public float SuppressionAmount;
         public float EffectiveStrength;
         public Dictionary<string,float> AttributeContributions=new Dictionary<string,float>();
-        public bool IsActive => EffectiveStrength >= 10f; // 生效阈值改为 10
+        public const float MinimumActiveStrength=10f;
+        public float EnvironmentSuppression,RoleSuppression;public bool GestatingAtEvaluation;
+        public bool IsActive => EffectiveStrength >= MinimumActiveStrength; // 生效阈值改为 10
     }
 
     public class GenomeEvaluation
@@ -67,7 +69,8 @@ namespace DarwinPark.Genetics
 
                 suppressions.TryGetValue(gene, out var sup);
                 // ★ 适配：角色表达抑制只影响有效值与属性，不改写遗传值。
-                if(additionalSuppression!=null&&additionalSuppression.TryGetValue(gene.DefinitionId,out float extra))sup+=Mathf.Max(0,extra);
+                float role=0;
+                if(additionalSuppression!=null&&additionalSuppression.TryGetValue(gene.DefinitionId,out float extra)){role=Mathf.Max(0,extra);sup+=role;}
                 bool exempt = !string.IsNullOrEmpty(suppressExemptGeneId)
                     && gene.DefinitionId == suppressExemptGeneId;
                 float global = exempt ? 0f : Mathf.Max(0f, globalSuppression);
@@ -80,6 +83,8 @@ namespace DarwinPark.Genetics
                     State = def.ResolveState(gene.Value, gene.MissingStateIds),
                     // ★ 修复（防Bug回归）：面板同时显示环境抑制，保证有效值与抑制值一致。
                     SuppressionAmount = sup + global,
+                    // ★ 适配：仅记录来源数值供界面解释，不额外拼接字符串或改变求值。
+                    EnvironmentSuppression=global,RoleSuppression=role,GestatingAtEvaluation=isGestating,
                     EffectiveStrength = effectiveValue
                 };
                 result.Genes.Add(eval);

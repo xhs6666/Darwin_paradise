@@ -44,7 +44,7 @@ namespace DarwinPark.Entities.Vitals
         }
 
         // ★ 适配：供代表和醒来补算使用，与普通Update共用小步逻辑。
-        public void AdvanceShared(float dt){int steps=Mathf.CeilToInt(dt/.1f);for(int i=0;i<steps;i++)AdvanceVitals(Mathf.Min(.1f,dt-i*.1f));}
+        public void AdvanceShared(float dt){/* ★ 适配：发布版可主动采样代谢成本。 */using var performance=PerformanceTimings.Measure(PerformanceTimings.Area.Vitals);int steps=Mathf.CeilToInt(dt/.1f);for(int i=0;i<steps;i++)AdvanceVitals(Mathf.Min(.1f,dt-i*.1f));}
 
         private void AdvanceVitals(float dt)
         {

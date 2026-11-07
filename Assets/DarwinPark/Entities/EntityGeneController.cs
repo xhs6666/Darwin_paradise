@@ -69,6 +69,8 @@ namespace DarwinPark.Entities
 
         public void AdvanceSimulation(float dt)
         {
+            // ★ 适配：只在主动性能采样期间计时，定位完整场景的实际消耗。
+            using var performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.Genes);
             // ★ 适配：联机生态只在管理员进程推进，副本不能发生独立变异或出生。
             if (dt <= 0f||WorldAuthority.IsReplica) return;
             // ★ 适配：物理/搬运改变位置后更新已存在的邻居快照，不在每个小步重建索引。
@@ -100,6 +102,8 @@ namespace DarwinPark.Entities
 
         public void Recalculate()
         {
+            // ★ 适配：按需区分重算、签名与实际行为成本。
+            using var performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.GeneRecalculation);
             if (_isRecalculating) return;
             Simulation.EntityWorkScheduler.Wake(this);
             // ★ 适配：固定分工先还原出生遗传快照，编辑和阶段变异不能改写士兵/工匠基因。

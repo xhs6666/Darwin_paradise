@@ -11,6 +11,8 @@ namespace DarwinPark.Entities.Ecology
         private void LateUpdate()=>Refresh();
         public void Refresh()
         {
+            // ★ 适配：只在主动性能采样期间计时，定位完整场景的实际消耗。
+            using var performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.ResourceVisuals);
             if(_resource.State==null||_resource.State.kind==ColonyResourceKind.Corpse||_energy==_resource.State.energy)return;
             _energy=_resource.State.energy;int index=EnergyBlockGrades.Level(_energy);var grade=EnergyBlockGrades.Table.levels[index];
             ColorUtility.TryParseHtmlString(grade.color,out var color);_renderer.GetPropertyBlock(_block);

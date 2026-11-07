@@ -73,6 +73,8 @@ namespace DarwinPark.Entities.Vitals
         }
         public void AdvanceShared(float dt)
         {
+            // ★ 适配：只在主动性能采样期间计时，定位完整场景的实际消耗。
+            using var performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.Environment);
             if(dt<=0||_stats==null)return;
             if (_config == null && ServiceLocator.TryGet<EnvironmentSystem>(out var env))
                 _config = env.Config;

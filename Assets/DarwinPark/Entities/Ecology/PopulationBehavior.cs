@@ -77,6 +77,8 @@ namespace DarwinPark.Entities.Ecology
         private void Update(){Advance(ServiceLocator.TryGet<SimulationClock>(out var clock)?clock.GameDeltaTime:Time.deltaTime);}
         public void Advance(float dt)
         {
+            // ★ 适配：只在主动性能采样期间计时，定位完整场景的实际消耗。
+            using var performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.Population);
             // ★ 适配：副本保留读档的身份与分工，只由房主计算成员变化。
             if(WorldAuthority.IsReplica)return;
             if(!Active){GetComponent<AntColonyMember>()?.Suspend();if(Members.Remove(this)||!string.IsNullOrEmpty(GroupId))PopulationGroupIndex.Invalidate();GroupId="";LeaderFlag=false;Command=PopulationCommand.None;return;}

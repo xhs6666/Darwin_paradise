@@ -2,7 +2,7 @@
 
 [返回总索引](../README.md) · `Runtime` · `Assets/DarwinPark/Entities/Simulation/EntityWorkScheduler.cs`
 
-[源文件](../../../Assets/DarwinPark/Entities/Simulation/EntityWorkScheduler.cs) · 源码校验：`ec96b07f09fda12eb58506df9f664dd071c5f829d0e97ee5818330ce96214b3c`
+[源文件](../../../Assets/DarwinPark/Entities/Simulation/EntityWorkScheduler.cs) · 源码校验：`8de3d4694ab124a8618f209e1284007c4682c77774a6b93275109383bdfb1f5a`
 
 方法按源文件位置排列。事件/回调引用不表示立即执行；分支与异常说明见总索引。完整源码与可点击关系图请打开离线手册。
 
@@ -685,369 +685,374 @@ flowchart TD
 ```mermaid
 flowchart TD
   b0(["入口"])
-  b1{"判断：dt&lt;=0"}
-  b2{"判断：WorldAuthority.IsReplica"}
-  b3{"判断：_membership!=EntityRegistry.MembershipRevision"}
-  b4["_present.Clear();"]
-  b5["EntityRegistry.All"]
-  b6{"判断：EntityRegistry.All"}
-  b7{"var<br/>判断：entity!=null"}
-  b8{"判断：entity.Genes!=null"}
-  b9["_present.Add(entity.Genes);"]
-  b10{"判断：EntityRegistry.All"}
-  b11["EntityRegistry.All"]
-  b12["连接 / 离开区域"]
-  b13["_removed.Clear();"]
-  b14["_entries.Keys"]
-  b15{"判断：_entries.Keys"}
-  b16{"var<br/>判断：key==null"}
-  b17{"判断：_present.Contains(key)"}
-  b18["_removed.Add(key);"]
-  b19["_entries.Keys"]
-  b20["_removed"]
-  b21{"判断：_removed"}
-  b22["var<br/>_entries.Remove(key);"]
-  b23["_removed"]
-  b24{"判断：_removed.Count&gt;0"}
-  b25["_signaturesDirty=true;"]
-  b26{"判断：_entries.Count==0"}
-  b27["_signatures.Clear();<br/>_nextSignature=0;"]
-  b28["_present"]
-  b29{"判断：_present"}
-  b30["var<br/>Get(genes);"]
-  b31["_present"]
-  b32["_membership=EntityRegistry.MembershipRevision;"]
-  b33["_groups"]
-  b34{"判断：_groups"}
-  b35["var<br/>previous.members.Clear();<br/>previous.next=null;"]
-  b36["_groups"]
-  b37["_active.Clear();<br/>_controlled.Clear();<br/>_injured.Clear();<br/>_groups.Clear();<br/>_cells.Clear();<br/>_usedGroups=0;<br/>DormantMembers=0;<br/>tuning=GameplayTuning.Current"]
-  b38["_entries.Values"]
-  b39{"判断：_entries.Values"}
-  b40["var"]
-  b41{"genes=entry.genes<br/>判断：genes==null"}
-  b42{"判断：genes.isActiveAndEnabled"}
-  b43{"判断：entry.life==null"}
-  b44["entry.life=genes.GetComponent&lt;EntityLifeCycle&gt;();"]
-  b45{"判断：entry.manual==null"}
-  b46["entry.manual=genes.GetComponent&lt;EntityManualControl&gt;();"]
-  b47{"entry.frame=Time.frameCount;<br/>entry.ordinal=0;<br/>entry.count=1;<br/>判断：tuning.mergeStationaryEntities"}
-  b48["entry.dormant=false;<br/>entry.quiet=0;<br/>QueueActive(entry);"]
-  b49{"stationary=(genes.transform.position-entry.position).sqrMagnitude&lt;=tuning.mergeWakeDistance*tuning.mergeWakeDistance<br/>entry.position=genes.transform.position;<br/>判断：entry.revision!=genes.LogicRevision"}
-  b50{"entry.revision=genes.LogicRevision;<br/>entry.supported=StationaryCohortKernel.Supported(genes);<br/>entry.quiet=0;<br/>entry.state=genes.GetComponent&lt;EntityStateController&gt;();<br/>entry.signature=0;<br/>_signaturesDirty=true;<br/>判断：entry.supported"}
-  b51{"signature=Signature(genes)<br/>判断：_signatures.TryGetValue(signature,out entry.signature)"}
-  b52["entry.signature=++_nextSignature;<br/>_signatures.Add(signature,entry.signature);"]
-  b53{"判断：entry.supported"}
-  b54{"entry.state<br/>判断：entry.state"}
-  b55[".Current"]
-  b56{"判断：.Current"}
-  b57[".id"]
-  b58["entry.state?.Current?.id"]
-  b59{"判断：entry.state?.Current?.id"}
-  b60["entry.state?.Current?.id"]
-  b61["&quot;&quot;"]
+  b1["performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.Scheduler)"]
+  b2{"判断：dt&lt;=0"}
+  b3{"判断：WorldAuthority.IsReplica"}
+  b4{"判断：_membership!=EntityRegistry.MembershipRevision"}
+  b5["_present.Clear();"]
+  b6["EntityRegistry.All"]
+  b7{"判断：EntityRegistry.All"}
+  b8{"var<br/>判断：entity!=null"}
+  b9{"判断：entity.Genes!=null"}
+  b10["_present.Add(entity.Genes);"]
+  b11{"判断：EntityRegistry.All"}
+  b12["EntityRegistry.All"]
+  b13["连接 / 离开区域"]
+  b14["_removed.Clear();"]
+  b15["_entries.Keys"]
+  b16{"判断：_entries.Keys"}
+  b17{"var<br/>判断：key==null"}
+  b18{"判断：_present.Contains(key)"}
+  b19["_removed.Add(key);"]
+  b20["_entries.Keys"]
+  b21["_removed"]
+  b22{"判断：_removed"}
+  b23["var<br/>_entries.Remove(key);"]
+  b24["_removed"]
+  b25{"判断：_removed.Count&gt;0"}
+  b26["_signaturesDirty=true;"]
+  b27{"判断：_entries.Count==0"}
+  b28["_signatures.Clear();<br/>_nextSignature=0;"]
+  b29["_present"]
+  b30{"判断：_present"}
+  b31["var<br/>Get(genes);"]
+  b32["_present"]
+  b33["_membership=EntityRegistry.MembershipRevision;"]
+  b34["_groups"]
+  b35{"判断：_groups"}
+  b36["var<br/>previous.members.Clear();<br/>previous.next=null;"]
+  b37["_groups"]
+  b38["_active.Clear();<br/>_controlled.Clear();<br/>_injured.Clear();<br/>_groups.Clear();<br/>_cells.Clear();<br/>_usedGroups=0;<br/>DormantMembers=0;<br/>tuning=GameplayTuning.Current"]
+  b39["_entries.Values"]
+  b40{"判断：_entries.Values"}
+  b41["var"]
+  b42{"genes=entry.genes<br/>判断：genes==null"}
+  b43{"判断：genes.isActiveAndEnabled"}
+  b44{"判断：entry.life==null"}
+  b45["entry.life=genes.GetComponent&lt;EntityLifeCycle&gt;();"]
+  b46{"判断：entry.manual==null"}
+  b47["entry.manual=genes.GetComponent&lt;EntityManualControl&gt;();"]
+  b48{"entry.frame=Time.frameCount;<br/>entry.ordinal=0;<br/>entry.count=1;<br/>判断：tuning.mergeStationaryEntities"}
+  b49["entry.dormant=false;<br/>entry.quiet=0;<br/>QueueActive(entry);"]
+  b50{"stationary=(genes.transform.position-entry.position).sqrMagnitude&lt;=tuning.mergeWakeDistance*tuning.mergeWakeDistance<br/>entry.position=genes.transform.position;<br/>判断：entry.revision!=genes.LogicRevision"}
+  b51{"entry.revision=genes.LogicRevision;<br/>entry.supported=StationaryCohortKernel.Supported(genes);<br/>entry.quiet=0;<br/>entry.state=genes.GetComponent&lt;EntityStateController&gt;();<br/>entry.signature=0;<br/>_signaturesDirty=true;<br/>判断：entry.supported"}
+  b52{"signature=Signature(genes)<br/>判断：_signatures.TryGetValue(signature,out entry.signature)"}
+  b53["entry.signature=++_nextSignature;<br/>_signatures.Add(signature,entry.signature);"]
+  b54{"判断：entry.supported"}
+  b55{"entry.state<br/>判断：entry.state"}
+  b56[".Current"]
+  b57{"判断：.Current"}
+  b58[".id"]
+  b59["entry.state?.Current?.id"]
+  b60{"判断：entry.state?.Current?.id"}
+  b61["entry.state?.Current?.id"]
   b62["&quot;&quot;"]
-  b63["currentState=entry.supported?entry.state?.Current?.id??&quot;&quot;:&quot;&quot;"]
-  b64{"判断：entry.stateId!=currentState"}
-  b65["entry.stateId=currentState;<br/>entry.quiet=0;"]
-  b66{"判断：entry.supported"}
-  b67["entry.nutritionParasite=genes.GetComponent&lt;NutritionParasite&gt;();<br/>entry.parasite=genes.GetComponent&lt;ParasiteBehavior&gt;();<br/>entry.egg=genes.GetComponent&lt;EggIncubation&gt;();"]
-  b68{"判断：stationary"}
-  b69["Eligible(entry)"]
-  b70["stationary"]
-  b71["eligible=stationary&amp;&amp;Eligible(entry)"]
-  b72{"entry.quiet<br/>判断：eligible"}
-  b73["entry.quiet+dt"]
-  b74["0"]
-  b75["entry.quiet=eligible?entry.quiet+dt:0;"]
-  b76{"entry.dormant<br/>判断：eligible"}
-  b77["entry.quiet&gt;=tuning.mergeQuietSeconds"]
-  b78["eligible"]
-  b79["entry.dormant=eligible&amp;&amp;entry.quiet&gt;=tuning.mergeQuietSeconds;"]
-  b80{"判断：entry.dormant"}
-  b81["QueueActive(entry);"]
-  b82{"DormantMembers++;<br/>entry.pending+=dt;<br/>判断：entry.pending+0.00001f&gt;=tuning.mergeInterval"}
-  b83["AddGroup(entry,tuning);"]
-  b84["_entries.Values"]
-  b85{"判断：_signaturesDirty"}
-  b86["TrimSignatures();"]
-  b87["_groups"]
-  b88{"判断：_groups"}
-  b89["var"]
-  b90["group.members"]
-  b91{"判断：group.members"}
-  b92["var<br/>member.count=group.members.Count;"]
-  b93["group.members"]
-  b94["_groups"]
-  b95["AdvanceActive(_controlled,dt,tuning);<br/>AdvanceActive(_injured,dt,tuning);<br/>AdvanceActive(_active,dt,tuning);<br/>_groups.Sort((a,b)=&gt;b.priority.CompareTo(a.priority));<br/>budget=Mathf.FloorToInt(tuning.mergeGroupsPerFrame)"]
-  b96["_groups"]
-  b97{"判断：_groups"}
-  b98["var"]
-  b99{"判断：budget--&lt;=0"}
-  b100["first=group.members[0]<br/>elapsed=Mathf.Min(group.time,tuning.mergeMaximumCatchupSeconds)"]
-  b101["group.members"]
-  b102{"判断：group.members"}
-  b103["var<br/>entry.pending=Mathf.Max(0,entry.pending-elapsed);"]
-  b104["group.members"]
-  b105{"判断：group.members.Count==1"}
-  b106{"判断：first.genes!=null"}
-  b107{"判断：first.genes.isActiveAndEnabled"}
-  b108{"first.genes.AdvanceSimulation(elapsed);<br/>判断：first.genes!=null"}
-  b109{"判断：first.genes.isActiveAndEnabled"}
-  b110["StationaryCohortKernel.AdvanceCore(first.genes,elapsed);"]
-  b111["steps=Mathf.CeilToInt(elapsed/.1f)"]
-  b112["step=0"]
-  b113{"判断：step&lt;steps"}
-  b114{"slice=Mathf.Min(.1f,elapsed-step*.1f)<br/>share=CanShare(group,first)<br/>判断：share"}
-  b115["speed=StationaryCohortKernel.LifeSpeed(first.genes)<br/>delta=StationaryCohortKernel.Sample(first.genes,first.stats,first.environment,first.vitals,slice)<br/>RepresentativeSteps++;"]
-  b116["index=0"]
-  b117{"判断：index&lt;group.members.Count"}
-  b118{"entry=group.members[index]<br/>判断：index&gt;0"}
-  b119["StationaryCohortKernel.Apply(first.environment,entry.genes,entry.stats,entry.environment,entry.entity,delta);<br/>SharedMemberSteps++;"]
-  b120{"entry.life<br/>判断：entry.life"}
-  b121["entry.life?.AdvanceShared(slice,speed);"]
-  b122{"判断：entry.genes.gameObject.activeInHierarchy"}
-  b123{"entry.life<br/>判断：entry.life"}
-  b124[".HasDied"]
-  b125["entry.life"]
-  b126{"判断：entry.life?.HasDied!=true"}
-  b127{"判断：entry.reproductionRevision!=entry.genes.LogicRevision"}
-  b128["entry.reproduction=StationaryCohortKernel.PrimaryReproduction(entry.genes);<br/>entry.reproductionRevision=entry.genes.LogicRevision;"]
-  b129{"entry.reproduction<br/>判断：entry.reproduction"}
-  b130["entry.reproduction?.OnUpdate(slice);"]
-  b131["index++"]
-  b132["group.members"]
-  b133{"判断：group.members"}
-  b134{"var<br/>判断：entry.genes==null"}
-  b135{"判断：entry.genes.gameObject.activeInHierarchy"}
-  b136["entry.genes.AdvanceSimulation(slice);<br/>StationaryCohortKernel.AdvanceCore(entry.genes,slice);"]
-  b137["group.members"]
-  b138["step++"]
-  b139["_groups"]
-  b140(["结束 / 返回"])
+  b63["&quot;&quot;"]
+  b64["currentState=entry.supported?entry.state?.Current?.id??&quot;&quot;:&quot;&quot;"]
+  b65{"判断：entry.stateId!=currentState"}
+  b66["entry.stateId=currentState;<br/>entry.quiet=0;"]
+  b67{"判断：entry.supported"}
+  b68["entry.nutritionParasite=genes.GetComponent&lt;NutritionParasite&gt;();<br/>entry.parasite=genes.GetComponent&lt;ParasiteBehavior&gt;();<br/>entry.egg=genes.GetComponent&lt;EggIncubation&gt;();"]
+  b69{"判断：stationary"}
+  b70["Eligible(entry)"]
+  b71["stationary"]
+  b72["eligible=stationary&amp;&amp;Eligible(entry)"]
+  b73{"entry.quiet<br/>判断：eligible"}
+  b74["entry.quiet+dt"]
+  b75["0"]
+  b76["entry.quiet=eligible?entry.quiet+dt:0;"]
+  b77{"entry.dormant<br/>判断：eligible"}
+  b78["entry.quiet&gt;=tuning.mergeQuietSeconds"]
+  b79["eligible"]
+  b80["entry.dormant=eligible&amp;&amp;entry.quiet&gt;=tuning.mergeQuietSeconds;"]
+  b81{"判断：entry.dormant"}
+  b82["QueueActive(entry);"]
+  b83{"DormantMembers++;<br/>entry.pending+=dt;<br/>判断：entry.pending+0.00001f&gt;=tuning.mergeInterval"}
+  b84["AddGroup(entry,tuning);"]
+  b85["_entries.Values"]
+  b86{"判断：_signaturesDirty"}
+  b87["TrimSignatures();"]
+  b88["_groups"]
+  b89{"判断：_groups"}
+  b90["var"]
+  b91["group.members"]
+  b92{"判断：group.members"}
+  b93["var<br/>member.count=group.members.Count;"]
+  b94["group.members"]
+  b95["_groups"]
+  b96["AdvanceActive(_controlled,dt,tuning);<br/>AdvanceActive(_injured,dt,tuning);<br/>AdvanceActive(_active,dt,tuning);<br/>_groups.Sort((a,b)=&gt;b.priority.CompareTo(a.priority));<br/>budget=Mathf.FloorToInt(tuning.mergeGroupsPerFrame)"]
+  b97["_groups"]
+  b98{"判断：_groups"}
+  b99["var"]
+  b100{"判断：budget--&lt;=0"}
+  b101["first=group.members[0]<br/>elapsed=Mathf.Min(group.time,tuning.mergeMaximumCatchupSeconds)"]
+  b102["group.members"]
+  b103{"判断：group.members"}
+  b104["var<br/>entry.pending=Mathf.Max(0,entry.pending-elapsed);"]
+  b105["group.members"]
+  b106{"判断：group.members.Count==1"}
+  b107{"判断：first.genes!=null"}
+  b108{"判断：first.genes.isActiveAndEnabled"}
+  b109{"first.genes.AdvanceSimulation(elapsed);<br/>判断：first.genes!=null"}
+  b110{"判断：first.genes.isActiveAndEnabled"}
+  b111["StationaryCohortKernel.AdvanceCore(first.genes,elapsed);"]
+  b112["steps=Mathf.CeilToInt(elapsed/.1f)"]
+  b113["step=0"]
+  b114{"判断：step&lt;steps"}
+  b115{"slice=Mathf.Min(.1f,elapsed-step*.1f)<br/>share=CanShare(group,first)<br/>判断：share"}
+  b116["speed=StationaryCohortKernel.LifeSpeed(first.genes)<br/>delta=StationaryCohortKernel.Sample(first.genes,first.stats,first.environment,first.vitals,slice)<br/>RepresentativeSteps++;"]
+  b117["index=0"]
+  b118{"判断：index&lt;group.members.Count"}
+  b119{"entry=group.members[index]<br/>判断：index&gt;0"}
+  b120["StationaryCohortKernel.Apply(first.environment,entry.genes,entry.stats,entry.environment,entry.entity,delta);<br/>SharedMemberSteps++;"]
+  b121{"entry.life<br/>判断：entry.life"}
+  b122["entry.life?.AdvanceShared(slice,speed);"]
+  b123{"判断：entry.genes.gameObject.activeInHierarchy"}
+  b124{"entry.life<br/>判断：entry.life"}
+  b125[".HasDied"]
+  b126["entry.life"]
+  b127{"判断：entry.life?.HasDied!=true"}
+  b128{"判断：entry.reproductionRevision!=entry.genes.LogicRevision"}
+  b129["entry.reproduction=StationaryCohortKernel.PrimaryReproduction(entry.genes);<br/>entry.reproductionRevision=entry.genes.LogicRevision;"]
+  b130{"entry.reproduction<br/>判断：entry.reproduction"}
+  b131["entry.reproduction?.OnUpdate(slice);"]
+  b132["index++"]
+  b133["group.members"]
+  b134{"判断：group.members"}
+  b135{"var<br/>判断：entry.genes==null"}
+  b136{"判断：entry.genes.gameObject.activeInHierarchy"}
+  b137["entry.genes.AdvanceSimulation(slice);<br/>StationaryCohortKernel.AdvanceCore(entry.genes,slice);"]
+  b138["group.members"]
+  b139["step++"]
+  b140["_groups"]
+  b141["performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.Scheduler)"]
+  b142(["结束 / 返回"])
   b0 --> b1
-  b1 -->|"否"| b2
-  b1 -->|"是"| b140
-  b2 -->|"是"| b140
+  b1 --> b2
   b2 -->|"否"| b3
-  b3 -->|"是"| b4
-  b3 -->|"否"| b33
-  b4 --> b5
+  b2 -->|"是 · 经过finally 141"| b142
+  b3 -->|"是 · 经过finally 141"| b142
+  b3 -->|"否"| b4
+  b4 -->|"是"| b5
+  b4 -->|"否"| b34
   b5 --> b6
-  b6 -->|"是"| b7
-  b6 -->|"否 · 经过finally 10"| b13
+  b6 --> b7
   b7 -->|"是"| b8
-  b7 -->|"否"| b6
+  b7 -->|"否 · 经过finally 11"| b14
   b8 -->|"是"| b9
-  b8 -->|"否"| b6
-  b9 --> b6
-  b10 -->|"否"| b11
-  b10 -->|"是"| b12
-  b11 --> b12
-  b13 --> b14
+  b8 -->|"否"| b7
+  b9 -->|"是"| b10
+  b9 -->|"否"| b7
+  b10 --> b7
+  b11 -->|"否"| b12
+  b11 -->|"是"| b13
+  b12 --> b13
   b14 --> b15
-  b15 -->|"是"| b16
-  b15 -->|"否 · 经过finally 19"| b20
-  b16 -->|"否"| b17
-  b16 -->|"是"| b18
+  b15 --> b16
+  b16 -->|"是"| b17
+  b16 -->|"否 · 经过finally 20"| b21
   b17 -->|"否"| b18
-  b17 -->|"是"| b15
-  b18 --> b15
-  b20 --> b21
-  b21 -->|"是"| b22
-  b21 -->|"否 · 经过finally 23"| b24
-  b22 --> b21
-  b24 -->|"是"| b25
-  b24 -->|"否"| b26
-  b25 --> b26
-  b26 -->|"是"| b27
-  b26 -->|"否"| b28
-  b27 --> b28
+  b17 -->|"是"| b19
+  b18 -->|"否"| b19
+  b18 -->|"是"| b16
+  b19 --> b16
+  b21 --> b22
+  b22 -->|"是"| b23
+  b22 -->|"否 · 经过finally 24"| b25
+  b23 --> b22
+  b25 -->|"是"| b26
+  b25 -->|"否"| b27
+  b26 --> b27
+  b27 -->|"是"| b28
+  b27 -->|"否"| b29
   b28 --> b29
-  b29 -->|"是"| b30
-  b29 -->|"否 · 经过finally 31"| b32
-  b30 --> b29
-  b32 --> b33
+  b29 --> b30
+  b30 -->|"是"| b31
+  b30 -->|"否 · 经过finally 32"| b33
+  b31 --> b30
   b33 --> b34
-  b34 -->|"是"| b35
-  b34 -->|"否 · 经过finally 36"| b37
-  b35 --> b34
-  b37 --> b38
+  b34 --> b35
+  b35 -->|"是"| b36
+  b35 -->|"否 · 经过finally 37"| b38
+  b36 --> b35
   b38 --> b39
-  b39 -->|"是"| b40
-  b39 -->|"否 · 经过finally 84"| b85
-  b40 --> b41
-  b41 -->|"否"| b42
-  b41 -->|"是"| b39
-  b42 -->|"否"| b39
-  b42 -->|"是"| b43
+  b39 --> b40
+  b40 -->|"是"| b41
+  b40 -->|"否 · 经过finally 85"| b86
+  b41 --> b42
+  b42 -->|"否"| b43
+  b42 -->|"是"| b40
+  b43 -->|"否"| b40
   b43 -->|"是"| b44
-  b43 -->|"否"| b45
-  b44 --> b45
-  b45 -->|"是"| b46
-  b45 -->|"否"| b47
-  b46 --> b47
-  b47 -->|"否"| b48
-  b47 -->|"是"| b49
-  b48 --> b39
-  b49 -->|"是"| b50
-  b49 -->|"否"| b53
+  b44 -->|"是"| b45
+  b44 -->|"否"| b46
+  b45 --> b46
+  b46 -->|"是"| b47
+  b46 -->|"否"| b48
+  b47 --> b48
+  b48 -->|"否"| b49
+  b48 -->|"是"| b50
+  b49 --> b40
   b50 -->|"是"| b51
-  b50 -->|"否"| b53
-  b51 -->|"否"| b52
-  b51 -->|"是"| b53
-  b52 --> b53
-  b53 -->|"是"| b54
-  b53 -->|"否"| b62
-  b54 -->|"否"| b55
-  b54 -->|"是"| b58
-  b55 --> b56
-  b56 -->|"否"| b57
-  b56 -->|"是"| b58
-  b57 --> b59
-  b58 --> b59
-  b59 -->|"否"| b60
-  b59 -->|"是"| b61
-  b60 --> b63
-  b61 --> b63
-  b62 --> b63
+  b50 -->|"否"| b54
+  b51 -->|"是"| b52
+  b51 -->|"否"| b54
+  b52 -->|"否"| b53
+  b52 -->|"是"| b54
+  b53 --> b54
+  b54 -->|"是"| b55
+  b54 -->|"否"| b63
+  b55 -->|"否"| b56
+  b55 -->|"是"| b59
+  b56 --> b57
+  b57 -->|"否"| b58
+  b57 -->|"是"| b59
+  b58 --> b60
+  b59 --> b60
+  b60 -->|"否"| b61
+  b60 -->|"是"| b62
+  b61 --> b64
+  b62 --> b64
   b63 --> b64
-  b64 -->|"是"| b65
-  b64 -->|"否"| b66
-  b65 --> b66
-  b66 -->|"是"| b67
-  b66 -->|"否"| b68
-  b67 --> b68
-  b68 -->|"是"| b69
-  b68 -->|"否"| b70
-  b69 --> b71
-  b70 --> b71
+  b64 --> b65
+  b65 -->|"是"| b66
+  b65 -->|"否"| b67
+  b66 --> b67
+  b67 -->|"是"| b68
+  b67 -->|"否"| b69
+  b68 --> b69
+  b69 -->|"是"| b70
+  b69 -->|"否"| b71
+  b70 --> b72
   b71 --> b72
-  b72 -->|"是"| b73
-  b72 -->|"否"| b74
-  b73 --> b75
-  b74 --> b75
+  b72 --> b73
+  b73 -->|"是"| b74
+  b73 -->|"否"| b75
+  b74 --> b76
   b75 --> b76
-  b76 -->|"是"| b77
-  b76 -->|"否"| b78
-  b77 --> b79
-  b78 --> b79
+  b76 --> b77
+  b77 -->|"是"| b78
+  b77 -->|"否"| b79
+  b78 --> b80
   b79 --> b80
-  b80 -->|"否"| b81
-  b80 -->|"是"| b82
-  b81 --> b39
-  b82 -->|"是"| b83
-  b82 -->|"否"| b39
-  b83 --> b39
-  b85 -->|"是"| b86
-  b85 -->|"否"| b87
-  b86 --> b87
+  b80 --> b81
+  b81 -->|"否"| b82
+  b81 -->|"是"| b83
+  b82 --> b40
+  b83 -->|"是"| b84
+  b83 -->|"否"| b40
+  b84 --> b40
+  b86 -->|"是"| b87
+  b86 -->|"否"| b88
   b87 --> b88
-  b88 -->|"是"| b89
-  b88 -->|"否 · 经过finally 94"| b95
-  b89 --> b90
+  b88 --> b89
+  b89 -->|"是"| b90
+  b89 -->|"否 · 经过finally 95"| b96
   b90 --> b91
-  b91 -->|"是"| b92
-  b91 -->|"否 · 经过finally 93"| b88
-  b92 --> b91
-  b95 --> b96
+  b91 --> b92
+  b92 -->|"是"| b93
+  b92 -->|"否 · 经过finally 94"| b89
+  b93 --> b92
   b96 --> b97
-  b97 -->|"是"| b98
-  b97 -->|"否 · 经过finally 139"| b140
-  b98 --> b99
-  b99 -->|"是 · 经过finally 139"| b140
-  b99 -->|"否"| b100
-  b100 --> b101
+  b97 --> b98
+  b98 -->|"是"| b99
+  b98 -->|"否 · 经过finally 140,141"| b142
+  b99 --> b100
+  b100 -->|"是 · 经过finally 140,141"| b142
+  b100 -->|"否"| b101
   b101 --> b102
-  b102 -->|"是"| b103
-  b102 -->|"否 · 经过finally 104"| b105
-  b103 --> b102
-  b105 -->|"是"| b106
-  b105 -->|"否"| b111
+  b102 --> b103
+  b103 -->|"是"| b104
+  b103 -->|"否 · 经过finally 105"| b106
+  b104 --> b103
   b106 -->|"是"| b107
-  b106 -->|"否"| b97
+  b106 -->|"否"| b112
   b107 -->|"是"| b108
-  b107 -->|"否"| b97
+  b107 -->|"否"| b98
   b108 -->|"是"| b109
-  b108 -->|"否"| b97
+  b108 -->|"否"| b98
   b109 -->|"是"| b110
-  b109 -->|"否"| b97
-  b110 --> b97
-  b111 --> b112
+  b109 -->|"否"| b98
+  b110 -->|"是"| b111
+  b110 -->|"否"| b98
+  b111 --> b98
   b112 --> b113
-  b113 -->|"是"| b114
-  b113 -->|"否"| b97
+  b113 --> b114
   b114 -->|"是"| b115
-  b114 -->|"否"| b132
-  b115 --> b116
+  b114 -->|"否"| b98
+  b115 -->|"是"| b116
+  b115 -->|"否"| b133
   b116 --> b117
-  b117 -->|"是"| b118
-  b117 -->|"否"| b138
+  b117 --> b118
   b118 -->|"是"| b119
-  b118 -->|"否"| b120
-  b119 --> b120
-  b120 -->|"否"| b121
-  b120 -->|"是"| b122
-  b121 --> b122
-  b122 -->|"是"| b123
-  b122 -->|"否"| b131
-  b123 -->|"否"| b124
-  b123 -->|"是"| b125
-  b124 --> b126
-  b125 --> b126
-  b126 -->|"是"| b127
-  b126 -->|"否"| b131
+  b118 -->|"否"| b139
+  b119 -->|"是"| b120
+  b119 -->|"否"| b121
+  b120 --> b121
+  b121 -->|"否"| b122
+  b121 -->|"是"| b123
+  b122 --> b123
+  b123 -->|"是"| b124
+  b123 -->|"否"| b132
+  b124 -->|"否"| b125
+  b124 -->|"是"| b126
+  b125 --> b127
+  b126 --> b127
   b127 -->|"是"| b128
-  b127 -->|"否"| b129
-  b128 --> b129
-  b129 -->|"否"| b130
-  b129 -->|"是"| b131
-  b130 --> b131
-  b131 --> b117
-  b132 --> b133
-  b133 -->|"是"| b134
-  b133 -->|"否 · 经过finally 137"| b138
-  b134 -->|"否"| b135
-  b134 -->|"是"| b133
-  b135 -->|"否"| b133
-  b135 -->|"是"| b136
-  b136 --> b133
-  b138 --> b113
-  b6 -. "退出保护区时 finally（示意）" .-> b10
-  b15 -. "退出保护区时 finally（示意）" .-> b19
-  b21 -. "退出保护区时 finally（示意）" .-> b23
-  b29 -. "退出保护区时 finally（示意）" .-> b31
-  b34 -. "退出保护区时 finally（示意）" .-> b36
-  b39 -. "退出保护区时 finally（示意）" .-> b84
-  b91 -. "退出保护区时 finally（示意）" .-> b93
-  b88 -. "退出保护区时 finally（示意）" .-> b94
-  b102 -. "退出保护区时 finally（示意）" .-> b104
-  b133 -. "退出保护区时 finally（示意）" .-> b137
-  b97 -. "退出保护区时 finally（示意）" .-> b139
+  b127 -->|"否"| b132
+  b128 -->|"是"| b129
+  b128 -->|"否"| b130
+  b129 --> b130
+  b130 -->|"否"| b131
+  b130 -->|"是"| b132
+  b131 --> b132
+  b132 --> b118
+  b133 --> b134
+  b134 -->|"是"| b135
+  b134 -->|"否 · 经过finally 138"| b139
+  b135 -->|"否"| b136
+  b135 -->|"是"| b134
+  b136 -->|"否"| b134
+  b136 -->|"是"| b137
+  b137 --> b134
+  b139 --> b114
+  b7 -. "退出保护区时 finally（示意）" .-> b11
+  b16 -. "退出保护区时 finally（示意）" .-> b20
+  b22 -. "退出保护区时 finally（示意）" .-> b24
+  b30 -. "退出保护区时 finally（示意）" .-> b32
+  b35 -. "退出保护区时 finally（示意）" .-> b37
+  b40 -. "退出保护区时 finally（示意）" .-> b85
+  b92 -. "退出保护区时 finally（示意）" .-> b94
+  b89 -. "退出保护区时 finally（示意）" .-> b95
+  b103 -. "退出保护区时 finally（示意）" .-> b105
+  b134 -. "退出保护区时 finally（示意）" .-> b138
+  b98 -. "退出保护区时 finally（示意）" .-> b140
+  b2 -. "退出保护区时 finally（示意）" .-> b141
 
 ```
 
 项目内调用/回调引用：
 
+- [PerformanceTimings.Measure · L23](a8403a4c7503726d.md#m29626bbbc2d07209)（方法）
 - [EntityRegistry.MembershipRevision.get · L15](2093aaf08559c9f2.md#m6afb6f184d119e11)（访问器）
 - [DarwinEntity.Genes.get · L14](70798dde169f2e8b.md#m622eb1adf401d431)（访问器）
 - [EntityWorkScheduler.Get · L82](465ccdbb260bcac2.md#mf3e9eec9cf2e082c)（方法）
 - [EntityWorkScheduler.DormantMembers.set · L62](465ccdbb260bcac2.md#mbca8fbede82c05c9)（访问器）
 - [GameplayTuning.Current.get · L31](db546e5713b32d53.md#m557c9ecc76cc372d)（访问器）
-- [EntityWorkScheduler.QueueActive · L187](465ccdbb260bcac2.md#m41c47453db1a150c)（方法）
+- [EntityWorkScheduler.QueueActive · L189](465ccdbb260bcac2.md#m0623adb680b34df9)（方法）
 - [EntityGeneController.LogicRevision.get · L19](7494d53178552f0e.md#me69facc1c0f1e164)（访问器）
 - [StationaryCohortKernel.Supported · L12](9d3f50e550ab5beb.md#mc9ba7d3589415ea3)（方法）
-- [EntityWorkScheduler.Signature · L238](465ccdbb260bcac2.md#m82bb60e77a9c89c2)（方法）
-- [EntityWorkScheduler.Eligible · L210](465ccdbb260bcac2.md#m80d35f198a9b7866)（方法）
+- [EntityWorkScheduler.Signature · L240](465ccdbb260bcac2.md#m57e65753cef05dca)（方法）
+- [EntityWorkScheduler.Eligible · L212](465ccdbb260bcac2.md#m44139ee5a5668937)（方法）
 - [EntityWorkScheduler.DormantMembers.get · L62](465ccdbb260bcac2.md#m80cc7658ba70a598)（访问器）
 - [EntityWorkScheduler.Entry.pending.set · L22](465ccdbb260bcac2.md#m05caefbe3ec968d5)（访问器）
 - [EntityWorkScheduler.Entry.pending.get · L22](465ccdbb260bcac2.md#m2277186a9d64d8a1)（访问器）
-- [EntityWorkScheduler.AddGroup · L219](465ccdbb260bcac2.md#m6d997d0a18e95a55)（方法）
-- [EntityWorkScheduler.TrimSignatures · L180](465ccdbb260bcac2.md#m82ab1546a30f18da)（方法）
-- [EntityWorkScheduler.AdvanceActive · L193](465ccdbb260bcac2.md#m5b2974b7a356696f)（方法）
+- [EntityWorkScheduler.AddGroup · L221](465ccdbb260bcac2.md#m19d8d10d7e35af57)（方法）
+- [EntityWorkScheduler.TrimSignatures · L182](465ccdbb260bcac2.md#mad7f44e346452dff)（方法）
+- [EntityWorkScheduler.AdvanceActive · L195](465ccdbb260bcac2.md#ma5cbb021bdb41c81)（方法）
 - [EntityGeneController.AdvanceSimulation · L70](7494d53178552f0e.md#m8d432f097da8bbf7)（方法）
 - [StationaryCohortKernel.AdvanceCore · L43](9d3f50e550ab5beb.md#m94052ba96a85dd98)（方法）
-- [EntityWorkScheduler.CanShare · L204](465ccdbb260bcac2.md#m81e9dc814459ea23)（方法）
+- [EntityWorkScheduler.CanShare · L206](465ccdbb260bcac2.md#m4564ee5ca0c1b04c)（方法）
 - [StationaryCohortKernel.LifeSpeed · L25](9d3f50e550ab5beb.md#m46d6deb700637b17)（方法）
 - [StationaryCohortKernel.Sample · L33](9d3f50e550ab5beb.md#m368ff81f5aee1c55)（方法）
 - [EntityWorkScheduler.RepresentativeSteps.set · L60](465ccdbb260bcac2.md#mf198d1663d98be9f)（访问器）
@@ -1059,11 +1064,11 @@ flowchart TD
 - [EntityLifeCycle.HasDied.get · L11](9f4138bfbae654b7.md#mf2406e6830e0007e)（访问器）
 - [StationaryCohortKernel.PrimaryReproduction · L59](9d3f50e550ab5beb.md#m16b7bdfbcab22c69)（方法）
 - [ReproductionGeneLogic.OnUpdate · L38](ac319ea70bd8b723.md#m51f778c34785d192)（方法）
-- [EntityWorkScheduler.回调@137 · L137](465ccdbb260bcac2.md#md01fb54679702378)（回调/委托）
+- [EntityWorkScheduler.回调@139 · L139](465ccdbb260bcac2.md#m5c9dba8faed5c802)（回调/委托）
 
-<a id="md01fb54679702378"></a>
+<a id="m5c9dba8faed5c802"></a>
 
-## 回调@137 · L137
+## 回调@139 · L139
 
 `( … => 回调`
 
@@ -1081,9 +1086,9 @@ flowchart TD
 
 ```
 
-<a id="m82ab1546a30f18da"></a>
+<a id="mad7f44e346452dff"></a>
 
-## TrimSignatures · L180
+## TrimSignatures · L182
 
 `private void TrimSignatures()`
 
@@ -1138,9 +1143,9 @@ flowchart TD
 
 ```
 
-<a id="m41c47453db1a150c"></a>
+<a id="m0623adb680b34df9"></a>
 
-## QueueActive · L187
+## QueueActive · L189
 
 `private void QueueActive(Entry entry)`
 
@@ -1183,9 +1188,9 @@ flowchart TD
 - [EntityManualControl.IsControlled.get · L12](a6969896da35e1f0.md#m125d8f7da7ab33bf)（访问器）
 - [EntityStats.CapacityRemaining · L92](75aa86a368efdf24.md#m574f0a6509120d00)（方法）
 
-<a id="m5b2974b7a356696f"></a>
+<a id="ma5cbb021bdb41c81"></a>
 
-## AdvanceActive · L193
+## AdvanceActive · L195
 
 `private static void AdvanceActive(List<Entry> entries,float dt,GameplayTuning tuning)`
 
@@ -1234,9 +1239,9 @@ flowchart TD
 - [EntityGeneController.AdvanceSimulation · L70](7494d53178552f0e.md#m8d432f097da8bbf7)（方法）
 - [StationaryCohortKernel.AdvanceCore · L43](9d3f50e550ab5beb.md#m94052ba96a85dd98)（方法）
 
-<a id="m81e9dc814459ea23"></a>
+<a id="m4564ee5ca0c1b04c"></a>
 
-## CanShare · L204
+## CanShare · L206
 
 `private static bool CanShare(Cohort group,Entry first)`
 
@@ -1284,12 +1289,12 @@ flowchart TD
 项目内调用/回调引用：
 
 - [EntityGeneController.LogicRevision.get · L19](7494d53178552f0e.md#me69facc1c0f1e164)（访问器）
-- [EntityWorkScheduler.Eligible · L210](465ccdbb260bcac2.md#m80d35f198a9b7866)（方法）
+- [EntityWorkScheduler.Eligible · L212](465ccdbb260bcac2.md#m44139ee5a5668937)（方法）
 - [EntityGeneController.CurrentAge.get · L36](7494d53178552f0e.md#me8997b269f94cf38)（访问器）
 
-<a id="m80d35f198a9b7866"></a>
+<a id="m44139ee5a5668937"></a>
 
-## Eligible · L210
+## Eligible · L212
 
 `private static bool Eligible(Entry entry)`
 
@@ -1424,13 +1429,13 @@ flowchart TD
 - [EntityEnvironmentHazard.IsDrowning.get · L27](5c434d0ba85333b1.md#md1684c4e763e2899)（访问器）
 - [EntityManualControl.IsControlled.get · L12](a6969896da35e1f0.md#m125d8f7da7ab33bf)（访问器）
 - [NutritionParasite.Host.get · L20](4a18785b7c1e1484.md#m04cde9f68ca91f6a)（访问器）
-- [AntColonyWorker.IsCarried · L140](8a0cca2020271b6f.md#mf552b19f9aeffe97)（方法）
+- [AntColonyWorker.IsCarried · L144](8a0cca2020271b6f.md#me194a38cd4c5bfab)（方法）
 - [EntityGeneController.Evaluation.get · L18](7494d53178552f0e.md#mc0039c100a31b455)（访问器）
-- [EntityGeneController.GetAttribute · L262](7494d53178552f0e.md#mfead0db2249507df)（方法）
+- [EntityGeneController.GetAttribute · L266](7494d53178552f0e.md#mdf5d5273fb7a0a56)（方法）
 
-<a id="m6d997d0a18e95a55"></a>
+<a id="m19d8d10d7e35af57"></a>
 
-## AddGroup · L219
+## AddGroup · L221
 
 `private void AddGroup(Entry entry,GameplayTuning tuning)`
 
@@ -1513,9 +1518,9 @@ flowchart TD
 - [EntityWorkScheduler.SharedState.SharedState.ctor · L32](465ccdbb260bcac2.md#me0066a576bd0b975)（构造函数）
 - [EntityWorkScheduler.Entry.pending.get · L22](465ccdbb260bcac2.md#m2277186a9d64d8a1)（访问器）
 
-<a id="m82bb60e77a9c89c2"></a>
+<a id="m57e65753cef05dca"></a>
 
-## Signature · L238
+## Signature · L240
 
 `private static string Signature(EntityGeneController genes)`
 
@@ -1526,56 +1531,64 @@ flowchart TD
 ```mermaid
 flowchart TD
   b0(["入口"])
-  b1["text=new StringBuilder()"]
-  b2["genes.Genome.Genes"]
-  b3{"判断：genes.Genome.Genes"}
-  b4["var<br/>text.Append(gene.DefinitionId.Length).Append(':').Append(gene.DefinitionId).Append(':').Append(gene.Value.ToString(&quot;R&quot;,CultureInfo.InvariantCulture)).Append(':').Append(gene.Tier).Append(':').Append(gene.Enabled).Append(':').Append(g…"]
-  b5["gene.MissingStateIds"]
-  b6{"判断：gene.MissingStateIds"}
-  b7["var"]
-  b8["text"]
-  b9{"state<br/>判断：state"}
-  b10[".Length"]
-  b11["state"]
-  b12{"判断：state?.Length"}
-  b13["state?.Length"]
-  b14["-1"]
-  b15["text.Append(state?.Length??-1).Append(':').Append(state).Append(',');"]
-  b16["gene.MissingStateIds"]
-  b17["text.Append(';');"]
-  b18["genes.Genome.Genes"]
-  b19["结果：text.ToString()"]
-  b20(["结束 / 返回"])
+  b1["performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.GeneSignature)"]
+  b2["text=new StringBuilder()"]
+  b3["genes.Genome.Genes"]
+  b4{"判断：genes.Genome.Genes"}
+  b5["var<br/>text.Append(gene.DefinitionId.Length).Append(':').Append(gene.DefinitionId).Append(':').Append(gene.Value.ToString(&quot;R&quot;,CultureInfo.InvariantCulture)).Append(':').Append(gene.Tier).Append(':').Append(gene.Enabled).Append(':').Append(g…"]
+  b6["gene.MissingStateIds"]
+  b7{"判断：gene.MissingStateIds"}
+  b8["var"]
+  b9["text"]
+  b10{"state<br/>判断：state"}
+  b11[".Length"]
+  b12["state"]
+  b13{"判断：state?.Length"}
+  b14["state?.Length"]
+  b15["-1"]
+  b16["text.Append(state?.Length??-1).Append(':').Append(state).Append(',');"]
+  b17["gene.MissingStateIds"]
+  b18["text.Append(';');"]
+  b19["genes.Genome.Genes"]
+  b20["结果：text.ToString()"]
+  b21["performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.GeneSignature)"]
+  b22(["结束 / 返回"])
   b0 --> b1
   b1 --> b2
   b2 --> b3
-  b3 -->|"是"| b4
-  b3 -->|"否 · 经过finally 18"| b19
-  b4 --> b5
+  b3 --> b4
+  b4 -->|"是"| b5
+  b4 -->|"否 · 经过finally 19"| b20
   b5 --> b6
-  b6 -->|"是"| b7
-  b6 -->|"否 · 经过finally 16"| b17
-  b7 --> b8
+  b6 --> b7
+  b7 -->|"是"| b8
+  b7 -->|"否 · 经过finally 17"| b18
   b8 --> b9
-  b9 -->|"否"| b10
-  b9 -->|"是"| b11
-  b10 --> b12
-  b11 --> b12
-  b12 -->|"否"| b13
-  b12 -->|"是"| b14
-  b13 --> b15
-  b14 --> b15
-  b15 --> b6
-  b17 --> b3
-  b19 -->|"返回"| b20
-  b6 -. "退出保护区时 finally（示意）" .-> b16
-  b3 -. "退出保护区时 finally（示意）" .-> b18
+  b9 --> b10
+  b10 -->|"否"| b11
+  b10 -->|"是"| b12
+  b11 --> b13
+  b12 --> b13
+  b13 -->|"否"| b14
+  b13 -->|"是"| b15
+  b14 --> b16
+  b15 --> b16
+  b16 --> b7
+  b18 --> b4
+  b20 -->|"返回 · 经过finally 21"| b22
+  b7 -. "退出保护区时 finally（示意）" .-> b17
+  b4 -. "退出保护区时 finally（示意）" .-> b19
+  b2 -. "退出保护区时 finally（示意）" .-> b21
 
 ```
 
-<a id="m2d8c932134796019"></a>
+项目内调用/回调引用：
 
-## Reset · L248
+- [PerformanceTimings.Measure · L23](a8403a4c7503726d.md#m29626bbbc2d07209)（方法）
+
+<a id="m2483433dd7c3d500"></a>
+
+## Reset · L252
 
 `[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)] private static void Reset()`
 

@@ -485,6 +485,8 @@ namespace DarwinPark.UI
 
         private void Update()
         {
+            // ★ 适配：只在主动性能采样期间计时，定位完整场景的实际消耗。
+            using var performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.BottomUI);
             if(WorldRuntimeGate.Ready&&!GameInputGate.Blocked)
             {
                 if(ControlBindings.Down(ControlAction.ClearLayer))HandleLayerKey(ControlBindings.Get(ControlAction.ClearLayer));

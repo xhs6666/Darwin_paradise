@@ -46,7 +46,7 @@ namespace DarwinPark.UI
             if(raycaster==null){raycaster=_root.MainCanvas.gameObject.AddComponent<GraphicRaycaster>();_repairs.Add("点击射线组件");}
             else if(!raycaster.enabled){raycaster.enabled=true;_repairs.Add("点击射线开关");}
             EnsureEvents();
-            bool modal=PopulationWorkbench.Instance?.Visible==true||RandomSpawnWorkbench.Instance?.Visible==true||WorldGameSettingsPanel.Instance?.Visible==true;
+            bool modal=EntityEditPopup.Instance?.Visible==true||PopulationWorkbench.Instance?.Visible==true||RandomSpawnWorkbench.Instance?.Visible==true||WorldGameSettingsPanel.Instance?.Visible==true;
             bool choosing=LanSession.Instance?.IsClient==true&&string.IsNullOrEmpty(LanSession.Instance.OwnedEntityId);
             if(!modal&&!choosing&&GameInputGate.Blocked)
             {

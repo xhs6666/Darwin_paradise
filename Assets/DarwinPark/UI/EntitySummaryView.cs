@@ -21,7 +21,7 @@ namespace DarwinPark.UI
             rt.anchoredPosition=new Vector2(0,-y);rt.sizeDelta=new Vector2(0,size+6);label.color=color;
             return label;
         }
-        public static Action Build(Transform parent,DarwinEntity entity)
+        private static (Text[] values,RectTransform[] fills) BuildFields(Transform parent)
         {
             Label(parent,"Heading","实体信息",0,14,UIVisualTheme.Muted);
             var fields=UIVisualTheme.Data.summaryStats;var values=new Text[fields.Length];var fills=new RectTransform[fields.Length];
@@ -39,6 +39,32 @@ namespace DarwinPark.UI
                 var fill=UIFactory.NewRect("Fill",track.transform,typeof(Image));UIFactory.Stretch(fill.GetComponent<RectTransform>());
                 UIVisualTheme.Paint(fill.GetComponent<Image>(),"fill");fill.GetComponent<Image>().raycastTarget=false;fills[i]=fill.GetComponent<RectTransform>();
             }
+            return (values,fills);
+        }
+        // ★ 新增：尸体复用相同摘要列、进度条和生命阶段位置，旧档缺失的信息明确标记，不伪造活实体。
+        public static Action BuildCorpse(Transform parent,DarwinPark.Entities.Ecology.ColonyResource corpse)
+        {
+            var fields=UIVisualTheme.Data.summaryStats;var (values,fills)=BuildFields(parent);
+            var nutrientLabel=parent.Find("Stat_nutrient/Label")?.GetComponent<Text>();if(nutrientLabel!=null)nutrientLabel.text="剩余营养";
+            var stage=Label(parent,"Stage","",96,14,UIVisualTheme.Text);var activity=Label(parent,"Activity","",120,14,UIVisualTheme.Text);
+            var source=Label(parent,"Climate","",146,13,UIVisualTheme.Muted);var note=Label(parent,"Environment","",170,12,UIVisualTheme.Muted);
+            return ()=>
+            {
+                if(corpse==null)return;var archive=corpse.State.source;
+                for(int i=0;i<fields.Length;i++)
+                {
+                    var data=archive?.stats.Find(v=>v.id==fields[i].id);float value=fields[i].id=="health"?0:fields[i].id=="nutrient"?corpse.State.energy:fields[i].id=="size"?corpse.State.sourceSize:data?.value??0;
+                    values[i].text=data!=null||fields[i].id=="health"||fields[i].id=="nutrient"||fields[i].id=="size"&&corpse.State.sourceSize>0?value.ToString(fields[i].format):"—";
+                    if(fills[i]!=null)fills[i].anchorMax=new Vector2(data!=null&&data.max>0?Mathf.Clamp01(value/data.max):0,1);
+                }
+                stage.text="生前阶段  "+(archive==null?"旧存档未记录":archive.age==AgeState.Infant?"幼年":archive.age==AgeState.Adult?"成年":"老年");
+                activity.text="状态  已死亡 · "+(string.IsNullOrEmpty(corpse.State.claim)?"等待搬运":"已被工匠领取");
+                source.text="生前名称  "+(string.IsNullOrEmpty(corpse.State.sourceName)?"旧存档未记录":corpse.State.sourceName);note.text="尸体营养随搬运及食腐实际变化";
+            };
+        }
+        public static Action Build(Transform parent,DarwinEntity entity)
+        {
+            var fields=UIVisualTheme.Data.summaryStats;var (values,fills)=BuildFields(parent);
             var stage=Label(parent,"Stage","",96,14,UIVisualTheme.Text);
             var activity=Label(parent,"Activity","",120,14,UIVisualTheme.Text);
             var climate=Label(parent,"Climate","",146,13,UIVisualTheme.Muted);

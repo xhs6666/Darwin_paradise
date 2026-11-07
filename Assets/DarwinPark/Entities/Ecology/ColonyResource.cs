@@ -12,6 +12,7 @@ namespace DarwinPark.Entities.Ecology
     [Serializable] public sealed class ColonyResourceSave
     {
         public string sourceName;public float sourceSize;
+        public CorpseEntityRecord source; // ★ 新增：旧尸体可缺省，新尸体保留生前只读信息。
         public string id,group,claim;public ColonyResourceKind kind;public Vector3 local,scale;public float energy;
     }
     // ★ 新增：尸体与能量块是独立世界物件；能量只能由尸体/被搬运植株转换，不能重复领取击杀奖励。
@@ -37,11 +38,12 @@ namespace DarwinPark.Entities.Ecology
         {
             // ★ 适配：尸体保存可核实的生前名称与体型，旧尸体允许缺省，不生成虚假的活体基因。
             victim.GetComponent<EntityStats>().TryGet("size",out float size);
-            return Create(new ColonyResourceSave{sourceName=victim.DisplayName,sourceSize=size,id=Guid.NewGuid().ToString("N"),group=group,kind=ColonyResourceKind.Corpse,
+            return Create(new ColonyResourceSave{source=CorpseEntityRecord.Capture(victim),sourceName=victim.DisplayName,sourceSize=size,id=Guid.NewGuid().ToString("N"),group=group,kind=ColonyResourceKind.Corpse,
                 local=EcologyQueries.ToLocal(victim.transform.position),scale=victim.transform.lossyScale,energy=Biomass(victim)});
         }
         public static ColonyResource Create(ColonyResourceSave data)
         {
+            data.source=CorpseEntityRecord.Normalize(data.source);
             var obj=GameObject.CreatePrimitive(data.kind==ColonyResourceKind.Corpse?PrimitiveType.Sphere:PrimitiveType.Cube);
             obj.name=data.kind==ColonyResourceKind.Corpse?"可搬运尸体":data.kind==ColonyResourceKind.Energy?"能量块":"种群能量块";
             var collider=obj.GetComponent<Collider>();collider.enabled=false;Destroy(collider);

@@ -49,8 +49,8 @@ namespace DarwinPark.EditorTools
             Check(corpse.transform.Find("CorpseStatusMark")?.GetComponent<MeshRenderer>()!=null&&corpse.GetComponents<Light>().Length==0,"尸体增加可见叉号，不增加点光源");
             var inspector=Object.FindFirstObjectByType<GeneInspectorUI>();var ray=new Ray(origin+Vector3.back*10,Vector3.forward);
             Check(inspector.InspectAt(ray)&&WorldResourceInspector.Instance?.Current==corpse,"原右键入口可选中没有碰撞体的尸体");
-            var panel=root.MainCanvas.transform.Find("WorldResourcePanel");Check(panel.gameObject.activeSelf&&panel.GetComponentsInChildren<Text>().Any(t=>t.text.Contains("已死亡"))&&panel.GetComponentsInChildren<Text>().Any(t=>t.text.Contains("被士兵击败的实体")&&t.text.Contains("1.75")),"属性面板明确显示死亡状态、生前名称和体型");
-            stats.RefreshNow();Check(stats.Total==1&&panel.GetComponentsInChildren<InputField>().Length==0,"尸体属性只读，存活统计排除尸体");
+            var panel=root.MainCanvas.transform.Find("GenePanel");Check(panel.gameObject.activeSelf&&panel.GetComponentsInChildren<Text>().Any(t=>t.text.Contains("已死亡"))&&panel.GetComponentsInChildren<Text>().Any(t=>t.text.Contains("被士兵击败的实体"))&&panel.GetComponentsInChildren<Text>().Any(t=>t.text.Contains("1.75")),"属性面板明确显示死亡状态、生前名称和体型");
+            stats.RefreshNow();Check(stats.Total==1&&panel.GetComponentsInChildren<InputField>().All(f=>f.readOnly||!f.interactable),"尸体属性只读，存活统计排除尸体");
             var camera=Camera.main;camera.GetComponent<OrbitCamera>().enabled=false;camera.transform.position=origin+new Vector3(2,3,-8);camera.transform.LookAt(origin+Vector3.right);
             var ground=GameObject.CreatePrimitive(PrimitiveType.Cube);ground.name="验证地面";ground.transform.position=origin+Vector3.down*1.2f;ground.transform.localScale=new Vector3(30,1,30);yield return Capture("corpse-properties");
             Check(inspector.InspectAt(new Ray(live.transform.position+Vector3.back*10,Vector3.forward))&&inspector.CurrentEntity==live&&WorldResourceInspector.Instance.Current==null,"右键活体仍打开原基因属性面板并关闭尸体面板");
@@ -64,7 +64,7 @@ namespace DarwinPark.EditorTools
             var restored=ColonyResource.Create(JsonUtility.FromJson<ColonyResourceSave>(File.ReadAllText(path)));Check(restored.State.sourceName=="被士兵击败的实体"&&Mathf.Abs(restored.State.sourceSize-1.75f)<.0001f,"尸体来源属性实际写盘读取并恢复");
             var legacy=ColonyResource.Create(new ColonyResourceSave{id=Guid.NewGuid().ToString("N"),group=group,kind=ColonyResourceKind.Corpse,energy=3,scale=Vector3.one,local=EcologyQueries.ToLocal(origin+Vector3.left*3)});WorldResourceInspector.Instance.Show(legacy);Check(panel.GetComponentsInChildren<Text>().Any(t=>t.text.Contains("旧存档未记录")),"旧存档尸体可查看，不捏造缺失的生前属性");
             Check(legacy.transform.Find("CorpseStatusMark").GetComponent<MeshFilter>().sharedMesh==restored.transform.Find("CorpseStatusMark").GetComponent<MeshFilter>().sharedMesh,"所有尸体叉号复用同一网格");
-            WorldAuthority.CanEdit=false;WorldResourceInspector.Instance.Show(restored);Check(panel.gameObject.activeSelf&&panel.GetComponentsInChildren<InputField>().Length==0,"普通联机成员同样可读尸体属性");WorldAuthority.CanEdit=true;
+            WorldAuthority.CanEdit=false;WorldResourceInspector.Instance.Show(restored);Check(panel.gameObject.activeSelf&&panel.GetComponentsInChildren<InputField>().All(f=>f.readOnly||!f.interactable),"普通联机成员同样可读尸体属性");WorldAuthority.CanEdit=true;
             var state=ColonyWorldState.Capture();state.resources[0].sourceSize=float.NaN;bool rejected=false;try{ColonyWorldState.Validate(state);}catch(InvalidDataException){rejected=true;}Check(rejected,"损坏来源体型在恢复世界前被拒绝");
             WorldRuntimeGate.Ready=false;yield return null;Check(WorldResourceInspector.Instance.Current==null&&!panel.gameObject.activeSelf,"离开世界关闭资源面板并释放选择引用");
         }

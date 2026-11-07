@@ -12,8 +12,10 @@ namespace DarwinPark.Entities.Ecology
     // ★ 修复（防Bug回归）：活动范围使用王后及补给点球面圆的并集，巡猎、领地和图层共用同一判定。
     public static class ColonyActivityRange
     {
+        public static long EnumerationCount{get;private set;}
         public static IEnumerable<ActivityCircle> Circles(PopulationBehavior population)
         {
+            EnumerationCount++;
             if(population==null||!population.Active)yield break;
             var queen=AntColonyMember.QueenFor(population);
             var leader=queen!=null?queen.Population:population.Leader;
@@ -35,6 +37,9 @@ namespace DarwinPark.Entities.Ecology
             foreach(var circle in Circles(population))if(EcologyQueries.Distance(circle.Center,position)<=circle.Radius)return true;
             return false;
         }
+        // ★ 修复（防Bug回归）：一次同步任务搜索复用范围快照，候选循环不能为每个对象重新枚举全世界资源。
+        public static bool Contains(IReadOnlyList<ActivityCircle> circles,Vector3 position)
+        {for(int i=0;i<circles.Count;i++)if(EcologyQueries.Distance(circles[i].Center,position)<=circles[i].Radius)return true;return false;}
         public static Vector3 Boundary(ActivityCircle circle,float angle,float ratio=1)
         {
             var up=EcologyQueries.Up(circle.Center);var axis=Vector3.Cross(up,Vector3.forward).normalized;if(axis.sqrMagnitude<.1f)axis=Vector3.Cross(up,Vector3.right).normalized;

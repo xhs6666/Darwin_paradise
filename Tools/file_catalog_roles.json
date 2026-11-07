@@ -298,7 +298,17 @@
     "Assets/DarwinPark/UI/WorldHudInputLifecycle.cs": "读档后检查并恢复HUD画布、点击射线、唯一事件系统、输入模块与焦点；保护合法弹窗、加载和只读门控。",
     "Assets/DarwinPark/UI/HudRegressionInput.cs": "仅Editor编译的回归鼠标输入源，由真实StandaloneInputModule处理完整按下/松开，不直接调用按钮回调。",
     "Assets/DarwinPark/Editor/HudInputRegression.cs": "使用隔离存档副本验证读档回调重建、原生输入模块点击、丢失/禁用恢复、弹窗防穿透和权限。",
-    "Assets/DarwinPark/Editor/SchedulerPerformanceRegression.cs": "独立Unity场景中比较400个密集、分散、70/30混合实体的完整结算耗时与峰值，验证分组复用，并采样真实存档副本帧耗时。"
+    "Assets/DarwinPark/Editor/SchedulerPerformanceRegression.cs": "独立Unity场景中比较400个密集、分散、70/30混合实体的完整结算耗时与峰值，验证分组复用，并采样真实存档副本帧耗时。",
+    "Assets/DarwinPark/Core/RuntimePerformance.cs": "按需统计发布版可用的游戏分项耗时与引擎计数，预分配缓冲，报告区分包含关系和不可用指标。",
+    "Assets/DarwinPark/UI/FramePacingSettings.cs": "资源配置驱动的锁帧选项、VSync协调、即时应用及PlayerPrefs保存恢复。",
+    "Assets/DarwinPark/UI/RuntimePerformanceCapture.cs": "设置中请求、返回游戏后采样并保存性能JSON；空闲不启用Recorder，结束释放采样资源。",
+    "Assets/DarwinPark/Genetics/GeneFailureReasons.cs": "生成只读基因检查条目，解释禁用、阈值、环境、角色及基因间抑制，不改变运行求值。",
+    "Assets/DarwinPark/Entities/Ecology/CorpseEntityRecord.cs": "保存尸体展示所需生前基因、阶段、数值与抑制来源，并兼容旧档全零内联对象。",
+    "Assets/DarwinPark/Entities/EntityStateEditor.cs": "权威阶段和生命/营养编辑，复用真实生命周期与死亡结算，退回幼年先释放运输任务。",
+    "Assets/DarwinPark/UI/EntityEditPopup.cs": "独立实体编辑和基因失效原因弹窗，保留原详情布局、合法遮罩、暂停和联机权限。",
+    "Assets/DarwinPark/UI/GeneInspectorUI.Corpse.cs": "原GenePanel的尸体只读展示适配，复用摘要列、基因行和滚动区域，不生成伪活体。",
+    "Assets/DarwinPark/Editor/FullScenePerformanceRegression.cs": "读取原始分辨率存档副本，固定活体数量，采样计算/物理/资源渲染分项及锁30帧表现。",
+    "Assets/DarwinPark/Editor/EntityInspectionFramePacingRegression.cs": "验证锁帧持久化、生命阶段与权限、基因失效原因、尸体档案、原布局和大量资源搜索语义。"
   },
   "files": {
     "Assets/Scenes/SampleScene.unity": "主要运行场景：挂载星球、环境、时钟、UI和游戏启动组件。",
@@ -428,6 +438,10 @@
     "Docs/操作指南/任务补给能量等级与多胎.md": "补给优先级、五级能量、多胎和外部数值调整方法。",
     "Docs/验证记录/实体计划近邻合并与多胎验证-2026-11-08.md": "本次专项、原有行为兼容、种群延续、编译与Windows构建验证证据。",
     "Docs/验证记录/读档后按钮无响应验证-2026-11-08.md": "读档后HUD回调丢失与输入基础设施恢复的复现范围、回归和发布构建记录。",
-    "Docs/验证记录/合并计算性能修复验证-2026-11-08.md": "记录合并调度热路径修复、前后性能对照、原生回归结果和测试范围。"
+    "Docs/验证记录/合并计算性能修复验证-2026-11-08.md": "记录合并调度热路径修复、前后性能对照、原生回归结果和测试范围。",
+    "Assets/Resources/frame_pacing.json": "最大帧率的默认值和可选档位，0表示不限制。",
+    "Docs/开发设计/完整场景性能诊断与实体详情.md": "完整场景性能分项、任务范围快照、锁帧和统一实体/尸体检查架构。",
+    "Docs/操作指南/锁帧性能采样与实体编辑.md": "锁帧、按需性能报告、失效原因、尸体档案和生命阶段修改的操作说明。",
+    "Docs/验证记录/完整存档卡顿锁帧与实体详情验证-2026-11-08.md": "最新385实体完整存档的因果定位、前后测量及新增界面和兼容回归证据。"
   }
 }

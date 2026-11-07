@@ -11,12 +11,17 @@ namespace DarwinPark.UI
     {
         public static WorldResourceInspector Instance {get;private set;}public ColonyResource Current {get;private set;}
         public Vector2 panelSize=new Vector2(360,206),cornerOffset=new Vector2(14,-16);public float refreshInterval=.5f;
+        private GeneInspectorUI _entityInspector;
+        private GeneInspectorUI EntityInspector=>_entityInspector!=null?_entityInspector:(_entityInspector=Object.FindFirstObjectByType<GeneInspectorUI>());
         private GameObject _panel;private Text _title,_body;private float _next;
         private void Awake()=>Instance=this;
         public static WorldResourceInspector Ensure(){if(Instance!=null)return Instance;return ServiceLocator.Get<UIRoot>().gameObject.AddComponent<WorldResourceInspector>();}
         public void Show(ColonyResource resource)
         {
-            if(resource==null)return;Object.FindFirstObjectByType<GeneInspectorUI>()?.HideEntityInfo();
+            if(resource==null)return;
+            // ★ 适配：尸体统一使用实体详情布局；能量块仍保持简洁资源信息。
+            if(resource.State.kind==ColonyResourceKind.Corpse){EntityInspector?.ShowCorpseInfo(resource);Current=resource;if(_panel!=null)_panel.SetActive(false);return;}
+            EntityInspector?.HideEntityInfo();
             if(_panel==null)
             {
                 _panel=UIFactory.NewRect("WorldResourcePanel",ServiceLocator.Get<UIRoot>().MainCanvas.transform,typeof(Image));UIVisualTheme.Paint(_panel.GetComponent<Image>());
@@ -36,7 +41,10 @@ namespace DarwinPark.UI
         }
         public void Refresh()
         {
-            if(Current==null)return;var state=Current.State;bool corpse=state.kind==ColonyResourceKind.Corpse;
+            if(Current==null)return;
+            // ★ 适配：公共刷新入口也委托统一面板，首次查看尸体时不会访问未创建的资源标签。
+            if(Current.State.kind==ColonyResourceKind.Corpse){EntityInspector?.RefreshDisplayedInfo();return;}
+            var state=Current.State;bool corpse=state.kind==ColonyResourceKind.Corpse;
             _title.text=corpse?"尸体 · 已死亡":state.kind==ColonyResourceKind.Nursery?"王后及幼体补给":state.kind==ColonyResourceKind.Supply?"成年种群补给":"能量块";
             var queen=AntColonyMember.All.FirstOrDefault(m=>m.Role==AntRole.Queen&&m.GroupId==state.group);
             string group=queen!=null?queen.Entity.DisplayName:"原种群已不存在",claim=string.IsNullOrEmpty(state.claim)?"等待工匠搬运":"已由工匠领取";
@@ -45,11 +53,18 @@ namespace DarwinPark.UI
         }
         private void LateUpdate()
         {
+            if(Current!=null&&Current.State.kind==ColonyResourceKind.Corpse)
+            {
+                var inspector=EntityInspector;
+                if(!WorldRuntimeGate.Ready||!Current.isActiveAndEnabled||Current.State.energy<=0){if(inspector?.CurrentCorpse==Current)inspector.HideEntityInfo();Current=null;}
+                else if(inspector?.CurrentCorpse!=Current)Current=null;
+                return;
+            }
             if(_panel==null||!_panel.activeSelf)return;
             if(!WorldRuntimeGate.Ready||Current==null||!Current.isActiveAndEnabled||Current.State.energy<=0){Hide();return;}
             Layout();if(Time.unscaledTime>=_next)Refresh();if(!GameInputGate.Blocked&&Input.GetKeyDown(KeyCode.Escape))Hide();
         }
-        public void Hide(){if(_panel!=null)_panel.SetActive(false);Current=null;}
+        public void Hide(){var old=Current;if(_panel!=null)_panel.SetActive(false);Current=null;if(old!=null&&old.State.kind==ColonyResourceKind.Corpse&&EntityInspector?.CurrentCorpse==old)EntityInspector.HideEntityInfo();}
         private void OnDestroy(){if(_panel!=null)Destroy(_panel);if(Instance==this)Instance=null;}
     }
 }

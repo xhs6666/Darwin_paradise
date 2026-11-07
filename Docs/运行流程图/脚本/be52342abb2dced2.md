@@ -64,7 +64,7 @@ flowchart TD
 项目内调用/回调引用：
 
 - [UIFactory.NewButton · L73](dd1096a6995423db.md#m5896f1b097c8bdde)（方法）
-- [PopulationBehavior.CommandLabel · L208](21e4f62f75a9a80f.md#m7907c38716c35174)（方法）
+- [PopulationBehavior.CommandLabel · L210](21e4f62f75a9a80f.md#m575d9e8648a92453)（方法）
 - [PopulationCommandPanel.回调@26 · L26](be52342abb2dced2.md#m98b77f482fa7ee22)（回调/委托）
 
 <a id="m98b77f482fa7ee22"></a>
@@ -244,7 +244,7 @@ flowchart TD
 - [GameInputGate.Blocked.get · L8](52955daae7e592ab.md#m765763b665829633)（访问器）
 - [ColonyStatusPresentation.Summary · L18](37a7c5ffa1a1a8c2.md#m2e20a4d682fb38ba)（方法）
 - [EcologySettings.Load · L18](90428a275d065ef6.md#mb0575490373edaf2)（方法）
-- [PopulationBehavior.CommandLabel · L208](21e4f62f75a9a80f.md#m7907c38716c35174)（方法）
+- [PopulationBehavior.CommandLabel · L210](21e4f62f75a9a80f.md#m575d9e8648a92453)（方法）
 - [PopulationBehavior.Command.get · L23](21e4f62f75a9a80f.md#md6a4209cecb72885)（访问器）
 
 <a id="mcb24fd9c823c3aa4"></a>
@@ -269,7 +269,7 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [PopulationBehavior.ChallengeLeadership · L125](21e4f62f75a9a80f.md#m5391b2572c2724a5)（方法）
+- [PopulationBehavior.ChallengeLeadership · L127](21e4f62f75a9a80f.md#macfa47a65de2ed6c)（方法）
 
 <a id="m7176948fd6361d25"></a>
 
@@ -322,8 +322,8 @@ flowchart TD
 
 - [GameInputGate.Blocked.get · L8](52955daae7e592ab.md#m765763b665829633)（访问器）
 - [EcologySettings.Load · L18](90428a275d065ef6.md#mb0575490373edaf2)（方法）
-- [PopulationBehavior.FindOre · L163](21e4f62f75a9a80f.md#mc4d95f5f8d7fcd10)（方法）
-- [PopulationBehavior.Issue · L138](21e4f62f75a9a80f.md#m814bead2a1a9395d)（方法）
+- [PopulationBehavior.FindOre · L165](21e4f62f75a9a80f.md#md5f7e4ab931bcace)（方法）
+- [PopulationBehavior.Issue · L140](21e4f62f75a9a80f.md#macbcefd6033bdd9a)（方法）
 - [PopulationCommandPanel.回调@50 · L50](be52342abb2dced2.md#m82cf527d322d4573)（回调/委托）
 - [PopulationCommandPanel.回调@51 · L51](be52342abb2dced2.md#m1c1286172d8c1be4)（回调/委托）
 
@@ -363,7 +363,7 @@ flowchart TD
 项目内调用/回调引用：
 
 - [EcologyQueries.Alive · L38](bdf7ccc2c9c0452f.md#mb2877c487f449970)（方法）
-- [PopulationBehavior.SameGroup · L123](21e4f62f75a9a80f.md#m7a9d850e1d8967d4)（方法）
+- [PopulationBehavior.SameGroup · L125](21e4f62f75a9a80f.md#m61a2dbb265c05d40)（方法）
 - [EcologyQueries.Distance · L42](bdf7ccc2c9c0452f.md#mba9c3e3c95d0f2dd)（方法）
 
 <a id="m1c1286172d8c1be4"></a>

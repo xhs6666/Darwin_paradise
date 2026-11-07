@@ -18,6 +18,8 @@ namespace DarwinPark.Entities.Logic
 
         public void OnUpdate(float dt)
         {
+            // ★ 适配：按需区分重算、签名与实际行为成本。
+            using var performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.Nutrition);
             // ★ 适配：生产由独立收支模块结算，避免直接夹掉溢出营养或复制基因重复结算。
             Ecology.EcologyEnergyBudget.Produce(_controller,_gene,dt);
         }

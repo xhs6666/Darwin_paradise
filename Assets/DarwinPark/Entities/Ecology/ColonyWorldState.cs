@@ -24,6 +24,8 @@ namespace DarwinPark.Entities.Ecology
             if(state.version!=1||state.resources==null)throw new InvalidDataException("蚁群世界快照版本或资源列表无效");
             if(!string.IsNullOrEmpty(state.settings))AntColonySettings.Parse(state.settings);
             var ids=new HashSet<string>();
+            // ★ 适配：新档案清场前校验，旧尸体没有档案仍兼容。
+            foreach(var resource in state.resources)CorpseEntityRecord.Validate(resource?.source);
             foreach(var resource in state.resources)
                 if(resource==null||!Guid.TryParseExact(resource.id,"N",out _)||!ids.Add(resource.id)||!(resource.kind==ColonyResourceKind.Corpse&&string.IsNullOrEmpty(resource.group))&&!Guid.TryParseExact(resource.group,"N",out _)||!Enum.IsDefined(typeof(ColonyResourceKind),resource.kind)||float.IsNaN(resource.energy)||float.IsInfinity(resource.energy)||resource.energy<=0||!float.IsFinite(resource.sourceSize)||resource.sourceSize<0||!Finite(resource.local)||!Finite(resource.scale))
                     throw new InvalidDataException("蚁群资源标识、位置或能量无效");

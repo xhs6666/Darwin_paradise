@@ -12,7 +12,7 @@ using DarwinPark.Planet;
 
 namespace DarwinPark.UI
 {
-    public class GeneInspectorUI : MonoBehaviour
+    public partial class GeneInspectorUI : MonoBehaviour
     {
         private GameObject _panel;
         private Text _titleText;
@@ -257,10 +257,10 @@ namespace DarwinPark.UI
             if (DarwinPark.Core.GameInputGate.Blocked) return;
             if (!EnsurePanel()) return;
             // ★ 适配：普通成员只读信息，隐藏添加入口并禁用数值/名称输入；服务端仍会独立校验所有请求。
-            if(_nameInput!=null)_nameInput.interactable=WorldAuthority.CanEdit;
-            foreach(var field in _panel.GetComponentsInChildren<InputField>(true))field.interactable=WorldAuthority.CanEdit;
-            var addControl=_panel.transform.Find("ScrollView/Viewport/Content/MutTitleRow/AddBtn");if(addControl!=null)addControl.gameObject.SetActive(WorldAuthority.CanEdit);
-            var templateControl=_panel.transform.Find("TitleBg/SaveTplBtn");if(templateControl!=null)templateControl.gameObject.SetActive(WorldAuthority.CanEdit);
+            if(_nameInput!=null)_nameInput.interactable=WorldAuthority.CanEdit&&_currentCorpse==null;
+            foreach(var field in _panel.GetComponentsInChildren<InputField>(true))field.interactable=WorldAuthority.CanEdit&&_currentCorpse==null;
+            var addControl=_panel.transform.Find("ScrollView/Viewport/Content/MutTitleRow/AddBtn");if(addControl!=null)addControl.gameObject.SetActive(WorldAuthority.CanEdit&&_currentCorpse==null);
+            var templateControl=_panel.transform.Find("TitleBg/SaveTplBtn");if(templateControl!=null)templateControl.gameObject.SetActive(WorldAuthority.CanEdit&&_currentCorpse==null);
             if(!WorldAuthority.CanEdit)_addGenePanel.SetActive(false);
             // ★ 适配：小窗口同时打开两个面板时压缩高度，保持左上/左下且不覆盖底栏。
             float canvasHeight=(_panel.transform.parent as RectTransform).rect.height;
@@ -272,7 +272,7 @@ namespace DarwinPark.UI
             float canvasWidth=(_panel.transform.parent as RectTransform).rect.width;
             panelRect.sizeDelta=new Vector2(Mathf.Min(infoPanelSize.x,Mathf.Max(160,canvasWidth-infoCornerOffset.x-24)),Mathf.Min(infoPanelSize.y,Mathf.Max(160,canvasHeight-addCornerOffset.y-24-(_addGenePanel.activeSelf?addRect.sizeDelta.y+16:0))));
             // ★ 修复（防Bug回归）：可见时刷新数值，关闭/实体销毁时所有附属面板一并关闭。
-            if(_panel.activeSelf && _currentEntity==null)HideEntityInfo();
+            if(_panel.activeSelf && _currentEntity==null&&_currentCorpse==null)HideEntityInfo();
             if(!_panel.activeSelf){_addGenePanel.SetActive(false);_treePanel.SetActive(false);_tooltipPanel.SetActive(false);}
             if(Time.unscaledTime>=_nextRefresh){_nextRefresh=Time.unscaledTime+refreshInterval;RefreshDisplayedInfo();}
             if(WorldAuthority.RtsMode)return;
@@ -319,11 +319,12 @@ namespace DarwinPark.UI
             if(_addGenePanel!=null)_addGenePanel.SetActive(false);
             if(_treePanel!=null)_treePanel.SetActive(false);
             if(_tooltipPanel!=null)_tooltipPanel.SetActive(false);
-            _currentEntity=null;
+            _currentEntity=null;_currentCorpse=null;_corpseEvaluation=null;
         }
         private string StructureKey(EntityGeneController genes)=>string.Join("|",genes.Genome.Genes.ConvertAll(g=>g.InstanceId+":"+g.DefinitionId));
         public void RefreshDisplayedInfo()
         {
+            if(_currentCorpse!=null){RefreshCorpse();return;}
             if(_panel==null || !_panel.activeSelf || _currentEntity==null)return;
             var genes=_currentEntity.GetComponent<EntityGeneController>();if(genes?.Evaluation==null)return;
             if(_baseInfo!=null)_baseInfo.text=BuildBaseInfo(_currentEntity);
@@ -389,7 +390,7 @@ namespace DarwinPark.UI
             if(_currentEntity!=entity){_addGenePanel.SetActive(false);_treePanel.SetActive(false);}
             // ★ 修复（防Bug回归）：切换对象前提交旧输入，避免失焦事件把旧名字写到新实体。
             if (_nameInput != null && _nameInput.isFocused) _nameInput.DeactivateInputField();
-            _currentEntity = entity;
+            _currentEntity = entity;_currentCorpse=null;_nameInput.readOnly=false;_favBtn.interactable=true;
             var genes = entity.GetComponent<EntityGeneController>();
             if (genes == null || genes.Evaluation == null) { _panel?.SetActive(false); return; }
             _rowRefresh.Clear();_structure=StructureKey(genes);
@@ -402,6 +403,7 @@ namespace DarwinPark.UI
 
             foreach (Transform child in _contentParent){child.gameObject.SetActive(false);Destroy(child.gameObject);}
 
+            var inspected=GeneFailureReasons.Inspect(genes.Genome,genes.Evaluation);
             string baseInfo=BuildBaseInfo(entity);
 
             // ★ 修改：高度回调至 100，因为去掉了生命阶段
@@ -413,6 +415,8 @@ namespace DarwinPark.UI
             baseInfoText.enabled=false;
             var refreshSummary=EntitySummaryView.Build(baseInfoText.transform,entity);
             _rowRefresh.Add(refreshSummary);refreshSummary();
+            // ★ 适配：编辑入口只使用摘要标题的空白区域，不改原布局。
+            EntityEditPopup.AddEntry(baseInfoText.transform,entity);
             // ★ 修复（防Bug回归）：实体详情只承担观察与基因编辑，群体命令和决斗按钮挤占基因列表，按新版布局取消整块操作区。
 
             // 2. 核心基因
@@ -424,7 +428,7 @@ namespace DarwinPark.UI
 
             foreach (var reqId in requiredGenes)
             {
-                var evals = genes.Evaluation.Genes.FindAll(g => g.Definition != null && g.Definition.Id == reqId);
+                var evals = inspected.FindAll(g => g.Definition != null && g.Definition.Id == reqId);
                 if (evals.Count > 0)
                 {
                     CreateGeneRow(evals[0], genes, _contentParent);
@@ -452,7 +456,7 @@ namespace DarwinPark.UI
 
             var addBtn = UIFactory.NewButton("AddBtn", mutTitleRow.transform, "+", () => ShowAddGeneMenu(), new Vector2(30, 20));
 
-            foreach (var eval in genes.Evaluation.Genes)
+            foreach (var eval in inspected)
             {
                 if (eval.Definition == null || System.Array.IndexOf(requiredGenes, eval.Definition.Id) >= 0) continue;
                 _allMutations.Add(eval);
@@ -512,7 +516,7 @@ namespace DarwinPark.UI
             var geneIcon=colorGO.GetComponent<Image>();geneIcon.sprite=UIIconRegistry.Get(UIVisualTheme.GeneIcon(eval.Definition.Id));
             geneIcon.color=eval.IsActive?UIVisualTheme.Accent:UIVisualTheme.Muted;geneIcon.preserveAspect=true;geneIcon.raycastTarget=false;
 
-            string activeStr = eval.IsActive ? "<color=#4EE5B5>生效中</color>" : "<color=#FF6B6B>失效</color>";
+            string activeStr = eval.IsActive ? (controller==null?"<color=#4EE5B5>生前生效</color>":"<color=#4EE5B5>生效中</color>") : "<color=#FF6B6B>失效 · "+GeneFailureReasons.Summary(eval)+"</color>";
             var nameTxt = UIFactory.NewText("Name", row1.transform, $"<b>{eval.Definition.DisplayName}</b> {activeStr}", 14, TextAnchor.MiddleLeft);
             var ntrt = nameTxt.rectTransform;
             ntrt.anchorMin = new Vector2(0, 0); ntrt.anchorMax = new Vector2(1, 1);
@@ -560,9 +564,9 @@ namespace DarwinPark.UI
             UIFactory.Stretch(inputText.rectTransform, 2, 2);
             var inputField = inputGO.GetComponent<InputField>();
             inputField.textComponent = inputText; inputField.text = eval.Gene.Value.ToString("F1");
-            inputField.contentType = InputField.ContentType.DecimalNumber;
+            inputField.contentType = InputField.ContentType.DecimalNumber;inputField.readOnly=controller==null;
             // ★ 适配：固定出生分工已锁定遗传值，界面不能再显示可编辑却立即回滚的输入框。
-            inputField.interactable=controller.GetComponent<DarwinPark.Entities.Ecology.AntColonyMember>()?.Frozen!=true;
+            inputField.interactable=controller!=null&&controller.GetComponent<DarwinPark.Entities.Ecology.AntColonyMember>()?.Frozen!=true;
 
             string stateName = eval.State != null ? eval.State.DisplayName : "无状态";
             var stateTxt = UIFactory.NewText("StateTxt", row2.transform, $" | 状态: {stateName}", 14, TextAnchor.MiddleLeft);
@@ -588,8 +592,8 @@ namespace DarwinPark.UI
             _rowRefresh.Add(()=>{
                 if(geneBlock==null || controller==null)return;
                 // ★ 适配：表达索引随重算刷新，避免每个可见基因行重新扫描。
-                var live=controller.GetEvaluation(eval.Gene);if(live==null)return;
-                nameTxt.text=$"<b>{live.Definition.DisplayName}</b> "+(live.IsActive?"<color=#4EE5B5>生效中</color>":"<color=#FF6B6B>失效</color>");
+                var live=controller.GetEvaluation(eval.Gene)??GeneFailureReasons.Inspect(controller.Genome,controller.Evaluation).Find(e=>e.Gene==eval.Gene);if(live==null)return;
+                nameTxt.text=$"<b>{live.Definition.DisplayName}</b> "+(live.IsActive?"<color=#4EE5B5>生效中</color>":"<color=#FF6B6B>失效 · "+GeneFailureReasons.Summary(live)+"</color>");
                 stateTxt.text=" | 状态: "+(live.State?.DisplayName??"无状态");
                 if(!inputField.isFocused)inputField.SetTextWithoutNotify(live.Gene.Value.ToString("F1"));
                 geneIcon.color=live.IsActive?UIVisualTheme.Accent:UIVisualTheme.Muted;
@@ -658,6 +662,8 @@ namespace DarwinPark.UI
                 }
             }
 
+            var inspectedGenome=_currentEntity?.Genes.Genome??_currentCorpse?.State.source?.genome;
+            if(inspectedGenome!=null)foreach(var reason in GeneFailureReasons.Explain(inspectedGenome,eval))sb.AppendLine("<color=#FF6B6B>• "+reason+"</color>");
             if(!eval.IsActive)sb.AppendLine("<color=#FF6B6B>当前未生效，不提供属性。</color>");
             else if(GeneAttributeInheritance.Applies(eval.Definition)&&!eval.Definition.IsBaseGene)
                 sb.AppendLine("<color=#99AFBF>共有行动能力由基础谱系统一提供。</color>");
