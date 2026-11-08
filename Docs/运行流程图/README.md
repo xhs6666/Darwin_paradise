@@ -4,7 +4,7 @@
 
 [12条业务主流程](主流程.md) · [生成工具与维护说明](../../Tools/FlowDocs/README.md)
 
-覆盖 **308 个C#脚本、10 个Shader/HLSL文件、3422 个方法/构造/访问器/局部函数/回调/GPU函数**。没有显式方法的数据脚本也在索引中。未扫描Unity Packages/Library生成文件；Tools为离线生成器，不进入游戏运行图。
+覆盖 **311 个C#脚本、10 个Shader/HLSL文件、3447 个方法/构造/访问器/局部函数/回调/GPU函数**。没有显式方法的数据脚本也在索引中。未扫描Unity Packages/Library生成文件；Tools为离线生成器，不进入游戏运行图。
 
 
 ## 阅读与维护
@@ -54,6 +54,7 @@
 |Core|[Assets/DarwinPark/Core/OrbitCamera.cs](脚本/42eb429559b42bcb.md)|Runtime|9|
 |Core|[Assets/DarwinPark/Core/RuntimePerformance.cs](脚本/a8403a4c7503726d.md)|Runtime|16|
 |Core|[Assets/DarwinPark/Core/Services/ServiceLocator.cs](脚本/f2fdbe9f9ccd93cb.md)|Runtime|5|
+|Core|[Assets/DarwinPark/Core/SimulationSubsteps.cs](脚本/44755274b83df7ba.md)|Runtime|2|
 |Core|[Assets/DarwinPark/Core/Time/SimulationClock.cs](脚本/a8f444aec9614b0a.md)|Runtime|21|
 |Core|[Assets/DarwinPark/Core/Time/SimulationPauseHotkey.cs](脚本/cc79d402ad5d8117.md)|Runtime|6|
 |Core|[Assets/DarwinPark/Core/Time/SimulationStepBudget.cs](脚本/0ec4b354aeb329c1.md)|Runtime|4|
@@ -74,7 +75,7 @@
 |Editor|[Assets/DarwinPark/Editor/EntityGeneFilterRegression.cs](脚本/809edd2bc8d1c735.md)|Editor|16|
 |Editor|[Assets/DarwinPark/Editor/EntityInspectionFramePacingRegression.cs](脚本/01132a1f55d36dec.md)|Editor|29|
 |Editor|[Assets/DarwinPark/Editor/EntityPanelMotionRegression.cs](脚本/c42720484a16e881.md)|Editor|22|
-|Editor|[Assets/DarwinPark/Editor/EntityPlanningMergeRegression.cs](脚本/763da58492f54d4c.md)|Editor|37|
+|Editor|[Assets/DarwinPark/Editor/EntityPlanningMergeRegression.cs](脚本/763da58492f54d4c.md)|Editor|46|
 |Editor|[Assets/DarwinPark/Editor/EntityStateRegression.cs](脚本/cbb314f2877cdcfa.md)|Editor|25|
 |Editor|[Assets/DarwinPark/Editor/EntityUIRegression.cs](脚本/dff4959d34187962.md)|Editor|10|
 |Editor|[Assets/DarwinPark/Editor/EntityViewPreview.cs](脚本/7ed4c5d34534a614.md)|Editor|5|
@@ -89,6 +90,7 @@
 |Editor|[Assets/DarwinPark/Editor/LifeCycleCombatRegression.cs](脚本/92ed3746ce41b5f8.md)|Editor|14|
 |Editor|[Assets/DarwinPark/Editor/MainMenuBackgroundRecorder.cs](脚本/ba405663a24f549a.md)|Editor|4|
 |Editor|[Assets/DarwinPark/Editor/MenuUpgradeRegression.cs](脚本/f55a1b1542251c77.md)|Editor|17|
+|Editor|[Assets/DarwinPark/Editor/MergeAlgorithmAuditRegression.cs](脚本/a8573e4637b62b8c.md)|Editor|14|
 |Editor|[Assets/DarwinPark/Editor/NutrientUtilizationRegression.cs](脚本/5280b7c1dd3cc658.md)|Editor|11|
 |Editor|[Assets/DarwinPark/Editor/NutritionEcologyRegression.cs](脚本/6ba59357fc88cff0.md)|Editor|46|
 |Editor|[Assets/DarwinPark/Editor/ParthenogenesisRegression.cs](脚本/8a0c679de35169a0.md)|Editor|28|
@@ -133,7 +135,7 @@
 |Entities|[Assets/DarwinPark/Entities/Ecology/EcologyBalanceSettings.cs](脚本/5a37bc79f15f6238.md)|Runtime|7|
 |Entities|[Assets/DarwinPark/Entities/Ecology/EcologyDefaults.cs](脚本/5b565b57de741d98.md)|Runtime|19|
 |Entities|[Assets/DarwinPark/Entities/Ecology/EcologyDiagnostics.cs](脚本/fc141d865eda1284.md)|Runtime|2|
-|Entities|[Assets/DarwinPark/Entities/Ecology/EcologyEnergyBudget.cs](脚本/06a91c8201f26593.md)|Runtime|7|
+|Entities|[Assets/DarwinPark/Entities/Ecology/EcologyEnergyBudget.cs](脚本/06a91c8201f26593.md)|Runtime|6|
 |Entities|[Assets/DarwinPark/Entities/Ecology/EcologyIdentity.cs](脚本/bdf7ccc2c9c0452f.md)|Runtime|17|
 |Entities|[Assets/DarwinPark/Entities/Ecology/EcologyMaintenancePolicy.cs](脚本/554e3f13e11b3808.md)|Runtime|8|
 |Entities|[Assets/DarwinPark/Entities/Ecology/EcologyMotion.cs](脚本/6ed9d0eedb456d32.md)|Runtime|5|
@@ -198,6 +200,7 @@
 |Entities|[Assets/DarwinPark/Entities/OffspringPlacement.cs](脚本/eeef5e6fb7a6f46b.md)|Runtime|1|
 |Entities|[Assets/DarwinPark/Entities/PlanetGravity.cs](脚本/f9e84b7108c465c2.md)|Runtime|4|
 |Entities|[Assets/DarwinPark/Entities/PopulationMaintenance.cs](脚本/923ccc4e86c4786c.md)|Runtime|36|
+|Entities|[Assets/DarwinPark/Entities/Simulation/CohortDeadline.cs](脚本/7dc9f0a2697792f4.md)|Runtime|1|
 |Entities|[Assets/DarwinPark/Entities/Simulation/EntityWorkScheduler.cs](脚本/465ccdbb260bcac2.md)|Runtime|34|
 |Entities|[Assets/DarwinPark/Entities/Simulation/GlobalMutationManager.cs](脚本/debf58c0eabf33e3.md)|Runtime|8|
 |Entities|[Assets/DarwinPark/Entities/Simulation/StationaryCohortKernel.cs](脚本/9d3f50e550ab5beb.md)|Runtime|10|

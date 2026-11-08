@@ -308,7 +308,10 @@
     "Assets/DarwinPark/UI/EntityEditPopup.cs": "独立实体编辑和基因失效原因弹窗，保留原详情布局、合法遮罩、暂停和联机权限。",
     "Assets/DarwinPark/UI/GeneInspectorUI.Corpse.cs": "原GenePanel的尸体只读展示适配，复用摘要列、基因行和滚动区域，不生成伪活体。",
     "Assets/DarwinPark/Editor/FullScenePerformanceRegression.cs": "读取原始分辨率存档副本，固定活体数量，采样计算/物理/资源渲染分项及锁30帧表现。",
-    "Assets/DarwinPark/Editor/EntityInspectionFramePacingRegression.cs": "验证锁帧持久化、生命阶段与权限、基因失效原因、尸体档案、原布局和大量资源搜索语义。"
+    "Assets/DarwinPark/Editor/EntityInspectionFramePacingRegression.cs": "验证锁帧持久化、生命阶段与权限、基因失效原因、尸体档案、原布局和大量资源搜索语义。",
+    "Assets/DarwinPark/Core/SimulationSubsteps.cs": "统一模拟小步计数与尾步分配，避免浮点残差触发额外整轮行为并保留全部时间。",
+    "Assets/DarwinPark/Entities/Simulation/CohortDeadline.cs": "按空间格和遗传签名计算错峰截止时间，使近邻保留共享机会并分散孤立实体的结算峰值。",
+    "Assets/DarwinPark/Editor/MergeAlgorithmAuditRegression.cs": "在冻结的完整存档副本对照开关合并、静止实体、资源渲染与零资源场景，记录真实共享次数和帧耗时。"
   },
   "files": {
     "Assets/Scenes/SampleScene.unity": "主要运行场景：挂载星球、环境、时钟、UI和游戏启动组件。",
@@ -442,6 +445,7 @@
     "Assets/Resources/frame_pacing.json": "最大帧率的默认值和可选档位，0表示不限制。",
     "Docs/开发设计/完整场景性能诊断与实体详情.md": "完整场景性能分项、任务范围快照、锁帧和统一实体/尸体检查架构。",
     "Docs/操作指南/锁帧性能采样与实体编辑.md": "锁帧、按需性能报告、失效原因、尸体档案和生命阶段修改的操作说明。",
-    "Docs/验证记录/完整存档卡顿锁帧与实体详情验证-2026-11-08.md": "最新385实体完整存档的因果定位、前后测量及新增界面和兼容回归证据。"
+    "Docs/验证记录/完整存档卡顿锁帧与实体详情验证-2026-11-08.md": "最新385实体完整存档的因果定位、前后测量及新增界面和兼容回归证据。",
+    "Docs/验证记录/尸体与静止合并计算审计-2026-11-08.md": "最新567实体存档的尸体、非移动实体与合并算法因果对照，以及错峰修复和时间守恒验证证据。"
   }
 }

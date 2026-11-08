@@ -35,16 +35,16 @@ namespace DarwinPark.Entities.Vitals
             if (dt <= 0f) return;
             // ★ 修复（防Bug回归）：高倍率也按小步结算容量、仓储与修复阈值，避免一次大步吞掉营养溢出。
             // ★ 修复（防Bug回归）：整数子步避免高倍率固定0.5秒产生第六次浮点残差结算。
-            int steps=Mathf.CeilToInt(dt/.1f);
+            int steps=SimulationSubsteps.Count(dt);
             for(int index=0;index<steps;index++)
             {
-                float step=index==steps-1?dt-index*.1f:.1f;
+                float step=SimulationSubsteps.Slice(dt,index,steps);
                 AdvanceVitals(step);
             }
         }
 
         // ★ 适配：供代表和醒来补算使用，与普通Update共用小步逻辑。
-        public void AdvanceShared(float dt){/* ★ 适配：发布版可主动采样代谢成本。 */using var performance=PerformanceTimings.Measure(PerformanceTimings.Area.Vitals);int steps=Mathf.CeilToInt(dt/.1f);for(int i=0;i<steps;i++)AdvanceVitals(Mathf.Min(.1f,dt-i*.1f));}
+        public void AdvanceShared(float dt){/* ★ 适配：统一子步保留尾数，避免浮点残差多跑整轮结算。 */using var performance=PerformanceTimings.Measure(PerformanceTimings.Area.Vitals);int steps=SimulationSubsteps.Count(dt);for(int i=0;i<steps;i++)AdvanceVitals(SimulationSubsteps.Slice(dt,i,steps));}
 
         private void AdvanceVitals(float dt)
         {

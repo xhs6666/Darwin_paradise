@@ -19,6 +19,9 @@ namespace DarwinPark.Core
         public float nutritionGainMultiplier=.5f, memberFeedResume=9.5f, queenReserveBuffer=10;
         // ★ 新增：相近同基因静止实体共享基础结算；受伤/移动立即退出，繁殖仍逐个计算。
         public bool mergeStationaryEntities=true;
+        // ★ 新增：错开空间/基因批次，消除大量孤立组同一帧结算的峰值；不改变累计模拟时间。
+        public bool mergeStaggerBatches=true;
+        public int mergePhaseBuckets=16;
         public float mergeRadius=6, mergeInterval=.5f, mergeQuietSeconds=2, mergeMaximumMembers=32;
         public float mergeGroupsPerFrame=128, mutationAttemptsPerFrame=16, mergedMutationFraction=.125f;
         public float multipleBirthMaximum=5;
@@ -33,6 +36,7 @@ namespace DarwinPark.Core
         {
             var value=JsonUtility.FromJson<GameplayTuning>(CommentedJson.Strip(json));
             if(value==null||value.version!=1)throw new InvalidDataException("游戏数值配置版本无效");
+            if(value.mergePhaseBuckets<1||value.mergePhaseBuckets>256)throw new InvalidDataException("合并错峰批次数必须为1到256");
             foreach(var field in typeof(GameplayTuning).GetFields())if(field.FieldType==typeof(float))
             {float n=(float)field.GetValue(value);if(float.IsNaN(n)||float.IsInfinity(n)||n<0)throw new InvalidDataException("数值必须为非负有限数："+field.Name);}
             if(value.manualHitboxScale<1||value.supplyActivityRadiusRatio<=0||value.colonyActivityRadiusMultiplier<=0||value.populationFillOpacity>1)throw new InvalidDataException("判定框倍率至少为1，活动半径倍率必须大于0，透明度须在0到1之间");

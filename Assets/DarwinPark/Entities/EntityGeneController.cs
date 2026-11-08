@@ -82,10 +82,10 @@ namespace DarwinPark.Entities
             if(_life==null){_life=GetComponent<EntityLifeCycle>();if(_life==null&&GetComponent<EntityStats>()!=null)_life=gameObject.AddComponent<EntityLifeCycle>();}
             if(_combat==null)_combat=GetComponent<Ecology.CombatIntent>()??gameObject.AddComponent<Ecology.CombatIntent>();
             // ★ 修复（防Bug回归）：按整数步数结算，避免0.5反复减0.1留下浮点残差、额外跑第六轮全部行为。
-            int steps=Mathf.CeilToInt(dt/.1f);
+            int steps=DarwinPark.Core.SimulationSubsteps.Count(dt);
             for(int index=0;index<steps;index++)
             {
-                float step=index==steps-1?dt-index*.1f:.1f;
+                float step=DarwinPark.Core.SimulationSubsteps.Slice(dt,index,steps);
                 // ★ 适配：寿命由单一组件推进，基因复制/失效/重新挂载不会重置或重复推进年龄。
                 _life?.Advance(step);
                 if(_life!=null && _life.HasDied)return;

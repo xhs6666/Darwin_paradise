@@ -27,6 +27,9 @@
   "queenReserveBuffer": 10,
   // 相近同基因、同生命阶段、健康且非移动实体合并基础计算。关闭可恢复逐实体计算。
   "mergeStationaryEntities": true,
+  // 错开空间/基因批次，避免每半秒集中补算；1到256批，欠账完整保留。关闭可对照原调度。
+  "mergeStaggerBatches": true,
+  "mergePhaseBuckets": 16,
   "mergeRadius": 6,
   // 合并组每隔多少模拟秒结算；只冻结行为/感知，生命、营养、成长、繁殖继续。
   "mergeInterval": 0.5,

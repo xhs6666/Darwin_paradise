@@ -1,16 +1,16 @@
 {
   "stats": {
-    "scripts": 318,
-    "csharp": 308,
+    "scripts": 321,
+    "csharp": 311,
     "gpu": 10,
-    "methods": 3422,
-    "graphs": 3425,
-    "profileGraphs": 5847,
-    "nodes": 32285,
-    "calls": 44059,
-    "internalLinks": 12583,
+    "methods": 3447,
+    "graphs": 3450,
+    "profileGraphs": 5874,
+    "nodes": 32526,
+    "calls": 44445,
+    "internalLinks": 12698,
     "unresolved": 10,
-    "hash": "4798b3330aab1499"
+    "hash": "b1904380a22424de"
   },
   "diagnostics": [
     {
@@ -107,7 +107,7 @@
       "Path": "Assets/DarwinPark/Core/GameplayTuning.cs",
       "Scope": "Runtime",
       "methods": 6,
-      "Hash": "61ee5b7fdd0e50d859bf4abf635a52c5d8c60f4a5d8d776e5b3fa7c02b4e6017"
+      "Hash": "e3f7ea073e167be706a1659fcfd00a052929ec6d20fb43936c25c56ee2c549b2"
     },
     {
       "Id": "d8a018f478416f7b",
@@ -199,6 +199,13 @@
       "Scope": "Runtime",
       "methods": 5,
       "Hash": "087a0ed7a14b7c9cd9fadf79388f3e0f7eef9913aaf5aaecf6538f76b9d43131"
+    },
+    {
+      "Id": "44755274b83df7ba",
+      "Path": "Assets/DarwinPark/Core/SimulationSubsteps.cs",
+      "Scope": "Runtime",
+      "methods": 2,
+      "Hash": "527be5f06f1dc41b696520ee8f5d1e99aecc330b32a1059863e12748975236c6"
     },
     {
       "Id": "a8f444aec9614b0a",
@@ -344,8 +351,8 @@
       "Id": "763da58492f54d4c",
       "Path": "Assets/DarwinPark/Editor/EntityPlanningMergeRegression.cs",
       "Scope": "Editor",
-      "methods": 37,
-      "Hash": "632e3e7e384410c9b510a3b74cb73d459f0073a3c428a8e835ca6dc34a2a3a20"
+      "methods": 46,
+      "Hash": "1b1c7e56a52e617824745520a17921c5419fc801ea0d34d16d87318d8663436e"
     },
     {
       "Id": "cbb314f2877cdcfa",
@@ -444,6 +451,13 @@
       "Scope": "Editor",
       "methods": 17,
       "Hash": "e1466d533c21a5e57bc22123ae392bf2224bb357cbc3b256fbc9e864180bdcb5"
+    },
+    {
+      "Id": "a8573e4637b62b8c",
+      "Path": "Assets/DarwinPark/Editor/MergeAlgorithmAuditRegression.cs",
+      "Scope": "Editor",
+      "methods": 14,
+      "Hash": "3d68cc0e181deae9e8c1af462a2b859a77c9a017dbcd96d72bf562aaee765278"
     },
     {
       "Id": "5280b7c1dd3cc658",
@@ -757,8 +771,8 @@
       "Id": "06a91c8201f26593",
       "Path": "Assets/DarwinPark/Entities/Ecology/EcologyEnergyBudget.cs",
       "Scope": "Runtime",
-      "methods": 7,
-      "Hash": "085cdf772f1748504aecdf6b88356780cb2b6f0cdc29eab9fbd6829d4db7d1b7"
+      "methods": 6,
+      "Hash": "0714306217a3bf85eef7707a749f0b2007219f1d88c687ef8c5b837acc3aec13"
     },
     {
       "Id": "bdf7ccc2c9c0452f",
@@ -996,7 +1010,7 @@
       "Path": "Assets/DarwinPark/Entities/EntityGeneController.cs",
       "Scope": "Runtime",
       "methods": 25,
-      "Hash": "fb230ca824ae3451daf8373edaff857756b7a10f78888c790db981d950b50e12"
+      "Hash": "71d006a14d157c271b0b30798b7389f97de1f0b1f25de2c54e220d814672e3d0"
     },
     {
       "Id": "fa3269c9da0aa692",
@@ -1209,11 +1223,18 @@
       "Hash": "d076705e4ecc6fc1c89b4b4dd59bb2a3bf62927caeebb0268487458f3472d6ab"
     },
     {
+      "Id": "7dc9f0a2697792f4",
+      "Path": "Assets/DarwinPark/Entities/Simulation/CohortDeadline.cs",
+      "Scope": "Runtime",
+      "methods": 1,
+      "Hash": "5a61431a39777856bca75a8b21fa55c3c3d027f0ee676b94040d0dbb4de79c0b"
+    },
+    {
       "Id": "465ccdbb260bcac2",
       "Path": "Assets/DarwinPark/Entities/Simulation/EntityWorkScheduler.cs",
       "Scope": "Runtime",
       "methods": 34,
-      "Hash": "8de3d4694ab124a8618f209e1284007c4682c77774a6b93275109383bdfb1f5a"
+      "Hash": "d4547693e6b793ba857cc80a06305ce554f20fefc49222e205e73e8df9c5cbc3"
     },
     {
       "Id": "debf58c0eabf33e3",
@@ -1262,7 +1283,7 @@
       "Path": "Assets/DarwinPark/Entities/Vitals/EntityVitals.cs",
       "Scope": "Runtime",
       "methods": 4,
-      "Hash": "a33b4f2300b92485aa1dce40e3a0b3cafe733bc8d2b83bb41850fc302c69d540"
+      "Hash": "ddae706dbd9cba85009acb82e66298e4d11b22b4907fc5c9481f19fa23ac6955"
     },
     {
       "Id": "44f717c5df79d270",
@@ -2255,11 +2276,11 @@
   "modes": [
     {
       "mode": "Roslyn\u7F16\u8BD1\u5668\u63A7\u5236\u6D41",
-      "count": 2888
+      "count": 2912
     },
     {
       "mode": "\u8BED\u6CD5\u63A7\u5236\u7ED3\u6784 / \u58F0\u660E\uFF08\u975ECFG\uFF09",
-      "count": 511
+      "count": 512
     },
     {
       "mode": "GPU\u63A7\u5236\u7ED3\u6784\uFF08\u540D\u79F0\u94FE\u63A5\uFF0C\u4E0D\u4F5CC#\u7C7B\u578B\u63A8\u65AD\uFF09",

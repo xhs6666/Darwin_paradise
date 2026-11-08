@@ -21,6 +21,7 @@ namespace DarwinPark.Entities.Simulation
             public int reproductionRevision=-1;public DarwinPark.Entities.Logic.ReproductionGeneLogic reproduction;
             public Vector3 position;public float quiet;public float pending {get=>genes.PendingSimulationTime;set=>genes.PendingSimulationTime=value;}public int revision=-1,frame=-1,ordinal,count;public bool dormant;
             public int signature;public string stateId;public bool supported;
+            public double nextDue=double.NaN;
         }
         private sealed class Cohort {public readonly List<Entry> members=new List<Entry>();public float time,priority;public Cohort next;}
         // ★ 修复（防Bug回归）：兼容条件使用值类型和预计算散列，27格查询不能反复拼接/散列完整基因字符串。
@@ -57,6 +58,7 @@ namespace DarwinPark.Entities.Simulation
         private readonly HashSet<EntityGeneController> _present=new HashSet<EntityGeneController>();
         private readonly List<EntityGeneController> _removed=new List<EntityGeneController>();
         private long _membership=-1;
+        private double _simulationTime;private float _phaseInterval,_phaseRadius;private int _phaseBuckets;private bool _stagger;
         public long RepresentativeSteps {get;private set;}
         public long SharedMemberSteps {get;private set;}
         public int DormantMembers {get;private set;}
@@ -97,13 +99,16 @@ namespace DarwinPark.Entities.Simulation
                 _removed.Clear();foreach(var key in _entries.Keys)if(key==null||!_present.Contains(key))_removed.Add(key);
                 foreach(var key in _removed)_entries.Remove(key);
                 if(_removed.Count>0)_signaturesDirty=true;
-                if(_entries.Count==0){_signatures.Clear();_nextSignature=0;}
+                if(_entries.Count==0){_signatures.Clear();_nextSignature=0;_simulationTime=0;}
                 foreach(var genes in _present)Get(genes);
                 _membership=EntityRegistry.MembershipRevision;
             }
             foreach(var previous in _groups){previous.members.Clear();previous.next=null;}
             _active.Clear();_controlled.Clear();_injured.Clear();_groups.Clear();_cells.Clear();_usedGroups=0;DormantMembers=0;
             var tuning=GameplayTuning.Current;
+            double frameStart=_simulationTime;_simulationTime+=dt;
+            bool phaseChanged=_phaseInterval!=tuning.mergeInterval||_phaseRadius!=tuning.mergeRadius||_phaseBuckets!=tuning.mergePhaseBuckets||_stagger!=tuning.mergeStaggerBatches;
+            _phaseInterval=tuning.mergeInterval;_phaseRadius=tuning.mergeRadius;_phaseBuckets=tuning.mergePhaseBuckets;_stagger=tuning.mergeStaggerBatches;
             // ★ 修复（防Bug回归）：出生/死亡会改注册表，推进前先完成调度快照，不能边枚举边生成。
             foreach(var entry in _entries.Values)
             {
@@ -112,12 +117,13 @@ namespace DarwinPark.Entities.Simulation
                 if(entry.manual==null)entry.manual=genes.GetComponent<EntityManualControl>();
                 entry.frame=Time.frameCount;entry.ordinal=0;entry.count=1;
                 // ★ 修复（防Bug回归）：关闭合并时不做空间/签名检查；优先级只取样一次，不能在排序比较器里反复GetComponent。
-                if(!tuning.mergeStationaryEntities){entry.dormant=false;entry.quiet=0;QueueActive(entry);continue;}
+                if(!tuning.mergeStationaryEntities){entry.dormant=false;entry.quiet=0;entry.nextDue=double.NaN;QueueActive(entry);continue;}
+                if(phaseChanged)entry.nextDue=double.NaN;
                 bool stationary=(genes.transform.position-entry.position).sqrMagnitude<=tuning.mergeWakeDistance*tuning.mergeWakeDistance;
                 entry.position=genes.transform.position;
                 if(entry.revision!=genes.LogicRevision)
                 {
-                    entry.revision=genes.LogicRevision;entry.supported=StationaryCohortKernel.Supported(genes);entry.quiet=0;
+                    entry.revision=genes.LogicRevision;entry.supported=StationaryCohortKernel.Supported(genes);entry.quiet=0;entry.nextDue=double.NaN;
                     entry.state=genes.GetComponent<EntityStateController>();entry.signature=0;_signaturesDirty=true;
                     if(entry.supported){string signature=Signature(genes);if(!_signatures.TryGetValue(signature,out entry.signature)){entry.signature=++_nextSignature;_signatures.Add(signature,entry.signature);}}
                 }
@@ -127,9 +133,15 @@ namespace DarwinPark.Entities.Simulation
                 bool eligible=stationary&&Eligible(entry);
                 entry.quiet=eligible?entry.quiet+dt:0;
                 entry.dormant=eligible&&entry.quiet>=tuning.mergeQuietSeconds;
-                if(!entry.dormant){QueueActive(entry);continue;}
+                if(!entry.dormant){entry.nextDue=double.NaN;QueueActive(entry);continue;}
                 DormantMembers++;entry.pending+=dt;
-                if(entry.pending+0.00001f>=tuning.mergeInterval)AddGroup(entry,tuning);
+                // ★ 修复（防Bug回归）：到期按空间/基因相位错开，欠账仍完整保存；预算延期不能重置截止时间。
+                if(_stagger)
+                {
+                    if(double.IsNaN(entry.nextDue))entry.nextDue=CohortDeadline.Next(frameStart,entry.position,entry.signature,tuning.mergeRadius,tuning.mergeInterval,tuning.mergePhaseBuckets);
+                    if(_simulationTime>=entry.nextDue)AddGroup(entry,tuning);
+                }
+                else if(entry.pending+0.00001f>=tuning.mergeInterval)AddGroup(entry,tuning);
             }
             if(_signaturesDirty)TrimSignatures();
             // 三档优先级用线性分桶，普通实体不再付出O(n log n)组件查询成本。
@@ -143,17 +155,21 @@ namespace DarwinPark.Entities.Simulation
                 if(budget--<=0)break;
                 var first=group.members[0];// ★ 修复（防Bug回归）：轮到后补算累计时间，不能固定只算一个间隔而在高倍率下永远追不上。
                 float elapsed=Mathf.Min(group.time,tuning.mergeMaximumCatchupSeconds);
-                foreach(var entry in group.members)entry.pending=Mathf.Max(0,entry.pending-elapsed);
+                foreach(var entry in group.members)
+                {
+                    entry.pending=Mathf.Max(0,entry.pending-elapsed);
+                    if(_stagger)entry.nextDue=CohortDeadline.Next(_simulationTime,entry.position,entry.signature,tuning.mergeRadius,tuning.mergeInterval,tuning.mergePhaseBuckets);
+                }
                 // ★ 修复（防Bug回归）：孤立实体没有共享收益，沿逐体入口补算；不为单成员反复验证代表、取样和复制环境。
                 if(group.members.Count==1)
                 {
                     if(first.genes!=null&&first.genes.isActiveAndEnabled){first.genes.AdvanceSimulation(elapsed);if(first.genes!=null&&first.genes.isActiveAndEnabled)StationaryCohortKernel.AdvanceCore(first.genes,elapsed);}
                     continue;
                 }
-                int steps=Mathf.CeilToInt(elapsed/.1f);
+                int steps=SimulationSubsteps.Count(elapsed);
                 for(int step=0;step<steps;step++)
                 {
-                    float slice=Mathf.Min(.1f,elapsed-step*.1f);
+                    float slice=SimulationSubsteps.Slice(elapsed,step,steps);
                     // ★ 修复（防Bug回归）：阶段切换/受伤/基因变化后立刻拆组；余下小步独立处理，不能沿用旧代表。
                     bool share=CanShare(group,first);
                     if(share)

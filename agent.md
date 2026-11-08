@@ -307,3 +307,5 @@
 |2026-11-08|同数量下合并优化后仍有本地延迟|早期208实体副本不是最新385实体现场；工匠/临时王后的资源筛选对每具尸体重新枚举所有资源生成活动圆，成为平方级搜索|AntColonyWorker.cs、ColonyActivityRange.cs、RuntimePerformance.cs、FullScenePerformanceRegression.cs|使用最新存档、完整地形与固定数量做分项计时；每次同步搜索复用圆列表；保留球面资格与原最近目标排序；1500远处尸体和高度差用例防回归；不以实体数或调度次数替代实际帧耗时|
 |2026-11-08|需要锁帧与可复用性能证据|缺少目标帧率设置及游戏分项报告|FramePacingSettings.cs、RuntimePerformanceCapture.cs、GameMainMenu.cs|画质后应用、与VSync协调、保存恢复；空闲不采样、结束释放；不可用指标明示，不相加父子耗时|
 |2026-11-08|失效原因不明、尸体详情布局不同、生命阶段不可编辑|检查界面只显示布尔状态；资源没有生前档案；缺少权威阶段入口|GeneFailureReasons.cs、GeneValueResolver.cs、CorpseEntityRecord.cs、GeneInspectorUI.Corpse.cs、EntityEditPopup.cs、EntityStateEditor.cs|不改运行求值；禁用基因补只读条目；复用原布局，无伪活体；旧档全零对象兼容与损坏档案区分；阶段/数值成对保存；幼年先释放运输；遵守服务端权限和合法输入门控|
+
+| 2026-11-08 | 数百非移动实体零尸体仍周期卡顿，降频被误认为真实共享 | 兼容实体多数为孤立组且同步到期；累计浮点尾数额外触发整轮行为 | EntityWorkScheduler、CohortDeadline、SimulationSubsteps、EcologyEnergyBudget；MergeAlgorithmAuditRegression | 同一完整存档开关合并/资源绘制/零资源对照；同时记录真实共享次数、帧P95和寿命加欠账守恒；完整混合世界仍有活体与物理瓶颈，不宣称全面提帧 |

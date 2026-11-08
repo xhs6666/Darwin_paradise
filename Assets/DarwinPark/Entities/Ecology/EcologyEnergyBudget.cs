@@ -44,7 +44,8 @@ namespace DarwinPark.Entities.Ecology
             if(dt<=0||!GeneBehaviorAuthority.IsPrimary<NutritionGeneLogic>(genes,source))return;
             if(EcologyQueries.Active(genes,NutritionEcologySettings.Current.heterotrophyGene)!=null||EcologyQueries.Active(genes,NutritionEcologySettings.Current.scavengerGene)!=null)return;
             var stats=genes.GetComponent<EntityStats>();if(stats==null)return;
-            var state=genes.Evaluation?.Genes.Find(g=>g.Gene==source&&g.IsActive)?.State;
+            // ★ 修复（防Bug回归）：使用重算时维护的实例索引，生产小步不再创建捕获闭包并扫描全部基因。
+            var evaluation=genes.GetEvaluation(source);var state=evaluation?.IsActive==true?evaluation.State:null;
             var settings=EcologyBalanceSettings.Current;float efficiency=genes.GetAttribute(settings.absorptionAttribute);
             if(efficiency<=0||state==null)return;
             // ★ 适配：生产者分类已由帧共享快照计算，不能在每个子步再次遍历表达并读取同一组移动修饰组件。

@@ -61,6 +61,15 @@ namespace DarwinPark.EditorTools
             var session=Object.FindFirstObjectByType<WorldSessionManager>();session.autoSaveInterval=36000;var planet=Object.FindFirstObjectByType<PlanetTerrainMeshBuilder>();planet.subdivisions=24;typeof(WorldSessionManager).GetField("_initialTerrain",Private).SetValue(session,JsonUtility.ToJson(planet));PlanetClimateMap.Instance.mapResolution=64;PlanetOreSystem.Instance.mapResolution=32;
             session.Create("实体计划与合并回归",29375,.5f,20,44);yield return Wait(()=>!session.Busy,"创建世界");var clock=ServiceLocator.Get<SimulationClock>();clock.Pause();Object.FindFirstObjectByType<RandomPlanetSpawner>().enabled=false;PopulationMaintenance.Restore(null);Clear();GameInputGate.Blocked=false;
             var tuning=GameplayTuning.Current;Check(tuning.baseMetabolismMultiplier==.5f&&tuning.movementMetabolismMultiplier==.5f&&tuning.nutritionGainMultiplier==.5f,"基础、行动与获取默认同时降至一半");
+            Check(tuning.mergeStaggerBatches&&tuning.mergePhaseBuckets==16,"默认启用16批空间基因错峰");
+            // ★ 适配：旧精确数值用例固定原结算边界；错峰的时间守恒在下方单独用真实实体连续验证。
+            tuning.mergeStaggerBatches=false;
+            Check(SimulationSubsteps.Count(.5000002f)==5&&SimulationSubsteps.Count(.5001f)==6&&SimulationSubsteps.Count(0)==0,"微小浮点尾数不增加整轮行为，真实超额仍增加子步");
+            float sliceSum=0;int slices=SimulationSubsteps.Count(.5000002f);for(int i=0;i<slices;i++)sliceSum+=SimulationSubsteps.Slice(.5000002f,i,slices);
+            Check(Mathf.Abs(sliceSum-.5000002f)<.0000001f,"尾数并入最后子步，交付时间完整保留");
+            var deadlines=new HashSet<double>();for(int i=0;i<64;i++){double due=CohortDeadline.Next(10,new Vector3(i*12,0,0),1,6,.5f,16);CheckDeadline(due,10);deadlines.Add(due);}
+            Check(deadlines.Count>=8,"相同基因分散空间格产生多批截止时间");
+            bool invalidPhase=false;try{GameplayTuning.Parse("{\"version\":1,\"mergePhaseBuckets\":0}");}catch(InvalidDataException){invalidPhase=true;}Check(invalidPhase,"拒绝无效错峰批次数，避免除零");
             Check(GeneDatabase.Get(MultipleBirthEvolutionUpgrade.GeneId)?.LogicScriptId=="MultipleBirthGeneLogic"&&GeneTreeStorage.Active.edges.Any(e=>e.from==MultipleBirthEvolutionUpgrade.SourceGeneId&&e.to==MultipleBirthEvolutionUpgrade.GeneId&&e.kind=="error"),"多胎基因注册并接入繁殖出错树");
             var home=Land(planet);var producer=EcologyDefaults.Template("producer").CreateGenome();producer.Genes.RemoveAll(g=>g.DefinitionId=="gene_reproduction");
             var scheduler=Object.FindFirstObjectByType<EntityWorkScheduler>();Check(scheduler!=null,"游戏根节点实际安装全局调度");tuning.mergeQuietSeconds=0;
@@ -106,6 +115,22 @@ namespace DarwinPark.EditorTools
             singleton.Genes.Genome.Genes.First(g=>g.DefinitionId=="gene_repair").Value+=1;singleton.Genes.Recalculate();scheduler.Advance(.5f);
             Check(scheduler.SignatureCacheSize==1,"基因变化后签名缓存回收旧版本，只保留当前实体引用");
             Clear();scheduler.Advance(.1f);Check(scheduler.SignatureCacheSize==0,"世界清场后签名缓存不保留已注销实体");yield return null;
+            // ★ 修复（防Bug回归）：连续低步长必须分散补算，寿命已推进量加欠账应等于全部交付时间。
+            tuning.mergeStaggerBatches=true;var spread=new List<DarwinEntity>();for(int i=0;i<64;i++){var e=Spawn(producer,home+Vector3.right*i*tuning.mergeRadius*2);Food(e,10,30);spread.Add(e);}
+            var starts=spread.Select(e=>e.GetComponent<EntityLifeCycle>().Progress).ToArray();var speeds=spread.Select(e=>StationaryCohortKernel.LifeSpeed(e.Genes)).ToArray();int peak=0,workingFrames=0;
+            for(int frame=0;frame<120;frame++)
+            {
+                var previous=spread.Select(e=>e.Genes.PendingSimulationTime).ToArray();scheduler.Advance(1f/60);int settled=spread.Where((e,index)=>e.Genes.PendingSimulationTime<previous[index]+1f/60-.00001f).Count();peak=Math.Max(peak,settled);if(settled>0)workingFrames++;
+            }
+            Check(workingFrames>=16&&peak<64,"64个分散静止实体分批结算，不再全体同时补算");
+            Check(spread.Select((e,index)=>Mathf.Abs(e.GetComponent<EntityLifeCycle>().Progress-starts[index]+e.Genes.PendingSimulationTime*speeds[index]-2*speeds[index])).All(error=>error<.0001f),"两秒连续错峰后每个实体已结算寿命与欠账严格守恒");
+            tuning.mergeStaggerBatches=false;tuning.mergeStationaryEntities=false;scheduler.Advance(.05f);
+            Check(spread.All(e=>e.Genes.PendingSimulationTime==0),"热关闭合并后所有错峰欠账完整结清");tuning.mergeStationaryEntities=true;Clear();scheduler.Advance(.1f);
+            tuning.mergeStaggerBatches=true;var dense=new List<DarwinEntity>();for(int i=0;i<24;i++){var e=Spawn(producer,home);Food(e,10,30);dense.Add(e);}long denseShared=scheduler.SharedMemberSteps;
+            for(int i=0;i<60;i++)scheduler.Advance(1f/60);
+            Check(scheduler.SharedMemberSteps-denseShared>=23,"开启错峰后真实同格近邻仍共享代表计算");
+            Check(dense.All(e=>(StationaryCohortKernel.Values(e.GetComponent<EntityStats>())-StationaryCohortKernel.Values(dense[0].GetComponent<EntityStats>())).sqrMagnitude<.00001f),"错峰共享不改变一致近邻的生命营养差异");
+            tuning.mergeStaggerBatches=false;Clear();scheduler.Advance(.1f);
             var killer=Spawn(producer,home,AgeState.Infant);killer.GetComponent<EntityLifeCycle>().RestoreProgress(LifeCycleSettings.Load().adultProgress-.001f);var manual=killer.gameObject.AddComponent<EntityManualControl>();manual.BeginControl(planet.transform);
             var ghost=Spawn(EcologyDefaults.Template("producer").CreateGenome(),home+Vector3.right*5);ghost.Genes.IsGestating=true;ghost.Genes.Recalculate();var ready=Reproduction(ghost).CaptureState();ready.gestation=0;Reproduction(ghost).RestoreState(ready);ghost.GetComponent<EntityStats>().Modify("health",-5,false);
             killer.Genes.OnEvaluationChanged+=_=>{if(EcologyQueries.Alive(ghost))EntityDeathSettlement.Die(ghost);};scheduler.Advance(.1f);
@@ -148,5 +173,6 @@ namespace DarwinPark.EditorTools
             Check(worker.Capture().plan!=null&&EntityTaskPlan.Priority(ColonyActivity.Feed)>EntityTaskPlan.Priority(ColonyActivity.Transport),"计划成对保存且补给优先于运输/巡逻");
             yield return null;yield return new WaitForEndOfFrame();ScreenCapture.CaptureScreenshot(Path.Combine(Folder,"runtime.png"));yield return null;
         }
+        private static void CheckDeadline(double due,double after){if(due<=after||due>after+.500001)throw new InvalidOperationException("错峰截止时间必须处于下一间隔内");}
     }
 }
