@@ -18,6 +18,7 @@ namespace DarwinPark.Genetics
         public int parthenogenesisVersion;
         // ★ 适配：多胎分支只迁移一次，后续尊重用户编辑。
         public int multipleBirthVersion;
+        public int observationVersion;
         public List<GeneTreeNode> nodes=new List<GeneTreeNode>();
         public List<GeneTreeEdge> edges=new List<GeneTreeEdge>();
     }
@@ -73,6 +74,7 @@ namespace DarwinPark.Genetics
             // ★ 适配：营养分支和卵寄生先迁移，再验证旧世界的定义与连线。
             NutritionEvolutionUpgrade.Apply(doc,catalog);
             ParthenogenesisEvolutionUpgrade.Apply(doc,catalog);MultipleBirthEvolutionUpgrade.Apply(doc,catalog);
+            ObservationGeneUpgrade.Apply(doc,catalog);
             if(doc==null || doc.nodes==null || doc.edges==null) throw new InvalidDataException("无效基因树");
             var ids=new HashSet<string>();
             foreach(var n in doc.nodes) if(!catalog.ContainsKey(n.id)||!ids.Add(n.id)) throw new InvalidDataException("缺失或重复节点："+n.id);

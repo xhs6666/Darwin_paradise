@@ -15,14 +15,14 @@ namespace DarwinPark.Entities.Ecology
         private void OnDisable(){if(_combat!=null)_combat.Attacked-=OnAttacked;}
         public static bool CanRetaliate(EntityGeneController genes,DarwinEntity attacker)=>genes!=null&&attacker!=null&&EcologyQueries.Alive(attacker)&&genes.GetAttribute("attack")>0&&EcologyMotion.CanHunt(genes,attacker)&&AntColonyCombat.CanAttack(genes.GetComponent<DarwinEntity>(),attacker);
         private void OnAttacked(DarwinEntity attacker,float damage)
-        {if(damage>0&&CanRetaliate(GetComponent<EntityGeneController>(),attacker)){Target=attacker;Remaining=AntColonySettings.Current.retaliationSeconds;}}
+        {if(damage>0&&CanRetaliate(GetComponent<EntityGeneController>(),attacker)){Target=attacker;Remaining=AntColonySettings.Current.retaliationSeconds;EntityPerceptionHub.Notice(GetComponent<EntityGeneController>(),attacker);}}
         public void Advance(float dt){Remaining=Mathf.Max(0,Remaining-dt);if(Remaining<=0)Target=null;}
         public static bool Destination(EntityGeneController genes,out Vector3 point,out DarwinEntity target)
         {
             point=genes.transform.position;target=null;var intent=genes.GetComponent<CombatIntent>();
             if(intent==null||intent.Remaining<=0)return false;
-            if(!CanRetaliate(genes,intent.Target)||!EcologyMotion.Detectable(intent.Target,genes.transform.position,genes.GetAttribute("senseRange"),genes.GetComponent<DarwinEntity>())){intent.Target=null;return false;}
-            target=intent.Target;point=target.transform.position;return true;
+            if(!CanRetaliate(genes,intent.Target)||!EntityPerceptionHub.TryLocate(genes,intent.Target,out point)){intent.Target=null;return false;}
+            target=intent.Target;return true;
         }
         public CombatIntentSave Capture()=>new CombatIntentSave{target=Target!=null?EcologyIdentity.Of(Target):null,remaining=Remaining};
         public void Restore(DarwinEntity target,float remaining){Target=target;Remaining=remaining;}

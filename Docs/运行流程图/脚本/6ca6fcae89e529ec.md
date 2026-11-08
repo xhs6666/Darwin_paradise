@@ -522,7 +522,7 @@ flowchart TD
 - [PopulationWorkbench.SelectedId.get · L16](6ca6fcae89e529ec.md#mef0f87781fb55d79)（访问器）
 - [PopulationArchive.Find · L49](084e119b69cdd751.md#mf1aef4e3d3c3efca)（方法）
 - [PopulationArchive.OpacityFor · L107](084e119b69cdd751.md#m97824b788cf7f2ff)（方法）
-- [WorldSessionManager.SaveNow · L161](08741c7b7b9d9344.md#m182352444e7d2f8e)（方法）
+- [WorldSessionManager.SaveNow · L165](08741c7b7b9d9344.md#m18bba4a94d6c04ef)（方法）
 
 <a id="m09bed70d853d69f9"></a>
 
@@ -1746,7 +1746,7 @@ flowchart TD
 项目内调用/回调引用：
 
 - [RuntimeMenuTheme.Muted.get · L13](b9d8455882f2a532.md#meeaba271eb4ad2ed)（访问器）
-- [EntityGeneController.CurrentAge.get · L36](7494d53178552f0e.md#me8997b269f94cf38)（访问器）
+- [EntityGeneController.CurrentAge.get · L37](7494d53178552f0e.md#md08823d8f9a2fa16)（访问器）
 - [DarwinEntity.Genes.get · L14](70798dde169f2e8b.md#m622eb1adf401d431)（访问器）
 - [PopulationWorkbench.Close · L68](6ca6fcae89e529ec.md#m09bed70d853d69f9)（方法）
 - [EntityViewController.Instance.get · L15](0ad0345f83229ef0.md#mb3b8144b56e80842)（访问器）

@@ -29,11 +29,12 @@ namespace DarwinPark.Entities
         {
             if (e == null || !_all.Remove(e)) return;MembershipRevision++;
             Ecology.EntityNeighborhood.MembershipChanged(e,true);
+            Ecology.EntityPerceptionHub.Remove(e.Genes);
             StationaryBodyRest.Remove(e.GetComponent<UnityEngine.Rigidbody>());
             OnUnregistered?.Invoke(e);
         }
 
         // ★ 适配：换世界同步释放空间缓存，不能保留上一局引用。
-        public static void Clear(){_all.Clear();MembershipRevision++;Ecology.EntityNeighborhood.Clear();StationaryBodyRest.Clear();}
+        public static void Clear(){_all.Clear();MembershipRevision++;Ecology.EntityNeighborhood.Clear();Ecology.EntityPerceptionHub.Clear();StationaryBodyRest.Clear();}
     }
 }

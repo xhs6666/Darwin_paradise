@@ -103,7 +103,7 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [EntityGeneController.CurrentAge.get · L36](7494d53178552f0e.md#me8997b269f94cf38)（访问器）
+- [EntityGeneController.CurrentAge.get · L37](7494d53178552f0e.md#md08823d8f9a2fa16)（访问器）
 - [EntityWorkScheduler.Entry.pending.get · L22](465ccdbb260bcac2.md#m2277186a9d64d8a1)（访问器）
 - [EntityStats.TryGet · L90](75aa86a368efdf24.md#m24ee1433e4a70d94)（方法）
 - [EntityStats.CapacityRemaining · L92](75aa86a368efdf24.md#m574f0a6509120d00)（方法）
@@ -579,9 +579,9 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [GameplayTuning.Current.get · L37](db546e5713b32d53.md#m528861636fc3c87b)（访问器）
-- [EntityGeneController.AdvanceSimulation · L70](7494d53178552f0e.md#m8d432f097da8bbf7)（方法）
-- [StationaryCohortKernel.AdvanceCore · L43](9d3f50e550ab5beb.md#m94052ba96a85dd98)（方法）
+- [GameplayTuning.Current.get · L40](db546e5713b32d53.md#m1bbf27bd17853fc4)（访问器）
+- [EntityGeneController.AdvanceSimulation · L71](7494d53178552f0e.md#m1fed1096c5150ade)（方法）
+- [StationaryCohortKernel.AdvanceCore · L43](9d3f50e550ab5beb.md#mcdd84fc49043442b)（方法）
 
 <a id="mcc852d9054db2d86"></a>
 
@@ -1071,12 +1071,12 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [PerformanceTimings.Measure · L24](a8403a4c7503726d.md#mbef9e348df638730)（方法）
+- [PerformanceTimings.Measure · L24](a8403a4c7503726d.md#m8b21456474d7b973)（方法）
 - [EntityRegistry.MembershipRevision.get · L15](2093aaf08559c9f2.md#m6afb6f184d119e11)（访问器）
 - [DarwinEntity.Genes.get · L14](70798dde169f2e8b.md#m622eb1adf401d431)（访问器）
 - [EntityWorkScheduler.Get · L84](465ccdbb260bcac2.md#m044ae5be02b795dc)（方法）
 - [EntityWorkScheduler.DormantMembers.set · L64](465ccdbb260bcac2.md#m6a6594139c13a5ea)（访问器）
-- [GameplayTuning.Current.get · L37](db546e5713b32d53.md#m528861636fc3c87b)（访问器）
+- [GameplayTuning.Current.get · L40](db546e5713b32d53.md#m1bbf27bd17853fc4)（访问器）
 - [EntityWorkScheduler.QueueActive · L205](465ccdbb260bcac2.md#m81708dbab6fd4c7a)（方法）
 - [EntityGeneController.LogicRevision.get · L19](7494d53178552f0e.md#me69facc1c0f1e164)（访问器）
 - [StationaryCohortKernel.Supported · L12](9d3f50e550ab5beb.md#mc9ba7d3589415ea3)（方法）
@@ -1089,21 +1089,21 @@ flowchart TD
 - [EntityWorkScheduler.AddGroup · L237](465ccdbb260bcac2.md#mc69fd9f6dc6d9869)（方法）
 - [EntityWorkScheduler.TrimSignatures · L198](465ccdbb260bcac2.md#m670ae50e4da12d78)（方法）
 - [EntityWorkScheduler.AdvanceActive · L211](465ccdbb260bcac2.md#m6388d3fd207c0299)（方法）
-- [EntityGeneController.AdvanceSimulation · L70](7494d53178552f0e.md#m8d432f097da8bbf7)（方法）
-- [StationaryCohortKernel.AdvanceCore · L43](9d3f50e550ab5beb.md#m94052ba96a85dd98)（方法）
+- [EntityGeneController.AdvanceSimulation · L71](7494d53178552f0e.md#m1fed1096c5150ade)（方法）
+- [StationaryCohortKernel.AdvanceCore · L43](9d3f50e550ab5beb.md#mcdd84fc49043442b)（方法）
 - [SimulationSubsteps.Count · L10](44755274b83df7ba.md#m9b3c9def7f9642d1)（方法）
 - [SimulationSubsteps.Slice · L11](44755274b83df7ba.md#ma075f8159da64c99)（方法）
 - [EntityWorkScheduler.CanShare · L222](465ccdbb260bcac2.md#m4d55d11465b72a14)（方法）
-- [StationaryCohortKernel.LifeSpeed · L25](9d3f50e550ab5beb.md#m46d6deb700637b17)（方法）
-- [StationaryCohortKernel.Sample · L33](9d3f50e550ab5beb.md#m368ff81f5aee1c55)（方法）
+- [StationaryCohortKernel.LifeSpeed · L25](9d3f50e550ab5beb.md#mdb19e021772f12ab)（方法）
+- [StationaryCohortKernel.Sample · L33](9d3f50e550ab5beb.md#mf4245e22058e4dde)（方法）
 - [EntityWorkScheduler.RepresentativeSteps.set · L62](465ccdbb260bcac2.md#mdd3172e7ffeba215)（访问器）
 - [EntityWorkScheduler.RepresentativeSteps.get · L62](465ccdbb260bcac2.md#mc1634e98de0b9148)（访问器）
-- [StationaryCohortKernel.Apply · L52](9d3f50e550ab5beb.md#mfd57c87c95c56af8)（方法）
+- [StationaryCohortKernel.Apply · L52](9d3f50e550ab5beb.md#mff43eda308e9aa23)（方法）
 - [EntityWorkScheduler.SharedMemberSteps.set · L63](465ccdbb260bcac2.md#mbf38ee84f3a0ece7)（访问器）
 - [EntityWorkScheduler.SharedMemberSteps.get · L63](465ccdbb260bcac2.md#ma2ea17be21511192)（访问器）
 - [EntityLifeCycle.AdvanceShared · L27](9f4138bfbae654b7.md#m70423c7e99affa42)（方法）
 - [EntityLifeCycle.HasDied.get · L11](9f4138bfbae654b7.md#mf2406e6830e0007e)（访问器）
-- [StationaryCohortKernel.PrimaryReproduction · L59](9d3f50e550ab5beb.md#m16b7bdfbcab22c69)（方法）
+- [StationaryCohortKernel.PrimaryReproduction · L59](9d3f50e550ab5beb.md#mcf6814b936ea6fab)（方法）
 - [ReproductionGeneLogic.OnUpdate · L38](ac319ea70bd8b723.md#m51f778c34785d192)（方法）
 - [EntityWorkScheduler.回调@151 · L151](465ccdbb260bcac2.md#mf53e72ece7e2c15f)（回调/委托）
 
@@ -1277,8 +1277,8 @@ flowchart TD
 
 - [EntityWorkScheduler.Entry.pending.get · L22](465ccdbb260bcac2.md#m2277186a9d64d8a1)（访问器）
 - [EntityWorkScheduler.Entry.pending.set · L22](465ccdbb260bcac2.md#m05caefbe3ec968d5)（访问器）
-- [EntityGeneController.AdvanceSimulation · L70](7494d53178552f0e.md#m8d432f097da8bbf7)（方法）
-- [StationaryCohortKernel.AdvanceCore · L43](9d3f50e550ab5beb.md#m94052ba96a85dd98)（方法）
+- [EntityGeneController.AdvanceSimulation · L71](7494d53178552f0e.md#m1fed1096c5150ade)（方法）
+- [StationaryCohortKernel.AdvanceCore · L43](9d3f50e550ab5beb.md#mcdd84fc49043442b)（方法）
 
 <a id="m4d55d11465b72a14"></a>
 
@@ -1331,7 +1331,7 @@ flowchart TD
 
 - [EntityGeneController.LogicRevision.get · L19](7494d53178552f0e.md#me69facc1c0f1e164)（访问器）
 - [EntityWorkScheduler.Eligible · L228](465ccdbb260bcac2.md#m0e8baae2eeaa4717)（方法）
-- [EntityGeneController.CurrentAge.get · L36](7494d53178552f0e.md#me8997b269f94cf38)（访问器）
+- [EntityGeneController.CurrentAge.get · L37](7494d53178552f0e.md#md08823d8f9a2fa16)（访问器）
 
 <a id="m0e8baae2eeaa4717"></a>
 
@@ -1472,7 +1472,7 @@ flowchart TD
 - [NutritionParasite.Host.get · L20](4a18785b7c1e1484.md#m04cde9f68ca91f6a)（访问器）
 - [AntColonyWorker.IsCarried · L144](8a0cca2020271b6f.md#me194a38cd4c5bfab)（方法）
 - [EntityGeneController.Evaluation.get · L18](7494d53178552f0e.md#mc0039c100a31b455)（访问器）
-- [EntityGeneController.GetAttribute · L266](7494d53178552f0e.md#mdbc6681f8c2a7083)（方法）
+- [EntityGeneController.GetAttribute · L267](7494d53178552f0e.md#mfd8d6d35f485440c)（方法）
 
 <a id="mc69fd9f6dc6d9869"></a>
 
@@ -1625,7 +1625,7 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [PerformanceTimings.Measure · L24](a8403a4c7503726d.md#mbef9e348df638730)（方法）
+- [PerformanceTimings.Measure · L24](a8403a4c7503726d.md#m8b21456474d7b973)（方法）
 
 <a id="mc143fc56211bbfab"></a>
 

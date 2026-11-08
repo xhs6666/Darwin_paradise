@@ -28,6 +28,7 @@ namespace DarwinPark.Genetics
             foreach(var entry in merged)catalog[entry.Key]=entry.Value;
             // ★ 修复（防Bug回归）：迁移版本与树一起写回，防止读档后反复补回用户主动删除的分支。
             tree.nodes=result.nodes;tree.edges=result.edges;tree.nutritionVersion=result.nutritionVersion;tree.parthenogenesisVersion=result.parthenogenesisVersion;tree.multipleBirthVersion=result.multipleBirthVersion;
+            tree.observationVersion=result.observationVersion;
             return missing.Count;
         }
     }

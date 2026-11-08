@@ -52,6 +52,7 @@ namespace DarwinPark.UI
             {"baseStorage", "基础储存上限"}, {"nutrientStorage", "营养储存上限"}, {"conversionEfficiency", "转换效率"},
             {"repairEfficiency", "修复效率"}, {"repairCapability", "修复能力"}, {"moveSpeed", "移动速度"},
             {"senseRange", "感知范围"}, {"jumpAbility", "跳跃能力"}, {"attack", "攻击力"},
+            {"visionRange", "观察视野"},
             {"eggDefense", "卵壳防御"}, {"hatchSpeed", "孵化速度"},
             {"environmentResistance", "环境抵抗力"}
             ,{"energy_block_absorption","能量块吸收速率"},{"energy_block_release","能量块吐出量"}

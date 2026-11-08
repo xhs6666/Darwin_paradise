@@ -200,6 +200,8 @@ namespace DarwinPark.UI
             // ★ 新增：全地图统计是只读公共信息，独立于两页创造/管理权限，成员也可筛选查看。
             var statistics=UIFactory.NewRect("MapEntityStatistics",_page1Container.transform,typeof(Image));
             statistics.AddComponent<MapEntityStatisticsUI>();
+            // ★ 适配：规则独立卡片位于第一页，不改变统计/筛选和第二页种群档案布局。
+            var rules=UIFactory.NewRect("SimulationRules",_page1Container.transform);rules.AddComponent<SimulationRulesPanel>();
 
             SwitchPage(0);
         }

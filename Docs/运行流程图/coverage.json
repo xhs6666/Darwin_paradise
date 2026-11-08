@@ -1,16 +1,16 @@
 {
   "stats": {
-    "scripts": 324,
-    "csharp": 314,
+    "scripts": 334,
+    "csharp": 324,
     "gpu": 10,
-    "methods": 3482,
-    "graphs": 3485,
-    "profileGraphs": 5918,
-    "nodes": 32904,
-    "calls": 44981,
-    "internalLinks": 12958,
+    "methods": 3565,
+    "graphs": 3568,
+    "profileGraphs": 6061,
+    "nodes": 33654,
+    "calls": 45965,
+    "internalLinks": 13250,
     "unresolved": 10,
-    "hash": "6bcecbf914737296"
+    "hash": "3f8c97b850835695"
   },
   "diagnostics": [
     {
@@ -107,7 +107,7 @@
       "Path": "Assets/DarwinPark/Core/GameplayTuning.cs",
       "Scope": "Runtime",
       "methods": 6,
-      "Hash": "8579eb63dcd4a2f86e8de4c7223efe70af971a0169d837978a21f6cc8215eb86"
+      "Hash": "5f7c8b868853d47a08e8cb2ccc37458eff8da86ef457ec88510e5edeff9b6162"
     },
     {
       "Id": "d8a018f478416f7b",
@@ -180,6 +180,13 @@
       "Hash": "c26a5df1c5200ab7c937aadf3720e4a795e45d57105a0e2ad88ac16cca23e467"
     },
     {
+      "Id": "063e584187dad139",
+      "Path": "Assets/DarwinPark/Core/MutationRuleEdits.cs",
+      "Scope": "Runtime",
+      "methods": 3,
+      "Hash": "45b90e9ea1511eaafd36a834fe72a6f326a4498f24a685c71dfbf7a8b90c0940"
+    },
+    {
       "Id": "42eb429559b42bcb",
       "Path": "Assets/DarwinPark/Core/OrbitCamera.cs",
       "Scope": "Runtime",
@@ -191,7 +198,7 @@
       "Path": "Assets/DarwinPark/Core/RuntimePerformance.cs",
       "Scope": "Runtime",
       "methods": 16,
-      "Hash": "dc886e18d3dd0b5c5b92cb091e25e4c8917e4afd70005270e01341dab81bb0aa"
+      "Hash": "6d31b2de9c7fc108c450b0a2b21f35fcb6ae27603b050db30e2df82030838ab8"
     },
     {
       "Id": "f2fdbe9f9ccd93cb",
@@ -366,7 +373,7 @@
       "Path": "Assets/DarwinPark/Editor/EntityPlanningMergeRegression.cs",
       "Scope": "Editor",
       "methods": 46,
-      "Hash": "1b1c7e56a52e617824745520a17921c5419fc801ea0d34d16d87318d8663436e"
+      "Hash": "8ef39caa5f34e97f22f3a56b132bf3026ce79a24d91824979fba1c8f96b15018"
     },
     {
       "Id": "cbb314f2877cdcfa",
@@ -450,7 +457,7 @@
       "Path": "Assets/DarwinPark/Editor/LifeCycleCombatRegression.cs",
       "Scope": "Editor",
       "methods": 14,
-      "Hash": "1e4288e87d8c92dd143752ffbba8fd5ff2b8cf27393fb419137e4e8d23e3bd16"
+      "Hash": "ef8a7a6eb2bbf1a4efed3409e99d4bd707f7c1f889c6534e775149e99efdadf5"
     },
     {
       "Id": "ba405663a24f549a",
@@ -486,6 +493,13 @@
       "Scope": "Editor",
       "methods": 46,
       "Hash": "cf24e66de803f90bd8a158a7de834e8e68521a41abed1f40907effc880071351"
+    },
+    {
+      "Id": "4acb930dd1eb9363",
+      "Path": "Assets/DarwinPark/Editor/ObservationMutationRegression.cs",
+      "Scope": "Editor",
+      "methods": 23,
+      "Hash": "b2e9626127e90acb8f8c2b0c0d1a7e4f0360dfffcb37a3b6da76eed88bf3ece8"
     },
     {
       "Id": "8a0c679de35169a0",
@@ -631,8 +645,8 @@
       "Id": "baebd85c05598377",
       "Path": "Assets/DarwinPark/Entities/Ecology/AntColonyMember.cs",
       "Scope": "Runtime",
-      "methods": 55,
-      "Hash": "0133a2bfafb410cf4f986a1eb91ec836062d94b81148ee2eba88b7a487e683f5"
+      "methods": 53,
+      "Hash": "70799284f53744e6151c6a7a5523dd4aa51f7fa843b3663f0fd3df8608f11565"
     },
     {
       "Id": "c22084eac4e522ed",
@@ -751,7 +765,7 @@
       "Path": "Assets/DarwinPark/Entities/Ecology/CombatIntent.cs",
       "Scope": "Runtime",
       "methods": 13,
-      "Hash": "9005465225914d1069e0665000c251aca3d9bdab7d0d9f4715f1dc70ec0bfef4"
+      "Hash": "df1a28a9fbc2b41704e4f3feba19c8424f857e9d21694d9a4acf100e0bccf1a8"
     },
     {
       "Id": "8a2345f1e54b1c75",
@@ -894,6 +908,13 @@
       "Hash": "4d2061357944137f9cfe2cfa56dc0e4ce4a9c529ec093c329d8cd8b375fb4361"
     },
     {
+      "Id": "f6d0404a662a5d5c",
+      "Path": "Assets/DarwinPark/Entities/Ecology/EntityCoordinateGrid.cs",
+      "Scope": "Runtime",
+      "methods": 10,
+      "Hash": "68ec710dec1c4ba5999335d951040e44cefb0987fe591dda7809b9408a6ef73f"
+    },
+    {
       "Id": "07fa6bdaadf50796",
       "Path": "Assets/DarwinPark/Entities/Ecology/EntityDeathSettlement.cs",
       "Scope": "Runtime",
@@ -904,22 +925,29 @@
       "Id": "e5e24c4aff0395b1",
       "Path": "Assets/DarwinPark/Entities/Ecology/EntityNeighborhood.cs",
       "Scope": "Runtime",
-      "methods": 13,
-      "Hash": "86b61a933f3f12d6789f7151809335c5ea51eadb7261f67a02e7eae1becade8e"
+      "methods": 16,
+      "Hash": "3d9bfe56272a981a7e3807221528ebb1648875246ca07a9b91418e6f407ad6f6"
+    },
+    {
+      "Id": "aeecc36cb2c3cc24",
+      "Path": "Assets/DarwinPark/Entities/Ecology/EntityPerceptionHub.cs",
+      "Scope": "Runtime",
+      "methods": 17,
+      "Hash": "4c4b760108e06ef01475dfc061186659a6d0cf912760ca62c2039b41be45b1b6"
     },
     {
       "Id": "0f8869eb7018091e",
       "Path": "Assets/DarwinPark/Entities/Ecology/EntityStateController.cs",
       "Scope": "Runtime",
       "methods": 21,
-      "Hash": "fb5a5c6863a3453136571b72334053dbc31bf65e6e6c01bbe283dabbfc64121e"
+      "Hash": "06a590101f6223d1f1040fb594ae133dd354fddb32ff7990438938a16c344612"
     },
     {
       "Id": "d5c725c964fe5c61",
       "Path": "Assets/DarwinPark/Entities/Ecology/EntityStateMotion.cs",
       "Scope": "Runtime",
-      "methods": 2,
-      "Hash": "d00e2d3f02d627a63577038dbfe3b59fac7aef44b08d15b6e9083082ac76a235"
+      "methods": 1,
+      "Hash": "9b19a2b0358d1ee2237886ae979009823025792c28b9159c90132e79733da2bd"
     },
     {
       "Id": "da041665b1125ffc",
@@ -971,6 +999,13 @@
       "Hash": "33604eba4239c5c07bbc0cb4df634772bd5396b1ec3fb92f4e12242842de1fa3"
     },
     {
+      "Id": "b78759d0d0a172e4",
+      "Path": "Assets/DarwinPark/Entities/Ecology/PerceivedTargets.cs",
+      "Scope": "Runtime",
+      "methods": 2,
+      "Hash": "219a5dc75e97b11a472051eac4352fc8b7db761042ffc6572107a3933fa6bc07"
+    },
+    {
       "Id": "084e119b69cdd751",
       "Path": "Assets/DarwinPark/Entities/Ecology/PopulationArchive.cs",
       "Scope": "Runtime",
@@ -981,8 +1016,8 @@
       "Id": "21e4f62f75a9a80f",
       "Path": "Assets/DarwinPark/Entities/Ecology/PopulationBehavior.cs",
       "Scope": "Runtime",
-      "methods": 56,
-      "Hash": "8057f312ffe2e02b7a0a5a375c2b19b5721dd2cdf03c96d8f094074d4c214bf1"
+      "methods": 54,
+      "Hash": "f5cdf26e817701abbd7418aea51d7b41d04efccf94105410f59afe49b695087b"
     },
     {
       "Id": "6bb343d8be5beae5",
@@ -1009,8 +1044,8 @@
       "Id": "cac3b6501f41ca35",
       "Path": "Assets/DarwinPark/Entities/Ecology/RtsOrderController.cs",
       "Scope": "Runtime",
-      "methods": 10,
-      "Hash": "82c9d9234bdae5456012097bb59877f54035e365c0498f986147def87b93489a"
+      "methods": 9,
+      "Hash": "02d17fbe19487302ff7b4965d510430f1e970a9c517641fc7c54792a801ac0db"
     },
     {
       "Id": "19d504dcdc8bc624",
@@ -1031,7 +1066,7 @@
       "Path": "Assets/DarwinPark/Entities/EntityGeneController.cs",
       "Scope": "Runtime",
       "methods": 25,
-      "Hash": "71d006a14d157c271b0b30798b7389f97de1f0b1f25de2c54e220d814672e3d0"
+      "Hash": "8bc76b123f02a8a33370442e85000798632e1794ca4069afeb75f9238bc1d506"
     },
     {
       "Id": "fa3269c9da0aa692",
@@ -1059,7 +1094,7 @@
       "Path": "Assets/DarwinPark/Entities/EntityRegistry.cs",
       "Scope": "Runtime",
       "methods": 6,
-      "Hash": "56eb77ddf28485fcb43360a00190e3fd815375dde18d13b82db88bf046cf76e5"
+      "Hash": "e157925f1dfdb6de756601941221659c64a72aa88fb2404f977ad0e3bae4f956"
     },
     {
       "Id": "a1ec8fcd9d7d3ddb",
@@ -1129,7 +1164,7 @@
       "Path": "Assets/DarwinPark/Entities/Logic/GeneLogicRegistry.cs",
       "Scope": "Runtime",
       "methods": 4,
-      "Hash": "e616a71853bdc77c4d9ef33b83635c929be4bf18327a91c6387558eda67d1799"
+      "Hash": "09d30577a074fa772246e4cfeb1f3324452777e9708d975940985c694fe94dad"
     },
     {
       "Id": "136851db51415ac3",
@@ -1149,8 +1184,8 @@
       "Id": "50c563bf540685c7",
       "Path": "Assets/DarwinPark/Entities/Logic/LocomotionGeneLogic.cs",
       "Scope": "Runtime",
-      "methods": 7,
-      "Hash": "6abb1b95845365f41d951c3df60cca89602e8125d239a100753b10e0ae8f0902"
+      "methods": 6,
+      "Hash": "0a5a5dcc1675d1ad2eeb8822c167279db3c0fb7e97a3ce18f28cc17b6784682d"
     },
     {
       "Id": "8cce83c7d4563cf0",
@@ -1172,6 +1207,13 @@
       "Scope": "Runtime",
       "methods": 3,
       "Hash": "725d7a740b7db632956a7cca3ef64b4ab473dd08839bf3a45d21ade3b89830a7"
+    },
+    {
+      "Id": "ac206427dc534c7a",
+      "Path": "Assets/DarwinPark/Entities/Logic/ObservationGeneLogic.cs",
+      "Scope": "Runtime",
+      "methods": 3,
+      "Hash": "e6f409db0e42265d1dc0206b5920e501f7c99f9483a08b2eafbbeb793e819f43"
     },
     {
       "Id": "a2aee104992d3fae",
@@ -1261,15 +1303,22 @@
       "Id": "debf58c0eabf33e3",
       "Path": "Assets/DarwinPark/Entities/Simulation/GlobalMutationManager.cs",
       "Scope": "Runtime",
-      "methods": 8,
-      "Hash": "1a6b80685267d92026a188e21a280f0e33e5b62c6edbf8741849d6ebac522bde"
+      "methods": 1,
+      "Hash": "8e3fb4ef4397d8fef8b565f3889a8e7c83a9c06026396c7c73907ce75117073d"
+    },
+    {
+      "Id": "3a238ee75b15c52c",
+      "Path": "Assets/DarwinPark/Entities/Simulation/MutationRoundController.cs",
+      "Scope": "Runtime",
+      "methods": 16,
+      "Hash": "821a912b84ba5c5c5c8c58cb42d94eb4c90a36a4408d805e397e76cb7c28af57"
     },
     {
       "Id": "9d3f50e550ab5beb",
       "Path": "Assets/DarwinPark/Entities/Simulation/StationaryCohortKernel.cs",
       "Scope": "Runtime",
       "methods": 10,
-      "Hash": "3d4748ae4e33e3edcc39d8bddc78807004a14acb67ec434dfc5ad1b7ac5f3aca"
+      "Hash": "a3cbbe2e1137283fdbcc0a2fb0fbd6f7cb526d9766601c2a56eed1bd9542b03c"
     },
     {
       "Id": "19e6d310d5522440",
@@ -1353,7 +1402,7 @@
       "Path": "Assets/DarwinPark/GameRoot/GameBootstrap.cs",
       "Scope": "Runtime",
       "methods": 4,
-      "Hash": "6a44ef50d30f7fe3bf79bfc9fce50db4fa033ada23a46eefe4fae2f754e37fee"
+      "Hash": "41d54e0b734c109297919fac81ff673e7f2aa7290831d385ab09bbcbddf495a6"
     },
     {
       "Id": "bfe753debd0165af",
@@ -1437,7 +1486,7 @@
       "Path": "Assets/DarwinPark/Genetics/GeneCatalogExpansion.cs",
       "Scope": "Runtime",
       "methods": 6,
-      "Hash": "ff4cd70ecea6bc8c1d73de220d7ef9aa1fd9c69878c0dc6db0fbf40d469f724d"
+      "Hash": "f6999cf01ddbcf8a2652efe85e7f19cfc2e32aa50d9dc993219408ba6db8fe03"
     },
     {
       "Id": "d87d75eb0b331d5c",
@@ -1472,7 +1521,7 @@
       "Path": "Assets/DarwinPark/Genetics/GeneTreeStorage.cs",
       "Scope": "Runtime",
       "methods": 21,
-      "Hash": "cee1bfadccafa721bfdfd81c46ab70953d298383478ec1740d9fdea5a0099016"
+      "Hash": "624b72918552c33bb4c105477900da3ed5bde6e34da6f4adcb68e9dd9451da64"
     },
     {
       "Id": "a27ba78849d972a7",
@@ -1529,6 +1578,20 @@
       "Scope": "Runtime",
       "methods": 8,
       "Hash": "07e49dc2e669f16bbb0ce06f4d8458522f81e0f09cc1cd0723a8ef00051dfcaa"
+    },
+    {
+      "Id": "6a35b0da69b3773b",
+      "Path": "Assets/DarwinPark/Genetics/ObservationGeneUpgrade.cs",
+      "Scope": "Runtime",
+      "methods": 3,
+      "Hash": "51b2ed02aa7e4ed7925f46446baaf588bc695c18fb1f84394e291ed232b007ec"
+    },
+    {
+      "Id": "fde4b9e3a289b4e6",
+      "Path": "Assets/DarwinPark/Genetics/ObservationSettings.cs",
+      "Scope": "Runtime",
+      "methods": 2,
+      "Hash": "e80dad09863040b54b196250ae4fe01d7ffa449c0381e42840dd2ec16c44b5e5"
     },
     {
       "Id": "9270126d968c1a50",
@@ -1899,7 +1962,7 @@
       "Path": "Assets/DarwinPark/UI/GeneInspectorUI.cs",
       "Scope": "Runtime",
       "methods": 36,
-      "Hash": "c3883ac854d9bae294a3b3bbe656736789dccbd6183bd960fc02c54d8c11d54d"
+      "Hash": "d0e9a44adaf864f727d04d558481e20d801d3de98e739dbe308e05989f56ae46"
     },
     {
       "Id": "7b98ef3da23a85cb",
@@ -2074,7 +2137,7 @@
       "Path": "Assets/DarwinPark/UI/RandomPlanetSpawner.cs",
       "Scope": "Runtime",
       "methods": 24,
-      "Hash": "dd43b3a00212d47b702dbb8cc95378f52040876048275cd4f0692e0ad80c5a85"
+      "Hash": "737a58f2c6893147631332d17207318c1d278100a4b92f65e8d1187545673c09"
     },
     {
       "Id": "ff6518313bce61e2",
@@ -2158,7 +2221,14 @@
       "Path": "Assets/DarwinPark/UI/SimulationControlPanel.cs",
       "Scope": "Runtime",
       "methods": 37,
-      "Hash": "b8fe169fc99d8d3a74b6264acad0cf4c0f5b3aa46c08932d1ee3f8dfb421773f"
+      "Hash": "f4d144bb281d399fe15b32f553d9868911a6bcb810e912eb321be9de37a7988f"
+    },
+    {
+      "Id": "dd1021765f4bd253",
+      "Path": "Assets/DarwinPark/UI/SimulationRulesPanel.cs",
+      "Scope": "Runtime",
+      "methods": 15,
+      "Hash": "0f80fc5361176d088d6f03c4b6dacace979c0ad448ce627c4bc443714418ff04"
     },
     {
       "Id": "afe657f09857fa47",
@@ -2214,14 +2284,14 @@
       "Path": "Assets/DarwinPark/UI/WorldSaveStore.cs",
       "Scope": "Runtime",
       "methods": 20,
-      "Hash": "dd4ca8b30cecc42182577415ac8f141895b43988b8603abb2554bb5227d8cf42"
+      "Hash": "50e3c901b1110aec57e988eba9e1dd7f881e3c6e7ce112512a37fb3befd65167"
     },
     {
       "Id": "08741c7b7b9d9344",
       "Path": "Assets/DarwinPark/UI/WorldSessionManager.cs",
       "Scope": "Runtime",
       "methods": 30,
-      "Hash": "e027159112e5fe972727fa6150033226bddbd828f0b87116c721febd6113c53e"
+      "Hash": "c560315e897da64d43444bba05b2b018a5aee3ef833483340d6d030feaaae8ad"
     },
     {
       "Id": "1cdf171274f22a47",
@@ -2297,11 +2367,11 @@
   "modes": [
     {
       "mode": "Roslyn\u7F16\u8BD1\u5668\u63A7\u5236\u6D41",
-      "count": 2943
+      "count": 3013
     },
     {
       "mode": "\u8BED\u6CD5\u63A7\u5236\u7ED3\u6784 / \u58F0\u660E\uFF08\u975ECFG\uFF09",
-      "count": 516
+      "count": 529
     },
     {
       "mode": "GPU\u63A7\u5236\u7ED3\u6784\uFF08\u540D\u79F0\u94FE\u63A5\uFF0C\u4E0D\u4F5CC#\u7C7B\u578B\u63A8\u65AD\uFF09",

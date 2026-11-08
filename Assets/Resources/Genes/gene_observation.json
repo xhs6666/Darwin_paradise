@@ -1,0 +1,40 @@
+{
+  "id": "gene_observation",
+  "displayName": "观察基因",
+  "category": "Locomotion",
+  "isBaseGene": true,
+  "tier": 0,
+  "logicScriptId": "ObservationGeneLogic",
+  "aiModuleId": "",
+  "attributeCurves": [
+    {
+      "attributeId": "visionRange",
+      "minValue": 20,
+      "maxValue": 40
+    }
+  ],
+  "states": [
+    {
+      "stateId": "wide_view",
+      "displayName": "视野范围",
+      "center": 25,
+      "color": [
+        0.25,
+        0.8,
+        0.95
+      ]
+    },
+    {
+      "stateId": "attention",
+      "displayName": "注意力",
+      "center": 75,
+      "color": [
+        0.95,
+        0.75,
+        0.25
+      ]
+    }
+  ],
+  "attributeLinkages": [],
+  "suppressionRules": []
+}

@@ -53,9 +53,9 @@ namespace DarwinPark.Entities.Ecology
             {target=EcologyIdentity.Find(State.target);if(!EcologyQueries.Alive(target)||!EcologyMotion.CanHunt(_genes,target)){State.active=false;target=null;return false;}point=target.transform.position;return true;}
             if(State.kind==RtsOrderKind.Guard&&_genes.GetAttribute("attack")>0)
             {
-                float range=_genes.GetAttribute("senseRange");
-                var guardPoint=point;target=EntityRegistry.All.FirstOrDefault(e=>e!=GetComponent<DarwinEntity>()&&(e.transform.position-guardPoint).sqrMagnitude<=range*range&&EcologyQueries.Alive(e)&&EcologyMotion.CanHunt(_genes,e));
-                if(target!=null)point=target.transform.position;
+                // ★ 适配：自动警戒从本实体视野收件箱取信息；明确下达的攻击指令保留原有目标语义。
+                float range=EntityPerceptionHub.Range(_genes);var guardPoint=point;
+                foreach(var sighting in EntityPerceptionHub.Read(_genes))if(PerceivedTargets.Valid(_genes,sighting.entity,false,out var seen)&&(seen-guardPoint).sqrMagnitude<=range*range){target=sighting.entity;point=seen;break;}
             }
             if(State.kind==RtsOrderKind.Move&&EcologyQueries.Distance(transform.position,point)<=arrivalDistance){State.active=false;return true;}
             return true;

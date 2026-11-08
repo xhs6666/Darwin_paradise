@@ -18,22 +18,12 @@ namespace DarwinPark.Entities.Ecology
                 case EntityStateBehavior.Hunt:
                     // ★ 适配：普通主动取食需要消化能力；防御/手动攻击与蚁群士兵仍走各自入口。
                     if(!NutritionTransfer.CanHuntForFood(genes))return false;
-                    float range=genes.GetAttribute(state.Current.targetRangeAttributeId);
-                    bool Valid(DarwinEntity entity)=>EcologyQueries.Alive(entity)&&entity.gameObject!=genes.gameObject&&
-                        NutritionTransfer.FoodTargetAllowed(genes,entity)&&EcologyMotion.Detectable(entity,genes.transform.position,range,genes.GetComponent<DarwinEntity>())&&EcologyMotion.CanHunt(genes,entity);
-                    if(Valid(state.DetectedTarget))state.HuntTarget=state.DetectedTarget;
-                    if(!Valid(state.HuntTarget))
-                    {
-                        state.HuntTarget=null;float best=float.MaxValue;
-                        foreach(var entity in EntityRegistry.All)
-                        {
-                            if(!Valid(entity))continue;float distance=(entity.transform.position-genes.transform.position).sqrMagnitude;
-                            if(distance<best){best=distance;state.HuntTarget=entity;}
-                        }
-                    }
+                    float range=EntityPerceptionHub.Range(genes,state.Current.targetRangeAttributeId);
+                    if(PerceivedTargets.Valid(genes,state.DetectedTarget,false,out _,true,range))state.HuntTarget=state.DetectedTarget;
+                    state.HuntTarget=PerceivedTargets.Nearest(genes,false,state.HuntTarget,out point,true,range);
                     target=state.HuntTarget;
                     if(target==null)return false;
-                    point=target.transform.position;return true;
+                    return true;
                 default:return false;
             }
         }

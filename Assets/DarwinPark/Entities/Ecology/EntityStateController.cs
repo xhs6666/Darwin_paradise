@@ -85,16 +85,17 @@ namespace DarwinPark.Entities.Ecology
         }
         private DarwinEntity FindMatchingEntity(EntityStateCondition condition)
         {
-            float range=_genes.GetAttribute(condition.rangeAttributeId);if(range<=0)return null;
+            float range=EntityPerceptionHub.Range(_genes,condition.rangeAttributeId);if(range<=0)return null;
             DarwinEntity best=null;float distance=float.MaxValue;
-            foreach(var entity in EntityRegistry.All)
+            foreach(var sighting in EntityPerceptionHub.Read(_genes))
             {
+                var entity=sighting.entity;
                 if(entity.gameObject==gameObject||!EcologyQueries.Alive(entity))continue;
                 // ★ 修复（防Bug回归）：同群士兵的捕猎倾向不能被误认成附近敌对捕猎者。
                 if(GetComponent<PopulationBehavior>()?.SameGroup(entity)==true)continue;
                 var gene=EcologyQueries.Active(entity.Genes,condition.geneId);
-                if(gene?.State?.StateId!=condition.geneStateId||!EcologyMotion.Detectable(entity,transform.position,range,GetComponent<DarwinEntity>()))continue;
-                float current=(entity.transform.position-transform.position).sqrMagnitude;
+                if(gene?.State?.StateId!=condition.geneStateId||!EntityPerceptionHub.TryLocate(_genes,entity,out var point,range))continue;
+                float current=(point-transform.position).sqrMagnitude;if(current>range*range)continue;
                 if(current<distance){distance=current;best=entity;}
             }
             return best;

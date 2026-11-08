@@ -118,15 +118,15 @@ flowchart TD
 
 - [GeneTreeWorkbenchRegression.Check · L16](b594bef24a5dce2b.md#m76fa7ea70c148b6d)（方法）
 - [GameInputGate.Blocked.get · L8](52955daae7e592ab.md#m765763b665829633)（访问器）
-- [GeneTreeStorage.ReadCatalog · L29](a885bad0d7dedee8.md#m9fdcb15884053f59)（方法）
+- [GeneTreeStorage.ReadCatalog · L30](a885bad0d7dedee8.md#mf739dce11969ef23)（方法）
 - [GeneValueForm.Load · L16](1a57b2a63a2f76d5.md#m3e1d8f0799dda5fd)（方法）
 - [GeneValueForm.Export · L38](1a57b2a63a2f76d5.md#m733739ea591391d9)（方法）
-- [GeneTreeStorage.SaveTo · L98](a885bad0d7dedee8.md#mccb317faa8451097)（方法）
-- [GeneTreeStorage.LoadFrom · L56](a885bad0d7dedee8.md#m983add8b79f15ea3)（方法）
-- [GeneTreeStorage.Validate · L69](a885bad0d7dedee8.md#m6d65229e98b963db)（方法）
-- [GeneTreeStorage.Active.get · L28](a885bad0d7dedee8.md#mfe1f8a5bbc21d980)（访问器）
-- [GeneTreeStorage.ApplyInfluences · L119](a885bad0d7dedee8.md#m02be63d3306fad6d)（方法）
-- [GeneTreeStorage.Successor · L124](a885bad0d7dedee8.md#m5fc50e077375a502)（方法）
+- [GeneTreeStorage.SaveTo · L100](a885bad0d7dedee8.md#maa795acf9a4622f6)（方法）
+- [GeneTreeStorage.LoadFrom · L57](a885bad0d7dedee8.md#m1f5c96d20c812a08)（方法）
+- [GeneTreeStorage.Validate · L70](a885bad0d7dedee8.md#mdf3e5781bfb367c4)（方法）
+- [GeneTreeStorage.Active.get · L29](a885bad0d7dedee8.md#m864022905c32d666)（访问器）
+- [GeneTreeStorage.ApplyInfluences · L121](a885bad0d7dedee8.md#mb2c2d6d02d55e907)（方法）
+- [GeneTreeStorage.Successor · L126](a885bad0d7dedee8.md#mff1a6391d49d59ea)（方法）
 - [LifeCycleCombatRegression.Validate · L40](92ed3746ce41b5f8.md#m4d72ef5ac3e2247d)（方法）
 - [GeneTreeWorkbenchRegression.回调@24 · L24](b594bef24a5dce2b.md#m06f837fd616a41e6)（回调/委托）
 

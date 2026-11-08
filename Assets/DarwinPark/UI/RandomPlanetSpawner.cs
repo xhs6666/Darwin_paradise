@@ -80,7 +80,7 @@ namespace DarwinPark.UI
             DarwinEntity created=null;void Registered(DarwinEntity entity)=>created=entity;EntityRegistry.OnRegistered+=Registered;
             try{DarwinEntity.Spawner(genome,point,"");}finally{EntityRegistry.OnRegistered-=Registered;}
             if(created==null)return false;
-            // ★ 修复（防Bug回归）：这些是按明确来源投放的初始实体，出生当帧不再重抽一次变异破坏“完全模板/必有必无”；成年变异仍正常。
+            // ★ 修复（防Bug回归）：这些是按明确来源投放的初始实体，出生当帧不再重抽一次变异破坏“完全模板/必有必无”；后续统一定时轮次仍可变异。
             created.GetComponent<EntityLifeCycle>().RestoreProgress(0);created.Genes.RestoreStageState(AgeState.Infant,1,1);created.Genes.Recalculate();return true;
         }
         private void Update()

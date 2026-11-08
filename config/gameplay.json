@@ -43,8 +43,13 @@
   "mergeGroupsPerFrame": 128,
   // 轮到组时补算累计时间，每次最多5模拟秒；避免大量组高倍率下始终追不上日历，也限制单次工作量。
   "mergeMaximumCatchupSeconds": 5,
-  // 全局每帧阶段变异预算；同一空间同基因组只抽部分代表，不把一个变异复制到全组。
+  // 每帧最多执行的已抽选变异数；超额名单留到后续帧，暂停不推进。
   "mutationAttemptsPerFrame": 16,
+  // 定时全局轮次：按全部活体数量随机选取10%，无放回；30模拟秒一轮。名额向上取整，锁定角色/孵化卵排除。
+  "mutationRoundsEnabled": true,
+  "mutationPopulationFraction": 0.1,
+  "mutationRoundSeconds": 30,
+  // 仅保留旧配置兼容，定时轮次不再使用近邻序号比例。
   "mergedMutationFraction": 0.125,
   // 多胎基因最高胎数；受基因表达和食物预算约束，已怀孕胎数固定保存。
   "multipleBirthMaximum": 5,

@@ -24,6 +24,7 @@ namespace DarwinPark.Entities
         [Header("成长设置")]
         public float growthInterval = 5f;
         public float mutationChance = 0.3f;
+        // ★ 适配：mutationChance仅保留旧档兼容；自然变异的名额与频率由全局规则卡控制。
         [HideInInspector] public bool IsGestating = false;
 
         [Header("环境选择压力（由 EntityEnvironmentHazard 写入）")]
@@ -48,7 +49,7 @@ namespace DarwinPark.Entities
         private EntityLifeCycle _life;private Ecology.CombatIntent _combat;private Ecology.EntityStateController _state;
         private int _mutatedStages;
         public int StageMutationChecks {get;private set;}
-        // ★ 适配：恢复已抽过的阶段，读档不能重抽出生/成年变异。
+        // ★ 适配：恢复已登记的阶段，读档不重复触发生命阶段事件。
         public int MutatedStageMask=>_mutatedStages;
         public void RestoreStageState(AgeState age,int mask,int checks){CurrentAge=age;_mutatedStages=mask;StageMutationChecks=checks;}
 
@@ -75,7 +76,7 @@ namespace DarwinPark.Entities
             if (dt <= 0f||WorldAuthority.IsReplica) return;
             // ★ 适配：物理/搬运改变位置后更新已存在的邻居快照，不在每个小步重建索引。
             Ecology.EntityNeighborhood.ObservePosition(this);
-            // ★ 适配：卵孵化前不执行出生变异和普通基因行为，孵化后从幼年开始。
+            // ★ 适配：卵孵化前不登记出生阶段或执行普通基因行为，孵化后从幼年开始。
             var egg=GetComponent<Ecology.EggIncubation>();if(egg!=null&&egg.Incubating){egg.Advance(dt);return;}
             if (_isRecalculating) return;
             // ★ 修复（防Bug回归）：生命与反击组件在实体生命周期内复用，不能每个模拟子步重复GetComponent。
@@ -106,7 +107,7 @@ namespace DarwinPark.Entities
             using var performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.GeneRecalculation);
             if (_isRecalculating) return;
             Simulation.EntityWorkScheduler.Wake(this);
-            // ★ 适配：固定分工先还原出生遗传快照，编辑和阶段变异不能改写士兵/工匠基因。
+            // ★ 适配：固定分工先还原出生遗传快照，编辑和全局变异不能改写士兵/工匠基因。
             GetComponent<Ecology.AntColonyMember>()?.EnforceGenome();
             _isRecalculating = true;
 
@@ -271,23 +272,9 @@ namespace DarwinPark.Entities
 
         public void TryStageMutation(AgeState stage)
         {
-                // ★ 修复（防Bug回归）：只在出生/成年/老年首次进入时抽一次，普通帧和定时刷新不能变异。
-                int bit=1<<(int)stage;if((_mutatedStages&bit)!=0)return;
-                _mutatedStages|=bit;StageMutationChecks++;
-                // 基因变异与刷新。
-                // ★ 修复：环境压力不仅提高“定向选择”概率，也提高本次变异的总体发生率
-                //（最高 +25%），否则玩家很难观察到适应基因被优先突变。
-                float effectiveMutationChance = Mathf.Clamp01(
-                    mutationChance + EnvironmentMutationChance * 0.25f);
-                if (GetComponent<Ecology.AntColonyMember>()?.Frozen!=true&&Simulation.GlobalMutationManager.Permit(this)&&UnityEngine.Random.value < effectiveMutationChance)
-                {
-                    var settings = GeneMutationSettings.CreateDefault();
-                    settings.AdaptationGeneId = EnvironmentGeneId;
-                    settings.AdaptationMutationChance = EnvironmentMutationChance;
-                    settings.AdaptationTargetValue = EnvironmentAdaptationTarget;
-                    GeneMutator.Mutate(Genome, settings);
-                }
-                Recalculate();
+            // ★ 适配：保留旧档阶段位与检查计数，不再在出生/成年/老年额外抽签；调用方统一重算阶段属性。
+            int bit=1<<(int)stage;if((_mutatedStages&bit)!=0)return;
+            _mutatedStages|=bit;StageMutationChecks++;
         }
     }
 }

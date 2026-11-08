@@ -32,6 +32,7 @@ namespace DarwinPark.UI
         public WorldGameSettings gameSettings;
         // ★ 新增：维持目标及生成来源独立保存，旧档缺字段不启用自动生成。
         public PopulationMaintenanceState maintenance;
+        public DarwinPark.Entities.Simulation.MutationRoundSave mutationRounds;
     }
     public sealed class WorldSaveEntry {public string path,name,error;public WorldSaveData data;}
     // ★ 新增：同目录临时文件+原子替换，失败保留原档和备份，加载先完整校验再清场。
@@ -82,6 +83,8 @@ namespace DarwinPark.UI
             foreach(var entity in data.entities)DarwinPark.Entities.Ecology.ColonyWorldState.ValidateMotion(entity?.ecology);
             if(float.IsNaN(data.gameTime)||float.IsInfinity(data.gameTime)||data.gameTime<0)throw new InvalidDataException("存档时间无效");
             if(float.IsNaN(data.timeScale)||float.IsInfinity(data.timeScale)||data.timeScale<0)throw new InvalidDataException("存档时间倍率无效");
+            // ★ 适配：加载前校验全局变异计时和剩余名单，损坏快照不能先清理现场。
+            DarwinPark.Entities.Simulation.MutationRoundController.Validate(data.mutationRounds);
             // ★ 修复（防Bug回归）：在清理当前世界之前校验参数和基因 JSON，损坏存档不会先破坏现场。
             var terrain=JsonUtility.FromJson<TerrainSaveValidation>(data.terrainParameters);
             if(terrain==null||terrain.subdivisions<2||terrain.subdivisions>1024||!Finite(terrain.radius)||terrain.radius<=0||!Finite(terrain.heightScale)||!Finite(terrain.continentRatio)||terrain.continentRatio<=0||terrain.continentRatio>=1)throw new InvalidDataException("地形参数无效");

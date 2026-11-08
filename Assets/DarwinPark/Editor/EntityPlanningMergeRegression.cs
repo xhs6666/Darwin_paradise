@@ -95,10 +95,10 @@ namespace DarwinPark.EditorTools
             clones[2].Genes.PendingSimulationTime=12;EntityWorkScheduler.AdvanceUnscheduled(clones[2].Genes,.1f);Check(Mathf.Abs(clones[2].Genes.PendingSimulationTime-7)<.0001f,"大额欠算按每次补算上限分段处理，剩余时间继续保留");
             EntityWorkScheduler.AdvanceUnscheduled(clones[2].Genes,.1f);EntityWorkScheduler.AdvanceUnscheduled(clones[2].Genes,.1f);Check(clones[2].Genes.PendingSimulationTime==0,"后续补算可以真正追平累计时间");
             WorldAuthority.IsReplica=true;old=clones[0].GetComponent<EntityLifeCycle>().Progress;scheduler.Advance(1);WorldAuthority.IsReplica=false;Check(clones[0].GetComponent<EntityLifeCycle>().Progress==old,"联机副本不独立推进共享生命");
-            // 验证阶段抽样只改变代表，不把同一个基因变异复制给整个组。
+            // 验证阶段切换不再独立变异，所有成员仍继续成年。
             foreach(var entity in clones){entity.GetComponent<EntityLifeCycle>().RestoreProgress(LifeCycleSettings.Load().adultProgress-.001f);entity.Genes.RestoreStageState(AgeState.Infant,1,1);entity.Genes.Recalculate();}
-            tuning.mutationAttemptsPerFrame=100;tuning.mergeQuietSeconds=0;long skipped=GlobalMutationManager.MergedSkipped;yield return null;scheduler.Advance(.5f);
-            Check(GlobalMutationManager.MergedSkipped>skipped&&clones.All(e=>e.Genes.CurrentAge==AgeState.Adult),"近邻阶段变异只抽部分代表，但所有成员照常成年");
+            tuning.mutationAttemptsPerFrame=100;tuning.mergeQuietSeconds=0;long attempts=MutationRoundController.Attempts;yield return null;scheduler.Advance(.5f);
+            Check(MutationRoundController.Attempts==attempts&&clones.All(e=>e.Genes.CurrentAge==AgeState.Adult),"阶段切换不再单独变异，但所有合并成员照常成年");
             Check(clones.All(e=>e.GetComponent<EntityEnvironmentHazard>().CurrentTemperature==0),"共享、拆组和欠账补算尊重被禁用的环境组件");
             // 满预算时只延期，不能把其他组的时间直接丢掉。
             tuning.mergeGroupsPerFrame=1;scheduler.Advance(.5f);Check(EntityRegistry.All.Any(e=>e.Genes.PendingSimulationTime>=.49f),"全局共享预算不足时保留其他组的模拟时间");tuning.mergeGroupsPerFrame=128;

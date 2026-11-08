@@ -27,6 +27,9 @@ namespace DarwinPark.Core
         public int mergePhaseBuckets=16;
         public float mergeRadius=6, mergeInterval=.5f, mergeQuietSeconds=2, mergeMaximumMembers=32;
         public float mergeGroupsPerFrame=128, mutationAttemptsPerFrame=16, mergedMutationFraction=.125f;
+        // ★ 新增：按全部活体数量确定每轮名额；每帧限额只分摊队列，不丢弃剩余名单。
+        public bool mutationRoundsEnabled=true;
+        public float mutationPopulationFraction=.1f,mutationRoundSeconds=30;
         public float multipleBirthMaximum=5;
         public float colonyBirthReservedSlots=2, colonySuccessorPopulation=3;
         public float mergeMaximumCatchupSeconds=5;
@@ -41,6 +44,7 @@ namespace DarwinPark.Core
             if(value==null||value.version!=1)throw new InvalidDataException("游戏数值配置版本无效");
             if(value.mergePhaseBuckets<1||value.mergePhaseBuckets>256)throw new InvalidDataException("合并错峰批次数必须为1到256");
             if(value.colonyEmergencyFeedThreshold>10)throw new InvalidDataException("紧急补给饱食线必须为0到10");
+            if(value.mutationPopulationFraction>1||value.mutationRoundSeconds<1||value.mutationRoundSeconds>86400)throw new InvalidDataException("全局变异比例须为0到1，轮次周期须为1到86400模拟秒");
             foreach(var field in typeof(GameplayTuning).GetFields())if(field.FieldType==typeof(float))
             {float n=(float)field.GetValue(value);if(float.IsNaN(n)||float.IsInfinity(n)||n<0)throw new InvalidDataException("数值必须为非负有限数："+field.Name);}
             if(value.manualHitboxScale<1||value.supplyActivityRadiusRatio<=0||value.colonyActivityRadiusMultiplier<=0||value.populationFillOpacity>1)throw new InvalidDataException("判定框倍率至少为1，活动半径倍率必须大于0，透明度须在0到1之间");

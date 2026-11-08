@@ -125,14 +125,12 @@ namespace DarwinPark.Entities.Ecology
         {
             // ★ 修复（防Bug回归）：持续可见的猎物不能永久占据饥饿士兵的补给优先级。
             if(ColonyFeeding.Destination(this,out _))return;
-            if(!EcologyQueries.Alive(HuntTarget)||!EcologyMotion.CanHunt(Genes,HuntTarget)||!EcologyMotion.Detectable(HuntTarget,transform.position,Genes.GetAttribute("senseRange"),Entity))HuntTarget=null;
+            if(!PerceivedTargets.Valid(Genes,HuntTarget,false,out _))HuntTarget=null;
             if(State.scan<=0)
             {
                 State.scan=AntColonySettings.Current.scanInterval;
-                float range=Genes.GetAttribute("senseRange");Vector3 position=transform.position;
-                // ★ 修复（防Bug回归）：先筛感知距离，再执行体型、同群和领地判断，分散的其他种群不消耗完整捕猎判定。
-                HuntTarget=EntityRegistry.All.Where(e=>e!=Entity&&(e.transform.position-position).sqrMagnitude<=range*range&&EcologyQueries.Alive(e)&&EcologyMotion.CanHunt(Genes,e)&&EcologyMotion.Detectable(e,position,range,Entity))
-                    .OrderBy(e=>(e.transform.position-transform.position).sqrMagnitude).FirstOrDefault();
+                // ★ 适配：士兵从观察收件箱选择，不再为每次巡猎排序全体活体。
+                HuntTarget=PerceivedTargets.Nearest(Genes,false,HuntTarget,out _);
             }
             if(HuntTarget!=null){Activity=ColonyActivity.Hunt;return;}
             var settings=AntColonySettings.Current;
@@ -157,7 +155,7 @@ namespace DarwinPark.Entities.Ecology
             if(Young||Role==AntRole.Mate){point=ColonyFormation.Home(this,Center,AntColonySettings.Current.feedRadius*.8f);return true;}
             // ★ 适配：工匠成年前王后可以临时执行采集/运输，继续共用原有实际货物与扣粮路径。
             if(Role==AntRole.Worker||ColonyFoundingSupport.Collecting(this)){point=AntColonyWorker.Destination(this);return true;}
-            if(Role==AntRole.Soldier&&EcologyQueries.Alive(HuntTarget)){target=HuntTarget;point=target.transform.position;return true;}
+            if(Role==AntRole.Soldier&&PerceivedTargets.Valid(Genes,HuntTarget,false,out point)){target=HuntTarget;return true;}
             if(Role==AntRole.Soldier&&State.patrolRemaining>0)
             {
                 // ★ 适配：巡逻路径与捕猎、图层使用同一批王后和补给活动中心。

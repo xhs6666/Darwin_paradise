@@ -17,6 +17,7 @@ namespace DarwinPark.Entities.Logic
         private float _actionCooldown, _wanderTimer;
         private Vector3 _wanderDir;
         private DarwinEntity _target;
+        private Vector3 _observedTarget;
 
         public virtual void Initialize(EntityGeneController controller, GeneInstance gene)
         {
@@ -77,7 +78,7 @@ namespace DarwinPark.Entities.Logic
                     FindTarget(graze);
                     if (_target != null)
                     {
-                        Chase(_target.transform.position, speed, dt);
+                        Chase(_observedTarget, speed, dt);
                         TryBite(stats, graze);
                         return;
                     }
@@ -115,23 +116,8 @@ namespace DarwinPark.Entities.Logic
         }
         private void FindTarget(bool graze)
         {
-            // ★ 修复（防Bug回归）：捕食可选择所有存活实体，不再因没有行动基因就完全排除默认生物。
-            // 以感知属性选最近目标，并保持目标至离开感知范围，避免每帧来回切换。
-            float range = _controller.GetAttribute("senseRange");
-            bool Valid(DarwinEntity e) => e != null && e.gameObject != _controller.gameObject && e.isActiveAndEnabled &&
-                (e.transform.position-_controller.transform.position).sqrMagnitude<=range*range&&
-                e.GetComponent<EntityStats>() is EntityStats s && s.TryGet("health", out float hp) && hp > 0 &&
-                (!graze || e.Genes.GetAttribute("moveSpeed") <= 0) &&
-                EcologyMotion.CanHunt(_controller,e)&&EcologyMotion.Detectable(e,_controller.transform.position,range,_controller.GetComponent<DarwinEntity>())&&
-                (e.transform.position-_controller.transform.position).sqrMagnitude <= range*range;
-            if (Valid(_target)) return;
-            _target = null; float best = float.MaxValue;
-            foreach (var entity in EntityRegistry.All)
-            {
-                if (!Valid(entity)) continue;
-                float distance = (entity.transform.position-_controller.transform.position).sqrMagnitude;
-                if (distance < best) { best = distance; _target = entity; }
-            }
+            // ★ 适配：保留食性/体型/同群/寄生资格，只把全表搜索替换为视野内坐标投递。
+            _target=PerceivedTargets.Nearest(_controller,graze,_target,out _observedTarget);
         }
         private void Chase(Vector3 position, float speed, float dt)
         {

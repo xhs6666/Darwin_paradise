@@ -28,6 +28,8 @@ namespace DarwinPark.GameRoot
         {
             // ★ 适配：全局调度随游戏根节点安装，不依赖编辑器域重载或修改预制实体。
             Entities.Simulation.EntityWorkScheduler.Ensure(gameObject);
+            // ★ 适配：全局变异与个体阶段拆开，独立根组件统一推进。
+            Entities.Simulation.MutationRoundController.Ensure(gameObject);
             if (entityPrefab == null)
             {
                 Debug.LogError("[Bootstrap] 没有指定实体预制体！请把预制体拖到 GameRoot 的 Inspector 面板里");

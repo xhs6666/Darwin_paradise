@@ -153,6 +153,14 @@
         "y": 380
       },
       "error": true
+    },
+    {
+      "id": "gene_observation",
+      "position": {
+        "x": 30,
+        "y": 430
+      },
+      "error": false
     }
   ],
   "edges": [
@@ -230,5 +238,6 @@
     }
   ],
   "parthenogenesisVersion": 1,
-  "multipleBirthVersion": 1
+  "multipleBirthVersion": 1,
+  "observationVersion": 1
 }

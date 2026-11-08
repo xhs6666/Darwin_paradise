@@ -1,0 +1,13 @@
+{
+  "geneId": "gene_observation",
+  "rangeAttribute": "visionRange",
+  "wideState": "wide_view",
+  "attentionState": "attention",
+  "wideRangeMultiplier": 2,
+  "attentionRangeMultiplier": 0.8,
+  "wideRefreshSeconds": 0.6,
+  "attentionRefreshSeconds": 0.1,
+  "migrationSource": "gene_locomotion",
+  "coordinateCellSize": 64,
+  "maximumCellsPerQuery": 4096
+}

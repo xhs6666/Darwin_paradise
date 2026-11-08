@@ -234,7 +234,7 @@
   },
   {
     "title": "03 · 全局优先级、近邻合并与实体行为",
-    "description": "时钟驱动优先调度，静止同基因近邻共享基础变化，个体寿命、孕育和身份仍各自保留。",
+    "description": "统一模拟时间驱动全局轮次变异、优先调度与视野坐标投递；个体身份、寿命、孕育和欠账分别保存。",
     "nodes": [
       {
         "id": "n0",
@@ -328,8 +328,44 @@
       },
       {
         "id": "n15",
-        "text": "全局阶段变异预算与近邻代表抽样",
-        "target": "GlobalMutationManager.Permit",
+        "text": "按全部活体比例无放回抽样并分帧执行",
+        "target": "MutationRoundController.Advance",
+        "kind": "step"
+      },
+      {
+        "id": "n16",
+        "text": "独立全局变异计时入口",
+        "target": "MutationRoundController.Update",
+        "kind": "entry"
+      },
+      {
+        "id": "n17",
+        "text": "复用唯一活体坐标快照",
+        "target": "EntityNeighborhood.CopyPositions",
+        "kind": "step"
+      },
+      {
+        "id": "n18",
+        "text": "按视野范围查询坐标粗格",
+        "target": "EntityCoordinateGrid.Query",
+        "kind": "step"
+      },
+      {
+        "id": "n19",
+        "text": "向观察者投递可见坐标信息",
+        "target": "EntityPerceptionHub.Read",
+        "kind": "step"
+      },
+      {
+        "id": "n20",
+        "text": "按资格选择已感知目标",
+        "target": "PerceivedTargets.Nearest",
+        "kind": "step"
+      },
+      {
+        "id": "n21",
+        "text": "范围采样点 / 注意实时追踪",
+        "target": "EntityPerceptionHub.TryLocate",
         "kind": "step"
       }
     ],
@@ -413,21 +449,9 @@
         "flow"
       ],
       [
-        "n3",
-        "n15",
-        "首次生命阶段",
-        "exception"
-      ],
-      [
-        "n13",
-        "n15",
-        "首次生命阶段",
-        "exception"
-      ],
-      [
         "n15",
         "n7",
-        "阶段检查后重新表达",
+        "选中身份执行真实变异后重算",
         "exception"
       ],
       [
@@ -441,9 +465,63 @@
         "n6",
         "表达变化后各逻辑按新快照执行",
         "exception"
+      ],
+      [
+        "n0",
+        "n16",
+        "共享时间，独立Unity回调",
+        "exception"
+      ],
+      [
+        "n16",
+        "n15",
+        "周期/预算/暂停与副本门控",
+        "flow"
+      ],
+      [
+        "n3",
+        "n7",
+        "生命阶段属性变化，不额外抽签",
+        "exception"
+      ],
+      [
+        "n13",
+        "n7",
+        "共享成长后的阶段属性变化",
+        "exception"
+      ],
+      [
+        "n6",
+        "n20",
+        "自主行动目标请求",
+        "flow"
+      ],
+      [
+        "n20",
+        "n19",
+        "请求视野内信息",
+        "flow"
+      ],
+      [
+        "n19",
+        "n18",
+        "到期或成员变化时收取新信息",
+        "flow"
+      ],
+      [
+        "n18",
+        "n17",
+        "坐标版本变化时复用快照重建",
+        "flow"
+      ],
+      [
+        "n20",
+        "n21",
+        "目标仍存活且在视野内",
+        "flow"
       ]
     ],
-    "note": "此图是业务导航，不把独立Unity消息排成固定跨组件顺序。共享分支只处理兼容近邻；受伤、基因或状态变化即拆组。实际子步、上限、事件与接口调用以对应方法图为准。"
+    "note": "业务导航区分独立Unity入口。全局变异按模拟周期抽样并保存剩余名单；阶段只更新属性。感知复用坐标和粗格，注意追踪更新已知目标、范围状态保留采样点。实际资格、子步与事件以方法图为准。"
   },
   {
     "title": "04 · 攻击、消化、死亡与尸体",

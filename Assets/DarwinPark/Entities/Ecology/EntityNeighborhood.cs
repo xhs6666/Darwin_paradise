@@ -16,8 +16,9 @@ namespace DarwinPark.Entities.Ecology
         private static readonly Dictionary<EntityGeneController,Entry> Entries=new Dictionary<EntityGeneController,Entry>();
         private static readonly Dictionary<Vector3Int,List<Entry>> Cells=new Dictionary<Vector3Int,List<Entry>>();
         private static readonly Stack<List<Entry>> Pool=new Stack<List<Entry>>();
-        private static int _frame=-1;private static long _version;private static float _cellSize;private static EcologyBalanceSettings _settings;
+        private static int _frame=-1;private static long _version,_positionVersion;private static float _cellSize;private static EcologyBalanceSettings _settings;
         public static int BuildCount {get;private set;}
+        public static long PositionVersion{get{Ensure();return _positionVersion;}}
         private static Vector3Int Cell(Vector3 position)=>new Vector3Int(Mathf.FloorToInt(position.x/_cellSize),Mathf.FloorToInt(position.y/_cellSize),Mathf.FloorToInt(position.z/_cellSize));
         private static void AddCell(Entry entry)
         {
@@ -26,10 +27,13 @@ namespace DarwinPark.Entities.Ecology
         }
         private static void Refresh(Entry entry)
         {
+            var previousPosition=entry.position;bool previousAlive=entry.alive;
             entry.position=entry.entity.transform.position;
             if(entry.stats==null)entry.stats=entry.entity.GetComponent<EntityStats>();
             entry.alive=entry.entity.isActiveAndEnabled&&entry.stats!=null&&entry.stats.TryGet("health",out var hp)&&hp>0;
             entry.producer=entry.alive&&EcologyEnergyBudget.IsProducer(entry.genes);
+            // ★ 适配：表型/营养竞争变化不等于坐标变化，不能让一次基因重算强迫所有视野粗格重建。
+            if(previousPosition!=entry.position||previousAlive!=entry.alive)_positionVersion++;
         }
         private static void Ensure()
         {
@@ -53,7 +57,7 @@ namespace DarwinPark.Entities.Ecology
             // ★ 修复（防Bug回归）：离开世界后可能不再查询，注销时就释放桶内引用，不能等下一次重建才放开旧实体。
             if(removed&&entity!=null&&entity.Genes!=null&&Entries.TryGetValue(entity.Genes,out var entry))
             {if(Cells.TryGetValue(entry.cell,out var bucket))bucket.Remove(entry);Entries.Remove(entity.Genes);}
-            _frame=-1;_version++;
+            _frame=-1;_version++;_positionVersion++;
         }
         // ★ 适配：在重算完成、生命归零/恢复以及模拟前同步，帧内表达变化和移动不等待下一次全表重建。
         public static void Changed(EntityGeneController genes)
@@ -77,6 +81,11 @@ namespace DarwinPark.Entities.Ecology
         }
         public static float ProductionCompetition(EntityGeneController genes)
         {Ensure();return Entries.TryGetValue(genes,out var entry)&&entry.producer?Competition(genes):1;}
+        // ★ 适配：感知复用唯一坐标表，不为每个观察者重新扫描所有Transform。
+        public static bool TryPosition(DarwinEntity entity,out Vector3 point)
+        {Ensure();point=default;if(entity==null||entity.Genes==null||!Entries.TryGetValue(entity.Genes,out var entry)||!entry.alive)return false;ObservePosition(entity.Genes);point=entry.position;return true;}
+        public static void CopyPositions(List<EntityCoordinate> result)
+        {Ensure();result.Clear();foreach(var entry in Entries.Values)if(entry.alive)result.Add(new EntityCoordinate(entry.entity,entry.position));}
         // ★ 新增：感知/食物压力复用同一索引；大半径改扫紧凑记录，避免遍历几万个空格子。
         public static void Query(Vector3 position,float radius,List<DarwinEntity> result)
         {
@@ -90,6 +99,6 @@ namespace DarwinPark.Entities.Ecology
                     if(entry.alive&&(entry.position-position).sqrMagnitude<=radius2)result.Add(entry.entity);
         }
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        public static void Clear(){Entries.Clear();Cells.Clear();Pool.Clear();_frame=-1;_version++;BuildCount=0;_settings=null;}
+        public static void Clear(){Entries.Clear();Cells.Clear();Pool.Clear();_frame=-1;_version++;_positionVersion++;BuildCount=0;_settings=null;}
     }
 }

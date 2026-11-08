@@ -318,3 +318,13 @@
 | 2026-11-08 | 有剩余能量但成员不能使用，迁居与旧计划抢占进食 | 育幼/成年是硬类别；远锁定源不在半径时直接返回；迁居分支先于补给 | ColonyFeeding、ColonyFoodSources、AntColonyMember、EntityTaskPlan、GameplayTuning | 专用点优先及备用可调；近处实际进食；保留原迁居/货物；外群保护和王后最低口粮；四类成员120模拟秒持续吃单类补给；真实读档后进食 |
 | 2026-11-08 | 大量尸体被每次补给搜索遍历 | 可吃能量块和尸体共用全部资源列表 | ColonyFoodSources、ColonyResource | Create/启停/移除/清场/读档同步索引；300尸体不增加食物候选；容量直接查询不分配快照 |
 | 2026-11-08 | 只看基因总计无法确定下一步优化重点 | 行动、邻域重建和队形未单独计时 | RuntimePerformance、LocomotionGeneLogic、EntityNeighborhood、ColonyFeeding、ColonyFormation、ColonyFeedingAuditRegression | 报告区分包含关系；完整最新场景测量，附数量、地形、API与模拟倍率；不把补给修复称为整体提帧 |
+
+
+## 2026-11-08 全局轮次变异、观察与第一页规则卡台账
+
+| 日期 | 现象/变更 | 根因与实现 | 文件 | 防复发要点 |
+| --- | --- | --- | --- | --- |
+| 2026-11-08 | 全局每轮只随机抽活体一定比例，默认10% | 原阶段逐实体抽签与近邻序号预算不符合总数比例；改统一模拟时间轮次、部分Fisher–Yates与剩余队列 | MutationRoundController、GlobalMutationManager、EntityGeneController、WorldSessionManager、WorldSaveStore、GameplayTuning | 100活体选10身份；0%、锁定角色、卵、暂停、副本；预算不丢名单；计时和队列实际读档；阶段属性仍重算 |
+| 2026-11-08 | 行动搜索应接收视野内坐标，观察基因区分范围/注意力 | 原行动逐子步全表搜；复用共享坐标并按视野粗格投递，观察收件箱复用与目标实时/采样定位 | EntityCoordinateGrid、EntityPerceptionHub、PerceivedTargets、ObservationSettings、ObservationGeneLogic、ObservationGeneUpgrade及行动/巡猎/状态/反击/警戒适配 | 隐藏/死亡/出视野资格保留；同帧新注册可见；300远处对象不进粗格距离判断；静止粗格跨帧复用；旧无观察基因范围兼容 |
+| 2026-11-08 | 第一页增加同尺寸规则控制卡 | 独立260×164卡，窄屏展开，规则按原字符位置保留注释并原子保存 | SimulationRulesPanel、MutationRuleEdits、SimulationControlPanel | 空标题按钮不创建Text须避免；实际Card尺寸和图像检查；只读/副本入口拒绝、无效输入不写盘；原统计/筛选与第二页不移位 |
+| 2026-11-08 | 热重载后不能重复安装变异计时器 | 静态引用清掉但场景组件可能仍存在，Ensure先认领并在读档确保安装 | MutationRoundController、GameBootstrap、WorldSessionManager | 静态引用模拟重置后组件仍恰好一个，暂停与读档不重复推进 |

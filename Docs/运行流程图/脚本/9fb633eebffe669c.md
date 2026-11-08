@@ -2740,7 +2740,7 @@ flowchart TD
 - [ColonyResource.CarryTo · L84](293dbaecfff4b585.md#mc2aed3e5a271032d)（方法）
 - [EcologyQueries.ToWorld · L40](bdf7ccc2c9c0452f.md#m320932c05ccecbf7)（方法）
 - [ColonyResource.Remove · L106](293dbaecfff4b585.md#m248a728f9e9a7c1e)（方法）
-- [RandomPlanetSpawner.ApplyRemoteProgress · L99](1c13222a547b265c.md#m6a8b8c353c352777)（方法）
+- [RandomPlanetSpawner.ApplyRemoteProgress · L99](1c13222a547b265c.md#m46bb439a8958c4a8)（方法）
 - [RandomPlanetSpawner.Ensure · L25](1c13222a547b265c.md#m2f7496d9d5575b34)（方法）
 - [PopulationMaintenance.Restore · L155](923ccc4e86c4786c.md#m239f01f9bc44dc27)（方法）
 - [PlanetOreSystem.RestoreAmounts · L111](86b3fbb4d9436121.md#mf32079659fe75cd5)（方法）
@@ -2873,7 +2873,7 @@ flowchart TD
 - [LanSession.CancelConnecting · L299](9fb633eebffe669c.md#mcfcb9a748cd4e6d6)（方法）
 - [LanConnection.Dispose · L62](872c2b8da417200e.md#mcbbf7592b2503d1f)（方法）
 - [LanSession.CloseHost · L288](9fb633eebffe669c.md#m7507ff22288cb80e)（方法）
-- [WorldSessionManager.ReturnToMenu · L140](08741c7b7b9d9344.md#m7c4a37702ecd425d)（方法）
+- [WorldSessionManager.ReturnToMenu · L143](08741c7b7b9d9344.md#m9b5ae3c7460432a8)（方法）
 - [LanSession.OwnedEntityId.set · L30](9fb633eebffe669c.md#mab85f356abbbcca4)（访问器）
 - [LanSession.Cheats.set · L27](9fb633eebffe669c.md#mea5d3063d84d0e75)（访问器）
 - [WorldAuthority.Reset · L18](2361e41ab2baa157.md#m85b42b819afac5cb)（方法）

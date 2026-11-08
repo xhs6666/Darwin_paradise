@@ -18,7 +18,7 @@ namespace DarwinPark.Entities.Simulation
                 var logic=genes.GetLogic(evaluation.Gene);
                 if(logic is NutritionGeneLogic)
                 {if(evaluation.State?.StateId!=EcologyBalanceSettings.Current.photoState)return false;}
-                else if(logic!=null&&logic is not GrowthGeneLogic&&logic is not RepairGeneLogic&&logic is not StorageGeneLogic&&logic is not EnvironmentAdaptationGeneLogic&&logic is not ReproductionGeneLogic)return false;
+                else if(logic!=null&&logic is not GrowthGeneLogic&&logic is not RepairGeneLogic&&logic is not StorageGeneLogic&&logic is not EnvironmentAdaptationGeneLogic&&logic is not ReproductionGeneLogic&&logic is not ObservationGeneLogic)return false;
             }
             return true;
         }

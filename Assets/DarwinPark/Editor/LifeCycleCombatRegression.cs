@@ -91,14 +91,14 @@ namespace DarwinPark.EditorTools
                 manual.QueueAttack();view.ExitView();Check(!manual.ConsumeAttack(),"退出仍残留攻击请求");
                 report.AppendLine("PASS: locked first-person camera centre aim acquires nearby target; locomotion value 50 attacks via queued short click after release; cooldown and exit clear pending input");
                 var aged=Spawn(pos+tangent*20);var genes=aged.Genes;var life=aged.GetComponent<EntityLifeCycle>();
-                // 已出生的测试体明确保证成年/老年必抽变异，普通时间推进应没有任何抽签。
+                // 生命阶段只登记一次，具体自然变异由全局定时轮次控制。
                 genes.mutationChance=1;string before=Key(genes.Genome);int checks=genes.StageMutationChecks;
                 genes.AdvanceSimulation(10);Check(genes.StageMutationChecks==checks && Key(genes.Genome)==before,"阶段内定时推进仍触发变异");
                 typeof(EntityLifeCycle).GetField("<Progress>k__BackingField",Private).SetValue(life,29.99f);genes.AdvanceSimulation(1);
-                Check(genes.CurrentAge==AgeState.Adult && genes.StageMutationChecks==checks+1,"成年未抽一次变异");
+                Check(genes.CurrentAge==AgeState.Adult && genes.StageMutationChecks==checks+1,"成年阶段未登记一次");
                 before=Key(genes.Genome);genes.TryStageMutation(AgeState.Adult);Check(genes.StageMutationChecks==checks+1 && Key(genes.Genome)==before,"同一阶段重复抽变异");
                 typeof(EntityLifeCycle).GetField("<Progress>k__BackingField",Private).SetValue(life,79.99f);genes.AdvanceSimulation(1);
-                Check(genes.CurrentAge==AgeState.Elder && genes.StageMutationChecks==checks+2,"老年未抽一次变异");
+                Check(genes.CurrentAge==AgeState.Elder && genes.StageMutationChecks==checks+2,"老年阶段未登记一次");
                 foreach(var gene in genes.Genome.Genes)gene.Enabled=false;genes.Recalculate();
                 typeof(EntityLifeCycle).GetField("<Progress>k__BackingField",Private).SetValue(life,99.99f);genes.AdvanceSimulation(1);aged.GetComponent<EntityStats>().TryGet("health",out float deadHp);
                 Check(life.HasDied && deadHp==0 && !aged.gameObject.activeSelf,"生长失效后的老年寿命耗尽仍不死亡");

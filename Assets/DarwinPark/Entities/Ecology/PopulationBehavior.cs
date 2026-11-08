@@ -155,9 +155,9 @@ namespace DarwinPark.Entities.Ecology
             // ★ 适配：自动群猎尊重食性，手动下令仍可指挥防御攻击；食腐/幼年寄生不会因狼群模式被迫捕猎。
             if(Mode==_settings.wolfState&&NutritionTransfer.CanHuntForFood(_genes))
             {
-                var prey=EntityRegistry.All.Where(e=>EcologyQueries.Alive(e)&&e!=_entity&&!SameGroup(e)&&NutritionTransfer.FoodTargetAllowed(_genes,e)&&PredationSizePolicy.Allows(_genes,e)&&EcologyMotion.Detectable(e,transform.position,_genes.GetAttribute("senseRange"),_entity))
-                    .OrderBy(e=>(e.transform.position-transform.position).sqrMagnitude).FirstOrDefault();
-                if(prey!=null){Issue(PopulationCommand.Hunt,prey,prey.transform.position,false,out _);return;}
+                // ★ 适配：自动群猎只使用领袖实际收到的视野坐标。
+                var prey=PerceivedTargets.Nearest(_genes,false,null,out var seen,true);
+                if(prey!=null){Issue(PopulationCommand.Hunt,prey,seen,false,out _);return;}
             }
             if(Mode==_settings.antState&&FindOre(out var ore)){Issue(PopulationCommand.Gather,null,ore,false,out _);return;}
             var territory=GetComponent<TerritoryBehavior>();Issue(PopulationCommand.Rally,null,territory!=null?territory.Center:transform.position,false,out _);
@@ -181,7 +181,9 @@ namespace DarwinPark.Entities.Ecology
             {
                 if(_manualRemaining<=0&&!NutritionTransfer.FoodTargetAllowed(_genes,Target))return false;
                 if(!EcologyQueries.Alive(Target)||SameGroup(Target)||!PredationSizePolicy.Allows(_genes,Target))return false;
-                target=Target;point=Target.transform.position;
+                if(_manualRemaining>0){target=Target;point=Target.transform.position;}
+                else if(EntityPerceptionHub.TryLocate(_genes,Target,out point))target=Target;
+                else {point=EcologyQueries.ToWorld(CommandPointLocal);return true;}
                 var peers=GroupMembers.OrderBy(m=>m.JoinOrder).ToList();int index=Mathf.Max(0,peers.IndexOf(this));
                 if(EcologyQueries.Distance(transform.position,point)>_settings.formationSpacing*2)
                 {
