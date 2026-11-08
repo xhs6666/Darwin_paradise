@@ -9,6 +9,7 @@ namespace DarwinPark.Entities.Ecology
     public static class ColonyFoodSources
     {
         private static readonly List<ColonyResource> Foods=new();
+        private static readonly List<ResourceCoordinate> Candidates=new();
         public static int Count=>Foods.Count;
         public static long CandidateVisits {get;private set;}
         public static void Register(ColonyResource resource)
@@ -28,10 +29,13 @@ namespace DarwinPark.Entities.Ecology
         public static ColonyResource Nearest(AntColonyMember member,bool nearbyOnly)
         {
             ColonyResource best=null;int rank=int.MaxValue;float distance=float.PositiveInfinity;Vector3 point=member.transform.position;
-            foreach(var resource in Foods)
+            // ★ 适配：近食范围走坐标格，远食只读全局食物分类坐标，不接触尸体桶。
+            if(nearbyOnly)ResourceCoordinates.Query(point,AntColonySettings.Current.feedRadius,true,false,Candidates);else ResourceCoordinates.Food(Candidates);
+            foreach(var coordinate in Candidates)
             {
+                var resource=coordinate.resource;
                 CandidateVisits++;int priority=Rank(resource,member);if(priority==int.MaxValue)continue;
-                float squared=(resource.transform.position-point).sqrMagnitude;
+                float squared=(coordinate.position-point).sqrMagnitude;
                 // ★ 修复（防Bug回归）：远处按可吃的最近块选择，不能为专用类别绕过近粮；同一进食范围内才优先专用用途。
                 if(nearbyOnly?(priority>rank||priority==rank&&squared>=distance):(squared>distance||squared==distance&&priority>=rank))continue;
                 if(nearbyOnly&&EcologyQueries.Distance(resource.transform.position,point)>AntColonySettings.Current.feedRadius||!ColonyResourceOwnership.Available(resource,member)||ColonyFeeding.AvailableEnergy(resource,member)<=0)continue;

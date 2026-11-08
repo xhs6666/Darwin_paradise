@@ -81,6 +81,8 @@ namespace DarwinPark.UI
         private void Update()
         {
             GameplayTuning.Poll();
+            // ★ 适配：优化配置也由唯一全局入口轮询，避免逐体磁盘开销。
+            SimulationOptimization.Poll();
             if (_visible)
             {
                 HideHud();

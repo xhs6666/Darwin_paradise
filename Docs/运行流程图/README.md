@@ -4,7 +4,7 @@
 
 [12条业务主流程](主流程.md) · [生成工具与维护说明](../../Tools/FlowDocs/README.md)
 
-覆盖 **324 个C#脚本、10 个Shader/HLSL文件、3565 个方法/构造/访问器/局部函数/回调/GPU函数**。没有显式方法的数据脚本也在索引中。未扫描Unity Packages/Library生成文件；Tools为离线生成器，不进入游戏运行图。
+覆盖 **343 个C#脚本、10 个Shader/HLSL文件、3703 个方法/构造/访问器/局部函数/回调/GPU函数**。没有显式方法的数据脚本也在索引中。未扫描Unity Packages/Library生成文件；Tools为离线生成器，不进入游戏运行图。
 
 
 ## 阅读与维护
@@ -55,6 +55,7 @@
 |Core|[Assets/DarwinPark/Core/OrbitCamera.cs](脚本/42eb429559b42bcb.md)|Runtime|9|
 |Core|[Assets/DarwinPark/Core/RuntimePerformance.cs](脚本/a8403a4c7503726d.md)|Runtime|16|
 |Core|[Assets/DarwinPark/Core/Services/ServiceLocator.cs](脚本/f2fdbe9f9ccd93cb.md)|Runtime|5|
+|Core|[Assets/DarwinPark/Core/SimulationOptimization.cs](脚本/11c9091e70893352.md)|Runtime|6|
 |Core|[Assets/DarwinPark/Core/SimulationSubsteps.cs](脚本/44755274b83df7ba.md)|Runtime|2|
 |Core|[Assets/DarwinPark/Core/Time/SimulationClock.cs](脚本/a8f444aec9614b0a.md)|Runtime|21|
 |Core|[Assets/DarwinPark/Core/Time/SimulationPauseHotkey.cs](脚本/cc79d402ad5d8117.md)|Runtime|6|
@@ -70,6 +71,7 @@
 |Editor|[Assets/DarwinPark/Editor/ColonyFeedingLiveRegression.cs](脚本/f0f27807f77705fe.md)|Editor|15|
 |Editor|[Assets/DarwinPark/Editor/ColonyFeedingTemplateRegression.cs](脚本/e3a5269cbeb35cff.md)|Editor|14|
 |Editor|[Assets/DarwinPark/Editor/ColonyFoodSafetyRegression.cs](脚本/15da375185c991ea.md)|Editor|15|
+|Editor|[Assets/DarwinPark/Editor/ColonyTaskStressAudit.cs](脚本/b670f82196406694.md)|Editor|11|
 |Editor|[Assets/DarwinPark/Editor/ControlsActivityRegression.cs](脚本/c94d401ef13df84d.md)|Editor|11|
 |Editor|[Assets/DarwinPark/Editor/CorpseInspectionRegression.cs](脚本/a1829d88f72dd1fb.md)|Editor|16|
 |Editor|[Assets/DarwinPark/Editor/EcologyBalanceRegression.cs](脚本/81fff3fefa111617.md)|Editor|30|
@@ -110,6 +112,7 @@
 |Editor|[Assets/DarwinPark/Editor/SocialEcologyRegression.cs](脚本/217494895b1b18ec.md)|Editor|25|
 |Editor|[Assets/DarwinPark/Editor/StationaryPerformanceRegression.cs](脚本/c740ddb4a4340bed.md)|Editor|26|
 |Editor|[Assets/DarwinPark/Editor/SurfaceInteractionRegression.cs](脚本/3229e96fb60a3e5b.md)|Editor|5|
+|Editor|[Assets/DarwinPark/Editor/TaskCoordinateOptimizationRegression.cs](脚本/274ce3a54a3e2b5f.md)|Editor|19|
 |Editor|[Assets/DarwinPark/Editor/TerrainVideoSettingsRegression.cs](脚本/0c1be03c62f93352.md)|Editor|13|
 |Editor|[Assets/DarwinPark/Editor/UIStyleRegression.cs](脚本/07acc7eed21a3625.md)|Editor|21|
 |Editor|[Assets/DarwinPark/Editor/WaterAndExitRegression.cs](脚本/3fa9502d023c4aca.md)|Editor|6|
@@ -120,7 +123,7 @@
 |Entities|[Assets/DarwinPark/Entities/Ecology/AntColonyMember.cs](脚本/baebd85c05598377.md)|Runtime|53|
 |Entities|[Assets/DarwinPark/Entities/Ecology/AntColonyReproduction.cs](脚本/c22084eac4e522ed.md)|Runtime|11|
 |Entities|[Assets/DarwinPark/Entities/Ecology/AntColonySettings.cs](脚本/cb0a937e97c8fbb3.md)|Runtime|14|
-|Entities|[Assets/DarwinPark/Entities/Ecology/AntColonyWorker.cs](脚本/8a0cca2020271b6f.md)|Runtime|19|
+|Entities|[Assets/DarwinPark/Entities/Ecology/AntColonyWorker.cs](脚本/8a0cca2020271b6f.md)|Runtime|11|
 |Entities|[Assets/DarwinPark/Entities/Ecology/ColonyActivityRange.cs](脚本/e8d854132f563257.md)|Runtime|9|
 |Entities|[Assets/DarwinPark/Entities/Ecology/ColonyAppearance.cs](脚本/e51c7c842d87a26d.md)|Runtime|4|
 |Entities|[Assets/DarwinPark/Entities/Ecology/ColonyContinuityPriority.cs](脚本/dbd1eb8a8137aa05.md)|Runtime|6|
@@ -130,7 +133,7 @@
 |Entities|[Assets/DarwinPark/Entities/Ecology/ColonyFormation.cs](脚本/c65dce2d54e43480.md)|Runtime|12|
 |Entities|[Assets/DarwinPark/Entities/Ecology/ColonyFoundingSupport.cs](脚本/404bb05c7f82518a.md)|Runtime|8|
 |Entities|[Assets/DarwinPark/Entities/Ecology/ColonyMemberMarker.cs](脚本/f0491b971dcb491f.md)|Runtime|3|
-|Entities|[Assets/DarwinPark/Entities/Ecology/ColonyResource.cs](脚本/293dbaecfff4b585.md)|Runtime|21|
+|Entities|[Assets/DarwinPark/Entities/Ecology/ColonyResource.cs](脚本/293dbaecfff4b585.md)|Runtime|20|
 |Entities|[Assets/DarwinPark/Entities/Ecology/ColonyResourceOwnership.cs](脚本/2988679fde59fc87.md)|Runtime|3|
 |Entities|[Assets/DarwinPark/Entities/Ecology/ColonyResourcePresentation.cs](脚本/274e66c9a1d98a08.md)|Runtime|4|
 |Entities|[Assets/DarwinPark/Entities/Ecology/ColonyWorldState.cs](脚本/50d866ed6b21d869.md)|Runtime|13|
@@ -151,17 +154,20 @@
 |Entities|[Assets/DarwinPark/Entities/Ecology/EcologySettings.cs](脚本/90428a275d065ef6.md)|Runtime|1|
 |Entities|[Assets/DarwinPark/Entities/Ecology/EggHostPregnancy.cs](脚本/b0ff4b8259f98b85.md)|Runtime|9|
 |Entities|[Assets/DarwinPark/Entities/Ecology/EggIncubation.cs](脚本/f5a647fca719706f.md)|Runtime|5|
-|Entities|[Assets/DarwinPark/Entities/Ecology/EnergyBlockGradeVisual.cs](脚本/dd689a3df9b53e75.md)|Runtime|3|
+|Entities|[Assets/DarwinPark/Entities/Ecology/EnergyBlockGradeVisual.cs](脚本/dd689a3df9b53e75.md)|Runtime|5|
 |Entities|[Assets/DarwinPark/Entities/Ecology/EnergyBlockGrades.cs](脚本/1251b395f5845255.md)|Runtime|6|
-|Entities|[Assets/DarwinPark/Entities/Ecology/EnergyBlockMetabolism.cs](脚本/123c1bf82bdb8ea2.md)|Runtime|9|
+|Entities|[Assets/DarwinPark/Entities/Ecology/EnergyBlockMetabolism.cs](脚本/123c1bf82bdb8ea2.md)|Runtime|7|
 |Entities|[Assets/DarwinPark/Entities/Ecology/EntityCombat.cs](脚本/a5b5b46ac6c197ae.md)|Runtime|2|
 |Entities|[Assets/DarwinPark/Entities/Ecology/EntityCoordinateGrid.cs](脚本/f6d0404a662a5d5c.md)|Runtime|10|
 |Entities|[Assets/DarwinPark/Entities/Ecology/EntityDeathSettlement.cs](脚本/07fa6bdaadf50796.md)|Runtime|1|
-|Entities|[Assets/DarwinPark/Entities/Ecology/EntityNeighborhood.cs](脚本/e5e24c4aff0395b1.md)|Runtime|16|
+|Entities|[Assets/DarwinPark/Entities/Ecology/EntityNeighborhood.cs](脚本/e5e24c4aff0395b1.md)|Runtime|18|
 |Entities|[Assets/DarwinPark/Entities/Ecology/EntityPerceptionHub.cs](脚本/aeecc36cb2c3cc24.md)|Runtime|17|
-|Entities|[Assets/DarwinPark/Entities/Ecology/EntityStateController.cs](脚本/0f8869eb7018091e.md)|Runtime|21|
+|Entities|[Assets/DarwinPark/Entities/Ecology/EntityResourcePlan.cs](脚本/569e8e31d0634370.md)|Runtime|21|
+|Entities|[Assets/DarwinPark/Entities/Ecology/EntityStateController.cs](脚本/0f8869eb7018091e.md)|Runtime|18|
 |Entities|[Assets/DarwinPark/Entities/Ecology/EntityStateMotion.cs](脚本/d5c725c964fe5c61.md)|Runtime|1|
 |Entities|[Assets/DarwinPark/Entities/Ecology/EntityTaskPlan.cs](脚本/da041665b1125ffc.md)|Runtime|3|
+|Entities|[Assets/DarwinPark/Entities/Ecology/MateCoordinates.cs](脚本/c0c58c738d12bfd2.md)|Runtime|3|
+|Entities|[Assets/DarwinPark/Entities/Ecology/MemberTaskSequence.cs](脚本/e0c3a41d605c176a.md)|Runtime|2|
 |Entities|[Assets/DarwinPark/Entities/Ecology/NutrientUtilizationSettings.cs](脚本/276bc943280dcfce.md)|Runtime|2|
 |Entities|[Assets/DarwinPark/Entities/Ecology/NutritionParasite.cs](脚本/4a18785b7c1e1484.md)|Runtime|16|
 |Entities|[Assets/DarwinPark/Entities/Ecology/NutritionSaveValidation.cs](脚本/f62a3371065beeb4.md)|Runtime|2|
@@ -169,15 +175,22 @@
 |Entities|[Assets/DarwinPark/Entities/Ecology/ParasiteBehavior.cs](脚本/ec21ecbd299caaed.md)|Runtime|21|
 |Entities|[Assets/DarwinPark/Entities/Ecology/PatrolRhythm.cs](脚本/f55940fd5773d413.md)|Runtime|10|
 |Entities|[Assets/DarwinPark/Entities/Ecology/PerceivedTargets.cs](脚本/b78759d0d0a172e4.md)|Runtime|2|
+|Entities|[Assets/DarwinPark/Entities/Ecology/PerceptionSubscriptions.cs](脚本/69ad03522af4e9d9.md)|Runtime|5|
 |Entities|[Assets/DarwinPark/Entities/Ecology/PopulationArchive.cs](脚本/084e119b69cdd751.md)|Runtime|41|
 |Entities|[Assets/DarwinPark/Entities/Ecology/PopulationBehavior.cs](脚本/21e4f62f75a9a80f.md)|Runtime|54|
 |Entities|[Assets/DarwinPark/Entities/Ecology/PopulationGroupIndex.cs](脚本/6bb343d8be5beae5.md)|Runtime|12|
 |Entities|[Assets/DarwinPark/Entities/Ecology/PredationSizePolicy.cs](脚本/80ea865fb0f12053.md)|Runtime|2|
+|Entities|[Assets/DarwinPark/Entities/Ecology/ProducerClassification.cs](脚本/ad32a2250ced390a.md)|Runtime|4|
 |Entities|[Assets/DarwinPark/Entities/Ecology/QueenBirthDelivery.cs](脚本/10252933c19b3182.md)|Runtime|2|
+|Entities|[Assets/DarwinPark/Entities/Ecology/ResourceCoordinates.cs](脚本/93d731ac01e3af48.md)|Runtime|19|
+|Entities|[Assets/DarwinPark/Entities/Ecology/ResourceGroups.cs](脚本/97a3c8522367343a.md)|Runtime|7|
+|Entities|[Assets/DarwinPark/Entities/Ecology/ResourceVisualScheduler.cs](脚本/853364800e4eeb69.md)|Runtime|6|
 |Entities|[Assets/DarwinPark/Entities/Ecology/RtsOrderController.cs](脚本/cac3b6501f41ca35.md)|Runtime|9|
+|Entities|[Assets/DarwinPark/Entities/Ecology/StatePriorityCache.cs](脚本/96e08a1a0ab523b5.md)|Runtime|2|
 |Entities|[Assets/DarwinPark/Entities/Ecology/TerritoryBehavior.cs](脚本/19d504dcdc8bc624.md)|Runtime|22|
+|Entities|[Assets/DarwinPark/Entities/Ecology/WorkerTaskQueue.cs](脚本/dc0692495776be10.md)|Runtime|9|
 |Entities|[Assets/DarwinPark/Entities/EntityAttackAim.cs](脚本/2e9dde897281c303.md)|Runtime|1|
-|Entities|[Assets/DarwinPark/Entities/EntityGeneController.cs](脚本/7494d53178552f0e.md)|Runtime|25|
+|Entities|[Assets/DarwinPark/Entities/EntityGeneController.cs](脚本/7494d53178552f0e.md)|Runtime|26|
 |Entities|[Assets/DarwinPark/Entities/EntityJumpMotor.cs](脚本/fa3269c9da0aa692.md)|Runtime|10|
 |Entities|[Assets/DarwinPark/Entities/EntityLifeCycle.cs](脚本/9f4138bfbae654b7.md)|Runtime|12|
 |Entities|[Assets/DarwinPark/Entities/EntityManualControl.cs](脚本/a6969896da35e1f0.md)|Runtime|20|
@@ -185,6 +198,7 @@
 |Entities|[Assets/DarwinPark/Entities/EntitySaveState.cs](脚本/a1ec8fcd9d7d3ddb.md)|Runtime|2|
 |Entities|[Assets/DarwinPark/Entities/EntityStateEditor.cs](脚本/7086a659bc6af34a.md)|Runtime|2|
 |Entities|[Assets/DarwinPark/Entities/EntitySurfaceAnchor.cs](脚本/71fd1058c8ed8660.md)|Runtime|3|
+|Entities|[Assets/DarwinPark/Entities/GravityProbeCache.cs](脚本/901cef6b99719cf7.md)|Runtime|7|
 |Entities|[Assets/DarwinPark/Entities/LifeCycleSettings.cs](脚本/ace76969fe8f61de.md)|Runtime|1|
 |Entities|[Assets/DarwinPark/Entities/Logic/EnergyBlockGeneLogic.cs](脚本/8a71d1ffa661de3c.md)|Runtime|3|
 |Entities|[Assets/DarwinPark/Entities/Logic/EntityMovementLimits.cs](脚本/bf2a44fffc5f10d6.md)|Runtime|2|
@@ -203,16 +217,19 @@
 |Entities|[Assets/DarwinPark/Entities/Logic/ParasiticGeneLogic.cs](脚本/e12f4b3f4a4d96f8.md)|Runtime|3|
 |Entities|[Assets/DarwinPark/Entities/Logic/PopulationGeneLogic.cs](脚本/42d081df5829bb64.md)|Runtime|2|
 |Entities|[Assets/DarwinPark/Entities/Logic/RepairGeneLogic.cs](脚本/f90a1637aa259a59.md)|Runtime|3|
-|Entities|[Assets/DarwinPark/Entities/Logic/ReproductionGeneLogic.cs](脚本/ac319ea70bd8b723.md)|Runtime|16|
+|Entities|[Assets/DarwinPark/Entities/Logic/ReproductionGeneLogic.cs](脚本/ac319ea70bd8b723.md)|Runtime|15|
 |Entities|[Assets/DarwinPark/Entities/Logic/StorageGeneLogic.cs](脚本/b493eb90b1bae6ef.md)|Runtime|3|
 |Entities|[Assets/DarwinPark/Entities/Logic/TerritoryGeneLogic.cs](脚本/539b07a85ca816cf.md)|Runtime|2|
 |Entities|[Assets/DarwinPark/Entities/OffspringPlacement.cs](脚本/eeef5e6fb7a6f46b.md)|Runtime|1|
 |Entities|[Assets/DarwinPark/Entities/PlanetGravity.cs](脚本/f9e84b7108c465c2.md)|Runtime|4|
 |Entities|[Assets/DarwinPark/Entities/PopulationMaintenance.cs](脚本/923ccc4e86c4786c.md)|Runtime|36|
+|Entities|[Assets/DarwinPark/Entities/Simulation/ActionDecisionCadence.cs](脚本/9f8bb5c506593a21.md)|Runtime|4|
+|Entities|[Assets/DarwinPark/Entities/Simulation/ActionMotionBatch.cs](脚本/e54155ca229c2706.md)|Runtime|5|
 |Entities|[Assets/DarwinPark/Entities/Simulation/CohortDeadline.cs](脚本/7dc9f0a2697792f4.md)|Runtime|1|
 |Entities|[Assets/DarwinPark/Entities/Simulation/EntityWorkScheduler.cs](脚本/465ccdbb260bcac2.md)|Runtime|34|
 |Entities|[Assets/DarwinPark/Entities/Simulation/GlobalMutationManager.cs](脚本/debf58c0eabf33e3.md)|Runtime|1|
 |Entities|[Assets/DarwinPark/Entities/Simulation/MutationRoundController.cs](脚本/3a238ee75b15c52c.md)|Runtime|16|
+|Entities|[Assets/DarwinPark/Entities/Simulation/SingletonSettlement.cs](脚本/aa60fc9f4553ae15.md)|Runtime|5|
 |Entities|[Assets/DarwinPark/Entities/Simulation/StationaryCohortKernel.cs](脚本/9d3f50e550ab5beb.md)|Runtime|10|
 |Entities|[Assets/DarwinPark/Entities/StationaryBodyRest.cs](脚本/19e6d310d5522440.md)|Runtime|5|
 |Entities|[Assets/DarwinPark/Entities/Stats/EntityAttributeProcessor.cs](脚本/5c9856aea4a5298c.md)|Runtime|8|
@@ -235,9 +252,11 @@
 |Genetics|[Assets/DarwinPark/Genetics/Data/NamePoolJson.cs](脚本/f52a77fa650f9c54.md)|Runtime|0|
 |Genetics|[Assets/DarwinPark/Genetics/EcologyGeneDefaults.cs](脚本/ce4f4683a31b001c.md)|Runtime|6|
 |Genetics|[Assets/DarwinPark/Genetics/EntityStateRegistry.cs](脚本/440408d2db5c7d96.md)|Runtime|13|
-|Genetics|[Assets/DarwinPark/Genetics/Evaluation/GeneValueResolver.cs](脚本/837eb9ce6eba3cc6.md)|Runtime|2|
+|Genetics|[Assets/DarwinPark/Genetics/Evaluation/GeneExpressionCache.cs](脚本/769f6842770bce00.md)|Runtime|9|
+|Genetics|[Assets/DarwinPark/Genetics/Evaluation/GeneValueResolver.cs](脚本/837eb9ce6eba3cc6.md)|Runtime|3|
 |Genetics|[Assets/DarwinPark/Genetics/GeneAttributeInheritance.cs](脚本/cbba0870e05d6571.md)|Runtime|23|
 |Genetics|[Assets/DarwinPark/Genetics/GeneCatalogExpansion.cs](脚本/03ab59525607c3f7.md)|Runtime|6|
+|Genetics|[Assets/DarwinPark/Genetics/GeneCatalogSnapshot.cs](脚本/97ea6cb5dbb38dfd.md)|Runtime|4|
 |Genetics|[Assets/DarwinPark/Genetics/GeneEntityStateTags.cs](脚本/d87d75eb0b331d5c.md)|Runtime|4|
 |Genetics|[Assets/DarwinPark/Genetics/GeneEvolutionRules.cs](脚本/95d3abc5e23f05d3.md)|Runtime|6|
 |Genetics|[Assets/DarwinPark/Genetics/GeneFailureReasons.cs](脚本/e611915e807d8990.md)|Runtime|4|
@@ -320,7 +339,7 @@
 |UI|[Assets/DarwinPark/UI/MainMenuBackground.cs](脚本/d7e7fc6417a3da62.md)|Runtime|9|
 |UI|[Assets/DarwinPark/UI/MapEntityActions.cs](脚本/8771182d89246414.md)|Runtime|5|
 |UI|[Assets/DarwinPark/UI/MapEntityGeneFilterUI.cs](脚本/c2cd33111de06171.md)|Runtime|34|
-|UI|[Assets/DarwinPark/UI/MapEntityStatisticsUI.cs](脚本/da03211264cb6014.md)|Runtime|27|
+|UI|[Assets/DarwinPark/UI/MapEntityStatisticsUI.cs](脚本/da03211264cb6014.md)|Runtime|26|
 |UI|[Assets/DarwinPark/UI/MapPopulationListUI.cs](脚本/628d691916fbb56b.md)|Runtime|22|
 |UI|[Assets/DarwinPark/UI/NutritionReplicaPresentation.cs](脚本/a956a3ed597cf878.md)|Runtime|1|
 |UI|[Assets/DarwinPark/UI/NutritionStatusPresentation.cs](脚本/495e56e5dfb8b3fa.md)|Runtime|1|

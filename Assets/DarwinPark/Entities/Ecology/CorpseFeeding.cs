@@ -9,7 +9,7 @@ namespace DarwinPark.Entities.Ecology
     // ★ 新增：食腐是独立食性，不靠行动基因伤害凭空获得营养；只吃未被工匠领取的尸体。
     public sealed class CorpseFeeding:MonoBehaviour
     {
-        private EntityGeneController _genes;private EntityStats _stats;private ColonyResource _target;private float _scan;
+        private EntityGeneController _genes;private EntityStats _stats;private ColonyResource _target;
         private void Awake(){_genes=GetComponent<EntityGeneController>();_stats=GetComponent<EntityStats>();}
         private void Update(){if(!WorldAuthority.IsReplica)Advance(ServiceLocator.TryGet<SimulationClock>(out var clock)?clock.GameDeltaTime:Time.deltaTime);}
         private bool Active=>EcologyQueries.Active(_genes,NutritionEcologySettings.Current.scavengerGene)!=null;
@@ -17,13 +17,8 @@ namespace DarwinPark.Entities.Ecology
         public void Advance(float dt)
         {
             if(dt<=0||!Active||!EcologyQueries.Alive(GetComponent<DarwinEntity>())||EcologyMotion.Immobilized(_genes))return;
-            var settings=NutritionEcologySettings.Current;_scan-=dt;
-            if(!Valid(_target))_target=null;
-            if(_target==null&&_scan<=0)
-            {
-                _scan=settings.scanInterval;float best=settings.searchRadius*settings.searchRadius;
-                foreach(var resource in ColonyResource.All)if(Valid(resource)){float d=(resource.transform.position-transform.position).sqrMagnitude;if(d<best){best=d;_target=resource;}}
-            }
+            // ★ 适配：食腐也保留顺序目标和扫描计时，当前耗尽后无需等下一次扫描才能接续。
+            var settings=NutritionEcologySettings.Current;EntityResourcePlan.TickCorpse(_genes,dt);_target=EntityResourcePlan.FindCorpse(_genes,settings.searchRadius,settings.scanInterval);
             if(!Valid(_target)||EcologyQueries.Distance(transform.position,_target.transform.position)>settings.feedingReach)return;
             float amount=NutritionTransfer.Feed(_stats,Mathf.Min(_target.State.energy,_genes.GetAttribute(settings.scavengeAttribute)*dt*GameplayTuning.Current.nutritionGainMultiplier));
             _target.State.energy-=amount;if(_target.State.energy<=0)_target.Remove();

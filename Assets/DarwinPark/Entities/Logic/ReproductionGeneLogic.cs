@@ -22,6 +22,7 @@ namespace DarwinPark.Entities.Logic
         private LifeCycleSettings _settings;
 
         private Genome _partnerGenome = null;
+        private readonly Ecology.MateCoordinates _mateCoordinates=new();
 
 
         public void Initialize(EntityGeneController controller, GeneInstance gene)
@@ -40,6 +41,7 @@ namespace DarwinPark.Entities.Logic
             // ★ 适配：按需区分重算、签名与实际行为成本。
             using var performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.Reproduction);
             if(dt<=0||DarwinPark.Core.WorldAuthority.IsReplica)return;
+            _mateCoordinates.Advance(dt);
             // ★ 适配：蚁群王后走独立孕育流程，其余分工不得运行普通繁殖逻辑。
             if(Ecology.AntColonyReproduction.BlocksOrdinary(_controller)){_mateWaitTimer=0;return;}
             // ★ 适配：基础、性别特化和卵生复制可共存，但只由最高阶有效繁殖基因推进一次孕育。
@@ -160,33 +162,8 @@ namespace DarwinPark.Entities.Logic
 
         private DarwinEntity FindMate(float requiredNutrient)
         {
-            Collider[] hits = Physics.OverlapSphere(_controller.transform.position, _settings.mateSearchRadius);
-            foreach (var hit in hits)
-            {
-                var other = hit.GetComponentInParent<DarwinEntity>();
-                if (other == null || other == _controller.GetComponent<DarwinEntity>()) continue;
-                // ★ 修复（防Bug回归）：死亡、不能自主繁殖或储粮不足者不能占据唯一配偶候选，阻塞后续有效配偶。
-                if(!Ecology.EcologyQueries.Alive(other)||Ecology.AntColonyReproduction.BlocksOrdinary(other.Genes))continue;
-                if(other.GetComponent<EntityStats>() is not EntityStats mateStats||!mateStats.TryGet("storedNutrient",out float reserve)||reserve<requiredNutrient)continue;
-
-                var otherGeneCtrl = other.GetComponent<EntityGeneController>();
-                if (otherGeneCtrl == null) continue;
-
-                var otherRepGene = otherGeneCtrl.Genome.Genes.FirstOrDefault(g => otherGeneCtrl.GetLogic(g) is ReproductionGeneLogic&&GeneBehaviorAuthority.IsPrimary<ReproductionGeneLogic>(otherGeneCtrl,g));
-                if (otherRepGene == null) continue;
-
-                var repDef = GeneDatabase.Get(otherRepGene.DefinitionId);
-                var otherState = repDef?.ResolveState(otherRepGene.Value, otherRepGene.MissingStateIds);
-                if (otherState == null || otherState.StateId != "sexual") continue;
-
-                // ★ 修复（防Bug回归）：生长基因的状态 id 是 fast_growth/slow_growth，
-                // 旧代码却查找 "adult"，导致有性繁殖永远找不到配偶。成年判定应使用 CurrentAge。
-                if (otherGeneCtrl.CurrentAge != AgeState.Adult) continue;
-                if (otherGeneCtrl.IsGestating) continue;
-
-                return other;
-            }
-            return null;
+            // ★ 适配：配偶改用全局坐标，不依赖物理碰撞体和每小步OverlapSphere分配。
+            return _mateCoordinates.Find(_controller,_settings.mateSearchRadius,requiredNutrient);
         }
 
         private bool SpawnOffspring()

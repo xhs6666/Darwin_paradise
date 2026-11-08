@@ -74,7 +74,7 @@ namespace DarwinPark.UI
         public void RefreshNow()
         {
             if(_filter==null)return;_nextRefresh=Time.unscaledTime+Mathf.Max(.1f,refreshInterval);
-            string selected=FilterGeneId;var catalog=GeneDatabase.All.ToArray();string signature=string.Join("|",catalog.Select(g=>g.Id+":"+g.DisplayName));
+            string selected=FilterGeneId;var catalog=GeneCatalogSnapshot.Read();string signature=GeneCatalogSnapshot.Signature;
             if(_catalog!=signature)
             {
                 _catalog=signature;_genes.Clear();_genes.AddRange(catalog.OrderBy(g=>g.Tier).ThenBy(g=>g.Id));

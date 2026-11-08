@@ -19,26 +19,21 @@ namespace DarwinPark.Entities.Ecology
         {
             if(!Active)return null;var settings=NutrientUtilizationSettings.Current;var stats=GetComponent<EntityStats>();
             if(!stats.TryGet(settings.nutrientAttribute,out float food)||food>=settings.feedThreshold)return null;
-            float range=nearby?settings.feedRadius:settings.searchRadius;ColonyResource nearest=null;float best=float.PositiveInfinity;
-            foreach(var resource in ColonyResource.All)
-            {
-                // ★ 适配：普通实体也能利用旧群废弃的黄色补给，但仍不能吞食存活蚁群的专用口粮或尸体。
-                if(resource.State.kind==ColonyResourceKind.Corpse||resource.State.kind!=ColonyResourceKind.Energy&&(WorldRuntimeGate.Loading||ColonyResourceOwnership.HasOwner(resource.State.group)))continue;
-                float distance=(resource.transform.position-transform.position).sqrMagnitude;
-                if(distance>=best||EcologyQueries.Distance(resource.transform.position,transform.position)>range)continue;
-                best=distance;nearest=resource;
-            }
-            return nearest;
+            // ★ 适配：普通实体同样按全局资源坐标生成顺序计划，当前能量耗尽再接续。
+            return EntityResourcePlan.FindEnergy(_genes,nearby?settings.feedRadius:settings.searchRadius,nearby);
         }
+
         public bool Destination(out Vector3 point)
         {var resource=Find(false);point=resource!=null?resource.transform.position:transform.position;return resource!=null;}
         public void Advance(float dt)
         {
             // ★ 修复（防Bug回归）：蚁群已在分工中吸收，同一实体拥有新基因时不能重复进食；卵和被搬运活体也不能抢食。
             if(dt<=0||AntColonyMember.IsManaged(_genes))return;
+            EntityResourcePlan.TickEnergy(_genes,dt);
             var resource=Find(true);if(resource==null)return;
             var stats=GetComponent<EntityStats>();var settings=NutrientUtilizationSettings.Current;
-            float room=stats.CaptureValues().Where(v=>v.id==settings.nutrientAttribute||v.id==settings.reserveAttribute).Sum(v=>Mathf.Max(0,v.max-v.value));
+            // ★ 修复（防Bug回归）：容量是直接查询，不为每次进食复制整个属性表。
+            float room=stats.CapacityRemaining(settings.nutrientAttribute)+stats.CapacityRemaining(settings.reserveAttribute);
             float amount=Mathf.Min(room,resource.State.energy,_genes.GetAttribute(settings.absorptionAttribute)*dt*DarwinPark.Core.GameplayTuning.Current.nutritionGainMultiplier);if(amount<=0)return;
             stats.Feed(amount);resource.State.energy-=amount;if(resource.State.energy<=0)resource.Remove();
         }

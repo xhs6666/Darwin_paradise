@@ -69,9 +69,9 @@ flowchart TD
 - [EntityLifeCycle.Progress.get · L10](9f4138bfbae654b7.md#m178185fd5f5a0d74)（访问器）
 - [EntityGeneController.StageMutationChecks.get · L51](7494d53178552f0e.md#mfbc71172f45b87d9)（访问器）
 - [EntityStats.CaptureValues · L86](75aa86a368efdf24.md#mbf54fc67f0d07a99)（方法）
-- [EntityGeneController.GetLogic · L221](7494d53178552f0e.md#macce520f213fa6c4)（方法）
-- [ReproductionGeneLogic.CaptureState · L35](ac319ea70bd8b723.md#m634822c7a94e59a3)（方法）
-- [EcologySaveState.Capture · L29](dd1dde4b4c192659.md#m25ad9f5dc9a5059e)（方法）
+- [EntityGeneController.GetLogic · L231](7494d53178552f0e.md#mf5ee6292befedc7b)（方法）
+- [ReproductionGeneLogic.CaptureState · L36](ac319ea70bd8b723.md#me6e47dd55dd7c3ea)（方法）
+- [EcologySaveState.Capture · L31](dd1dde4b4c192659.md#me6dac00c4cc6315c)（方法）
 
 <a id="md1cca8b8dd3628a4"></a>
 
@@ -129,11 +129,11 @@ flowchart TD
 - [DarwinEntity.Genes.get · L14](70798dde169f2e8b.md#m622eb1adf401d431)（访问器）
 - [EntityGeneController.RestoreStageState · L54](7494d53178552f0e.md#m41fb3375c42f6c22)（方法）
 - [EntityLifeCycle.RestoreProgress · L50](9f4138bfbae654b7.md#m1e9381f9a38ed7be)（方法）
-- [EntityGeneController.Recalculate · L104](7494d53178552f0e.md#m6a5ea0cca4871198)（方法）
+- [EntityGeneController.Recalculate · L111](7494d53178552f0e.md#mf588f8c1148316c6)（方法）
 - [EntityStats.RestoreValues · L88](75aa86a368efdf24.md#m774f994eaa3183ca)（方法）
 - [Genome.Find · L11](a2ef23f865bc7ee8.md#mfd5b2c58563def29)（方法）
-- [EntityGeneController.GetLogic · L221](7494d53178552f0e.md#macce520f213fa6c4)（方法）
-- [ReproductionGeneLogic.RestoreState · L37](ac319ea70bd8b723.md#m774f9d1fdc13aa95)（方法）
+- [EntityGeneController.GetLogic · L231](7494d53178552f0e.md#mf5ee6292befedc7b)（方法）
+- [ReproductionGeneLogic.RestoreState · L38](ac319ea70bd8b723.md#m35d2d9ff730867da)（方法）
 - [DarwinEntity.EnableTrait · L34](70798dde169f2e8b.md#meef47c363e5995a8)（方法）
 - [DarwinEntity.AddEnergy · L38](70798dde169f2e8b.md#m6d61b27a87e2f477)（方法）
-- [EcologySaveState.Restore · L42](dd1dde4b4c192659.md#m91672bc75a4694f7)（方法）
+- [EcologySaveState.Restore · L45](dd1dde4b4c192659.md#mb6d362e760204d6f)（方法）

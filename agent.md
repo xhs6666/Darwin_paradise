@@ -328,3 +328,20 @@
 | 2026-11-08 | 行动搜索应接收视野内坐标，观察基因区分范围/注意力 | 原行动逐子步全表搜；复用共享坐标并按视野粗格投递，观察收件箱复用与目标实时/采样定位 | EntityCoordinateGrid、EntityPerceptionHub、PerceivedTargets、ObservationSettings、ObservationGeneLogic、ObservationGeneUpgrade及行动/巡猎/状态/反击/警戒适配 | 隐藏/死亡/出视野资格保留；同帧新注册可见；300远处对象不进粗格距离判断；静止粗格跨帧复用；旧无观察基因范围兼容 |
 | 2026-11-08 | 第一页增加同尺寸规则控制卡 | 独立260×164卡，窄屏展开，规则按原字符位置保留注释并原子保存 | SimulationRulesPanel、MutationRuleEdits、SimulationControlPanel | 空标题按钮不创建Text须避免；实际Card尺寸和图像检查；只读/副本入口拒绝、无效输入不写盘；原统计/筛选与第二页不移位 |
 | 2026-11-08 | 热重载后不能重复安装变异计时器 | 静态引用清掉但场景组件可能仍存在，Ensure先认领并在读档确保安装 | MutationRoundController、GameBootstrap、WorldSessionManager | 静态引用模拟重置后组件仍恰好一个，暂停与读档不重复推进 |
+
+
+## 2026-11-08 顺序任务与坐标计算优化台账
+
+| 日期 | 现象/变更 | 根因与实现 | 文件 | 防复发要点 |
+| --- | --- | --- | --- | --- |
+| 2026-11-08 | 工匠需要完成当前任务再执行下一项，饥饿插队 | 原计划只有feeding布尔值；顺序队列存目标，实际交付后出队，补给保留原任务和独占货物 | WorkerTaskQueue、MemberTaskSequence、EntityTaskPlan、AntColonyWorker | 真正采集、交付、下一目标、目标失效、逆序读档；未来目标不预占；明确新命令与取消；角色生命周期释放 |
+| 2026-11-08 | 旧档/恢复后的活体运输目标可能无效 | Unity把null字符串恢复为空，??会错误选择空resourceTarget；改非空目标选择并同步明确任务插队 | WorkerTaskQueue | 旧空串资源目标加非空livingTarget应迁入正确活体任务；已有货物不能重新创建 |
+| 2026-11-08 | 数千尸体放大采集/食腐查询 | 各入口遍历资源All；改统一资源分类坐标格、球面投影格与同群能量索引 | ResourceCoordinates、ResourceGroups、ColonyFoodSources、CorpseFeeding、EnergyBlockMetabolism | 创建、停用、搬运、移除、星球变化与清场同步；高度差不漏球面候选；300尸体不增加食物候选 |
+| 2026-11-08 | 同物理位置重复决策与转向 | 小步把完整意图/避让多次执行；分开决策周期与累计移动，任务/饥饿/受击等打断 | ActionDecisionCadence、ActionMotionBatch、LocomotionGeneLogic | 冷却和实际伤害仍逐步；嵌套推进恢复父批次；异常/死亡finally释放；手动攻击不缓存丢失 |
+| 2026-11-08 | 孤立核逐小步交错营养和代谢产生数值差异 | 原路径先整批生产、后结算环境/代谢，交错改变容量溢出；核保留原批次顺序，仅跳空被动调用 | SingletonSettlement、EntityWorkScheduler、EntityGeneController | 与原路径相同累计寿命、营养、上限和欠账；阶段切换/受伤/孕育拆分；身份不共享 |
+| 2026-11-08 | 重复纯求值与全域竞争缓存失效 | 表达使用有界纯结果缓存；空间桶跨帧保留，局部生产者变化只失效邻近格 | GeneExpressionCache、ProducerClassification、EntityNeighborhood | 个体GeneInstance/属性/行为不串用；环境、角色、缺失状态入键；重载清空；出生死亡和跨格即时正确 |
+| 2026-11-08 | 接地和外观高频重复工作 | 接地缓存与摩擦按变化写入；资源外观统一调度、远处灯关闭、共享材质实例化 | GravityProbeCache、ResourceVisualScheduler、EnergyBlockGradeVisual、ColonyResource | 地形/星球/位移失效与起跳下落保留；真实Shader构建、颜色、拾取与营养不受灯光降频影响 |
+
+| 2026-11-08 | 长程灭群不能直接归为补给失败 | 含捕猎压力测试存在王后营养充足仍被连续击杀；测试专用记录伤害并显式隔离战斗验证补给，不修改正式伤害 | ColonyTaskStressAudit、ColonyContinuityRegression | 保留自然压力失败记录；归因实际HP/营养和攻击者；700秒补给隔离通过只说明补给链，不冒充战斗永续 |
+
+| 2026-11-08 | 普通实体也应有顺序补给/食腐计划 | 仅工匠排队仍不能覆盖普通营养实体；按能力维护资源目标序列、扫描计时和存档，完成/失效打断行动缓存 | EntityResourcePlan、EnergyBlockMetabolism、CorpseFeeding、EcologySaveState、ActionDecisionCadence | 两块能量/两具尸体按序完成；近食插队、实时资格、实际耗尽、磁盘恢复、旧空快照清理、清场释放引用 |

@@ -15,22 +15,8 @@ namespace DarwinPark.Entities.Ecology
         public static long EnumerationCount{get;private set;}
         public static IEnumerable<ActivityCircle> Circles(PopulationBehavior population)
         {
-            EnumerationCount++;
-            if(population==null||!population.Active)yield break;
-            var queen=AntColonyMember.QueenFor(population);
-            var leader=queen!=null?queen.Population:population.Leader;
-            if(leader==null)yield break;
-            float radius=queen!=null?queen.Radius:Mathf.Max(AntColonySettings.Current.minimumColonyRadius,leader.GetComponent<EntityGeneController>().GetAttribute("territory_radius"))*GameplayTuning.Current.colonyActivityRadiusMultiplier;
-            yield return new ActivityCircle("leader",leader.transform.position,radius);
-            if(queen==null)yield break;
-            float supplyRadius=radius*GameplayTuning.Current.supplyActivityRadiusRatio;
-            // ★ 修复（防Bug回归）：旧档里预先生成的空点不再扩张范围，耗尽的补给也立即失去活动圆。
-            foreach(var resource in ColonyResource.All)
-            {
-                if(resource.State.group!=population.GroupId||resource.State.kind!=ColonyResourceKind.Supply&&resource.State.kind!=ColonyResourceKind.Nursery)continue;
-                bool duplicate=Mathf.Approximately(radius,supplyRadius)&&Vector3.Distance(resource.transform.position,queen.transform.position)<.01f;
-                if(!duplicate)yield return new ActivityCircle("resource-"+resource.State.id,resource.transform.position,supplyRadius);
-            }
+            // ★ 适配：同群活动圆按领袖位置、半径和真实补给版本缓存，不重复分配/遍历世界资源。
+            EnumerationCount++;return ActivityCircleCache.Read(population);
         }
         public static bool Contains(PopulationBehavior population,Vector3 position)
         {
@@ -57,7 +43,7 @@ namespace DarwinPark.Entities.Ecology
         public static ActivityCircle PatrolCircle(AntColonyMember member)
         {
             // 固定出生顺序分配巡逻中心，补给点不再全部无人巡逻。
-            var circles=new List<ActivityCircle>(Circles(member.Population));
+            var circles=ActivityCircleCache.Read(member.Population);
             return circles.Count==0?new ActivityCircle("leader",member.Center,member.Radius):circles[(int)(member.Population.JoinOrder%circles.Count)];
         }
     }

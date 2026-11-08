@@ -47,7 +47,7 @@ namespace DarwinPark.Entities.Ecology
         public bool Frozen=>Active&&Role!=AntRole.None&&AntColonySettings.Current.Rule(Role).frozenGenome;
         // ★ 适配：面板和行动共用计划优先级，避免补给中显示运输/繁殖。
         private ColonyActivity _activity;
-        public ColonyActivity Activity {get=>EntityTaskPlan.Feeding(this)&&ColonyResource.Find(State.plan?.supply)!=null?ColonyActivity.Feed:_activity;internal set=>_activity=value;}
+        public ColonyActivity Activity {get=>EntityTaskPlan.Feeding(this)&&ColonyResource.Find(State.plan?.supply)!=null?ColonyActivity.Feed:_activity;internal set{_activity=value;MemberTaskSequence.Record(this,value);}}
         public int TaskPriority=>EntityTaskPlan.Priority(Activity);
         internal DarwinEntity HuntTarget;
         private readonly Dictionary<string,float> _suppression=new Dictionary<string,float>();
@@ -173,8 +173,8 @@ namespace DarwinPark.Entities.Ecology
         {
             // ★ 修复（防Bug回归）：王后出生不预建空检查点；只保留当前确有剩余能量的成年补给位置。
             State.supplyPoints.Clear();
-            foreach(var resource in ColonyResource.All)if(resource.State.group==GroupId&&resource.State.kind==ColonyResourceKind.Supply)
-                State.supplyPoints.Add(EcologyQueries.ToLocal(resource.transform.position));
+            foreach(var item in ResourceGroups.Read(GroupId))if(item.resource.State.kind==ColonyResourceKind.Supply&&item.resource.State.energy>0)
+                State.supplyPoints.Add(EcologyQueries.ToLocal(item.position));
         }
         public void EnforceGenome()
         {

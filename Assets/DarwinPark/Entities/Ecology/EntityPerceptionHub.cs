@@ -27,6 +27,7 @@ namespace DarwinPark.Entities.Ecology
             if(!Inboxes.TryGetValue(genes,out var inbox)){inbox=new Inbox();Inboxes.Add(genes,inbox);}
             if(inbox.revision!=genes.LogicRevision)
             {
+                PerceptionSubscriptions.Forget(genes,inbox.byTarget.Keys);
                 inbox.revision=genes.LogicRevision;inbox.frame=-1;inbox.next=float.NegativeInfinity;inbox.sightings.Clear();inbox.byTarget.Clear();
                 var settings=ObservationSettings.Current;var observation=EcologyQueries.Active(genes,settings.geneId);
                 bool hasGene=false;foreach(var gene in genes.Genome.Genes)if(gene.DefinitionId==settings.geneId){hasGene=true;break;}
@@ -43,12 +44,13 @@ namespace DarwinPark.Entities.Ecology
             var inbox=Get(genes);float now=Now;
             if(inbox.membership==EntityRegistry.MembershipRevision&&(inbox.frame==Time.frameCount||now<inbox.next))return inbox.sightings;
             using var performance=PerformanceTimings.Measure(PerformanceTimings.Area.Perception);
+            PerceptionSubscriptions.Forget(genes,inbox.byTarget.Keys);
             inbox.membership=EntityRegistry.MembershipRevision;inbox.frame=Time.frameCount;inbox.next=now+inbox.interval;inbox.sightings.Clear();inbox.byTarget.Clear();
             EntityCoordinateGrid.Query(genes.transform.position,inbox.range,inbox.candidates);Searches++;var self=genes.GetComponent<DarwinEntity>();
             foreach(var coordinate in inbox.candidates)
             {
                 var entity=coordinate.entity;CandidateVisits++;if(entity==self||!EcologyMotion.Detectable(entity,genes.transform.position,inbox.range,self))continue;
-                var sighting=new EntitySighting(entity,coordinate.position,now);inbox.sightings.Add(sighting);inbox.byTarget[entity]=sighting;Delivered++;
+                var sighting=new EntitySighting(entity,coordinate.position,now);inbox.sightings.Add(sighting);inbox.byTarget[entity]=sighting;PerceptionSubscriptions.Attach(genes,entity);Delivered++;
             }
             inbox.candidates.Clear();return inbox.sightings;
         }
@@ -63,16 +65,18 @@ namespace DarwinPark.Entities.Ecology
             // ★ 适配：真实受击是一个新观察事件；不必等待下一轮全视野搜索才定位近处攻击者。
             if(target==null)return;Read(genes);var inbox=Get(genes);
             if(inbox.range<=0||!EntityNeighborhood.TryPosition(target,out var point)||!EcologyMotion.Detectable(target,genes.transform.position,inbox.range,genes.GetComponent<DarwinEntity>()))return;
-            var sighting=new EntitySighting(target,point,Now);if(!inbox.byTarget.ContainsKey(target))inbox.sightings.Add(sighting);inbox.byTarget[target]=sighting;
+            var sighting=new EntitySighting(target,point,Now);if(!inbox.byTarget.ContainsKey(target))inbox.sightings.Add(sighting);inbox.byTarget[target]=sighting;PerceptionSubscriptions.Attach(genes,target);
         }
         public static void Remove(EntityGeneController genes)
         {
-            if(ReferenceEquals(genes,null))return;Inboxes.Remove(genes);
-            // 注销目标从所有收件箱释放，不能让死亡/换世界后的引用一直被保留。
-            var target=genes.GetComponent<DarwinEntity>();if(target==null)return;
-            foreach(var inbox in Inboxes.Values){inbox.byTarget.Remove(target);for(int i=inbox.sightings.Count-1;i>=0;i--)if(inbox.sightings[i].entity==target)inbox.sightings.RemoveAt(i);}
+            if(ReferenceEquals(genes,null))return;
+            if(Inboxes.TryGetValue(genes,out var own))PerceptionSubscriptions.Forget(genes,own.byTarget.Keys);Inboxes.Remove(genes);
+            // ★ 适配：只通知已订阅目标的观察者，换世界也释放全部反向引用。
+            var target=genes.GetComponent<DarwinEntity>();if(target==null)return;var observers=PerceptionSubscriptions.Take(target);if(observers==null)return;
+            foreach(var observer in observers)if(Inboxes.TryGetValue(observer,out var inbox)){inbox.byTarget.Remove(target);for(int i=inbox.sightings.Count-1;i>=0;i--)if(inbox.sightings[i].entity==target)inbox.sightings.RemoveAt(i);}
         }
-        public static void Clear(){Inboxes.Clear();EntityCoordinateGrid.Clear();Searches=Delivered=CandidateVisits=0;}
+
+        public static void Clear(){Inboxes.Clear();PerceptionSubscriptions.Clear();EntityCoordinateGrid.Clear();Searches=Delivered=CandidateVisits=0;}
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]private static void Reset()=>Clear();
     }
 }

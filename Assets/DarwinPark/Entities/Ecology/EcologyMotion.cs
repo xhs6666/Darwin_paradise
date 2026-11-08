@@ -10,6 +10,8 @@ namespace DarwinPark.Entities.Ecology
         public static bool Directive(EntityGeneController genes,out Vector3 point,out DarwinEntity target,out float multiplier)
         {
             target=null;point=genes.transform.position;multiplier=1;
+            // ★ 适配：补给插队先维持生命，原反击/运输命令仍保留，完成后恢复。
+            if(genes.GetComponent<AntColonyMember>() is AntColonyMember supplyMember&&supplyMember.Active&&supplyMember.TrySupplyDestination(out point))return true;
             // ★ 适配：反击使用真实目标，固定分工随后接管意图，不落回普通随机漫游。
             if(CombatIntent.Destination(genes,out point,out target))return true;
             // ★ 适配：RTS接入同一行动器，指令不能绕过基因速度、伤害与搬运规则。

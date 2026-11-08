@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,7 +6,6 @@ namespace DarwinPark.Entities.Ecology
     // ★ 新增：单个工匠独占运输任务；活植株仍为原实体，读档/搬运中断都能恢复其刚体。
     public static class AntColonyWorker
     {
-        private static readonly List<ActivityCircle> SearchCircles=new List<ActivityCircle>();
         private static readonly Dictionary<DarwinEntity,AntColonyMember> Carriers=new Dictionary<DarwinEntity,AntColonyMember>();
         private static readonly Dictionary<AntColonyMember,DarwinEntity> Cargo=new Dictionary<AntColonyMember,DarwinEntity>();
         private static readonly Dictionary<string,AntColonyMember> Claims=new Dictionary<string,AntColonyMember>();
@@ -28,7 +26,7 @@ namespace DarwinPark.Entities.Ecology
             if(string.IsNullOrEmpty(id))return;
             Targets[worker]=id;if(!Claims.TryGetValue(id,out var current)||current==worker||current==null||!current.Active)Claims[id]=worker;
         }
-        private static bool Claimed(DarwinEntity entity,AntColonyMember worker)
+        internal static bool Claimed(DarwinEntity entity,AntColonyMember worker)
         {
             string id=EcologyIdentity.Of(entity);
             if(!Claims.TryGetValue(id,out var owner)||owner==worker)return false;
@@ -36,7 +34,7 @@ namespace DarwinPark.Entities.Ecology
             Claims.Remove(id);return false;
         }
         // ★ 适配：体内隐藏的寄生幼体不是可搬运植株；不能把被宿主带到附近的幼体当作零速食物。
-        private static bool Valid(DarwinEntity entity,AntColonyMember worker,IReadOnlyList<ActivityCircle> circles=null)=>EcologyQueries.Alive(entity)&&(circles!=null?ColonyActivityRange.Contains(circles,entity.transform.position):ColonyActivityRange.Contains(worker.Population,entity.transform.position))&&entity.GetComponent<NutritionParasite>()?.Host==null&&!worker.Population.SameGroup(entity)&&entity.Genes.GetAttribute("moveSpeed")<=0&&entity.GetComponent<EntityManualControl>()?.IsControlled!=true;
+        internal static bool Valid(DarwinEntity entity,AntColonyMember worker,IReadOnlyList<ActivityCircle> circles=null)=>EcologyQueries.Alive(entity)&&(circles!=null?ColonyActivityRange.Contains(circles,entity.transform.position):ColonyActivityRange.Contains(worker.Population,entity.transform.position))&&entity.GetComponent<NutritionParasite>()?.Host==null&&!worker.Population.SameGroup(entity)&&entity.Genes.GetAttribute("moveSpeed")<=0&&entity.GetComponent<EntityManualControl>()?.IsControlled!=true;
         public static void Advance(AntColonyMember worker,float dt)
         {
             var state=worker.State;var settings=AntColonySettings.Current;
@@ -59,7 +57,7 @@ namespace DarwinPark.Entities.Ecology
                 if(carried!=null)carried.Remove();
                 if(live!=null){live.gameObject.SetActive(false);Object.Destroy(live.gameObject);}
                 ColonyResource.Convert(worker.GroupId,destination,energy,state.deliveryNursery);
-                state.carriedResource=state.carriedLiving=state.resourceTarget=state.livingTarget=null;TrackCargo(worker,null);TrackTarget(worker);return;
+                state.carriedResource=state.carriedLiving=state.resourceTarget=state.livingTarget=null;TrackCargo(worker,null);TrackTarget(worker);WorkerTaskQueue.Complete(worker);return;
             }
             state.carriedResource=state.carriedLiving=null;
             // ★ 修复（防Bug回归）：未取货时同样先解决饥饿，原任务保留，吃饱后继续执行。
@@ -68,23 +66,9 @@ namespace DarwinPark.Entities.Ecology
             if(resource!=null&&(!ColonyActivityRange.Contains(worker.Population,resource.transform.position)||!resource.Claim(worker)))
             {resource.Release(worker.Id);state.resourceTarget=null;resource=null;}
             if(plant!=null&&(!Valid(plant,worker)||Claimed(plant,worker))){state.livingTarget=null;plant=null;}
-            if(resource==null&&plant==null&&state.scan<=0)
-            {
-                state.scan=settings.scanInterval;
-                // ★ 修复（防Bug回归）：旧查询对每具尸体重建活动圆，约1900资源时成为平方级扫描；本次搜索只生成一次圆，球面距离先行；不能用含高度差的弦长排除旧逻辑合法目标。
-                SearchCircles.Clear();foreach(var circle in ColonyActivityRange.Circles(worker.Population))SearchCircles.Add(circle);
-                Vector3 searchOrigin=worker.transform.position;
-                // ★ 适配：活动圆决定采集边界，搜索距离仍决定单次感知；二者不能被个人出生领地替代。
-                foreach(var body in ColonyResource.All.Where(r=>EcologyQueries.Distance(searchOrigin,r.transform.position)<=settings.transportSearchRadius&&ColonyCorpseAccess.Available(r,worker)&&ColonyActivityRange.Contains(SearchCircles,r.transform.position)).OrderBy(r=>(r.transform.position-worker.transform.position).sqrMagnitude))
-                    if(body.Claim(worker)){resource=body;state.resourceTarget=body.State.id;break;}
-                if(resource==null)
-                {
-                    // ★ 适配：先筛廉价距离再读基因属性，远处种群不参与运输能力与占用判定。
-                    plant=EntityRegistry.All.Where(e=>(e.transform.position-worker.transform.position).sqrMagnitude<=settings.transportSearchRadius*settings.transportSearchRadius&&Valid(e,worker,SearchCircles)&&!Claimed(e,worker)&&EcologyQueries.Distance(worker.transform.position,e.transform.position)<=settings.transportSearchRadius).OrderBy(e=>(e.transform.position-worker.transform.position).sqrMagnitude).FirstOrDefault();
-                    state.livingTarget=plant!=null?EcologyIdentity.Of(plant):null;
-                    TrackTarget(worker);
-                }
-            }
+            // ★ 适配：队列只领取首项，补给结束恢复它；失败目标自动跳过，后续任务不重新洗牌。
+            WorkerTaskQueue.Select(worker);
+            resource=ColonyResource.Find(state.resourceTarget);plant=Entity(state.livingTarget);TrackTarget(worker);
             if(resource==null&&plant==null){worker.Activity=ColonyActivity.Rest;return;}
             worker.Activity=ColonyActivity.Collect;Vector3 point=resource!=null?resource.transform.position:plant.transform.position;
             if(EcologyQueries.Distance(worker.transform.position,point)>settings.transportReach)return;
@@ -96,6 +80,7 @@ namespace DarwinPark.Entities.Ecology
                 // ★ 修复（防Bug回归）：静止活体也可能原本就是运动学刚体，不能向这种刚体写速度；释放时仍恢复原始模式。
                 if(body!=null){state.originalKinematic=body.isKinematic;state.originalDetect=body.detectCollisions;if(!body.isKinematic)body.linearVelocity=Vector3.zero;body.isKinematic=true;body.detectCollisions=false;}
             }
+            WorkerTaskQueue.PickedUp(worker);
             var queen=worker.Queen;
             state.deliveryNursery=UnityEngine.Random.value<settings.nurseryDeliveryFraction;
             if(queen==null){state.deliveryPoint=EcologyQueries.ToLocal(worker.Center);state.deliveryNursery=true;}
@@ -103,8 +88,8 @@ namespace DarwinPark.Entities.Ecology
             {
                 queen.EnsureSupplyPoints();
                 // ★ 适配：优先补足当前不存在的两类补给，再按配置分配后续货物，避免随机连抽使王后永久断粮。
-                if(!ColonyResource.All.Any(r=>r.State.group==worker.GroupId&&r.State.kind==ColonyResourceKind.Nursery))state.deliveryNursery=true;
-                else if(!ColonyResource.All.Any(r=>r.State.group==worker.GroupId&&r.State.kind==ColonyResourceKind.Supply))state.deliveryNursery=false;
+                if(!ResourceGroups.Has(worker.GroupId,ColonyResourceKind.Nursery))state.deliveryNursery=true;
+                else if(!ResourceGroups.Has(worker.GroupId,ColonyResourceKind.Supply))state.deliveryNursery=false;
                 if(state.deliveryNursery)state.deliveryPoint=EcologyQueries.ToLocal(queen.transform.position);
                 else if(queen.State.supplyPoints.Count>=settings.supplyPointCount)state.deliveryPoint=queen.State.supplyPoints[UnityEngine.Random.Range(0,queen.State.supplyPoints.Count)];
                 else
@@ -122,7 +107,8 @@ namespace DarwinPark.Entities.Ecology
             var resource=ColonyResource.Find(state.resourceTarget);if(resource!=null)return resource.transform.position;
             var plant=Entity(state.livingTarget);if(plant!=null)return plant.transform.position;
             // 工匠休息时靠近群内补给点，避免饥饿时被无效运输目标锁住。
-            var supply=ColonyResource.All.Where(r=>r.State.group==worker.GroupId&&r.State.kind==ColonyResourceKind.Supply).OrderBy(r=>(r.transform.position-worker.transform.position).sqrMagnitude).FirstOrDefault();
+            // ★ 适配：休息点也读取全局资源坐标，复用种群分类索引。
+            ColonyResource supply=null;float best=float.PositiveInfinity;foreach(var item in ResourceGroups.Read(worker.GroupId))if(item.resource.State.kind==ColonyResourceKind.Supply&&item.resource.State.energy>0){float d=(item.position-worker.transform.position).sqrMagnitude;if(d<best){best=d;supply=item.resource;}}
             // ★ 修复（防Bug回归）：空闲工匠在活动区分散休息，不能全部返回同一个王后中心坐标。
             return ColonyFormation.Home(worker,supply!=null?supply.transform.position:worker.Center,supply!=null?AntColonySettings.Current.feedRadius:worker.Radius*.75f);
         }
@@ -134,6 +120,8 @@ namespace DarwinPark.Entities.Ecology
             if(live!=null)
             {var body=live.GetComponent<Rigidbody>();if(body!=null){body.isKinematic=state.originalKinematic;body.detectCollisions=state.originalDetect;}live.transform.position=EcologyQueries.Surface(worker.transform.position);EntityNeighborhood.ObservePosition(live.Genes);}
             state.carriedResource=state.carriedLiving=state.resourceTarget=state.livingTarget=null;
+            // ★ 适配：退出分工或明确重新下达任务时取消旧队列，正常补给不调用释放。
+            WorkerTaskQueue.Tasks(worker).Clear();
             TrackCargo(worker,null);TrackTarget(worker);
         }
         public static void Resolve(AntColonyMember worker)

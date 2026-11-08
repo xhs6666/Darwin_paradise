@@ -35,6 +35,7 @@ namespace DarwinPark.EditorTools
             Directory.CreateDirectory(Folder);Passed.Clear();File.WriteAllText(Path.Combine(Folder,"result.txt"),"RUNNING");string error=null;var stack=new Stack<IEnumerator>();stack.Push(Run());
             while(stack.Count>0){bool next=false;object current=null;try{next=stack.Peek().MoveNext();if(next)current=stack.Peek().Current;}catch(Exception ex){error=ex.ToString();Debug.LogException(ex);break;}if(!next){stack.Pop();continue;}if(current is IEnumerator nested)stack.Push(nested);else yield return current;}
             if(_externalExisted)File.WriteAllText(EcologyDefaults.ConfigurationPath,_externalBackup);else if(File.Exists(EcologyDefaults.ConfigurationPath))File.Delete(EcologyDefaults.ConfigurationPath);
+            ColonyTaskStressAudit.Finish();
             File.WriteAllText(Path.Combine(Folder,"result.txt"),(error==null?"PASS":"FAIL")+"\n"+error+"\n"+string.Join("\n",Passed));SessionState.SetBool(Key,false);EditorApplication.Exit(error==null?0:1);
         }
         public static void RunShortBatch(){SessionState.SetBool(Key+".Short",true);RunBatch();}
@@ -120,13 +121,14 @@ namespace DarwinPark.EditorTools
                 {
                     float time=step*dt;gameTime.SetValue(clock,startTime+time);delta.SetValue(clock,dt);budget.SetValue(clock,false);
                     foreach(var entity in EntityRegistry.All.ToArray())if(EcologyQueries.Alive(entity)&&prepared.Add(entity))Freeze(entity);
-                    foreach(var entity in EntityRegistry.All.ToArray())if(EcologyQueries.Alive(entity)){entity.GetComponent<PopulationBehavior>()?.Advance(dt);entity.Genes.AdvanceSimulation(dt);if(EcologyQueries.Alive(entity))vitals.Invoke(entity.GetComponent<EntityVitals>(),new object[]{dt});if(EcologyQueries.Alive(entity))gravity.Invoke(entity.GetComponent<PlanetGravity>(),null);}
+                    foreach(var entity in EntityRegistry.All.ToArray())if(EcologyQueries.Alive(entity)){ColonyTaskStressAudit.BeforeTick(entity,time);entity.GetComponent<PopulationBehavior>()?.Advance(dt);entity.Genes.AdvanceSimulation(dt);if(EcologyQueries.Alive(entity))vitals.Invoke(entity.GetComponent<EntityVitals>(),new object[]{dt});if(EcologyQueries.Alive(entity))gravity.Invoke(entity.GetComponent<PlanetGravity>(),null);}
                     foreach(var member in AntColonyMember.All.ToArray())
                     {
                         if(seenAnts.Add(member.Id))firstRoles.Add(member.Role);
                         if(!string.IsNullOrEmpty(member.State.carriedLiving)||!string.IsNullOrEmpty(member.State.carriedResource)){if(member.Role==AntRole.Queen)queenCollected=true;if(member.Role==AntRole.Worker)workerCollected=true;}
                     }
                     peak=Mathf.Max(peak,AntColonyMember.All.Count());Physics.SyncTransforms();Physics.Simulate(dt);
+                    if(ColonyTaskStressAudit.StopRequested())yield break;
                     if(step%20==0){refill.Invoke(spawner,null);yield return null;}
                     if(step%1000==0){trace.Add("t="+time+" alive="+EntityRegistry.All.Count+" ants="+AntColonyMember.All.Count()+" workers="+AntColonyMember.All.Count(m=>m.Role==AntRole.Worker&&!m.Young)+" resources="+ColonyResource.All.Sum(r=>r.State.energy)+" queenCollected="+queenCollected+" workerCollected="+workerCollected+" queen="+string.Join(";",AntColonyMember.All.Where(m=>m.Role==AntRole.Queen).Select(m=>m.Id.Substring(0,4)+"/"+m.Genes.IsGestating+"/"+m.State.reproductionTimer+"/"+m.GetComponent<EntityLifeCycle>().Progress+"/"+StationaryValues(m))));File.WriteAllLines(Path.Combine(Folder,"continuity-trace.txt"),trace);}
                 }

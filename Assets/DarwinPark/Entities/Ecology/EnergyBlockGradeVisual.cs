@@ -8,7 +8,10 @@ namespace DarwinPark.Entities.Ecology
         private ColonyResource _resource;private Renderer _renderer;private Light _light;private MaterialPropertyBlock _block;
         private float _energy=float.NaN;
         private void Awake(){_resource=GetComponent<ColonyResource>();_renderer=GetComponent<Renderer>();_light=GetComponent<Light>();_block=new MaterialPropertyBlock();}
-        private void LateUpdate()=>Refresh();
+        // ★ 适配：统一调度外观，避免每个块每帧一次MonoBehaviour回调。
+        private void OnEnable()=>ResourceVisualScheduler.Register(this);
+        private void OnDisable()=>ResourceVisualScheduler.Remove(this);
+        public void SetLightVisible(bool visible){if(_light!=null&&_light.enabled!=visible)_light.enabled=visible;}
         public void Refresh()
         {
             // ★ 适配：只在主动性能采样期间计时，定位完整场景的实际消耗。

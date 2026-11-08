@@ -33,7 +33,7 @@ namespace DarwinPark.Entities.Ecology
                 }
                 _mesh=new Mesh{name="Corpse status cross"};_mesh.vertices=vertices;_mesh.triangles=triangles;_mesh.RecalculateBounds();
                 var shader=Shader.Find("Universal Render Pipeline/Unlit")??Shader.Find("Unlit/Color");if(shader==null)throw new InvalidOperationException("尸体标记缺少Unlit材质");
-                _material=new Material(shader){name="Corpse status marker"};ColorUtility.TryParseHtmlString(config.markerColor,out var markerColor);if(_material.HasProperty("_BaseColor"))_material.SetColor("_BaseColor",markerColor);if(_material.HasProperty("_Color"))_material.SetColor("_Color",markerColor);
+                _material=new Material(shader){name="Corpse status marker",enableInstancing=DarwinPark.Core.SimulationOptimization.Current.resourceInstancing};ColorUtility.TryParseHtmlString(config.markerColor,out var markerColor);if(_material.HasProperty("_BaseColor"))_material.SetColor("_BaseColor",markerColor);if(_material.HasProperty("_Color"))_material.SetColor("_Color",markerColor);
             }
             var marker=new GameObject("CorpseStatusMark",typeof(MeshFilter),typeof(MeshRenderer));_marker=marker.transform;_marker.SetParent(transform,false);marker.GetComponent<MeshFilter>().sharedMesh=_mesh;var display=marker.GetComponent<MeshRenderer>();display.sharedMaterial=_material;display.shadowCastingMode=ShadowCastingMode.Off;display.receiveShadows=false;Align();
         }

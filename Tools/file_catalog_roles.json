@@ -324,7 +324,26 @@
     "Assets/DarwinPark/Entities/Ecology/PerceivedTargets.cs": "行动、巡猎等从已投递的可见候选中按食性、体型、群体与距离资格选择目标。",
     "Assets/DarwinPark/Core/MutationRuleEdits.cs": "只修改变异开关/比例/周期，保留数值文件注释与其他字段，校验后原子写盘并重载。",
     "Assets/DarwinPark/UI/SimulationRulesPanel.cs": "底栏第一页260×164规则卡，调整全局变异开关、比例和周期，支持窄屏展开与执行入口权限检查。",
-    "Assets/DarwinPark/Editor/ObservationMutationRegression.cs": "验证真实变异抽样与读档、坐标投递/追踪边界、空间候选数量、规则卡布局和文件保存权限。"
+    "Assets/DarwinPark/Editor/ObservationMutationRegression.cs": "验证真实变异抽样与读档、坐标投递/追踪边界、空间候选数量、规则卡布局和文件保存权限。",
+    "Assets/DarwinPark/Core/SimulationOptimization.cs": "读取外部带注释优化配置，校验并通过单一全局入口热加载查询、任务、缓存与外观参数。",
+    "Assets/DarwinPark/Entities/Ecology/ResourceCoordinates.cs": "统一尸体和能量块坐标，维护三维/球面投影分类格和出生、搬运、移除生命周期。",
+    "Assets/DarwinPark/Entities/Ecology/WorkerTaskQueue.cs": "为工匠生成顺序采集交付计划，补给插队、完成接续、目标失效跳过并校验持久化任务。",
+    "Assets/DarwinPark/Entities/Ecology/MemberTaskSequence.cs": "为士兵巡逻休息、捕猎和其他分工记录任务次序，补给不覆盖原计划。",
+    "Assets/DarwinPark/Entities/Simulation/ActionDecisionCadence.cs": "分离意图决策节奏与连续物理动作，命令/受击/饥饿等立即打断，合并一批小步中的转向写入。",
+    "Assets/DarwinPark/Entities/Simulation/SingletonSettlement.cs": "为符合静止共享条件的单实体执行有效生命营养与独立繁殖结算，保留完整欠算时间。",
+    "Assets/DarwinPark/Genetics/Evaluation/GeneExpressionCache.cs": "在有界缓存中保存纯基因表达，独立绑定个体基因和属性，不共享可变行为或身份。",
+    "Assets/DarwinPark/Entities/Ecology/MateCoordinates.cs": "从共享活体坐标选择配偶，降频寻找并实时复查已有候选的成年、营养和孕育资格。",
+    "Assets/DarwinPark/Entities/GravityProbeCache.cs": "缓存组件、接地射线和摩擦设置，位置、地形或星球改变时立即失效。",
+    "Assets/DarwinPark/Entities/Ecology/ResourceGroups.cs": "按种群和资源版本缓存补给坐标与活动圆，避免反复枚举世界尸体。",
+    "Assets/DarwinPark/Entities/Ecology/PerceptionSubscriptions.cs": "建立目标到观察者的反向订阅，注销目标只清理真正订阅者。",
+    "Assets/DarwinPark/Entities/Ecology/ProducerClassification.cs": "按表达版本缓存生产者遗传资格，实时保留孵化、存活和动态移动条件。",
+    "Assets/DarwinPark/Entities/Ecology/ResourceVisualScheduler.cs": "统一低频刷新能量块外观，根据镜头距离关闭远处点光源。",
+    "Assets/DarwinPark/Genetics/GeneCatalogSnapshot.cs": "缓存基因目录和UI目录签名，在重载定义时失效。",
+    "Assets/DarwinPark/Editor/TaskCoordinateOptimizationRegression.cs": "真实运行验证顺序任务、补给插队、货物持久化、全局资源坐标和计算缓存边界。",
+    "Assets/DarwinPark/Entities/Ecology/StatePriorityCache.cs": "按实体授权和注册表版本缓存状态优先级，避免逐小步LINQ排序。",
+    "Assets/DarwinPark/Entities/Simulation/ActionMotionBatch.cs": "同批小步末尾才写物理移动，累计时间独立保存并支持嵌套实体回调。",
+    "Assets/DarwinPark/Editor/ColonyTaskStressAudit.cs": "测试专用战斗归因与补给隔离，记录王后实际受击和营养，正式游戏不使用无伤害隔离。",
+    "Assets/DarwinPark/Entities/Ecology/EntityResourcePlan.cs": "普通实体的能量块/食腐顺序资源计划，当前耗尽后接续，邻近补给插队并成对保存/恢复与清理。"
   },
   "files": {
     "Assets/Scenes/SampleScene.unity": "主要运行场景：挂载星球、环境、时钟、UI和游戏启动组件。",
@@ -466,6 +485,8 @@
     "Assets/Resources/Entities/observation.json": "观察状态范围倍率、信息刷新周期、坐标粗格尺寸和极大视野查询预算。",
     "Docs/开发设计/基因轮次变异与观察坐标优化.md": "本次已实现的全局抽样和坐标投递架构，并逐项对照其他计算的当前实现、具体优化步骤与验收。",
     "Docs/操作指南/规则控制与观察基因.md": "第一页规则卡、外部配置、定时变异与观察基因两状态的使用说明。",
-    "Docs/验证记录/观察基因全局变异与规则卡验证-2026-11-08.md": "抽样、读档、视野路由、规则卡与兼容检查及完整场景采样的真实结果和限制。"
+    "Docs/验证记录/观察基因全局变异与规则卡验证-2026-11-08.md": "抽样、读档、视野路由、规则卡与兼容检查及完整场景采样的真实结果和限制。",
+    "Assets/Resources/simulation_optimization.json": "带中文注释的计算优化默认配置；发布后复制到外部config目录。",
+    "config/simulation_optimization.json": "可外部调整并热加载的任务队列、查询周期、缓存、接地与外观优化参数。"
   }
 }

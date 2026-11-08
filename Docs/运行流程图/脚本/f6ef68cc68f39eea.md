@@ -2,7 +2,7 @@
 
 [返回总索引](../README.md) · `Runtime` · `Assets/DarwinPark/Entities/Ecology/ColonyCorpseAccess.cs`
 
-[源文件](../../../Assets/DarwinPark/Entities/Ecology/ColonyCorpseAccess.cs) · 源码校验：`f759c959281dae48d292bd8617dd53cd0669c3dbe77753272bacedef92f1d610`
+[源文件](../../../Assets/DarwinPark/Entities/Ecology/ColonyCorpseAccess.cs) · 源码校验：`28393ca21faf1d9f6f1ff8147dd99c91fabf5452447af1ecad29a578aa913407`
 
 方法按源文件位置排列。事件/回调引用不表示立即执行；分支与异常说明见总索引。完整源码与可点击关系图请打开离线手册。
 
@@ -69,12 +69,13 @@ flowchart TD
   b5{"判断：worker!=null"}
   b6{"判断：worker.Active"}
   b7{"判断：worker.Role==AntRole.Worker"}
-  b8{"判断：worker.State.resourceTarget==resource.State.id"}
-  b9["worker.State.carriedResource==resource.State.id"]
-  b10["worker.State.resourceTarget==resource.State.id"]
-  b11["worker!=null&amp;&amp;worker.Active&amp;&amp;worker.Role==AntRole.Worker&amp;&amp;(worker.State.resourceTarget==resource.State.id&#124;&#124;worker.State.carriedResource==resource.State.id)"]
-  b12["结果：worker!=null&amp;&amp;worker.Active&amp;&amp;worker.Role==AntRole.Worker&amp;&amp;(worker.State.resourceTarget==resource.State.id&#124;&#124;worker.State.carriedResource==resource.State.id)"]
-  b13(["结束 / 返回"])
+  b8{"判断：ColonyFoundingSupport.Collecting(worker)"}
+  b9{"判断：worker.State.resourceTarget==resource.State.id"}
+  b10["worker.State.carriedResource==resource.State.id"]
+  b11["worker.State.resourceTarget==resource.State.id"]
+  b12["worker!=null&amp;&amp;worker.Active&amp;&amp;(worker.Role==AntRole.Worker&#124;&#124;ColonyFoundingSupport.Collecting(worker))&amp;&amp;(worker.State.resourceTarget==resource.State.id&#124;&#124;worker.State.carriedResource==resource.State.id)"]
+  b13["结果：worker!=null&amp;&amp;worker.Active&amp;&amp;(worker.Role==AntRole.Worker&#124;&#124;ColonyFoundingSupport.Collecting(worker))&amp;&amp;(worker.State.resourceTarget==resource.State.id&#124;&#124;worker.State.carriedResource==resource.State.id)"]
+  b14(["结束 / 返回"])
   b0 --> b1
   b1 -->|"否"| b2
   b1 -->|"是"| b3
@@ -82,17 +83,19 @@ flowchart TD
   b3 --> b4
   b4 --> b5
   b5 -->|"是"| b6
-  b5 -->|"否"| b11
+  b5 -->|"否"| b12
   b6 -->|"是"| b7
-  b6 -->|"否"| b11
-  b7 -->|"是"| b8
-  b7 -->|"否"| b11
-  b8 -->|"否"| b9
-  b8 -->|"是"| b10
-  b9 --> b12
-  b10 --> b12
-  b11 --> b12
-  b12 -->|"返回"| b13
+  b6 -->|"否"| b12
+  b7 -->|"否"| b8
+  b7 -->|"是"| b9
+  b8 -->|"是"| b9
+  b8 -->|"否"| b12
+  b9 -->|"否"| b10
+  b9 -->|"是"| b11
+  b10 --> b13
+  b11 --> b13
+  b12 --> b13
+  b13 -->|"返回"| b14
 
 ```
 
@@ -101,4 +104,5 @@ flowchart TD
 - [EcologyIdentity.Find · L20](bdf7ccc2c9c0452f.md#m58f756a3ba9ec990)（方法）
 - [ColonyResource.State.get · L24](293dbaecfff4b585.md#m41824f1a0e160aa5)（访问器）
 - [AntColonyMember.Role.get · L38](baebd85c05598377.md#mab30d459d599e4df)（访问器）
+- [ColonyFoundingSupport.Collecting · L13](404bb05c7f82518a.md#m9dbfa09daab029b1)（方法）
 - [AntColonyMember.State.get · L32](baebd85c05598377.md#m426db6a7c12dd7aa)（访问器）

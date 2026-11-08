@@ -367,6 +367,42 @@
         "text": "范围采样点 / 注意实时追踪",
         "target": "EntityPerceptionHub.TryLocate",
         "kind": "step"
+      },
+      {
+        "id": "exprcache",
+        "text": "纯表达缓存，绑定个体独立结果",
+        "target": "GeneExpressionCache.Resolve",
+        "kind": "step"
+      },
+      {
+        "id": "single",
+        "text": "单成员静止核完整补算",
+        "target": "SingletonSettlement.Advance",
+        "kind": "step"
+      },
+      {
+        "id": "cadence",
+        "text": "任务/受击打断，独立决策节奏",
+        "target": "ActionDecisionCadence.Due",
+        "kind": "step"
+      },
+      {
+        "id": "motionbatch",
+        "text": "末小步一次写刚体，累计时间",
+        "target": "ActionMotionBatch.Consume",
+        "kind": "step"
+      },
+      {
+        "id": "mategrid",
+        "text": "坐标候选与实时配偶资格",
+        "target": "MateCoordinates.Find",
+        "kind": "step"
+      },
+      {
+        "id": "groundcache",
+        "text": "地形/位移失效的接地缓存",
+        "target": "GravityProbeCache.Probe",
+        "kind": "step"
       }
     ],
     "edges": [
@@ -519,6 +555,42 @@
         "n21",
         "目标仍存活且在视野内",
         "flow"
+      ],
+      [
+        "n8",
+        "exprcache",
+        "优先查纯求值缓存",
+        "flow"
+      ],
+      [
+        "n10",
+        "single",
+        "只有一名兼容成员",
+        "flow"
+      ],
+      [
+        "n6",
+        "cadence",
+        "行动小步",
+        "exception"
+      ],
+      [
+        "cadence",
+        "motionbatch",
+        "连续物理动作与决策分离",
+        "flow"
+      ],
+      [
+        "n14",
+        "mategrid",
+        "寻找配偶时",
+        "exception"
+      ],
+      [
+        "motionbatch",
+        "groundcache",
+        "独立物理回调",
+        "exception"
       ]
     ],
     "note": "业务导航区分独立Unity入口。全局变异按模拟周期抽样并保存剩余名单；阶段只更新属性。感知复用坐标和粗格，注意追踪更新已知目标、范围状态保留采样点。实际资格、子步与事件以方法图为准。"
@@ -741,7 +813,7 @@
   },
   {
     "title": "06 · 蚁群、工匠、补给与站位",
-    "description": "分工、运输、真实进食半径、空位出生与移动避让。",
+    "description": "工匠按坐标生成顺序任务，补给插队保留货物与后续计划，实际完成后接续；活动圆和资源索引复用。",
     "nodes": [
       {
         "id": "n0",
@@ -790,6 +862,48 @@
         "text": "移动时的同群切向避让",
         "target": "ColonyFormation.Avoid",
         "kind": "step"
+      },
+      {
+        "id": "queue",
+        "text": "坐标生成顺序任务 / 激活当前目标",
+        "target": "WorkerTaskQueue.Select",
+        "kind": "step"
+      },
+      {
+        "id": "foodqueue",
+        "text": "饥饿补给插队，原工作顺延",
+        "target": "WorkerTaskQueue.Feeding",
+        "kind": "step"
+      },
+      {
+        "id": "complete",
+        "text": "交付只转换一次，接续下一任务",
+        "target": "WorkerTaskQueue.Complete",
+        "kind": "step"
+      },
+      {
+        "id": "resourcegrid",
+        "text": "尸体/能量块统一分类坐标格",
+        "target": "ResourceCoordinates.Query",
+        "kind": "step"
+      },
+      {
+        "id": "groupcoords",
+        "text": "同群补给坐标与活动圆复用",
+        "target": "ResourceGroups.Read",
+        "kind": "step"
+      },
+      {
+        "id": "ordinaryplan",
+        "text": "普通实体能量块/食腐顺序计划",
+        "target": "EntityResourcePlan.FindEnergy",
+        "kind": "step"
+      },
+      {
+        "id": "corpseplan",
+        "text": "食腐当前耗尽后接续下一尸体",
+        "target": "EntityResourcePlan.FindCorpse",
+        "kind": "step"
       }
     ],
     "edges": [
@@ -828,6 +942,72 @@
         "n7",
         "后续移动修正",
         "exception"
+      ],
+      [
+        "resourcegrid",
+        "queue",
+        "附近尸体候选",
+        "flow"
+      ],
+      [
+        "foodqueue",
+        "queue",
+        "补给完成后恢复",
+        "exception"
+      ],
+      [
+        "queue",
+        "complete",
+        "实际交付完成",
+        "flow"
+      ],
+      [
+        "complete",
+        "queue",
+        "继续下一目标",
+        "flow"
+      ],
+      [
+        "groupcoords",
+        "resourcegrid",
+        "用于供给和活动范围",
+        "exception"
+      ],
+      [
+        "n1",
+        "queue",
+        "取货前激活当前项",
+        "flow"
+      ],
+      [
+        "n5",
+        "foodqueue",
+        "更新补给计划",
+        "flow"
+      ],
+      [
+        "n1",
+        "resourcegrid",
+        "无后续计划时查询",
+        "exception"
+      ],
+      [
+        "n0",
+        "groupcoords",
+        "共用活动中心",
+        "exception"
+      ],
+      [
+        "resourcegrid",
+        "ordinaryplan",
+        "普通营养实体",
+        "flow"
+      ],
+      [
+        "resourcegrid",
+        "corpseplan",
+        "食腐实体",
+        "flow"
       ]
     ],
     "note": "没有空位时保留孕育。目标与避让不是瞬移；没有真实能量的补给点不产生活动圈。"

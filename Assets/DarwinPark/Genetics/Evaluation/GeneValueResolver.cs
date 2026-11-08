@@ -32,6 +32,11 @@ namespace DarwinPark.Genetics
         public static GenomeEvaluation Resolve(Genome genome, bool isGestating = false,
             float globalSuppression = 0f, string suppressExemptGeneId = null,IReadOnlyDictionary<string,float> additionalSuppression=null)
         {
+            // ★ 适配：仅共享纯求值结果，返回值仍绑定调用者自己的基因。
+            return GeneExpressionCache.Resolve(genome,isGestating,globalSuppression,suppressExemptGeneId,additionalSuppression);
+        }
+        internal static GenomeEvaluation ResolveUncached(Genome genome,bool isGestating,float globalSuppression,string suppressExemptGeneId,IReadOnlyDictionary<string,float> additionalSuppression)
+        {
             var result = new GenomeEvaluation();
             if (genome == null) return result;
 

@@ -1424,7 +1424,7 @@ flowchart TD
 
 - [EcologyIdentity.Find · L20](bdf7ccc2c9c0452f.md#m58f756a3ba9ec990)（方法）
 - [EcologyQueries.Alive · L38](bdf7ccc2c9c0452f.md#mb2877c487f449970)（方法）
-- [AntColonyWorker.IsCarried · L144](8a0cca2020271b6f.md#me194a38cd4c5bfab)（方法）
+- [AntColonyWorker.IsCarried · L132](8a0cca2020271b6f.md#m78b7b08c935b36c0)（方法）
 - [LanSession.Reply · L184](9fb633eebffe669c.md#ma2abc3394057f288)（方法）
 - [LanSession.OwnedEntityId.get · L30](9fb633eebffe669c.md#m5adc535c48d20cbe)（访问器）
 - [LanSession.Cheats.get · L27](9fb633eebffe669c.md#m570973099b8f82d5)（访问器）
@@ -1629,7 +1629,7 @@ flowchart TD
 - [EntityManualControl.BeginControl · L32](a6969896da35e1f0.md#mf0dadf914f9961c7)（方法）
 - [EcologyQueries.Alive · L38](bdf7ccc2c9c0452f.md#mb2877c487f449970)（方法）
 - [LanSession.Finite · L182](9fb633eebffe669c.md#m751b2ad72d2d10c5)（方法）
-- [EnergyBlockMetabolism.TryRelease · L45](123c1bf82bdb8ea2.md#m09e5b91f57bb952a)（方法）
+- [EnergyBlockMetabolism.TryRelease · L40](123c1bf82bdb8ea2.md#mda6f8903d669c1f6)（方法）
 - [EntityManualControl.SetInput · L33](a6969896da35e1f0.md#m7c7f5613b3bebc74)（方法）
 - [EntityManualControl.QueueAttack · L24](a6969896da35e1f0.md#md160ef2315358c16)（方法）
 - [EntityManualControl.SetAim · L27](a6969896da35e1f0.md#m70f09d0090a1fa41)（方法）
@@ -2735,11 +2735,11 @@ flowchart TD
 - [LanReplicaActor.Apply · L20](75ae66582735754a.md#m0ae859a28c328c32)（方法）
 - [EcologyIdentity.Of · L21](bdf7ccc2c9c0452f.md#m1143cf9570a93b72)（方法）
 - [ColonyResource.Find · L28](293dbaecfff4b585.md#m1324285ab40ac6f4)（方法）
-- [ColonyResource.Create · L45](293dbaecfff4b585.md#mab527c752fa0470c)（方法）
+- [ColonyResource.Create · L45](293dbaecfff4b585.md#m7e8d2b0e06e1cad5)（方法）
 - [ColonyResource.State.get · L24](293dbaecfff4b585.md#m41824f1a0e160aa5)（访问器）
-- [ColonyResource.CarryTo · L84](293dbaecfff4b585.md#mc2aed3e5a271032d)（方法）
+- [ColonyResource.CarryTo · L85](293dbaecfff4b585.md#m0524c6be86580a92)（方法）
 - [EcologyQueries.ToWorld · L40](bdf7ccc2c9c0452f.md#m320932c05ccecbf7)（方法）
-- [ColonyResource.Remove · L106](293dbaecfff4b585.md#m248a728f9e9a7c1e)（方法）
+- [ColonyResource.Remove · L108](293dbaecfff4b585.md#mb9333347c7434224)（方法）
 - [RandomPlanetSpawner.ApplyRemoteProgress · L99](1c13222a547b265c.md#m46bb439a8958c4a8)（方法）
 - [RandomPlanetSpawner.Ensure · L25](1c13222a547b265c.md#m2f7496d9d5575b34)（方法）
 - [PopulationMaintenance.Restore · L155](923ccc4e86c4786c.md#m239f01f9bc44dc27)（方法）
@@ -2878,7 +2878,7 @@ flowchart TD
 - [LanSession.Cheats.set · L27](9fb633eebffe669c.md#mea5d3063d84d0e75)（访问器）
 - [WorldAuthority.Reset · L18](2361e41ab2baa157.md#m85b42b819afac5cb)（方法）
 - [LanSession.Status.set · L31](9fb633eebffe669c.md#m5f42294bb375d2f9)（访问器）
-- [GameMainMenu.ShowNetworkMain · L307](a1f1791f9e7a8035.md#m0ee9fd0df43cace3)（方法）
+- [GameMainMenu.ShowNetworkMain · L309](a1f1791f9e7a8035.md#mb38bbc8cc233bb7d)（方法）
 
 <a id="mcfcb9a748cd4e6d6"></a>
 

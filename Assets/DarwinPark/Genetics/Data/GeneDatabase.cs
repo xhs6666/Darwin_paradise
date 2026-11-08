@@ -143,6 +143,6 @@ namespace DarwinPark.Genetics
             return null;
         }
 
-        public static void Reload() { _initialized = false; EntityStateRegistry.ReloadConfigured(); }
+        public static void Reload() { /* ★ 适配：切换世界或编辑定义时清除纯表达缓存。 */ GeneExpressionCache.Clear(); GeneCatalogSnapshot.Clear(); _initialized = false; EntityStateRegistry.ReloadConfigured(); }
     }
 }

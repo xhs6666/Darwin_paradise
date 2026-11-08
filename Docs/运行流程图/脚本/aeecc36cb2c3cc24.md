@@ -2,7 +2,7 @@
 
 [返回总索引](../README.md) · `Runtime` · `Assets/DarwinPark/Entities/Ecology/EntityPerceptionHub.cs`
 
-[源文件](../../../Assets/DarwinPark/Entities/Ecology/EntityPerceptionHub.cs) · 源码校验：`4c4b760108e06ef01475dfc061186659a6d0cf912760ca62c2039b41be45b1b6`
+[源文件](../../../Assets/DarwinPark/Entities/Ecology/EntityPerceptionHub.cs) · 源码校验：`0b2ebd853863d5ec86afc52f18cd4ed99187acb3bbcc18c81c1ddba09fd65958`
 
 方法按源文件位置排列。事件/回调引用不表示立即执行；分支与异常说明见总索引。完整源码与可点击关系图请打开离线手册。
 
@@ -187,7 +187,7 @@ flowchart TD
   b1{"判断：Inboxes.TryGetValue(genes,out var inbox)"}
   b2["inbox=new Inbox();<br/>Inboxes.Add(genes,inbox);"]
   b3{"判断：inbox.revision!=genes.LogicRevision"}
-  b4["inbox.revision=genes.LogicRevision;<br/>inbox.frame=-1;<br/>inbox.next=float.NegativeInfinity;<br/>inbox.sightings.Clear();<br/>inbox.byTarget.Clear();<br/>settings=ObservationSettings.Current<br/>observation=EcologyQueries.Active(genes,settings.geneId)<br/>hasGene…"]
+  b4["PerceptionSubscriptions.Forget(genes,inbox.byTarget.Keys);<br/>inbox.revision=genes.LogicRevision;<br/>inbox.frame=-1;<br/>inbox.next=float.NegativeInfinity;<br/>inbox.sightings.Clear();<br/>inbox.byTarget.Clear();<br/>settings=ObservationSettings.Current<br/>obser…"]
   b5["genes.Genome.Genes"]
   b6{"判断：genes.Genome.Genes"}
   b7{"var<br/>判断：gene.DefinitionId==settings.geneId"}
@@ -267,13 +267,14 @@ flowchart TD
 项目内调用/回调引用：
 
 - [EntityGeneController.LogicRevision.get · L19](7494d53178552f0e.md#me69facc1c0f1e164)（访问器）
+- [PerceptionSubscriptions.Forget · L10](69ad03522af4e9d9.md#m7d8542e80b44bab2)（方法）
 - [ObservationSettings.Current.get · L16](fde4b9e3a289b4e6.md#m3eb41cdee2818913)（访问器）
 - [EcologyQueries.Active · L28](bdf7ccc2c9c0452f.md#m4fb10ad424167e3b)（方法）
-- [EntityGeneController.GetAttribute · L267](7494d53178552f0e.md#mfd8d6d35f485440c)（方法）
+- [EntityGeneController.GetAttribute · L277](7494d53178552f0e.md#m5ef0e4e944f0c71b)（方法）
 
-<a id="m19fad8b9a534c2ac"></a>
+<a id="m82b4d3ee35795aa8"></a>
 
-## Range · L39
+## Range · L40
 
 `public static float Range(EntityGeneController genes)`
 
@@ -302,9 +303,9 @@ flowchart TD
 
 - [EntityPerceptionHub.Get · L25](aeecc36cb2c3cc24.md#m6e8ef31a160a5e74)（方法）
 
-<a id="md08c5ce5c275b60a"></a>
+<a id="m5135b5615734d39a"></a>
 
-## Range · L40
+## Range · L41
 
 `public static float Range(EntityGeneController genes,string attribute)`
 
@@ -331,12 +332,12 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [EntityPerceptionHub.Range · L39](aeecc36cb2c3cc24.md#m19fad8b9a534c2ac)（方法）
-- [EntityGeneController.GetAttribute · L267](7494d53178552f0e.md#mfd8d6d35f485440c)（方法）
+- [EntityPerceptionHub.Range · L40](aeecc36cb2c3cc24.md#m82b4d3ee35795aa8)（方法）
+- [EntityGeneController.GetAttribute · L277](7494d53178552f0e.md#m5ef0e4e944f0c71b)（方法）
 
-<a id="mbd8a5627580d6122"></a>
+<a id="mbe2216b46b71081b"></a>
 
-## Read · L41
+## Read · L42
 
 `public static IReadOnlyList<EntitySighting> Read(EntityGeneController genes)`
 
@@ -352,13 +353,13 @@ flowchart TD
   b3{"判断：now&lt;inbox.next"}
   b4["结果：inbox.sightings"]
   b5["performance=PerformanceTimings.Measure(PerformanceTimings.Area.Perception)"]
-  b6["inbox.membership=EntityRegistry.MembershipRevision;<br/>inbox.frame=Time.frameCount;<br/>inbox.next=now+inbox.interval;<br/>inbox.sightings.Clear();<br/>inbox.byTarget.Clear();<br/>EntityCoordinateGrid.Query(genes.transform.position,inbox.range,inbox.candid…"]
+  b6["PerceptionSubscriptions.Forget(genes,inbox.byTarget.Keys);<br/>inbox.membership=EntityRegistry.MembershipRevision;<br/>inbox.frame=Time.frameCount;<br/>inbox.next=now+inbox.interval;<br/>inbox.sightings.Clear();<br/>inbox.byTarget.Clear();<br/>EntityCoordinateG…"]
   b7["inbox.candidates"]
   b8{"判断：inbox.candidates"}
   b9["var"]
   b10{"entity=coordinate.entity<br/>CandidateVisits++;<br/>判断：entity==self"}
   b11{"判断：EcologyMotion.Detectable(entity,genes.transform.position,inbox.range,self)"}
-  b12["sighting=new EntitySighting(entity,coordinate.position,now)<br/>inbox.sightings.Add(sighting);<br/>inbox.byTarget[entity]=sighting;<br/>Delivered++;"]
+  b12["sighting=new EntitySighting(entity,coordinate.position,now)<br/>inbox.sightings.Add(sighting);<br/>inbox.byTarget[entity]=sighting;<br/>PerceptionSubscriptions.Attach(genes,entity);<br/>Delivered++;"]
   b13["inbox.candidates"]
   b14["inbox.candidates.Clear();<br/>结果：inbox.sightings"]
   b15["performance=PerformanceTimings.Measure(PerformanceTimings.Area.Perception)"]
@@ -392,20 +393,22 @@ flowchart TD
 
 - [EntityPerceptionHub.Get · L25](aeecc36cb2c3cc24.md#m6e8ef31a160a5e74)（方法）
 - [EntityRegistry.MembershipRevision.get · L15](2093aaf08559c9f2.md#m6afb6f184d119e11)（访问器）
-- [PerformanceTimings.Measure · L24](a8403a4c7503726d.md#m8b21456474d7b973)（方法）
+- [PerformanceTimings.Measure · L24](a8403a4c7503726d.md#ma7cb18ee4d22d887)（方法）
+- [PerceptionSubscriptions.Forget · L10](69ad03522af4e9d9.md#m7d8542e80b44bab2)（方法）
 - [EntityCoordinateGrid.Query · L26](f6d0404a662a5d5c.md#mb223b609771bd310)（方法）
 - [EntityPerceptionHub.Searches.set · L23](aeecc36cb2c3cc24.md#m80cf9d67dfba16a7)（访问器）
 - [EntityPerceptionHub.Searches.get · L23](aeecc36cb2c3cc24.md#m7431de46c6f0053f)（访问器）
 - [EntityPerceptionHub.CandidateVisits.set · L23](aeecc36cb2c3cc24.md#m198ffeb4d9c2d0b7)（访问器）
 - [EntityPerceptionHub.CandidateVisits.get · L23](aeecc36cb2c3cc24.md#m55ffe61e92656f55)（访问器）
-- [EcologyMotion.Detectable · L61](6ed9d0eedb456d32.md#m24ba4bf4b1ca5c20)（方法）
+- [EcologyMotion.Detectable · L63](6ed9d0eedb456d32.md#mfbde5a5e024a8840)（方法）
 - [EntitySighting.EntitySighting.ctor · L12](aeecc36cb2c3cc24.md#me8009eddbd5e5621)（构造函数）
+- [PerceptionSubscriptions.Attach · L9](69ad03522af4e9d9.md#mdc971fe9af8c746f)（方法）
 - [EntityPerceptionHub.Delivered.set · L23](aeecc36cb2c3cc24.md#m91a5fa7769843b48)（访问器）
 - [EntityPerceptionHub.Delivered.get · L23](aeecc36cb2c3cc24.md#m1dd3178d30ad24bb)（访问器）
 
-<a id="md1ab5dd5e38a72e9"></a>
+<a id="m2cd96337ffd40bb4"></a>
 
-## TryLocate · L55
+## TryLocate · L57
 
 `public static bool TryLocate(EntityGeneController genes,DarwinEntity target,out Vector3 point,float maximumRange=float.PositiveInfinity)`
 
@@ -453,14 +456,14 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [EntityPerceptionHub.Read · L41](aeecc36cb2c3cc24.md#mbd8a5627580d6122)（方法）
+- [EntityPerceptionHub.Read · L42](aeecc36cb2c3cc24.md#mbe2216b46b71081b)（方法）
 - [EntityPerceptionHub.Get · L25](aeecc36cb2c3cc24.md#m6e8ef31a160a5e74)（方法）
-- [EntityNeighborhood.TryPosition · L85](e5e24c4aff0395b1.md#m3736dca87453730f)（方法）
-- [EcologyMotion.Detectable · L61](6ed9d0eedb456d32.md#m24ba4bf4b1ca5c20)（方法）
+- [EntityNeighborhood.TryPosition · L96](e5e24c4aff0395b1.md#m25ecdad5c922e7d5)（方法）
+- [EcologyMotion.Detectable · L63](6ed9d0eedb456d32.md#mfbde5a5e024a8840)（方法）
 
-<a id="m2f5c1315a262fd0a"></a>
+<a id="m5f831816fef69cd6"></a>
 
-## Notice · L61
+## Notice · L63
 
 `public static void Notice(EntityGeneController genes,DarwinEntity target)`
 
@@ -477,7 +480,7 @@ flowchart TD
   b4{"判断：EcologyMotion.Detectable(target,genes.transform.position,inbox.range,genes.GetComponent&lt;DarwinEntity&gt;())"}
   b5{"sighting=new EntitySighting(target,point,Now)<br/>判断：inbox.byTarget.ContainsKey(target)"}
   b6["inbox.sightings.Add(sighting);"]
-  b7["inbox.byTarget[target]=sighting;"]
+  b7["inbox.byTarget[target]=sighting;<br/>PerceptionSubscriptions.Attach(genes,target);"]
   b8(["结束 / 返回"])
   b0 --> b1
   b1 -->|"是"| b8
@@ -497,15 +500,16 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [EntityPerceptionHub.Read · L41](aeecc36cb2c3cc24.md#mbd8a5627580d6122)（方法）
+- [EntityPerceptionHub.Read · L42](aeecc36cb2c3cc24.md#mbe2216b46b71081b)（方法）
 - [EntityPerceptionHub.Get · L25](aeecc36cb2c3cc24.md#m6e8ef31a160a5e74)（方法）
-- [EntityNeighborhood.TryPosition · L85](e5e24c4aff0395b1.md#m3736dca87453730f)（方法）
-- [EcologyMotion.Detectable · L61](6ed9d0eedb456d32.md#m24ba4bf4b1ca5c20)（方法）
+- [EntityNeighborhood.TryPosition · L96](e5e24c4aff0395b1.md#m25ecdad5c922e7d5)（方法）
+- [EcologyMotion.Detectable · L63](6ed9d0eedb456d32.md#mfbde5a5e024a8840)（方法）
 - [EntitySighting.EntitySighting.ctor · L12](aeecc36cb2c3cc24.md#me8009eddbd5e5621)（构造函数）
+- [PerceptionSubscriptions.Attach · L9](69ad03522af4e9d9.md#mdc971fe9af8c746f)（方法）
 
-<a id="m70deb91f5dccb6aa"></a>
+<a id="m54c3621eb766145b"></a>
 
-## Remove · L68
+## Remove · L70
 
 `public static void Remove(EntityGeneController genes)`
 
@@ -517,40 +521,58 @@ flowchart TD
 flowchart TD
   b0(["入口"])
   b1{"判断：ReferenceEquals(genes,null)"}
-  b2{"Inboxes.Remove(genes);<br/>target=genes.GetComponent&lt;DarwinEntity&gt;()<br/>判断：target==null"}
-  b3["Inboxes.Values"]
-  b4{"判断：Inboxes.Values"}
-  b5["var<br/>inbox.byTarget.Remove(target);"]
-  b6["i=inbox.sightings.Count-1"]
-  b7{"判断：i&gt;=0"}
-  b8{"判断：inbox.sightings[i].entity==target"}
-  b9["inbox.sightings.RemoveAt(i);"]
-  b10["i--"]
-  b11["Inboxes.Values"]
-  b12(["结束 / 返回"])
+  b2{"判断：Inboxes.TryGetValue(genes,out var own)"}
+  b3["PerceptionSubscriptions.Forget(genes,own.byTarget.Keys);"]
+  b4{"Inboxes.Remove(genes);<br/>target=genes.GetComponent&lt;DarwinEntity&gt;()<br/>判断：target==null"}
+  b5{"observers=PerceptionSubscriptions.Take(target)<br/>判断：observers==null"}
+  b6["observers"]
+  b7{"判断：observers"}
+  b8["var"]
+  b9{"判断：Inboxes.TryGetValue(observer,out var inbox)"}
+  b10["inbox.byTarget.Remove(target);"]
+  b11["i=inbox.sightings.Count-1"]
+  b12{"判断：i&gt;=0"}
+  b13{"判断：inbox.sightings[i].entity==target"}
+  b14["inbox.sightings.RemoveAt(i);"]
+  b15["i--"]
+  b16["observers"]
+  b17(["结束 / 返回"])
   b0 --> b1
-  b1 -->|"是"| b12
+  b1 -->|"是"| b17
   b1 -->|"否"| b2
-  b2 -->|"是"| b12
-  b2 -->|"否"| b3
+  b2 -->|"是"| b3
+  b2 -->|"否"| b4
   b3 --> b4
-  b4 -->|"是"| b5
-  b4 -->|"否 · 经过finally 11"| b12
-  b5 --> b6
+  b4 -->|"是"| b17
+  b4 -->|"否"| b5
+  b5 -->|"是"| b17
+  b5 -->|"否"| b6
   b6 --> b7
   b7 -->|"是"| b8
-  b7 -->|"否"| b4
-  b8 -->|"是"| b9
-  b8 -->|"否"| b10
-  b9 --> b10
-  b10 --> b7
-  b4 -. "退出保护区时 finally（示意）" .-> b11
+  b7 -->|"否 · 经过finally 16"| b17
+  b8 --> b9
+  b9 -->|"是"| b10
+  b9 -->|"否"| b7
+  b10 --> b11
+  b11 --> b12
+  b12 -->|"是"| b13
+  b12 -->|"否"| b7
+  b13 -->|"是"| b14
+  b13 -->|"否"| b15
+  b14 --> b15
+  b15 --> b12
+  b7 -. "退出保护区时 finally（示意）" .-> b16
 
 ```
 
-<a id="md25001e4301b22ef"></a>
+项目内调用/回调引用：
 
-## Clear · L75
+- [PerceptionSubscriptions.Forget · L10](69ad03522af4e9d9.md#m7d8542e80b44bab2)（方法）
+- [PerceptionSubscriptions.Take · L11](69ad03522af4e9d9.md#m9c6d356120ea5915)（方法）
+
+<a id="m31fc0fb1c51cd043"></a>
+
+## Clear · L79
 
 `public static void Clear()`
 
@@ -561,7 +583,7 @@ flowchart TD
 ```mermaid
 flowchart TD
   b0(["入口"])
-  b1["Inboxes.Clear();<br/>EntityCoordinateGrid.Clear();<br/>Searches=Delivered=CandidateVisits=0;"]
+  b1["Inboxes.Clear();<br/>PerceptionSubscriptions.Clear();<br/>EntityCoordinateGrid.Clear();<br/>Searches=Delivered=CandidateVisits=0;"]
   b2(["结束 / 返回"])
   b0 --> b1
   b1 --> b2
@@ -570,14 +592,15 @@ flowchart TD
 
 项目内调用/回调引用：
 
+- [PerceptionSubscriptions.Clear · L12](69ad03522af4e9d9.md#mee8b670a83bc365e)（方法）
 - [EntityCoordinateGrid.Clear · L33](f6d0404a662a5d5c.md#m2f8c9144ba3b3c91)（方法）
 - [EntityPerceptionHub.Searches.set · L23](aeecc36cb2c3cc24.md#m80cf9d67dfba16a7)（访问器）
 - [EntityPerceptionHub.Delivered.set · L23](aeecc36cb2c3cc24.md#m91a5fa7769843b48)（访问器）
 - [EntityPerceptionHub.CandidateVisits.set · L23](aeecc36cb2c3cc24.md#m198ffeb4d9c2d0b7)（访问器）
 
-<a id="md8b2b7b3994a86e5"></a>
+<a id="md7a81038409949ed"></a>
 
-## Reset · L76
+## Reset · L80
 
 `[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]private static void Reset()`
 
@@ -597,4 +620,4 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [EntityPerceptionHub.Clear · L75](aeecc36cb2c3cc24.md#md25001e4301b22ef)（方法）
+- [EntityPerceptionHub.Clear · L79](aeecc36cb2c3cc24.md#m31fc0fb1c51cd043)（方法）

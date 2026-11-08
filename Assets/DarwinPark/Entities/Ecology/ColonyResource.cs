@@ -27,8 +27,8 @@ namespace DarwinPark.Entities.Ecology
         public static IEnumerable<ColonyResource> All=>ResourcesInWorld.Where(r=>r!=null&&r.isActiveAndEnabled&&r.State.energy>0);
         public static ColonyResource Find(string id)=>!string.IsNullOrEmpty(id)&&ById.TryGetValue(id,out var resource)&&resource!=null&&resource.isActiveAndEnabled&&resource.State.energy>0?resource:null;
         // ★ 适配：出生、读档和启停同步维护能量块索引，资源尚未绑定State时由Create补登记。
-        private void OnEnable(){if(!ResourcesInWorld.Contains(this))ResourcesInWorld.Add(this);if(State!=null){ById[State.id]=this;ColonyFoodSources.Register(this);}}
-        private void OnDisable(){ResourcesInWorld.Remove(this);ColonyFoodSources.Remove(this);if(State!=null)ById.Remove(State.id);}
+        private void OnEnable(){if(!ResourcesInWorld.Contains(this))ResourcesInWorld.Add(this);if(State!=null){ById[State.id]=this;ColonyFoodSources.Register(this);ResourceCoordinates.Observe(this);}}
+        private void OnDisable(){ResourcesInWorld.Remove(this);ColonyFoodSources.Remove(this);ResourceCoordinates.Remove(this);if(State!=null)ById.Remove(State.id);}
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)] private static void Reset(){ResourcesInWorld.Clear();ById.Clear();_material=null;}
         public static float Biomass(DarwinEntity entity)
         {
@@ -54,7 +54,7 @@ namespace DarwinPark.Entities.Ecology
             {
                 var shader=Shader.Find("Universal Render Pipeline/Lit")??Shader.Find("Standard");
                 if(shader==null)throw new InvalidOperationException("能量块缺少可用材质 Shader");
-                _material=new Material(shader){name="Colony Resource"};_material.EnableKeyword("_EMISSION");
+                _material=new Material(shader){name="Colony Resource",enableInstancing=DarwinPark.Core.SimulationOptimization.Current.resourceInstancing};_material.EnableKeyword("_EMISSION");
             }
             var renderer=obj.GetComponent<Renderer>();renderer.sharedMaterial=_material;var block=new MaterialPropertyBlock();
             ColorUtility.TryParseHtmlString(AntColonySettings.Current.energyColor,out var energy);
@@ -63,7 +63,8 @@ namespace DarwinPark.Entities.Ecology
             if(data.kind!=ColonyResourceKind.Corpse)
             {var light=obj.AddComponent<Light>();light.type=LightType.Point;light.color=energy;light.intensity=AntColonySettings.Current.glowIntensity;light.range=AntColonySettings.Current.glowRange;light.shadows=LightShadows.None;}
             var resource=obj.AddComponent<ColonyResource>();resource.State=data;ById[data.id]=resource;
-            ColonyFoodSources.Register(resource);
+            // ★ 适配：统一资源坐标索引在State绑定后登记。
+            ColonyFoodSources.Register(resource);ResourceCoordinates.Observe(resource);
             // ★ 适配：尸体增加无碰撞的明确标记；右键几何拾取不增加物理负担。
             if(data.kind==ColonyResourceKind.Corpse){resource._presentation=obj.AddComponent<ColonyResourcePresentation>();resource._presentation.Build();}
             // ★ 适配：仅能量块挂载等级外观，尸体保留原标记；按剩余能量恢复等级。
@@ -78,14 +79,15 @@ namespace DarwinPark.Entities.Ecology
                 // ★ 适配：领取者按持久 ID 直接定位，竞争一具尸体时不再让每名工匠扫描全部种群。
                 if(HasLiveClaim)return false;
             }
-            State.claim=worker.Id;State.group=worker.GroupId;return true;
+            State.claim=worker.Id;State.group=worker.GroupId;ResourceCoordinates.Observe(this);return true;
         }
         public void Release(string owner){if(State.claim==owner)State.claim=null;}
-        public void CarryTo(Vector3 point){transform.position=point;State.local=EcologyQueries.ToLocal(point);_presentation?.Align();}
+        public void CarryTo(Vector3 point){transform.position=point;State.local=EcologyQueries.ToLocal(point);_presentation?.Align();ResourceCoordinates.Observe(this);}
         public static ColonyResource Convert(string group,Vector3 point,float energy,bool nursery)
         {
             var kind=nursery?ColonyResourceKind.Nursery:ColonyResourceKind.Supply;
-            var existing=All.FirstOrDefault(r=>r.State.group==group&&r.State.kind==kind&&EcologyQueries.Distance(r.transform.position,point)<=AntColonySettings.Current.arrivalDistance);
+            // ★ 适配：转换查种群能量块坐标，不再遍历尸体。
+            ColonyResource existing=null;foreach(var item in ResourceGroups.Read(group))if(item.resource.State.kind==kind&&item.resource.State.energy>0&&EcologyQueries.Distance(item.position,point)<=AntColonySettings.Current.arrivalDistance){existing=item.resource;break;}
             if(existing!=null){existing.State.energy+=energy;return existing;}
             return Create(new ColonyResourceSave{id=Guid.NewGuid().ToString("N"),group=group,kind=kind,energy=energy,local=EcologyQueries.ToLocal(point),scale=Vector3.one});
         }
@@ -100,11 +102,11 @@ namespace DarwinPark.Entities.Ecology
             float room=stats.CapacityRemaining("nutrient")+stats.CapacityRemaining("storedNutrient");
             float amount=Mathf.Min(ColonyFeeding.AvailableEnergy(resource,member),settings.feedRate*dt*DarwinPark.Core.GameplayTuning.Current.nutritionGainMultiplier,room);if(amount<=0)return;
             // ★ 修复（防Bug回归）：只有实际抵达进食才领取废弃资源，寻路预览不能抢走别群正在回收的补给；新归属沿原存档字段保存。
-            resource.State.group=member.GroupId;
+            resource.State.group=member.GroupId;ResourceCoordinates.Observe(resource);
             resource.State.energy-=amount;stats.Feed(amount);if(resource.State.energy<=0)resource.Remove();
         }
         public void Remove(){gameObject.SetActive(false);Destroy(gameObject);}
-        public static void ClearWorld(){foreach(var resource in All.ToArray())resource.Remove();ResourcesInWorld.Clear();ById.Clear();ColonyFoodSources.Clear();}
+        public static void ClearWorld(){foreach(var resource in All.ToArray())resource.Remove();ResourcesInWorld.Clear();ById.Clear();ColonyFoodSources.Clear();ResourceCoordinates.Clear();}
         public ColonyResourceSave Capture(){State.local=EcologyQueries.ToLocal(transform.position);return JsonUtility.FromJson<ColonyResourceSave>(JsonUtility.ToJson(State));}
     }
 }

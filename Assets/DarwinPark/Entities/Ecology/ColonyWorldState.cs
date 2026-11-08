@@ -60,6 +60,8 @@ namespace DarwinPark.Entities.Ecology
         public static void ValidateMotion(EcologySaveState state)
         {
             if(state==null)return;
+            // ★ 适配：普通资源队列在任何世界清场前验证。
+            EntityResourcePlan.Validate(state.resourcePlan);
             if(state.rts!=null&&(!Enum.IsDefined(typeof(RtsOrderKind),state.rts.kind)||!Finite(state.rts.point)))throw new InvalidDataException("RTS命令或目标位置无效");
             // ★ 修复（防Bug回归）：持久化的巡逻和反击计时同样需要有限值校验，否则坏档会让休息或攻击永久不结束。
             foreach(float value in new[]{state.patrol?.rest??0,state.patrol?.active??0,state.combat?.remaining??0})

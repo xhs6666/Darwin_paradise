@@ -9,6 +9,8 @@ namespace DarwinPark.Entities.Ecology
     {
         public bool feeding;
         public string supply;
+        // ★ 适配：顺序任务随既有计划一同保存，旧档缺省为空。
+        public System.Collections.Generic.List<PlannedEntityTask> tasks=new();
     }
     // ★ 新增：补给是可以完成的计划，而不是每个寻路/运输子步独立切换的瞬时状态。
     public static class EntityTaskPlan
@@ -28,10 +30,14 @@ namespace DarwinPark.Entities.Ecology
             // ★ 修复（防Bug回归）：跨过开始线仍保留补给计划，吃饱后才恢复原货物/巡逻，货物不丢失。
             if(plan.feeding&&satisfied){plan.feeding=false;plan.supply=null;}
             else if(!plan.feeding&&hungry)plan.feeding=true;
+            // ★ 适配：只在补给开关变化时插队，不能每次查询重排正在执行的计划。
+            bool queued=plan.tasks!=null&&plan.tasks.Count>0&&plan.tasks[0].kind==PlannedTaskKind.Feed;
+            if(queued!=plan.feeding)WorkerTaskQueue.Feeding(member,plan.feeding);
             return plan.feeding;
         }
         public static void Validate(EntityTaskPlanSave plan)
         {
+            WorkerTaskQueue.Validate(plan?.tasks);
             if(plan!=null&&!string.IsNullOrEmpty(plan.supply)&&!Guid.TryParseExact(plan.supply,"N",out _))throw new InvalidDataException("实体补给计划的资源标识无效");
         }
     }

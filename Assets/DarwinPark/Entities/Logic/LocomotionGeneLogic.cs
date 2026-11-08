@@ -18,6 +18,7 @@ namespace DarwinPark.Entities.Logic
         private Vector3 _wanderDir;
         private DarwinEntity _target;
         private Vector3 _observedTarget;
+        private readonly Simulation.ActionDecisionCadence _decision=new();
 
         public virtual void Initialize(EntityGeneController controller, GeneInstance gene)
         {
@@ -50,6 +51,7 @@ namespace DarwinPark.Entities.Logic
             var manual = _controller.GetComponent<EntityManualControl>();
             if (manual != null && manual.IsControlled)
             {
+                _decision.Reset();
                 // ★ 修复（防Bug回归）：瞬时左键请求保留到基因逻辑消费，不能只依赖两个 Update 之间是否仍按住。
                 // ★ 修复（防Bug回归）：冷却期间不消费短点击，留到可攻击的模拟步，避免点击被无声丢弃。
                 if (_actionCooldown > 0) return;
@@ -64,9 +66,14 @@ namespace DarwinPark.Entities.Logic
                 }
                 return;
             }
-            if(EcologyMotion.Directive(_controller,out var destination,out var commandTarget,out float multiplier))
+            // ★ 适配：查询/任务决策按模拟节奏缓存，持续移动与咬合冷却保持逐步推进。
+            bool decide=_decision.Due(_controller,dt);
+            if(decide)_decision.directive=EcologyMotion.Directive(_controller,out _decision.point,out _decision.target,out _decision.multiplier);
+            if(_decision.directive)
             {
-                _target=commandTarget;Chase(destination,speed*multiplier,dt);
+                _target=_decision.target;
+                if(_target!=null){var explicitOrder=_controller.GetComponent<RtsOrderController>();var pop=_controller.GetComponent<PopulationBehavior>();if(explicitOrder?.State.active==true&&explicitOrder.State.kind==RtsOrderKind.Attack||pop?.ManualRemaining>0)EntityNeighborhood.TryPosition(_target,out _decision.point);else if(!EntityPerceptionHub.TryLocate(_controller,_target,out _decision.point)){_decision.Reset();_target=null;return;}}
+                Chase(_decision.point,speed*_decision.multiplier,dt);
                 if(_target!=null)TryBite(stats,false);return;
             }
             // ★ 适配：由生态预算决定是否需补充繁殖储备，仓储充足后避免过度捕食。
@@ -75,7 +82,8 @@ namespace DarwinPark.Entities.Logic
                 bool graze = state.StateId == "herbivore";
                 if (state.StateId == "hunt" || graze)
                 {
-                    FindTarget(graze);
+                    if(decide)FindTarget(graze);
+                    else if(_target!=null&&!PerceivedTargets.Valid(_controller,_target,graze,out _observedTarget))_target=null;
                     if (_target != null)
                     {
                         Chase(_observedTarget, speed, dt);
@@ -121,6 +129,8 @@ namespace DarwinPark.Entities.Logic
         }
         private void Chase(Vector3 position, float speed, float dt)
         {
+            // ★ 适配：同一物理位置不重复写刚体或执行邻居避让，累计步长保持转向平滑度。
+            if(!Simulation.ActionMotionBatch.Consume(_controller,ref dt))return;
             Vector3 radial = (_controller.transform.position-_planet.transform.position).normalized;
             Vector3 toward = Vector3.ProjectOnPlane(position-_controller.transform.position, radial);
             // ★ 适配：行动使用时钟实际交付倍率，过载补算限速不造成物理时间分离。

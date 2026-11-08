@@ -13,7 +13,8 @@ namespace DarwinPark.Entities
         private Rigidbody _rb;
         private Collider _col;
         private PhysicsMaterial _surfaceMaterial;
-        private Collider _ground;
+        // ★ 适配：组件/地形与接地结果由独立缓存管理。
+        private readonly GravityProbeCache _probe=new();
 
         void Start()
         {
@@ -55,7 +56,7 @@ namespace DarwinPark.Entities
 
             if (planet == null) return;
 
-            var genes = GetComponent<EntityGeneController>();
+            var genes = _probe.Genes(this);
             // ★ 适配：休眠实体不重复施力、射线检测和改写摩擦；碰撞唤醒或有效行动恢复后自动走完整路径。
             if(StationaryBodyRest.RemainsAsleep(_rb,genes))return;
             float moveSpeed = genes != null ? genes.GetAttribute("moveSpeed") : 0f;
@@ -64,8 +65,7 @@ namespace DarwinPark.Entities
             {
                 var motion=DarwinPark.Entities.Logic.LocomotionSettings.Load();var radial=(transform.position-planet.position).normalized;
                 bool moving=moveSpeed>0&&Vector3.ProjectOnPlane(_rb.linearVelocity,radial).sqrMagnitude>motion.frictionMotionThreshold*motion.frictionMotionThreshold;
-                _surfaceMaterial.staticFriction=_surfaceMaterial.dynamicFriction=moving?motion.movingFriction:motion.stationaryFriction;
-                _surfaceMaterial.frictionCombine=PhysicsMaterialCombine.Minimum;
+                _probe.Friction(_surfaceMaterial,moving?motion.movingFriction:motion.stationaryFriction);
             }
             bool isInWater = IsUnderWater(transform.position);
 
@@ -93,8 +93,7 @@ namespace DarwinPark.Entities
             }
 
             // ★ 修复（防Bug回归）：实体头顶不是地面；只用星球碰撞体检测着地，避免层叠成员互相充当地表法线。
-            if(_ground==null)_ground=planet.GetComponent<MeshCollider>();
-            if (_ground!=null&&_ground.Raycast(new Ray(transform.position,dirToCenter),out RaycastHit hit,20f))
+            if (_probe.Probe(planet,_rb,dirToCenter,out RaycastHit hit))
             {
                 float radius = _col != null ? _col.bounds.extents.y : 1f;
                 if (hit.distance <= radius + 0.5f)
@@ -121,12 +120,9 @@ namespace DarwinPark.Entities
 
         private bool IsUnderWater(Vector3 pos)
         {
-            var builder = planet?.GetComponent<DarwinPark.Planet.PlanetTerrainMeshBuilder>();
-            if (builder == null) return false;
-            // ★ 修复（防Bug回归）：水位必须使用地形生成后的真实海平面 Data.SeaLevel，
-            // 旧码使用 seaLevelRatio 估算，海陆比例变化后会把陆地误判为水下。
-            return builder.IsSubmerged(pos);
+            return _probe.UnderWater(planet,pos);
         }
+
         private void OnDestroy(){if(_surfaceMaterial!=null)Destroy(_surfaceMaterial);}
     }
 }

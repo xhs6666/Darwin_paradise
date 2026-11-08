@@ -2,7 +2,7 @@
 
 [返回总索引](../README.md) · `Runtime` · `Assets/DarwinPark/Genetics/Evaluation/GeneValueResolver.cs`
 
-[源文件](../../../Assets/DarwinPark/Genetics/Evaluation/GeneValueResolver.cs) · 源码校验：`b79f319d6f79699ade8463e1421139b6c7d6fb7256ba3f763aa08ad92bfcf443`
+[源文件](../../../Assets/DarwinPark/Genetics/Evaluation/GeneValueResolver.cs) · 源码校验：`274e3c3be4061105d821696d81383c5e37d65de9f89d332e6a4bf5f06556fa87`
 
 方法按源文件位置排列。事件/回调引用不表示立即执行；分支与异常说明见总索引。完整源码与可点击关系图请打开离线手册。
 
@@ -33,6 +33,30 @@ flowchart TD
 `public static GenomeEvaluation Resolve(Genome genome, bool isGestating = false, float globalSuppression = 0f, string suppressExemptGeneId = null,IReadOnlyDictionary<string,float> additionalSuppression=null)`
 
 <summary>  ★ 修复（防Bug回归）：默认把环境压力施加给所有基因；遗传值不受影响，  环境适应突变仍可发生。可选豁免参数仅供显式需要豁免的调用使用。  </summary>
+
+### Editor / Player · Roslyn编译器控制流
+
+```mermaid
+flowchart TD
+  b0(["入口"])
+  b1["结果：GeneExpressionCache.Resolve(genome,isGestating,globalSuppression,suppressExemptGeneId,additionalSuppression)"]
+  b2(["结束 / 返回"])
+  b0 --> b1
+  b1 -->|"返回"| b2
+
+```
+
+项目内调用/回调引用：
+
+- [GeneExpressionCache.Resolve · L17](769f6842770bce00.md#m98052da9abf4cfad)（方法）
+
+<a id="m37ff0199163a0524"></a>
+
+## ResolveUncached · L38
+
+`internal static GenomeEvaluation ResolveUncached(Genome genome,bool isGestating,float globalSuppression,string suppressExemptGeneId,IReadOnlyDictionary<string,float> additionalSuppression)`
+
+
 
 ### Editor / Player · Roslyn编译器控制流
 

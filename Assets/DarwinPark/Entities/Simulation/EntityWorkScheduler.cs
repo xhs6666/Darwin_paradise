@@ -163,7 +163,7 @@ namespace DarwinPark.Entities.Simulation
                 // ★ 修复（防Bug回归）：孤立实体没有共享收益，沿逐体入口补算；不为单成员反复验证代表、取样和复制环境。
                 if(group.members.Count==1)
                 {
-                    if(first.genes!=null&&first.genes.isActiveAndEnabled){first.genes.AdvanceSimulation(elapsed);if(first.genes!=null&&first.genes.isActiveAndEnabled)StationaryCohortKernel.AdvanceCore(first.genes,elapsed);}
+                    if(first.genes!=null&&first.genes.isActiveAndEnabled){SingletonSettlement.Advance(first.genes,elapsed);}
                     continue;
                 }
                 int steps=SimulationSubsteps.Count(elapsed);

@@ -12,6 +12,7 @@ namespace DarwinPark.Entities.Ecology
         private EntityGeneController _genes;
         private string _current;
         private HashSet<string> _available=new HashSet<string>();
+        private readonly StatePriorityCache _priorityCache=new();
         private GenomeEvaluation _grantsEvaluation;private EntityStateDocument _grantsRegistry;private bool _grantsEgg;
         public DarwinEntity DetectedTarget {get;private set;}
         public DarwinEntity HuntTarget {get;set;}
@@ -52,8 +53,9 @@ namespace DarwinPark.Entities.Ecology
                 if(_available.Contains(transition.to)&&PatrolRhythm.Eligible(_genes,EntityStateRegistry.Current.Get(transition.to))&&Matches(transition.any,out var target)&&Matches(EntityStateRegistry.Current.Get(transition.to).entryAny,out var entryTarget))
                 {Set(transition.to,target!=null?target:entryTarget);return;}
             if(current.id!=EntityStateRegistry.Current.defaultStateId&&PatrolRhythm.Eligible(_genes,current)&&Matches(current.entryAny,out var found)){Set(current.id,found);return;}
-            foreach(var state in Available.Where(s=>s.id!=EntityStateRegistry.Current.defaultStateId&&PatrolRhythm.Eligible(_genes,s)).OrderByDescending(s=>s.priority).ThenBy(s=>s.id,System.StringComparer.Ordinal))
-                if(Matches(state.entryAny,out var target)){Set(state.id,target);return;}
+            // ★ 适配：状态排序随授权版本缓存，不为每个模拟子步创建LINQ排序集合。
+            foreach(var state in _priorityCache.Read(_available,EntityStateRegistry.Current))
+                if(PatrolRhythm.Eligible(_genes,state)&&Matches(state.entryAny,out var target)){Set(state.id,target);return;}
             Set(EntityStateRegistry.Current.defaultStateId,null);
         }
         private void Set(string id,DarwinEntity detected)

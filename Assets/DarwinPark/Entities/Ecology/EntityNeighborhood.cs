@@ -15,6 +15,8 @@ namespace DarwinPark.Entities.Ecology
         }
         private static readonly Dictionary<EntityGeneController,Entry> Entries=new Dictionary<EntityGeneController,Entry>();
         private static readonly Dictionary<Vector3Int,List<Entry>> Cells=new Dictionary<Vector3Int,List<Entry>>();
+        private static readonly Dictionary<Vector3Int,long> CellVersions=new();
+        private static long _membership=-1,_change;
         private static readonly Stack<List<Entry>> Pool=new Stack<List<Entry>>();
         private static int _frame=-1;private static long _version,_positionVersion;private static float _cellSize;private static EcologyBalanceSettings _settings;
         public static int BuildCount {get;private set;}
@@ -25,46 +27,54 @@ namespace DarwinPark.Entities.Ecology
             entry.cell=Cell(entry.position);
             if(!Cells.TryGetValue(entry.cell,out var list)){list=Pool.Count>0?Pool.Pop():new List<Entry>();Cells.Add(entry.cell,list);}list.Add(entry);
         }
+        private static void Dirty(Vector3Int cell)
+        {
+            long stamp=++_change;for(int x=-1;x<=1;x++)for(int y=-1;y<=1;y++)for(int z=-1;z<=1;z++)CellVersions[cell+new Vector3Int(x,y,z)]=stamp;
+        }
+        private static void RemoveCell(Entry entry)
+        {if(Cells.TryGetValue(entry.cell,out var bucket)){bucket.Remove(entry);if(bucket.Count==0){Cells.Remove(entry.cell);Pool.Push(bucket);}}}
         private static void Refresh(Entry entry)
         {
-            var previousPosition=entry.position;bool previousAlive=entry.alive;
-            entry.position=entry.entity.transform.position;
-            if(entry.stats==null)entry.stats=entry.entity.GetComponent<EntityStats>();
+            var previous=entry.position;bool alive=entry.alive,producer=entry.producer;var oldCell=entry.cell;
+            entry.position=entry.entity.transform.position;if(entry.stats==null)entry.stats=entry.entity.GetComponent<EntityStats>();
             entry.alive=entry.entity.isActiveAndEnabled&&entry.stats!=null&&entry.stats.TryGet("health",out var hp)&&hp>0;
-            entry.producer=entry.alive&&EcologyEnergyBudget.IsProducer(entry.genes);
-            // ★ 适配：表型/营养竞争变化不等于坐标变化，不能让一次基因重算强迫所有视野粗格重建。
-            if(previousPosition!=entry.position||previousAlive!=entry.alive)_positionVersion++;
+            entry.producer=entry.alive&&ProducerClassification.IsProducer(entry.genes);
+            if(previous!=entry.position||alive!=entry.alive)_positionVersion++;
+            if(previous!=entry.position||producer!=entry.producer||alive!=entry.alive){entry.competitionVersion=-1;_version++;if(producer||entry.producer){Dirty(oldCell);Dirty(Cell(entry.position));}}
+            if(oldCell!=Cell(entry.position)){RemoveCell(entry);AddCell(entry);}
         }
         private static void Ensure()
         {
             if(_frame==Time.frameCount&&ReferenceEquals(_settings,EcologyBalanceSettings.Current))return;
-            // ★ 适配：只记录真正重建的全局邻域快照，不把廉价缓存命中算成重建。
             using var performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.Neighborhood);
-            foreach(var list in Cells.Values){list.Clear();Pool.Push(list);}Cells.Clear();
-            // ★ 修复（防Bug回归）：Clear、卸载和禁用同步清掉引用；普通帧复用Entry和桶，避免随实体数量产生逐帧垃圾。
-            _settings=EcologyBalanceSettings.Current;_cellSize=_settings.competitionRadius;
-            foreach(var entity in EntityRegistry.All)
+            // ★ 修复（防Bug回归）：静止桶跨帧保留，表达分类按版本缓存；不再每帧全部移出/加入空间桶。
+            if(!ReferenceEquals(_settings,EcologyBalanceSettings.Current))
             {
-                if(entity==null||entity.Genes==null)continue;
-                if(!Entries.TryGetValue(entity.Genes,out var entry)){entry=new Entry{entity=entity,genes=entity.Genes};Entries.Add(entity.Genes,entry);}
-                Refresh(entry);AddCell(entry);
+                foreach(var list in Cells.Values){list.Clear();Pool.Push(list);}Cells.Clear();CellVersions.Clear();_settings=EcologyBalanceSettings.Current;_cellSize=_settings.competitionRadius;
+                foreach(var entry in Entries.Values){entry.competitionVersion=-1;AddCell(entry);}_version++;_change++;
             }
-            _frame=Time.frameCount;_version++;BuildCount++;
+            if(_membership!=EntityRegistry.MembershipRevision)
+            {
+                foreach(var entity in EntityRegistry.All)if(entity!=null&&entity.Genes!=null&&!Entries.ContainsKey(entity.Genes))
+                {var entry=new Entry{entity=entity,genes=entity.Genes,position=entity.transform.position};Entries.Add(entity.Genes,entry);AddCell(entry);Refresh(entry);Dirty(entry.cell);}
+                _membership=EntityRegistry.MembershipRevision;
+            }
+            foreach(var entry in Entries.Values)Refresh(entry);
+            _frame=Time.frameCount;BuildCount++;
         }
         // ★ 适配：出生/停用改变注册表后，下次查询重建；初始化未结束时不提前锁定生产者分类。
         public static void MembershipChanged(DarwinEntity entity,bool removed)
         {
             // ★ 修复（防Bug回归）：离开世界后可能不再查询，注销时就释放桶内引用，不能等下一次重建才放开旧实体。
             if(removed&&entity!=null&&entity.Genes!=null&&Entries.TryGetValue(entity.Genes,out var entry))
-            {if(Cells.TryGetValue(entry.cell,out var bucket))bucket.Remove(entry);Entries.Remove(entity.Genes);}
+            {if(entry.producer)Dirty(entry.cell);RemoveCell(entry);Entries.Remove(entity.Genes);ProducerClassification.Remove(entity.Genes);}
             _frame=-1;_version++;_positionVersion++;
         }
         // ★ 适配：在重算完成、生命归零/恢复以及模拟前同步，帧内表达变化和移动不等待下一次全表重建。
         public static void Changed(EntityGeneController genes)
         {
             if(genes==null||_frame!=Time.frameCount||!Entries.TryGetValue(genes,out var entry))return;
-            var oldCell=entry.cell;Refresh(entry);var newCell=Cell(entry.position);
-            if(oldCell!=newCell){Cells[oldCell].Remove(entry);AddCell(entry);}_version++;
+            Refresh(entry);
         }
         public static void ObservePosition(EntityGeneController genes)
         {if(_frame==Time.frameCount&&Entries.TryGetValue(genes,out var entry)&&entry.position!=genes.transform.position)Changed(genes);}
@@ -72,12 +82,13 @@ namespace DarwinPark.Entities.Ecology
         {
             Ensure();ObservePosition(genes);
             if(!Entries.TryGetValue(genes,out var self))return 1;
-            if(self.competitionVersion==_version)return self.competition;
+            long version=DarwinPark.Core.SimulationOptimization.Current.localCompetition?(CellVersions.TryGetValue(self.cell,out var local)?local:0):_version;
+            if(self.competitionVersion==version)return self.competition;
             int count=0;var key=self.cell;float radius2=_cellSize*_cellSize;
             for(int x=-1;x<=1;x++)for(int y=-1;y<=1;y++)for(int z=-1;z<=1;z++)
                 if(Cells.TryGetValue(key+new Vector3Int(x,y,z),out var list))foreach(var other in list)
                     if(other!=self&&other.producer&&(other.position-self.position).sqrMagnitude<=radius2)count++;
-            self.competition=1+count*EcologyBalanceSettings.Current.competitionPerNeighbor;self.competitionVersion=_version;return self.competition;
+            self.competition=1+count*EcologyBalanceSettings.Current.competitionPerNeighbor;self.competitionVersion=version;return self.competition;
         }
         public static float ProductionCompetition(EntityGeneController genes)
         {Ensure();return Entries.TryGetValue(genes,out var entry)&&entry.producer?Competition(genes):1;}
@@ -99,6 +110,6 @@ namespace DarwinPark.Entities.Ecology
                     if(entry.alive&&(entry.position-position).sqrMagnitude<=radius2)result.Add(entry.entity);
         }
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        public static void Clear(){Entries.Clear();Cells.Clear();Pool.Clear();_frame=-1;_version++;_positionVersion++;BuildCount=0;_settings=null;}
+        public static void Clear(){Entries.Clear();Cells.Clear();Pool.Clear();CellVersions.Clear();ProducerClassification.Clear();_membership=-1;_frame=-1;_version++;_positionVersion++;BuildCount=0;_settings=null;}
     }
 }

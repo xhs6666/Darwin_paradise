@@ -84,9 +84,14 @@ namespace DarwinPark.Entities
             if(_combat==null)_combat=GetComponent<Ecology.CombatIntent>()??gameObject.AddComponent<Ecology.CombatIntent>();
             // ★ 修复（防Bug回归）：按整数步数结算，避免0.5反复减0.1留下浮点残差、额外跑第六轮全部行为。
             int steps=DarwinPark.Core.SimulationSubsteps.Count(dt);
+            // ★ 适配：行为计时仍逐小步，物理转向只在本批最后一步执行。
+            Simulation.ActionMotionBatch.Begin(this,dt);
+            try
+            {
             for(int index=0;index<steps;index++)
             {
                 float step=DarwinPark.Core.SimulationSubsteps.Slice(dt,index,steps);
+                Simulation.ActionMotionBatch.Step(this,index==steps-1);
                 // ★ 适配：寿命由单一组件推进，基因复制/失效/重新挂载不会重置或重复推进年龄。
                 _life?.Advance(step);
                 if(_life!=null && _life.HasDied)return;
@@ -99,6 +104,8 @@ namespace DarwinPark.Entities
                 if(_snapshotRevision!=LogicRevision){_simulationLogics.Clear();_simulationLogics.AddRange(_activeLogics.Values);_snapshotRevision=LogicRevision;LogicSnapshotBuilds++;}
                 foreach (var logic in _simulationLogics) logic.OnUpdate(step);
             }
+            }
+            finally{Simulation.ActionMotionBatch.End(this);}
         }
 
         public void Recalculate()
@@ -217,6 +224,9 @@ namespace DarwinPark.Entities
         // ★ 新增：统一按实例ID查询表达，不能让每个行动/生产子步各建闭包遍历整份基因列表。
         public GeneEvaluation GetEvaluation(GeneInstance gene)
         {if(gene==null)return null;return gene.InstanceId==null?_nullIdEvaluation:_evaluations.TryGetValue(gene.InstanceId,out var value)?value:null;}
+
+        // ★ 适配：独立静止核按原逻辑插入顺序取得快照，不能按基因列表重新排序行为。
+        internal void CopySimulationLogics(List<IGeneLogic> result){result.Clear();result.AddRange(_activeLogics.Values);}
 
         public IGeneLogic GetLogic(GeneInstance gene)
         {
