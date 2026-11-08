@@ -26,6 +26,8 @@ namespace DarwinPark.Entities.Logic
         }
         public void OnUpdate(float dt)
         {
+            // ★ 适配：按需采样独立列出行动逻辑，和其包含的队形/邻域子项区分。
+            using var performance=PerformanceTimings.Measure(PerformanceTimings.Area.Locomotion);
             // ★ 适配：社会谱系和复制行动基因只保留一个行为写入者；寄生/孵化自行控制移动。
             if(!GeneBehaviorAuthority.IsPrimary<LocomotionGeneLogic>(_controller,_gene)||EcologyMotion.Immobilized(_controller))return;
             // ★ 修复（防Bug回归）：模板 Awake 可能早于工厂补挂刚体，首次缓存为空时必须能自愈。

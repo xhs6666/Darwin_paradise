@@ -38,7 +38,7 @@ namespace DarwinPark.EditorTools
                     Fill(member,0);member.transform.position=supply.transform.position;
                     member.Destination(out var point,out var target,out _);
                     // ★ 适配：业务要求进入可实际进食的半径，不再要求多个身体共用资源中心点。
-                    Check(target==null&&EcologyQueries.Distance(point,nursery.transform.position)<=AntColonySettings.Current.feedRadius,"饥饿"+member.Role+"主动走向育幼能量块");
+                    var edible=ColonyFeeding.Find(member,false);Check(target==null&&edible!=null&&EcologyQueries.Distance(point,edible.transform.position)<=AntColonySettings.Current.feedRadius,"饥饿"+member.Role+"主动走向可实际进食的能量块");
                     member.transform.position=nursery.transform.position;float energy=nursery.State.energy;member.Advance(.1f);
                     Check(Food(member)>0&&Mathf.Abs(energy-nursery.State.energy-Food(member))<.001f,"育幼能量经实际分工更新进入"+member.Role+"且守恒");
                 }
@@ -75,7 +75,8 @@ namespace DarwinPark.EditorTools
                 // ★ 适配：灭绝种群的资源允许回收，外群保护必须用实际存活的拥有者验收。
                 Fill(soldier,0);string queenGroup=queen.GroupId,foreignGroup=Guid.NewGuid().ToString("N");
                 queen.Population.JoinColony(foreignGroup,true);supply.State.group=foreignGroup;
-                ColonyResource.Feed(soldier,1);Check(Food(soldier)==0,"不能吸收存活外群的能量块");
+                // ★ 适配：可以改吃本群备用育幼块，但不能扣除存活外群的补给。
+                float foreignEnergy=supply.State.energy;ColonyResource.Feed(soldier,1);Check(supply.State.energy==foreignEnergy,"不能吸收存活外群的能量块");
                 queen.Population.JoinColony(queenGroup,true);supply.State.group=worker.GroupId;
                 var savedName=worker.Entity.DisplayName;string name="模板重启验证-"+Guid.NewGuid().ToString("N");worker.Entity.DisplayName=name;
                 EntityTemplateManager.SaveTemplate(worker.Entity);EntityTemplateManager.SaveTemplate(worker.Entity);worker.Entity.DisplayName=savedName;

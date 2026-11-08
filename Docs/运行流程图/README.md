@@ -4,7 +4,7 @@
 
 [12条业务主流程](主流程.md) · [生成工具与维护说明](../../Tools/FlowDocs/README.md)
 
-覆盖 **311 个C#脚本、10 个Shader/HLSL文件、3447 个方法/构造/访问器/局部函数/回调/GPU函数**。没有显式方法的数据脚本也在索引中。未扫描Unity Packages/Library生成文件；Tools为离线生成器，不进入游戏运行图。
+覆盖 **314 个C#脚本、10 个Shader/HLSL文件、3482 个方法/构造/访问器/局部函数/回调/GPU函数**。没有显式方法的数据脚本也在索引中。未扫描Unity Packages/Library生成文件；Tools为离线生成器，不进入游戏运行图。
 
 
 ## 阅读与维护
@@ -63,10 +63,12 @@
 |Core|[Assets/DarwinPark/Core/UI/UIRoot.cs](脚本/9c1421378791f0e0.md)|Runtime|9|
 |Core|[Assets/DarwinPark/Core/UI/UIVisualTheme.cs](脚本/ca525a798a08f966.md)|Runtime|16|
 |Core|[Assets/DarwinPark/Core/WorldAuthority.cs](脚本/2361e41ab2baa157.md)|Runtime|2|
-|Editor|[Assets/DarwinPark/Editor/AntColonyRegression.cs](脚本/1314e8c23331e578.md)|Editor|37|
+|Editor|[Assets/DarwinPark/Editor/AntColonyRegression.cs](脚本/1314e8c23331e578.md)|Editor|39|
 |Editor|[Assets/DarwinPark/Editor/ColonyContinuityRegression.cs](脚本/9386360ce717a3bf.md)|Editor|50|
+|Editor|[Assets/DarwinPark/Editor/ColonyFeedingAuditRegression.cs](脚本/e4d7714ee72a340e.md)|Editor|9|
 |Editor|[Assets/DarwinPark/Editor/ColonyFeedingLiveRegression.cs](脚本/f0f27807f77705fe.md)|Editor|15|
 |Editor|[Assets/DarwinPark/Editor/ColonyFeedingTemplateRegression.cs](脚本/e3a5269cbeb35cff.md)|Editor|14|
+|Editor|[Assets/DarwinPark/Editor/ColonyFoodSafetyRegression.cs](脚本/15da375185c991ea.md)|Editor|15|
 |Editor|[Assets/DarwinPark/Editor/ControlsActivityRegression.cs](脚本/c94d401ef13df84d.md)|Editor|11|
 |Editor|[Assets/DarwinPark/Editor/CorpseInspectionRegression.cs](脚本/a1829d88f72dd1fb.md)|Editor|16|
 |Editor|[Assets/DarwinPark/Editor/EcologyBalanceRegression.cs](脚本/81fff3fefa111617.md)|Editor|30|
@@ -122,10 +124,11 @@
 |Entities|[Assets/DarwinPark/Entities/Ecology/ColonyContinuityPriority.cs](脚本/dbd1eb8a8137aa05.md)|Runtime|6|
 |Entities|[Assets/DarwinPark/Entities/Ecology/ColonyCorpseAccess.cs](脚本/f6ef68cc68f39eea.md)|Runtime|2|
 |Entities|[Assets/DarwinPark/Entities/Ecology/ColonyFeeding.cs](脚本/2cb56c08d08ff8ec.md)|Runtime|4|
+|Entities|[Assets/DarwinPark/Entities/Ecology/ColonyFoodSources.cs](脚本/4c419a1a067d428c.md)|Runtime|11|
 |Entities|[Assets/DarwinPark/Entities/Ecology/ColonyFormation.cs](脚本/c65dce2d54e43480.md)|Runtime|12|
 |Entities|[Assets/DarwinPark/Entities/Ecology/ColonyFoundingSupport.cs](脚本/404bb05c7f82518a.md)|Runtime|8|
 |Entities|[Assets/DarwinPark/Entities/Ecology/ColonyMemberMarker.cs](脚本/f0491b971dcb491f.md)|Runtime|3|
-|Entities|[Assets/DarwinPark/Entities/Ecology/ColonyResource.cs](脚本/293dbaecfff4b585.md)|Runtime|23|
+|Entities|[Assets/DarwinPark/Entities/Ecology/ColonyResource.cs](脚本/293dbaecfff4b585.md)|Runtime|21|
 |Entities|[Assets/DarwinPark/Entities/Ecology/ColonyResourceOwnership.cs](脚本/2988679fde59fc87.md)|Runtime|3|
 |Entities|[Assets/DarwinPark/Entities/Ecology/ColonyResourcePresentation.cs](脚本/274e66c9a1d98a08.md)|Runtime|4|
 |Entities|[Assets/DarwinPark/Entities/Ecology/ColonyWorldState.cs](脚本/50d866ed6b21d869.md)|Runtime|13|

@@ -17,6 +17,9 @@ namespace DarwinPark.Core
         public float parthenogenesisWaitDays=5;
         // ★ 新增：收支一起放慢；补给使用吃饱恢复线，避免阈值附近反复折返。
         public float nutritionGainMultiplier=.5f, memberFeedResume=9.5f, queenReserveBuffer=10;
+        // ★ 修复（防Bug回归）：专用补给缺失或身边已有备用块时允许跨用途进食，仍保护活着的外群与王后最低口粮。
+        public bool colonyShareBackupFood=true;
+        public float colonyEmergencyFeedThreshold=3;
         // ★ 新增：相近同基因静止实体共享基础结算；受伤/移动立即退出，繁殖仍逐个计算。
         public bool mergeStationaryEntities=true;
         // ★ 新增：错开空间/基因批次，消除大量孤立组同一帧结算的峰值；不改变累计模拟时间。
@@ -37,6 +40,7 @@ namespace DarwinPark.Core
             var value=JsonUtility.FromJson<GameplayTuning>(CommentedJson.Strip(json));
             if(value==null||value.version!=1)throw new InvalidDataException("游戏数值配置版本无效");
             if(value.mergePhaseBuckets<1||value.mergePhaseBuckets>256)throw new InvalidDataException("合并错峰批次数必须为1到256");
+            if(value.colonyEmergencyFeedThreshold>10)throw new InvalidDataException("紧急补给饱食线必须为0到10");
             foreach(var field in typeof(GameplayTuning).GetFields())if(field.FieldType==typeof(float))
             {float n=(float)field.GetValue(value);if(float.IsNaN(n)||float.IsInfinity(n)||n<0)throw new InvalidDataException("数值必须为非负有限数："+field.Name);}
             if(value.manualHitboxScale<1||value.supplyActivityRadiusRatio<=0||value.colonyActivityRadiusMultiplier<=0||value.populationFillOpacity>1)throw new InvalidDataException("判定框倍率至少为1，活动半径倍率必须大于0，透明度须在0到1之间");

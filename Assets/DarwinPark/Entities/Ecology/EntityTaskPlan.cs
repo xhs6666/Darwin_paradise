@@ -13,7 +13,8 @@ namespace DarwinPark.Entities.Ecology
     // ★ 新增：补给是可以完成的计划，而不是每个寻路/运输子步独立切换的瞬时状态。
     public static class EntityTaskPlan
     {
-        public static int Priority(ColonyActivity activity)=>activity==ColonyActivity.Feed?100:activity==ColonyActivity.Founding?110:activity==ColonyActivity.Transport?70:activity==ColonyActivity.Reproduce?60:activity==ColonyActivity.Collect?50:activity==ColonyActivity.Hunt?40:activity==ColonyActivity.Patrol?20:10;
+        // ★ 修复（防Bug回归）：补给也高于迁居，维持生命后才能继续建群。
+        public static int Priority(ColonyActivity activity)=>activity==ColonyActivity.Feed?120:activity==ColonyActivity.Founding?110:activity==ColonyActivity.Transport?70:activity==ColonyActivity.Reproduce?60:activity==ColonyActivity.Collect?50:activity==ColonyActivity.Hunt?40:activity==ColonyActivity.Patrol?20:10;
         public static bool Feeding(AntColonyMember member)
         {
             if(member==null||!member.Active||member.GetComponent<EggIncubation>()?.Incubating==true)return false;

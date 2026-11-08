@@ -132,7 +132,8 @@ namespace DarwinPark.EditorTools
             var nursery=ColonyResource.All.Single(r=>r.State.kind==ColonyResourceKind.Nursery);
             Check(!ColonyResource.All.Any(r=>r.State.kind==ColonyResourceKind.Corpse)&&Mathf.Abs(nursery.State.energy-energy)<.001f,"运达王后区后尸体只转换一次且能量守恒");
             Check(nursery.GetComponent<Light>()!=null&&nursery.GetComponent<Renderer>()!=null,"王后能量块有黄色发光外观");
-            Fill(soldier.Entity,1);ColonyResource.Feed(soldier,1);Check(Food(soldier.Entity)==1,"成年士兵不能吸收育幼区能量块");
+            // ★ 适配：专用点改为优先用途，缺少成年补给时允许借用育幼块，避免有能量仍饿死。
+            Fill(soldier.Entity,1);ColonyResource.Feed(soldier,1);Check(Food(soldier.Entity)>1,"成年士兵缺少普通补给时可借用育幼能量块");
             Fill(queen.Entity,0);ColonyResource.Feed(queen,1);Check(Food(queen.Entity)>0,"饥饿王后自动吸收附近能量块");
             var young=Member(AntRole.Soldier,group,queen.transform.position);young.Genes.CurrentAge=AgeState.Infant;Fill(young.Entity,0);ColonyResource.Feed(young,.1f);Check(Food(young.Entity)>0,"幼年实体与王后共享育幼补给");
             var plant=Spawn(worker.transform.position,("gene_growth",50));float plantEnergy=ColonyResource.Biomass(plant);Fill(worker.Entity,10,100);
@@ -141,10 +142,12 @@ namespace DarwinPark.EditorTools
             var supply=ColonyResource.All.Single(r=>r.State.kind==ColonyResourceKind.Supply);Check(Mathf.Abs(supply.State.energy-plantEnergy)<.001f,"群内补给点转换活实体并保留能量");
             soldier.transform.position=At(-4);Fill(soldier.Entity,0);soldier.Destination(out var feedingPoint,out var feedingTarget,out _);
             // ★ 适配：目的地允许分布在实际进食半径内，不再要求所有身体占据资源中心。
-            Check(feedingTarget==null&&EcologyQueries.Distance(feedingPoint,supply.transform.position)<=AntColonySettings.Current.feedRadius&&soldier.Activity==ColonyActivity.Feed,"饥饿士兵会实际前往共享补给范围");
+            var chosenFood=ColonyFeeding.Find(soldier,false);
+            Check(feedingTarget==null&&chosenFood!=null&&EcologyQueries.Distance(feedingPoint,chosenFood.transform.position)<=AntColonySettings.Current.feedRadius&&soldier.Activity==ColonyActivity.Feed,"饥饿士兵会实际前往可用能量块，身边备用块优先于远处专用点");
             soldier.transform.position=supply.transform.position;Fill(soldier.Entity,0);ColonyResource.Feed(soldier,1);Check(Food(soldier.Entity)>0,"普通成年成员可吸收群内补给");
             // ★ 适配：覆盖繁忙运输、追猎、王后离开旧位置及模板实际落盘，避免只用瞬时 Feed 调用验收。
             ColonyFeedingTemplateRegression.Verify(queen,worker,soldier,young,nursery,supply);
+            ColonyFoodSafetyRegression.Verify(queen,worker,soldier,young);
             var cargo=Spawn(worker.transform.position,("gene_growth",50));worker.State.livingTarget=EcologyIdentity.Of(cargo);worker.State.scan=1;worker.Advance(.1f);
             Check(worker.State.carriedLiving==EcologyIdentity.Of(cargo),"搬运中断前建立独占活体任务");worker.Suspend();
             Check(cargo.GetComponent<Rigidbody>().detectCollisions&&string.IsNullOrEmpty(worker.State.carriedLiving),"搬运中断恢复活体碰撞并释放任务");cargo.gameObject.SetActive(false);
@@ -179,6 +182,13 @@ namespace DarwinPark.EditorTools
             Check(loadedWorker.Role==AntRole.Worker&&loadedWorker.State.carriedResource==resourceId&&loadedResource.State.claim==workerId,"逆序读档恢复固定分工及尸体独占运输");
             Check(loadedWorker.Queen==loadedQueen&&Mathf.Abs(loadedQueen.State.reproductionTimer-timer)<.001f&&loadedQueen.Genes.IsGestating,"逆序读档保留王后关系和孕育计时");
             Check(loadedWorker.Genes.Evaluation.Genes.Where(g=>g.Definition.LogicScriptId.Contains("Reproduction")).All(g=>!g.IsActive),"读档后工匠仍不可繁殖");
+            // ★ 修复（防Bug回归）：索引必须由真正的世界读档重建，不能只在新建块或单测启停时有效。
+            Check(ColonyFoodSources.Count==data.colony.resources.Count(r=>r.kind!=ColonyResourceKind.Corpse),"逆序读档重建全部能量块索引且排除尸体");
+            var restoredFood=ColonyResource.All.First(r=>r.State.kind!=ColonyResourceKind.Corpse&&ColonyResourceOwnership.Available(r,loadedWorker)&&ColonyFeeding.AvailableEnergy(r,loadedWorker)>0);
+            loadedWorker.transform.position=restoredFood.transform.position;Fill(loadedWorker.Entity,0);
+            // 多个可用块重叠时实际入口仍可能沿有效近距计划或专用优先，必须核对真正选中的源。
+            var feedingSource=ColonyFeeding.Find(loadedWorker,true);float foodEnergy=feedingSource!=null?feedingSource.State.energy:0;ColonyResource.Feed(loadedWorker,.1f);
+            Check(feedingSource!=null&&Food(loadedWorker.Entity)>0&&feedingSource.State.energy<foodEnergy&&loadedWorker.State.carriedResource==resourceId,"读档后工匠实际吃到能量块且保留原运输货物");
             var loadedCarrier=AntColonyMember.All.Single(m=>m.Id==carrierId);var loadedCargo=EcologyIdentity.Find(liveCargoId);
             Check(loadedCargo!=null&&AntColonyWorker.IsCarried(loadedCargo)&&loadedCargo.GetComponent<Rigidbody>().isKinematic&&!loadedCargo.GetComponent<Rigidbody>().detectCollisions,"逆序读档重建活体运输索引与物理关系");
             AntColonyWorker.Release(loadedCarrier);Check(!AntColonyWorker.IsCarried(loadedCargo)&&loadedCargo.GetComponent<Rigidbody>().detectCollisions,"读档后的活体运输可正常释放并清理索引");

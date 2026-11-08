@@ -11,7 +11,8 @@ namespace DarwinPark.Core
     // ★ 新增：只在主动采样时计时，发布版也能定位真实游戏逻辑；嵌套项目是包含关系，不能相加当成总帧耗时。
     public static class PerformanceTimings
     {
-        public enum Area { Scheduler,Genes,StatePerception,Vitals,Environment,Population,ColonyTasks,GroundAnchor,Gravity,BottomUI,ResourceVisuals,GeneSignature,GeneRecalculation,Nutrition,Reproduction,Count }
+        // ★ 适配：把活体大项继续细分，避免把行动、邻域重建和补给开销都误归因为合并算法。
+        public enum Area { Scheduler,Genes,StatePerception,Vitals,Environment,Population,ColonyTasks,GroundAnchor,Gravity,BottomUI,ResourceVisuals,GeneSignature,GeneRecalculation,Nutrition,Reproduction,Locomotion,Neighborhood,Feeding,Formation,Count }
         private static readonly long[] Ticks=new long[(int)Area.Count],Calls=new long[(int)Area.Count];
         public static bool Capturing {get;private set;}
         public readonly struct Scope:IDisposable

@@ -579,7 +579,7 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [GameplayTuning.Current.get · L34](db546e5713b32d53.md#m71b0b2b50ee9f95c)（访问器）
+- [GameplayTuning.Current.get · L37](db546e5713b32d53.md#m528861636fc3c87b)（访问器）
 - [EntityGeneController.AdvanceSimulation · L70](7494d53178552f0e.md#m8d432f097da8bbf7)（方法）
 - [StationaryCohortKernel.AdvanceCore · L43](9d3f50e550ab5beb.md#m94052ba96a85dd98)（方法）
 
@@ -1071,12 +1071,12 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [PerformanceTimings.Measure · L23](a8403a4c7503726d.md#m29626bbbc2d07209)（方法）
+- [PerformanceTimings.Measure · L24](a8403a4c7503726d.md#mbef9e348df638730)（方法）
 - [EntityRegistry.MembershipRevision.get · L15](2093aaf08559c9f2.md#m6afb6f184d119e11)（访问器）
 - [DarwinEntity.Genes.get · L14](70798dde169f2e8b.md#m622eb1adf401d431)（访问器）
 - [EntityWorkScheduler.Get · L84](465ccdbb260bcac2.md#m044ae5be02b795dc)（方法）
 - [EntityWorkScheduler.DormantMembers.set · L64](465ccdbb260bcac2.md#m6a6594139c13a5ea)（访问器）
-- [GameplayTuning.Current.get · L34](db546e5713b32d53.md#m71b0b2b50ee9f95c)（访问器）
+- [GameplayTuning.Current.get · L37](db546e5713b32d53.md#m528861636fc3c87b)（访问器）
 - [EntityWorkScheduler.QueueActive · L205](465ccdbb260bcac2.md#m81708dbab6fd4c7a)（方法）
 - [EntityGeneController.LogicRevision.get · L19](7494d53178552f0e.md#me69facc1c0f1e164)（访问器）
 - [StationaryCohortKernel.Supported · L12](9d3f50e550ab5beb.md#mc9ba7d3589415ea3)（方法）
@@ -1625,7 +1625,7 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [PerformanceTimings.Measure · L23](a8403a4c7503726d.md#m29626bbbc2d07209)（方法）
+- [PerformanceTimings.Measure · L24](a8403a4c7503726d.md#mbef9e348df638730)（方法）
 
 <a id="mc143fc56211bbfab"></a>
 

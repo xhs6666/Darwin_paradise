@@ -26,8 +26,9 @@ namespace DarwinPark.Entities.Ecology
         public bool HasLiveClaim=>ColonyCorpseAccess.HasLiveClaim(this);
         public static IEnumerable<ColonyResource> All=>ResourcesInWorld.Where(r=>r!=null&&r.isActiveAndEnabled&&r.State.energy>0);
         public static ColonyResource Find(string id)=>!string.IsNullOrEmpty(id)&&ById.TryGetValue(id,out var resource)&&resource!=null&&resource.isActiveAndEnabled&&resource.State.energy>0?resource:null;
-        private void OnEnable(){if(!ResourcesInWorld.Contains(this))ResourcesInWorld.Add(this);if(State!=null)ById[State.id]=this;}
-        private void OnDisable(){ResourcesInWorld.Remove(this);if(State!=null)ById.Remove(State.id);}
+        // ★ 适配：出生、读档和启停同步维护能量块索引，资源尚未绑定State时由Create补登记。
+        private void OnEnable(){if(!ResourcesInWorld.Contains(this))ResourcesInWorld.Add(this);if(State!=null){ById[State.id]=this;ColonyFoodSources.Register(this);}}
+        private void OnDisable(){ResourcesInWorld.Remove(this);ColonyFoodSources.Remove(this);if(State!=null)ById.Remove(State.id);}
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)] private static void Reset(){ResourcesInWorld.Clear();ById.Clear();_material=null;}
         public static float Biomass(DarwinEntity entity)
         {
@@ -62,6 +63,7 @@ namespace DarwinPark.Entities.Ecology
             if(data.kind!=ColonyResourceKind.Corpse)
             {var light=obj.AddComponent<Light>();light.type=LightType.Point;light.color=energy;light.intensity=AntColonySettings.Current.glowIntensity;light.range=AntColonySettings.Current.glowRange;light.shadows=LightShadows.None;}
             var resource=obj.AddComponent<ColonyResource>();resource.State=data;ById[data.id]=resource;
+            ColonyFoodSources.Register(resource);
             // ★ 适配：尸体增加无碰撞的明确标记；右键几何拾取不增加物理负担。
             if(data.kind==ColonyResourceKind.Corpse){resource._presentation=obj.AddComponent<ColonyResourcePresentation>();resource._presentation.Build();}
             // ★ 适配：仅能量块挂载等级外观，尸体保留原标记；按剩余能量恢复等级。
@@ -95,14 +97,14 @@ namespace DarwinPark.Entities.Ecology
             if(resource==null)return;
             var stats=member.GetComponent<EntityStats>();var settings=AntColonySettings.Current;
             // ★ 修复（防Bug回归）：按实际剩余容量扣块能量，不能让满仓的成员吞掉共享储备。
-            var capacity=stats.CaptureValues();float room=capacity.Where(v=>v.id=="nutrient"||v.id=="storedNutrient").Sum(v=>Mathf.Max(0,v.max-v.value));
+            float room=stats.CapacityRemaining("nutrient")+stats.CapacityRemaining("storedNutrient");
             float amount=Mathf.Min(ColonyFeeding.AvailableEnergy(resource,member),settings.feedRate*dt*DarwinPark.Core.GameplayTuning.Current.nutritionGainMultiplier,room);if(amount<=0)return;
             // ★ 修复（防Bug回归）：只有实际抵达进食才领取废弃资源，寻路预览不能抢走别群正在回收的补给；新归属沿原存档字段保存。
             resource.State.group=member.GroupId;
             resource.State.energy-=amount;stats.Feed(amount);if(resource.State.energy<=0)resource.Remove();
         }
         public void Remove(){gameObject.SetActive(false);Destroy(gameObject);}
-        public static void ClearWorld(){foreach(var resource in All.ToArray())resource.Remove();ResourcesInWorld.Clear();ById.Clear();}
+        public static void ClearWorld(){foreach(var resource in All.ToArray())resource.Remove();ResourcesInWorld.Clear();ById.Clear();ColonyFoodSources.Clear();}
         public ColonyResourceSave Capture(){State.local=EcologyQueries.ToLocal(transform.position);return JsonUtility.FromJson<ColonyResourceSave>(JsonUtility.ToJson(State));}
     }
 }

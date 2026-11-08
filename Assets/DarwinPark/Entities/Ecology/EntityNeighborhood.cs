@@ -34,6 +34,8 @@ namespace DarwinPark.Entities.Ecology
         private static void Ensure()
         {
             if(_frame==Time.frameCount&&ReferenceEquals(_settings,EcologyBalanceSettings.Current))return;
+            // ★ 适配：只记录真正重建的全局邻域快照，不把廉价缓存命中算成重建。
+            using var performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.Neighborhood);
             foreach(var list in Cells.Values){list.Clear();Pool.Push(list);}Cells.Clear();
             // ★ 修复（防Bug回归）：Clear、卸载和禁用同步清掉引用；普通帧复用Entry和桶，避免随实体数量产生逐帧垃圾。
             _settings=EcologyBalanceSettings.Current;_cellSize=_settings.competitionRadius;

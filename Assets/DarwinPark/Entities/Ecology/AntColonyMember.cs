@@ -47,7 +47,7 @@ namespace DarwinPark.Entities.Ecology
         public bool Frozen=>Active&&Role!=AntRole.None&&AntColonySettings.Current.Rule(Role).frozenGenome;
         // ★ 适配：面板和行动共用计划优先级，避免补给中显示运输/繁殖。
         private ColonyActivity _activity;
-        public ColonyActivity Activity {get=>!State.founding&&EntityTaskPlan.Feeding(this)&&ColonyResource.Find(State.plan?.supply)!=null?ColonyActivity.Feed:_activity;internal set=>_activity=value;}
+        public ColonyActivity Activity {get=>EntityTaskPlan.Feeding(this)&&ColonyResource.Find(State.plan?.supply)!=null?ColonyActivity.Feed:_activity;internal set=>_activity=value;}
         public int TaskPriority=>EntityTaskPlan.Priority(Activity);
         internal DarwinEntity HuntTarget;
         private readonly Dictionary<string,float> _suppression=new Dictionary<string,float>();
@@ -99,6 +99,8 @@ namespace DarwinPark.Entities.Ecology
             if(Role==AntRole.Reproductive){BeginFounding();return;}
             if(State.founding)
             {
+                // ★ 修复（防Bug回归）：迁居途中也必须先补给，原定建群点保留，不能带着饥饿一直赶路。
+                if(ColonyFeeding.Destination(this,out _))return;
                 Activity=ColonyActivity.Founding;
                 if(EcologyQueries.Distance(transform.position,EcologyQueries.ToWorld(State.foundingPoint))<=AntColonySettings.Current.arrivalDistance)
                 {State.founding=false;EnsureSupplyPoints();GetComponent<TerritoryBehavior>()?.Restore(EcologyQueries.ToLocal(transform.position),true,0,Vector3.zero);}
@@ -148,9 +150,9 @@ namespace DarwinPark.Entities.Ecology
         public bool Destination(out Vector3 point,out DarwinEntity target,out float multiplier)
         {
             point=transform.position;target=null;multiplier=1;if(!Active||Role==AntRole.None)return false;
-            if(State.founding){point=EcologyQueries.ToWorld(State.foundingPoint);return true;}
-            // ★ 修复（防Bug回归）：所有已定居分工先寻可用补给，王后/幼体前往育幼能量块，成年成员前往普通补给。
+            // ★ 修复（防Bug回归）：所有分工包括迁居王后先寻可吃补给；专用点优先，备用块与危急改选由同一入口决定。
             if(ColonyFeeding.Destination(this,out point))return true;
+            if(State.founding){point=EcologyQueries.ToWorld(State.foundingPoint);return true;}
             // ★ 修复（防Bug回归）：跟随终点是各自站位，不能让同群成员持续向王后的身体中心挤压。
             if(Young||Role==AntRole.Mate){point=ColonyFormation.Home(this,Center,AntColonySettings.Current.feedRadius*.8f);return true;}
             // ★ 适配：工匠成年前王后可以临时执行采集/运输，继续共用原有实际货物与扣粮路径。

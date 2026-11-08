@@ -25,6 +25,10 @@
   // 补给开始沿蚁群配置的饥饿线，持续到恢复线后再返回原任务；王后额外储备缓冲。
   "memberFeedResume": 9.5,
   "queenReserveBuffer": 10,
+  // 专用补给缺失或身边已有备用能量块时允许跨用途进食；保护存活外群和王后最低口粮。
+  "colonyShareBackupFood": true,
+  // 饱食低于此值时可中断远处补给计划，重新选择最近可吃的块；0到10，0关闭紧急换目标。
+  "colonyEmergencyFeedThreshold": 3,
   // 相近同基因、同生命阶段、健康且非移动实体合并基础计算。关闭可恢复逐实体计算。
   "mergeStationaryEntities": true,
   // 错开空间/基因批次，避免每半秒集中补算；1到256批，欠账完整保留。关闭可对照原调度。

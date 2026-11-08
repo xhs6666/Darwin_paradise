@@ -309,3 +309,12 @@
 |2026-11-08|失效原因不明、尸体详情布局不同、生命阶段不可编辑|检查界面只显示布尔状态；资源没有生前档案；缺少权威阶段入口|GeneFailureReasons.cs、GeneValueResolver.cs、CorpseEntityRecord.cs、GeneInspectorUI.Corpse.cs、EntityEditPopup.cs、EntityStateEditor.cs|不改运行求值；禁用基因补只读条目；复用原布局，无伪活体；旧档全零对象兼容与损坏档案区分；阶段/数值成对保存；幼年先释放运输；遵守服务端权限和合法输入门控|
 
 | 2026-11-08 | 数百非移动实体零尸体仍周期卡顿，降频被误认为真实共享 | 兼容实体多数为孤立组且同步到期；累计浮点尾数额外触发整轮行为 | EntityWorkScheduler、CohortDeadline、SimulationSubsteps、EcologyEnergyBudget；MergeAlgorithmAuditRegression | 同一完整存档开关合并/资源绘制/零资源对照；同时记录真实共享次数、帧P95和寿命加欠账守恒；完整混合世界仍有活体与物理瓶颈，不宣称全面提帧 |
+
+
+## 2026-11-08 种群有粮不吃与细分性能台账
+
+| 日期 | 现象 | 根因 | 修复文件 | 防复发要点 |
+| --- | --- | --- | --- | --- |
+| 2026-11-08 | 有剩余能量但成员不能使用，迁居与旧计划抢占进食 | 育幼/成年是硬类别；远锁定源不在半径时直接返回；迁居分支先于补给 | ColonyFeeding、ColonyFoodSources、AntColonyMember、EntityTaskPlan、GameplayTuning | 专用点优先及备用可调；近处实际进食；保留原迁居/货物；外群保护和王后最低口粮；四类成员120模拟秒持续吃单类补给；真实读档后进食 |
+| 2026-11-08 | 大量尸体被每次补给搜索遍历 | 可吃能量块和尸体共用全部资源列表 | ColonyFoodSources、ColonyResource | Create/启停/移除/清场/读档同步索引；300尸体不增加食物候选；容量直接查询不分配快照 |
+| 2026-11-08 | 只看基因总计无法确定下一步优化重点 | 行动、邻域重建和队形未单独计时 | RuntimePerformance、LocomotionGeneLogic、EntityNeighborhood、ColonyFeeding、ColonyFormation、ColonyFeedingAuditRegression | 报告区分包含关系；完整最新场景测量，附数量、地形、API与模拟倍率；不把补给修复称为整体提帧 |

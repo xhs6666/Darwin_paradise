@@ -42,6 +42,8 @@ namespace DarwinPark.Entities.Ecology
         {var col=entity.GetComponent<Collider>();return col!=null?Mathf.Max(col.bounds.extents.x,col.bounds.extents.y,col.bounds.extents.z):Settings.spacing*.25f;}
         public static Vector3 Avoid(EntityGeneController genes,Vector3 desired,float speed)
         {
+            // ★ 适配：同群避让作为行动子项单独采样，便于优先优化密集种群。
+            using var performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.Formation);
             var member=genes.GetComponent<AntColonyMember>();if(member==null||!member.Active||member.Role==AntRole.Queen||member.Young||speed<=0)return desired;
             var here=genes.transform.position;var up=EcologyQueries.Up(here);var away=Vector3.zero;float radius=BodyRadius(member.Entity);EntityNeighborhood.Query(here,Settings.avoidanceRadius,Neighbors);
             foreach(var other in Neighbors)

@@ -754,7 +754,7 @@ flowchart TD
 项目内调用/回调引用：
 
 - [ParasiteBehavior.Host.get · L16](ec21ecbd299caaed.md#m854b55763184d078)（访问器）
-- [EntityNeighborhood.ObservePosition · L63](e5e24c4aff0395b1.md#m994f4a7ab30bcd1d)（方法）
+- [EntityNeighborhood.ObservePosition · L65](e5e24c4aff0395b1.md#mecbbd83d7f3d8f38)（方法）
 
 <a id="m858d10391da0e50c"></a>
 
