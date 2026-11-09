@@ -16,9 +16,11 @@ namespace DarwinPark.Entities
         private void Start()=>InitializeBirth();
         public void InitializeBirth()
         {
+            // ★ 修复（防Bug回归）：已经出生的个体不必在每个生命小步重复查询孵化组件。
+            if(_born)return;
             // ★ 适配：卵未孵化时不消耗出生阶段抽签，也不提前衰老。
             if(GetComponent<Ecology.EggIncubation>()?.Incubating==true)return;
-            if(_born)return;_born=true;
+            _born=true;
             _genes.CurrentAge=AgeState.Infant;
             _genes.TryStageMutation(AgeState.Infant);_genes.Recalculate();
         }

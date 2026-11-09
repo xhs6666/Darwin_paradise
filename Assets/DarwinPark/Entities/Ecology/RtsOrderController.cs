@@ -14,7 +14,7 @@ namespace DarwinPark.Entities.Ecology
         public float arrivalDistance=2;
         public RtsOrderSave State {get;private set;}=new RtsOrderSave();
         private EntityGeneController _genes;
-        private void Awake(){_genes=GetComponent<EntityGeneController>();}
+        private void Awake(){_genes=GetComponent<EntityGeneController>();Simulation.ActiveSimulationBatch.Invalidate(_genes);}
         public static RtsOrderController Ensure(DarwinEntity entity)=>entity.GetComponent<RtsOrderController>()??entity.gameObject.AddComponent<RtsOrderController>();
         public static bool Supports(DarwinEntity entity,RtsOrderKind kind)
         {

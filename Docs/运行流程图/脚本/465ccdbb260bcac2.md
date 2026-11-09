@@ -580,7 +580,7 @@ flowchart TD
 项目内调用/回调引用：
 
 - [GameplayTuning.Current.get · L44](db546e5713b32d53.md#m5713e7f86902b6fa)（访问器）
-- [EntityGeneController.AdvanceSimulation · L71](7494d53178552f0e.md#m1fed1096c5150ade)（方法）
+- [EntityGeneController.AdvanceSimulation · L73](7494d53178552f0e.md#m0056817ce3208fda)（方法）
 - [StationaryCohortKernel.AdvanceCore · L43](9d3f50e550ab5beb.md#mcdd84fc49043442b)（方法）
 
 <a id="mcc852d9054db2d86"></a>
@@ -1094,11 +1094,11 @@ flowchart TD
 - [StationaryCohortKernel.Apply · L52](9d3f50e550ab5beb.md#mff43eda308e9aa23)（方法）
 - [EntityWorkScheduler.SharedMemberSteps.set · L63](465ccdbb260bcac2.md#mbf38ee84f3a0ece7)（访问器）
 - [EntityWorkScheduler.SharedMemberSteps.get · L63](465ccdbb260bcac2.md#ma2ea17be21511192)（访问器）
-- [EntityLifeCycle.AdvanceShared · L27](9f4138bfbae654b7.md#m70423c7e99affa42)（方法）
+- [EntityLifeCycle.AdvanceShared · L29](9f4138bfbae654b7.md#ma29bffd901102e78)（方法）
 - [EntityLifeCycle.HasDied.get · L11](9f4138bfbae654b7.md#mf2406e6830e0007e)（访问器）
 - [StationaryCohortKernel.PrimaryReproduction · L59](9d3f50e550ab5beb.md#mcf6814b936ea6fab)（方法）
-- [ReproductionGeneLogic.OnUpdate · L39](ac319ea70bd8b723.md#mf655ffa9d27689fe)（方法）
-- [EntityGeneController.AdvanceSimulation · L71](7494d53178552f0e.md#m1fed1096c5150ade)（方法）
+- [ReproductionGeneLogic.OnUpdate · L40](ac319ea70bd8b723.md#m7cb6727410b8cffa)（方法）
+- [EntityGeneController.AdvanceSimulation · L73](7494d53178552f0e.md#m0056817ce3208fda)（方法）
 - [StationaryCohortKernel.AdvanceCore · L43](9d3f50e550ab5beb.md#mcdd84fc49043442b)（方法）
 - [EntityWorkScheduler.回调@151 · L151](465ccdbb260bcac2.md#mf53e72ece7e2c15f)（回调/委托）
 
@@ -1272,7 +1272,7 @@ flowchart TD
 
 - [EntityWorkScheduler.Entry.pending.get · L22](465ccdbb260bcac2.md#m2277186a9d64d8a1)（访问器）
 - [EntityWorkScheduler.Entry.pending.set · L22](465ccdbb260bcac2.md#m05caefbe3ec968d5)（访问器）
-- [EntityGeneController.AdvanceSimulation · L71](7494d53178552f0e.md#m1fed1096c5150ade)（方法）
+- [EntityGeneController.AdvanceSimulation · L73](7494d53178552f0e.md#m0056817ce3208fda)（方法）
 - [StationaryCohortKernel.AdvanceCore · L43](9d3f50e550ab5beb.md#mcdd84fc49043442b)（方法）
 
 <a id="mb7ec59e3d2860e5c"></a>
@@ -1467,7 +1467,7 @@ flowchart TD
 - [NutritionParasite.Host.get · L20](4a18785b7c1e1484.md#m04cde9f68ca91f6a)（访问器）
 - [AntColonyWorker.IsCarried · L132](8a0cca2020271b6f.md#m78b7b08c935b36c0)（方法）
 - [EntityGeneController.Evaluation.get · L18](7494d53178552f0e.md#mc0039c100a31b455)（访问器）
-- [EntityGeneController.GetAttribute · L277](7494d53178552f0e.md#m5ef0e4e944f0c71b)（方法）
+- [EntityGeneController.GetAttribute · L282](7494d53178552f0e.md#mc3503e198ec80ff1)（方法）
 
 <a id="m70e59be0206db03b"></a>
 

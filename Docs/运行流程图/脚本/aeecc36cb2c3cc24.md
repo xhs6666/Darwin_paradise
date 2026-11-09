@@ -270,7 +270,7 @@ flowchart TD
 - [PerceptionSubscriptions.Forget · L10](69ad03522af4e9d9.md#m7d8542e80b44bab2)（方法）
 - [ObservationSettings.Current.get · L16](fde4b9e3a289b4e6.md#m3eb41cdee2818913)（访问器）
 - [EcologyQueries.Active · L28](bdf7ccc2c9c0452f.md#m4fb10ad424167e3b)（方法）
-- [EntityGeneController.GetAttribute · L277](7494d53178552f0e.md#m5ef0e4e944f0c71b)（方法）
+- [EntityGeneController.GetAttribute · L282](7494d53178552f0e.md#mc3503e198ec80ff1)（方法）
 
 <a id="m82b4d3ee35795aa8"></a>
 
@@ -333,7 +333,7 @@ flowchart TD
 项目内调用/回调引用：
 
 - [EntityPerceptionHub.Range · L40](aeecc36cb2c3cc24.md#m82b4d3ee35795aa8)（方法）
-- [EntityGeneController.GetAttribute · L277](7494d53178552f0e.md#m5ef0e4e944f0c71b)（方法）
+- [EntityGeneController.GetAttribute · L282](7494d53178552f0e.md#mc3503e198ec80ff1)（方法）
 
 <a id="mbe2216b46b71081b"></a>
 
@@ -400,7 +400,7 @@ flowchart TD
 - [EntityPerceptionHub.Searches.get · L23](aeecc36cb2c3cc24.md#m7431de46c6f0053f)（访问器）
 - [EntityPerceptionHub.CandidateVisits.set · L23](aeecc36cb2c3cc24.md#m198ffeb4d9c2d0b7)（访问器）
 - [EntityPerceptionHub.CandidateVisits.get · L23](aeecc36cb2c3cc24.md#m55ffe61e92656f55)（访问器）
-- [EcologyMotion.Detectable · L63](6ed9d0eedb456d32.md#mfbde5a5e024a8840)（方法）
+- [EcologyMotion.Detectable · L64](6ed9d0eedb456d32.md#m41805e7c1298ec10)（方法）
 - [EntitySighting.EntitySighting.ctor · L12](aeecc36cb2c3cc24.md#me8009eddbd5e5621)（构造函数）
 - [PerceptionSubscriptions.Attach · L9](69ad03522af4e9d9.md#mdc971fe9af8c746f)（方法）
 - [EntityPerceptionHub.Delivered.set · L23](aeecc36cb2c3cc24.md#m91a5fa7769843b48)（访问器）
@@ -459,7 +459,7 @@ flowchart TD
 - [EntityPerceptionHub.Read · L42](aeecc36cb2c3cc24.md#mbe2216b46b71081b)（方法）
 - [EntityPerceptionHub.Get · L25](aeecc36cb2c3cc24.md#m6e8ef31a160a5e74)（方法）
 - [EntityNeighborhood.TryPosition · L96](e5e24c4aff0395b1.md#m25ecdad5c922e7d5)（方法）
-- [EcologyMotion.Detectable · L63](6ed9d0eedb456d32.md#mfbde5a5e024a8840)（方法）
+- [EcologyMotion.Detectable · L64](6ed9d0eedb456d32.md#m41805e7c1298ec10)（方法）
 
 <a id="m5f831816fef69cd6"></a>
 
@@ -503,7 +503,7 @@ flowchart TD
 - [EntityPerceptionHub.Read · L42](aeecc36cb2c3cc24.md#mbe2216b46b71081b)（方法）
 - [EntityPerceptionHub.Get · L25](aeecc36cb2c3cc24.md#m6e8ef31a160a5e74)（方法）
 - [EntityNeighborhood.TryPosition · L96](e5e24c4aff0395b1.md#m25ecdad5c922e7d5)（方法）
-- [EcologyMotion.Detectable · L63](6ed9d0eedb456d32.md#mfbde5a5e024a8840)（方法）
+- [EcologyMotion.Detectable · L64](6ed9d0eedb456d32.md#m41805e7c1298ec10)（方法）
 - [EntitySighting.EntitySighting.ctor · L12](aeecc36cb2c3cc24.md#me8009eddbd5e5621)（构造函数）
 - [PerceptionSubscriptions.Attach · L9](69ad03522af4e9d9.md#mdc971fe9af8c746f)（方法）
 

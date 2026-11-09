@@ -1,3 +1,4 @@
+using DarwinPark.Entities.Simulation; // ★ 适配：同步模拟批内复用组件，不缓存实时状态数值。
 using DarwinPark.Core;
 using DarwinPark.Genetics;
 using DarwinPark.Entities.Stats;
@@ -33,22 +34,22 @@ namespace DarwinPark.Entities.Logic
             // ★ 适配：社会谱系和复制行动基因只保留一个行为写入者；寄生/孵化自行控制移动。
             if(!GeneBehaviorAuthority.IsPrimary<LocomotionGeneLogic>(_controller,_gene)||EcologyMotion.Immobilized(_controller))return;
             // ★ 修复（防Bug回归）：模板 Awake 可能早于工厂补挂刚体，首次缓存为空时必须能自愈。
-            if (_rb == null) _rb = _controller.GetComponent<Rigidbody>();
+            if (_rb == null) _rb = ActiveSimulationBatch.Read<Rigidbody>(_controller);
             if (_planet == null) _planet = Object.FindFirstObjectByType<PlanetTerrainMeshBuilder>();
             if (_rb == null || _planet == null || dt <= 0) return;
             _actionCooldown -= dt;
             float speed = _controller.GetAttribute("moveSpeed");
-            var stats = _controller.GetComponent<EntityStats>();
+            var stats = ActiveSimulationBatch.Read<EntityStats>(_controller);
             if (speed <= 0 || stats == null || !stats.TryGet("health", out float hp) || hp <= 0) return;
             // ★ 修复（防Bug回归）：行动基因只有陆地推进，不能在水中继续追击/漫游充当游泳。
-            if(_controller.GetComponent<DarwinPark.Entities.Vitals.EntityEnvironmentHazard>()?.IsSubmerged == true)
+            if(ActiveSimulationBatch.Read<DarwinPark.Entities.Vitals.EntityEnvironmentHazard>(_controller)?.IsSubmerged == true)
             { _target=null; return; }
             // ★ 适配：使用重算时建立的实例索引，行动子步不重复扫描和分配查询闭包。
             var evaluated = _controller.GetEvaluation(_gene);
             // ★ 修复（防Bug回归）：行为状态共用面板评估结果，失效基因不执行行动。
             var state = evaluated?.State;
             // ★ 适配：手动控制期间 AI 不再抢写速度，只有玩家按攻击键才执行近距离进食。
-            var manual = _controller.GetComponent<EntityManualControl>();
+            var manual = ActiveSimulationBatch.Read<EntityManualControl>(_controller);
             if (manual != null && manual.IsControlled)
             {
                 _decision.Reset();
@@ -72,7 +73,7 @@ namespace DarwinPark.Entities.Logic
             if(_decision.directive)
             {
                 _target=_decision.target;
-                if(_target!=null){var explicitOrder=_controller.GetComponent<RtsOrderController>();var pop=_controller.GetComponent<PopulationBehavior>();if(explicitOrder?.State.active==true&&explicitOrder.State.kind==RtsOrderKind.Attack||pop?.ManualRemaining>0)EntityNeighborhood.TryPosition(_target,out _decision.point);else if(!EntityPerceptionHub.TryLocate(_controller,_target,out _decision.point)){_decision.Reset();_target=null;return;}}
+                if(_target!=null){var explicitOrder=ActiveSimulationBatch.Read<RtsOrderController>(_controller);var pop=ActiveSimulationBatch.Read<PopulationBehavior>(_controller);if(explicitOrder?.State.active==true&&explicitOrder.State.kind==RtsOrderKind.Attack||pop?.ManualRemaining>0)EntityNeighborhood.TryPosition(_target,out _decision.point);else if(!EntityPerceptionHub.TryLocate(_controller,_target,out _decision.point)){_decision.Reset();_target=null;return;}}
                 Chase(_decision.point,speed*_decision.multiplier,dt);
                 if(_target!=null)TryBite(stats,false);return;
             }
@@ -104,16 +105,16 @@ namespace DarwinPark.Entities.Logic
             // ★ 修复（防Bug回归）：手动攻击、群体命令和缓存猎物同样不得捕食更大体型。
             if(!PredationSizePolicy.Allows(_controller,_target)){_target=null;return;}
             var otherStats = _target.GetComponent<EntityStats>();
-            var a = _controller.GetComponent<Collider>(); var b = _target.GetComponent<Collider>();
+            var a = ActiveSimulationBatch.Read<Collider>(_controller); var b = _target.GetComponent<Collider>();
             float gap = a != null && b != null ? Vector3.Distance(a.ClosestPoint(b.bounds.center),b.ClosestPoint(a.bounds.center)) : Vector3.Distance(_controller.transform.position,_target.transform.position);
             // ★ 修复（防Bug回归）：手动近战为准星判定留少量距离容差，AI的追击距离保持原有配置。
-            float reach=_settings.attackReach+(_controller.GetComponent<EntityManualControl>()?.IsControlled==true?GameplayTuning.Current.manualAttackReachBonus:0);
+            float reach=_settings.attackReach+(ActiveSimulationBatch.Read<EntityManualControl>(_controller)?.IsControlled==true?GameplayTuning.Current.manualAttackReachBonus:0);
             if (gap > reach || otherStats == null || !otherStats.TryGet("health",out float health) || health <= 0) return;
             float damage = graze ? _settings.grazeDamage : _controller.GetAttribute("attack");
             if (damage <= 0) return;
             _actionCooldown = _settings.attackInterval;
             // ★ 适配：仅致死结算产生可吸收营养，非致死伤害不会凭空增加食物。
-            EntityCombat.Ensure(_target.gameObject).Receive(_controller.GetComponent<DarwinEntity>(),damage);
+            EntityCombat.Ensure(_target.gameObject).Receive(ActiveSimulationBatch.Read<DarwinEntity>(_controller),damage);
             otherStats.TryGet("health",out float remainingHealth);
             // ★ 适配：士兵只造成伤害并留下运输尸体，不再运行普通进食或群体分红。
             if(Ecology.AntColonyCombat.SettleSoldierAttack(_controller,_target,remainingHealth<=0))

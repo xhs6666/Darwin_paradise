@@ -1,3 +1,4 @@
+using DarwinPark.Entities.Simulation; // ★ 适配：同步模拟批内复用组件，不缓存实时状态数值。
 using DarwinPark.Core;
 using DarwinPark.Entities.Logic;
 using DarwinPark.Entities.Stats;
@@ -26,7 +27,7 @@ namespace DarwinPark.Entities.Ecology
         {
             var settings=EcologyBalanceSettings.Current;
             // ★ 修复（防Bug回归）：密集生态每步大量查询角色，只线性选主表达，避免为每个邻居创建 LINQ 排序集合。
-            if(genes==null||genes.GetComponent<EggIncubation>()?.Incubating==true)return false;
+            if(genes==null||ActiveSimulationBatch.Read<EggIncubation>(genes)?.Incubating==true)return false;
             // ★ 适配：异养后代/食腐分支接管营养方式，不能同时借父基因的光合状态凭空生产。
             if(EcologyQueries.Active(genes,NutritionEcologySettings.Current.heterotrophyGene)!=null||EcologyQueries.Active(genes,NutritionEcologySettings.Current.scavengerGene)!=null)return false;
             GeneEvaluation gene=null;
@@ -42,8 +43,9 @@ namespace DarwinPark.Entities.Ecology
         public static void Produce(EntityGeneController genes,GeneInstance source,float dt)
         {
             if(dt<=0||!GeneBehaviorAuthority.IsPrimary<NutritionGeneLogic>(genes,source))return;
-            if(EcologyQueries.Active(genes,NutritionEcologySettings.Current.heterotrophyGene)!=null||EcologyQueries.Active(genes,NutritionEcologySettings.Current.scavengerGene)!=null)return;
-            var stats=genes.GetComponent<EntityStats>();if(stats==null)return;
+            // ★ 适配：遗传食性资格按表达版本复用，实际吸收和容量仍每次实时核算。
+            if(Simulation.ActiveNutritionContext.Blocked(genes))return;
+            var stats=ActiveSimulationBatch.Read<EntityStats>(genes);if(stats==null)return;
             // ★ 修复（防Bug回归）：使用重算时维护的实例索引，生产小步不再创建捕获闭包并扫描全部基因。
             var evaluation=genes.GetEvaluation(source);var state=evaluation?.IsActive==true?evaluation.State:null;
             var settings=EcologyBalanceSettings.Current;float efficiency=genes.GetAttribute(settings.absorptionAttribute);
@@ -56,9 +58,9 @@ namespace DarwinPark.Entities.Ecology
         public static float Consumption(EntityGeneController genes,float baseRate,float movementRate)
         {
             var settings=EcologyBalanceSettings.Current;float speed=0;
-            var body=genes.GetComponent<Rigidbody>();/* ★ 适配：与实际交付模拟时间一致。 */ float scale=ServiceLocator.TryGet<SimulationClock>(out var clock)?clock.MotionTimeScale:1;
-            if(body!=null&&scale>0&&genes.GetAttribute(settings.movementAttribute)>0)
-                speed=Mathf.Min(genes.GetAttribute(settings.movementAttribute),Vector3.ProjectOnPlane(body.linearVelocity,EcologyQueries.Up(genes.transform.position)).magnitude/scale);
+            var body=ActiveSimulationBatch.Read<Rigidbody>(genes);/* ★ 适配：与实际交付模拟时间一致。 */ float scale=ServiceLocator.TryGet<SimulationClock>(out var clock)?clock.MotionTimeScale:1;
+            float movement=body!=null&&scale>0?genes.GetAttribute(settings.movementAttribute):0;
+            if(movement>0)speed=Mathf.Min(movement,Vector3.ProjectOnPlane(body.linearVelocity,EcologyQueries.Up(genes.transform.position)).magnitude/scale);
             // ★ 适配：全局可编辑倍率在最终收支入口应用，AI、手动和不同模拟倍率共用同一计算。
             var tuning=GameplayTuning.Current;
             return baseRate*settings.baseMetabolismScale*tuning.baseMetabolismMultiplier+movementRate*settings.movementMetabolismScale*speed*tuning.movementMetabolismMultiplier;

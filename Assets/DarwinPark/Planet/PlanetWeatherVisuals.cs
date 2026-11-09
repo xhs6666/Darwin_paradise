@@ -48,7 +48,8 @@ namespace DarwinPark.Planet
             // ★ 修复（防Bug回归）：云层以海平面为基准，否则一座山会将全球云层撑成远离地表的空心壳。
             float cloudBottom = sea + cloudClearance;
             float cloudTop = cloudBottom + cloudThickness;
-            float atmosphereTop = cloudTop + atmosphereThickness;
+            // ★ 适配：气壳覆盖实际山峰，不能只围绕海平面计算厚度。
+            float atmosphereTop = AtmosphereViewPolicy.OuterRadius(data,cloudTop+atmosphereThickness,atmosphereThickness);
             _ocean = CreateShell("OceanSurface", data, sea, oceanShader, ref _oceanMesh, out _oceanMaterial);
             if (_oceanMaterial != null)
             {
@@ -116,6 +117,7 @@ namespace DarwinPark.Planet
             // 数据图层关闭天气遮挡，海面延续同一气候/矿石图，保持图层切换完整。
             // ★ 修复（防Bug回归）：靠近地表自动隐藏云层；拉远恢复，独立保留用户总开关与数据层规则。
             var camera = Camera.main;
+            AtmosphereViewPolicy.Apply(_atmosphereMaterial,camera);
             float altitude = camera != null ? transform.InverseTransformPoint(camera.transform.position).magnitude - _builder.WaterRadius : float.MaxValue;
             if (_clouds != null) _clouds.SetActive(showClouds && layer < 0.5f && altitude > hideCloudsBelowAltitude);
             if (_oceanMaterial != null)

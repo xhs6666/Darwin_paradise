@@ -349,3 +349,15 @@
 | 2026-11-09 | 拉远渲染大量冗余几何；规则不能切换阶段变异或周期清尸 | 云/大气复制百万级地形代理；旧规则仅支持定时抽样 | WeatherShellGeometry.cs、PlanetWeatherVisuals.cs、StageMutationPolicy.cs、CorpseCleanupController.cs、RuleCardExtensions.cs及存档适配 | 解析球外接低模、海岸精度保留；固定远近CPU/GPU对照；模式互斥阶段去重；清尸分帧且删除前复核货物保护、进度真实写盘和恢复 |
 
 | 2026-11-09 | 重力/安全网重复探地与写入，斜坡静止体难以休眠 | 重复PhysX和高度采样，径向落点不等于真实斜坡接触，重复解析移动资格 | RadialTerrainSurface.cs、EntityGroundProbe.cs、PlanetGroundPhysics.cs、SurfaceAnchorPhysics.cs、ManualGroundPhysics.cs、VerifiedGroundRest.cs及原入口适配 | 真实三角形与PhysX逐点对比；非生成网格/缩放回退；表达/变换/碰撞失效；接触验证后才休眠；移动/跳跃/搬运/水下/救援回归及同场景前后计时 |
+
+
+## 2026-11-09 活跃计算与规则列表台账
+
+|日期|现象|根因/改动|文件|防复发要点|
+|---|---|---|---|---|
+|2026-11-09|规则标题按钮不便继续加规则，紧凑下拉可能没有文字|独立稳定ID注册列表；默认30高下拉的上下边距会裁空21高文字|SimulationRuleList、RuleCardExtensions|主题/初始化关闭保护共用；260×164不变，标题文字空间、切页草稿、部分保存和权限回归|
+|2026-11-09|失效原因重复占用编辑入口，只有基因标题触发悬浮|原因统一整张基因卡悬浮，原入口仅编辑|GeneHoverSurface、GeneInspectorUI、EntityEditPopup|输入和双击/滚轮保留、提示不拦截射线、离开/隐藏清理；尸体使用生前档案且不可编辑|
+|2026-11-09|控制模式高地天空看似没有大气|海面指数密度在高地视角很弱，气壳可能低于最高地形|AtmosphereViewPolicy、PlanetWeatherVisuals、PlanetScattering|真实像素对照；只增强完整穿气壳的天空，不误把海面截断当地面天空；昼夜、近景地形和退出恢复验证，不加光线步数|
+|2026-11-09|活跃实体逐小步重复空行为和组件查询|按表达版本建执行计划，同步批内组件复用；生产资格只缓存静态表达|ActiveSimulationPlan、ActiveNutritionContext及原入口适配|繁殖副本仍有等待/缓存副作用，不能过滤；重算恢复剩余快照、未知扩展回退、嵌套/新增/销毁失效；真实收入/阶段/孕育时间等价和405实体四轮开关对照|
+
+本轮验收：516项原生断言、四轮405实体性能对照、第一人称昼夜/深度像素检查、最终Windows非开发构建及12秒启动通过。维护流程图376脚本/3903方法/3906唯一图，19项浏览检查通过。详见`Docs/验证记录/活跃计算与规则界面验证-2026-11-09.md`。

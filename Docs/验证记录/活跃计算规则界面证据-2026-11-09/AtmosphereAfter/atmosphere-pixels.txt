@@ -1,0 +1,1 @@
+difference=0.49862134191036844 altitude=10.0241089 outer=344.230042 camera=(-287.88, 125.95, -107.96) clouds=False

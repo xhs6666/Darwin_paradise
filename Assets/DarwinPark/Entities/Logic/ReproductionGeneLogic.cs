@@ -1,3 +1,4 @@
+using DarwinPark.Entities.Simulation; // ★ 适配：同步模拟批内复用组件，不缓存实时状态数值。
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,7 +47,7 @@ namespace DarwinPark.Entities.Logic
             if(Ecology.AntColonyReproduction.BlocksOrdinary(_controller)){_mateWaitTimer=0;return;}
             // ★ 适配：基础、性别特化和卵生复制可共存，但只由最高阶有效繁殖基因推进一次孕育。
             if(!GeneBehaviorAuthority.IsPrimary<ReproductionGeneLogic>(_controller,_gene)){_mateWaitTimer=0;return;}
-            var stats = _controller.GetComponent<EntityStats>();
+            var stats = ActiveSimulationBatch.Read<EntityStats>(_controller);
             if (stats == null) return;
 
             if (_cooldownTimer > 0) { _mateWaitTimer=0;_cooldownTimer -= dt; return; }

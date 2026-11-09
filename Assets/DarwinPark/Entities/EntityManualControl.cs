@@ -29,7 +29,7 @@ namespace DarwinPark.Entities
         public bool CanMove => _genes != null && !Ecology.EcologyMotion.Immobilized(_genes) && _genes.GetAttribute("moveSpeed") > 0 &&
             _genes.Evaluation != null && _genes.Evaluation.Genes.Exists(g => g.IsActive && _genes.GetLogic(g.Gene) is LocomotionGeneLogic);
         private void Awake() { _body = GetComponent<Rigidbody>(); _genes = GetComponent<EntityGeneController>(); }
-        public void BeginControl(Transform planet) { _planet = planet; _jump = GetComponent<EntityJumpMotor>(); IsControlled = true; SetInput(Vector3.zero, false); }
+        public void BeginControl(Transform planet) { Simulation.ActiveSimulationBatch.Invalidate(_genes);_planet = planet; _jump = GetComponent<EntityJumpMotor>(); IsControlled = true; SetInput(Vector3.zero, false); }
         public void SetInput(Vector3 direction, bool attack)
         {
             MoveDirection = Vector3.ClampMagnitude(direction, 1); AttackHeld = attack && CanMove;

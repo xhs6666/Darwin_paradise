@@ -1,0 +1,2 @@
+PASS
+day=0.16629047453778822 night=0.045190578274791546 terrainDelta=0 exitDensity=1

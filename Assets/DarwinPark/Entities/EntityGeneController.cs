@@ -43,6 +43,8 @@ namespace DarwinPark.Entities
         private readonly List<GeneInstance> _removedLogics=new List<GeneInstance>();
         private GeneEvaluation _nullIdEvaluation;
         private int _snapshotRevision=-1;
+        // ★ 适配：活跃执行计划独立管理过滤和批内组件复用，不改变个体生命周期/营养的时间交付。
+        private readonly Simulation.ActiveSimulationPlan _activePlan=new();
         public int LogicSnapshotBuilds {get;private set;}
         private static NamePoolJson _namePool;private static bool _namePoolLoaded,_nameAssetMissing;
         private bool _isRecalculating = false;
@@ -86,6 +88,7 @@ namespace DarwinPark.Entities
             int steps=DarwinPark.Core.SimulationSubsteps.Count(dt);
             // ★ 适配：行为计时仍逐小步，物理转向只在本批最后一步执行。
             Simulation.ActionMotionBatch.Begin(this,dt);
+            Simulation.ActiveSimulationBatch.Begin(this,_activePlan);
             try
             {
             for(int index=0;index<steps;index++)
@@ -101,11 +104,11 @@ namespace DarwinPark.Entities
                 _state?.Advance(step);
                 // ★ 修复（防Bug回归）：仍使用逻辑快照防止重算时修改集合，但复用缓冲区，避免每个实体每个子步分配新列表。
                 // ★ 适配：优化重复计算，只在逻辑重算后重建快照；回调中的重算仅标记失效，不能修改正在遍历的列表。
-                if(_snapshotRevision!=LogicRevision){_simulationLogics.Clear();_simulationLogics.AddRange(_activeLogics.Values);_snapshotRevision=LogicRevision;LogicSnapshotBuilds++;}
-                foreach (var logic in _simulationLogics) logic.OnUpdate(step);
+                if(_snapshotRevision!=LogicRevision){_simulationLogics.Clear();_simulationLogics.AddRange(_activeLogics.Values);_snapshotRevision=LogicRevision;_activePlan.Invalidate();LogicSnapshotBuilds++;}
+                _activePlan.Run(this,_simulationLogics,step);
             }
             }
-            finally{Simulation.ActionMotionBatch.End(this);}
+            finally{Simulation.ActiveSimulationBatch.End(this);Simulation.ActionMotionBatch.End(this);}
         }
 
         public void Recalculate()
@@ -113,6 +116,8 @@ namespace DarwinPark.Entities
             // ★ 适配：按需区分重算、签名与实际行为成本。
             using var performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.GeneRecalculation);
             if (_isRecalculating) return;
+            // ★ 适配：回调内重算会安装/移除组件，不能让本批后续行为继续读取旧的空组件缓存。
+            Simulation.ActiveSimulationBatch.Invalidate(this);
             Simulation.EntityWorkScheduler.Wake(this);
             // ★ 适配：固定分工先还原出生遗传快照，编辑和全局变异不能改写士兵/工匠基因。
             GetComponent<Ecology.AntColonyMember>()?.EnforceGenome();
@@ -192,7 +197,7 @@ namespace DarwinPark.Entities
                 _isRecalculating=false;_snapshotRevision=-1;
             }
             // ★ 适配：标签新增/移除、出错换基因或受抑后同步更新实体状态授权。
-            Ecology.EntityStateController.Rebind(this);
+            Simulation.ActiveSimulationBatch.Invalidate(this);Ecology.EntityStateController.Rebind(this);
             _state=GetComponent<Ecology.EntityStateController>();LogicRevision++;
             // ★ 适配：必须在新逻辑挂载和状态授权完成后刷新生产者分类，避免使用旧表达。
             Ecology.EntityNeighborhood.Changed(this);

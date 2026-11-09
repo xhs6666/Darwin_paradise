@@ -1,0 +1,5 @@
+Result=Succeeded
+Errors=0
+Warnings=1
+Size=106891287
+Path=D:\unity_project\Darwin_paradise\Artifacts\NutritionEcologyProject\Artifacts\PlayerBuildLogReview\Windows\DarwinParadise.exe

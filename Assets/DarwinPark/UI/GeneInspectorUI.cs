@@ -495,6 +495,8 @@ namespace DarwinPark.UI
             // ★ 新增：行背景与图标只装饰原有基因行，不改变编辑、滚动或双击命中。
             var geneBlock = UIFactory.NewRect("Block_" + eval.Definition.Id + "_" + eval.Gene.InstanceId.Substring(0, 4), parent,typeof(Image));
             UIVisualTheme.Paint(geneBlock.GetComponent<Image>(),"button");geneBlock.GetComponent<Image>().raycastTarget=false;
+            // ★ 适配：失效原因保留在原提示内容中，触发区域扩展为整个基因卡。
+            GeneHoverSurface.Bind(geneBlock,()=>ShowGeneTooltip(eval),()=>{if(_tooltipPanel!=null)_tooltipPanel.SetActive(false);});
             var blockLE = geneBlock.AddComponent<LayoutElement>();
             // ★ 适配：带标签的基因增加独立一行，基因倾向与实体能力不会互相覆盖。
             blockLE.minHeight=blockLE.preferredHeight=eval.Definition.EntityStateTags.Count>0?94:70;
@@ -530,13 +532,6 @@ namespace DarwinPark.UI
             var entryScroll=new EventTrigger.Entry{eventID=EventTriggerType.Scroll};
             entryScroll.callback.AddListener(data=>row1.GetComponentInParent<ScrollRect>()?.OnScroll((PointerEventData)data));
             trigger.triggers.Add(entryScroll);
-            var entryEnter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
-            entryEnter.callback.AddListener((data) => ShowGeneTooltip(eval));
-            trigger.triggers.Add(entryEnter);
-
-            var entryExit = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
-            entryExit.callback.AddListener((data) => _tooltipPanel.SetActive(false));
-            trigger.triggers.Add(entryExit);
 
             var entryClick = new EventTrigger.Entry { eventID = EventTriggerType.PointerClick };
             entryClick.callback.AddListener((data) => {

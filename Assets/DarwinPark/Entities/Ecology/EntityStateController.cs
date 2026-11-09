@@ -31,7 +31,7 @@ namespace DarwinPark.Entities.Ecology
         }
         private void RebuildGrants(bool force=false)
         {
-            bool egg=GetComponent<EggIncubation>()?.Incubating==true;
+            bool egg=Simulation.ActiveSimulationBatch.Read<EggIncubation>(_genes)?.Incubating==true;
             // ★ 修复（防Bug回归）：基因授权只随表达、注册表或孵化变化，不应每个小步重新扩展图并分配 HashSet。
             if(!force&&ReferenceEquals(_grantsEvaluation,_genes.Evaluation)&&ReferenceEquals(_grantsRegistry,EntityStateRegistry.Current)&&_grantsEgg==egg)return;
             _grantsEvaluation=_genes.Evaluation;_grantsRegistry=EntityStateRegistry.Current;_grantsEgg=egg;
@@ -71,7 +71,7 @@ namespace DarwinPark.Entities.Ecology
                 {
                     if(condition.kind=="stat")
                     {
-                        var stats=GetComponent<EntityStats>();
+                        var stats=Simulation.ActiveSimulationBatch.Read<EntityStats>(_genes);
                         if(stats==null||!stats.TryGet(condition.attributeId,out float value)||(condition.comparison=="gt"?value<=condition.value:value>condition.value)){matched=false;break;}
                     }
                     else
@@ -94,7 +94,7 @@ namespace DarwinPark.Entities.Ecology
                 var entity=sighting.entity;
                 if(entity.gameObject==gameObject||!EcologyQueries.Alive(entity))continue;
                 // ★ 修复（防Bug回归）：同群士兵的捕猎倾向不能被误认成附近敌对捕猎者。
-                if(GetComponent<PopulationBehavior>()?.SameGroup(entity)==true)continue;
+                if(Simulation.ActiveSimulationBatch.Read<PopulationBehavior>(_genes)?.SameGroup(entity)==true)continue;
                 var gene=EcologyQueries.Active(entity.Genes,condition.geneId);
                 if(gene?.State?.StateId!=condition.geneStateId||!EntityPerceptionHub.TryLocate(_genes,entity,out var point,range))continue;
                 float current=(point-transform.position).sqrMagnitude;if(current>range*range)continue;

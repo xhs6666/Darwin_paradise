@@ -4,7 +4,7 @@
 
 [12条业务主流程](主流程.md) · [生成工具与维护说明](../../Tools/FlowDocs/README.md)
 
-覆盖 **358 个C#脚本、10 个Shader/HLSL文件、3826 个方法/构造/访问器/局部函数/回调/GPU函数**。没有显式方法的数据脚本也在索引中。未扫描Unity Packages/Library生成文件；Tools为离线生成器，不进入游戏运行图。
+覆盖 **366 个C#脚本、10 个Shader/HLSL文件、3903 个方法/构造/访问器/局部函数/回调/GPU函数**。没有显式方法的数据脚本也在索引中。未扫描Unity Packages/Library生成文件；Tools为离线生成器，不进入游戏运行图。
 
 
 ## 阅读与维护
@@ -66,6 +66,8 @@
 |Core|[Assets/DarwinPark/Core/UI/UIRoot.cs](脚本/9c1421378791f0e0.md)|Runtime|9|
 |Core|[Assets/DarwinPark/Core/UI/UIVisualTheme.cs](脚本/ca525a798a08f966.md)|Runtime|16|
 |Core|[Assets/DarwinPark/Core/WorldAuthority.cs](脚本/2361e41ab2baa157.md)|Runtime|2|
+|Editor|[Assets/DarwinPark/Editor/ActiveControlsRegression.cs](脚本/2eab88692e68527d.md)|Editor|23|
+|Editor|[Assets/DarwinPark/Editor/ActiveSimulationBenchmark.cs](脚本/7532f6e210474791.md)|Editor|13|
 |Editor|[Assets/DarwinPark/Editor/AntColonyRegression.cs](脚本/1314e8c23331e578.md)|Editor|39|
 |Editor|[Assets/DarwinPark/Editor/ColonyContinuityRegression.cs](脚本/9386360ce717a3bf.md)|Editor|50|
 |Editor|[Assets/DarwinPark/Editor/ColonyFeedingAuditRegression.cs](脚本/e4d7714ee72a340e.md)|Editor|9|
@@ -73,6 +75,7 @@
 |Editor|[Assets/DarwinPark/Editor/ColonyFeedingTemplateRegression.cs](脚本/e3a5269cbeb35cff.md)|Editor|14|
 |Editor|[Assets/DarwinPark/Editor/ColonyFoodSafetyRegression.cs](脚本/15da375185c991ea.md)|Editor|15|
 |Editor|[Assets/DarwinPark/Editor/ColonyTaskStressAudit.cs](脚本/b670f82196406694.md)|Editor|11|
+|Editor|[Assets/DarwinPark/Editor/ControlAtmosphereAudit.cs](脚本/b9c6afb844d2af68.md)|Editor|11|
 |Editor|[Assets/DarwinPark/Editor/ControlsActivityRegression.cs](脚本/c94d401ef13df84d.md)|Editor|11|
 |Editor|[Assets/DarwinPark/Editor/CorpseInspectionRegression.cs](脚本/a1829d88f72dd1fb.md)|Editor|16|
 |Editor|[Assets/DarwinPark/Editor/EcologyBalanceRegression.cs](脚本/81fff3fefa111617.md)|Editor|30|
@@ -233,6 +236,8 @@
 |Entities|[Assets/DarwinPark/Entities/PopulationMaintenance.cs](脚本/923ccc4e86c4786c.md)|Runtime|36|
 |Entities|[Assets/DarwinPark/Entities/Simulation/ActionDecisionCadence.cs](脚本/9f8bb5c506593a21.md)|Runtime|4|
 |Entities|[Assets/DarwinPark/Entities/Simulation/ActionMotionBatch.cs](脚本/e54155ca229c2706.md)|Runtime|5|
+|Entities|[Assets/DarwinPark/Entities/Simulation/ActiveNutritionContext.cs](脚本/e8a4c7e1945f6f55.md)|Runtime|2|
+|Entities|[Assets/DarwinPark/Entities/Simulation/ActiveSimulationPlan.cs](脚本/ac63422a085684a6.md)|Runtime|13|
 |Entities|[Assets/DarwinPark/Entities/Simulation/CohortDeadline.cs](脚本/7dc9f0a2697792f4.md)|Runtime|1|
 |Entities|[Assets/DarwinPark/Entities/Simulation/CorpseCleanupController.cs](脚本/d2cacacf25d2c28f.md)|Runtime|12|
 |Entities|[Assets/DarwinPark/Entities/Simulation/EntityWorkScheduler.cs](脚本/465ccdbb260bcac2.md)|Runtime|34|
@@ -285,6 +290,7 @@
 |Genetics|[Assets/DarwinPark/Genetics/ObservationGeneUpgrade.cs](脚本/6a35b0da69b3773b.md)|Runtime|3|
 |Genetics|[Assets/DarwinPark/Genetics/ObservationSettings.cs](脚本/fde4b9e3a289b4e6.md)|Runtime|2|
 |Genetics|[Assets/DarwinPark/Genetics/ParthenogenesisEvolutionUpgrade.cs](脚本/9270126d968c1a50.md)|Runtime|8|
+|Planet|[Assets/DarwinPark/Planet/AtmosphereViewPolicy.cs](脚本/77ad1469df9525fa.md)|Runtime|2|
 |Planet|[Assets/DarwinPark/Planet/Erosion/HydraulicErosion.cs](脚本/8ec387cb4eb3fa28.md)|Runtime|1|
 |Planet|[Assets/DarwinPark/Planet/Erosion/ThermalErosion.cs](脚本/6648fb3132139fb8.md)|Runtime|2|
 |Planet|[Assets/DarwinPark/Planet/Legacy/OreGenerator.cs](脚本/2ea4ea93bd165819.md)|Runtime|6|
@@ -315,7 +321,7 @@
 |UI|[Assets/DarwinPark/UI/ControlSettingsPage.cs](脚本/110505a600a95d59.md)|Runtime|6|
 |UI|[Assets/DarwinPark/UI/EcologyLegacySaveUpgrade.cs](脚本/3ea317ee2852be05.md)|Runtime|3|
 |UI|[Assets/DarwinPark/UI/EnergyBlockInput.cs](脚本/cbc301144604182a.md)|Runtime|3|
-|UI|[Assets/DarwinPark/UI/EntityEditPopup.cs](脚本/79ed73ecd9855f79.md)|Runtime|16|
+|UI|[Assets/DarwinPark/UI/EntityEditPopup.cs](脚本/79ed73ecd9855f79.md)|Runtime|15|
 |UI|[Assets/DarwinPark/UI/EntityFavoriteHighlight.cs](脚本/2af216812259d790.md)|Runtime|7|
 |UI|[Assets/DarwinPark/UI/EntityFavoritesManager.cs](脚本/b60fb973e9d3815a.md)|Runtime|18|
 |UI|[Assets/DarwinPark/UI/EntityFilterResultsUI.cs](脚本/1376ad45671e7435.md)|Runtime|21|
@@ -337,6 +343,7 @@
 |UI|[Assets/DarwinPark/UI/GameMainMenu.cs](脚本/a1f1791f9e7a8035.md)|Runtime|35|
 |UI|[Assets/DarwinPark/UI/GeneEntityStateTagEditor.cs](脚本/d1c0ab279fe0493c.md)|Runtime|1|
 |UI|[Assets/DarwinPark/UI/GeneGraphViewport.cs](脚本/744cdf6c09e0913f.md)|Runtime|5|
+|UI|[Assets/DarwinPark/UI/GeneHoverSurface.cs](脚本/81dabe18446b0bf1.md)|Runtime|5|
 |UI|[Assets/DarwinPark/UI/GeneInspectorUI.Corpse.cs](脚本/226a6835af361a0e.md)|Runtime|4|
 |UI|[Assets/DarwinPark/UI/GeneInspectorUI.cs](脚本/924e27c34e7b1f0a.md)|Runtime|36|
 |UI|[Assets/DarwinPark/UI/GeneTreeWorkbench.cs](脚本/7b98ef3da23a85cb.md)|Runtime|39|
@@ -369,7 +376,7 @@
 |UI|[Assets/DarwinPark/UI/RandomSpawnWorkbench.cs](脚本/0763b7475b3c75db.md)|Runtime|87|
 |UI|[Assets/DarwinPark/UI/RightClickHandler.cs](脚本/889ceb71f450c954.md)|Runtime|1|
 |UI|[Assets/DarwinPark/UI/RtsSelectionInput.cs](脚本/3c8b37f7bbd7a10f.md)|Runtime|17|
-|UI|[Assets/DarwinPark/UI/RuleCardExtensions.cs](脚本/92d59cd12a5696c3.md)|Runtime|23|
+|UI|[Assets/DarwinPark/UI/RuleCardExtensions.cs](脚本/92d59cd12a5696c3.md)|Runtime|25|
 |UI|[Assets/DarwinPark/UI/RuntimeDiagnosticWorldState.cs](脚本/7bd14a39565df6a0.md)|Runtime|2|
 |UI|[Assets/DarwinPark/UI/RuntimeDiagnosticsUI.cs](脚本/cb25084667099cf5.md)|Runtime|1|
 |UI|[Assets/DarwinPark/UI/RuntimeDropdownDismissal.cs](脚本/bab72c915cc299c5.md)|Runtime|13|
@@ -377,6 +384,7 @@
 |UI|[Assets/DarwinPark/UI/RuntimeMenuTheme.cs](脚本/b9d8455882f2a532.md)|Runtime|24|
 |UI|[Assets/DarwinPark/UI/RuntimePerformanceCapture.cs](脚本/8709e073518085cd.md)|Runtime|14|
 |UI|[Assets/DarwinPark/UI/SimulationControlPanel.cs](脚本/76bc7add9187fd1f.md)|Runtime|37|
+|UI|[Assets/DarwinPark/UI/SimulationRuleList.cs](脚本/8e0c9b70cd52abbf.md)|Runtime|7|
 |UI|[Assets/DarwinPark/UI/SimulationRulesPanel.cs](脚本/dd1021765f4bd253.md)|Runtime|16|
 |UI|[Assets/DarwinPark/UI/WorldEntityActions.cs](脚本/afe657f09857fa47.md)|Runtime|2|
 |UI|[Assets/DarwinPark/UI/WorldGameSettingsPanel.cs](脚本/6df051f7f7177d08.md)|Runtime|13|

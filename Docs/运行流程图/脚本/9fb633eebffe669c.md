@@ -1428,7 +1428,7 @@ flowchart TD
 - [LanSession.Reply · L184](9fb633eebffe669c.md#ma2abc3394057f288)（方法）
 - [LanSession.OwnedEntityId.get · L30](9fb633eebffe669c.md#m5adc535c48d20cbe)（访问器）
 - [LanSession.Cheats.get · L27](9fb633eebffe669c.md#m570973099b8f82d5)（访问器）
-- [EntityManualControl.Release · L37](a6969896da35e1f0.md#m87aa0efacece2c5b)（方法）
+- [EntityManualControl.Release · L37](a6969896da35e1f0.md#m40fd112901a759d7)（方法）
 - [LanSession.OwnedEntityId.set · L30](9fb633eebffe669c.md#mab85f356abbbcca4)（访问器）
 - [EntityManualControl.BeginControl · L32](a6969896da35e1f0.md#mf0dadf914f9961c7)（方法）
 - [LanSession.SendMessage · L89](9fb633eebffe669c.md#m6d646648c755fb11)（方法）
@@ -1625,12 +1625,12 @@ flowchart TD
 - [LanSession.Assign · L126](9fb633eebffe669c.md#ma7c3594af76ac1d7)（方法）
 - [LanSession.ApplyRts · L168](9fb633eebffe669c.md#m303c5d9b3bcf7ddd)（方法）
 - [EcologyIdentity.Find · L20](bdf7ccc2c9c0452f.md#m58f756a3ba9ec990)（方法）
-- [EntityManualControl.Release · L37](a6969896da35e1f0.md#m87aa0efacece2c5b)（方法）
+- [EntityManualControl.Release · L37](a6969896da35e1f0.md#m40fd112901a759d7)（方法）
 - [EntityManualControl.BeginControl · L32](a6969896da35e1f0.md#mf0dadf914f9961c7)（方法）
 - [EcologyQueries.Alive · L38](bdf7ccc2c9c0452f.md#mb2877c487f449970)（方法）
 - [LanSession.Finite · L182](9fb633eebffe669c.md#m751b2ad72d2d10c5)（方法）
 - [EnergyBlockMetabolism.TryRelease · L40](123c1bf82bdb8ea2.md#mda6f8903d669c1f6)（方法）
-- [EntityManualControl.SetInput · L33](a6969896da35e1f0.md#m7c7f5613b3bebc74)（方法）
+- [EntityManualControl.SetInput · L33](a6969896da35e1f0.md#mb1079fe9e2dced13)（方法）
 - [EntityManualControl.QueueAttack · L24](a6969896da35e1f0.md#md160ef2315358c16)（方法）
 - [EntityManualControl.SetAim · L27](a6969896da35e1f0.md#m70f09d0090a1fa41)（方法）
 - [EcologyQueries.Up · L41](bdf7ccc2c9c0452f.md#maca7070196f125fd)（方法）
@@ -1743,8 +1743,8 @@ flowchart TD
 - [ColonyResource.Find · L28](293dbaecfff4b585.md#m1324285ab40ac6f4)（方法）
 - [EcologyQueries.Up · L41](bdf7ccc2c9c0452f.md#maca7070196f125fd)（方法）
 - [EcologyQueries.Surface · L47](bdf7ccc2c9c0452f.md#m2f1f6873ee5fc8df)（方法）
-- [RtsOrderController.Ensure · L18](cac3b6501f41ca35.md#mcd94009017493347)（方法）
-- [RtsOrderController.Issue · L28](cac3b6501f41ca35.md#m47943a6c3dea7a96)（方法）
+- [RtsOrderController.Ensure · L18](cac3b6501f41ca35.md#ma6dc1578afbc7e64)（方法）
+- [RtsOrderController.Issue · L28](cac3b6501f41ca35.md#ma9a81bead88c4251)（方法）
 - [LanSession.回调@172 · L172](9fb633eebffe669c.md#m7112018f2338aa4f)（回调/委托）
 
 <a id="m7112018f2338aa4f"></a>
@@ -2365,13 +2365,13 @@ flowchart TD
 - [LanSession.RejectedCommands.set · L33](9fb633eebffe669c.md#m6c8d154ade39ec49)（访问器）
 - [LanSession.RejectedCommands.get · L33](9fb633eebffe669c.md#m548d782d81b2ab74)（访问器）
 - [EcologyIdentity.Find · L20](bdf7ccc2c9c0452f.md#m58f756a3ba9ec990)（方法）
-- [EntityManualControl.Release · L37](a6969896da35e1f0.md#m87aa0efacece2c5b)（方法）
+- [EntityManualControl.Release · L37](a6969896da35e1f0.md#m40fd112901a759d7)（方法）
 - [LanSession.Roster · L186](9fb633eebffe669c.md#mafeddb5e9882547a)（方法）
 - [LanSession.LeaveToMenu · L292](9fb633eebffe669c.md#m00e936ab853b36f8)（方法）
 - [WorldSessionManager.Busy.get · L24](08741c7b7b9d9344.md#m4483e2e4f28f7c85)（访问器）
 - [EcologyQueries.Alive · L38](bdf7ccc2c9c0452f.md#mb2877c487f449970)（方法）
 - [LanSession.SendMessage · L89](9fb633eebffe669c.md#m6d646648c755fb11)（方法）
-- [EntityManualControl.SetInput · L33](a6969896da35e1f0.md#m7c7f5613b3bebc74)（方法）
+- [EntityManualControl.SetInput · L33](a6969896da35e1f0.md#mb1079fe9e2dced13)（方法）
 - [EntityManualControl.ClearAttack · L26](a6969896da35e1f0.md#m9a16d6f4efae7238)（方法）
 - [LanSession.OwnedEntityId.get · L30](9fb633eebffe669c.md#m5adc535c48d20cbe)（访问器）
 - [LanSession.OwnedEntityId.set · L30](9fb633eebffe669c.md#mab85f356abbbcca4)（访问器）
@@ -2815,7 +2815,7 @@ flowchart TD
 项目内调用/回调引用：
 
 - [EcologyIdentity.Find · L20](bdf7ccc2c9c0452f.md#m58f756a3ba9ec990)（方法）
-- [EntityManualControl.Release · L37](a6969896da35e1f0.md#m87aa0efacece2c5b)（方法）
+- [EntityManualControl.Release · L37](a6969896da35e1f0.md#m40fd112901a759d7)（方法）
 - [LanConnection.Dispose · L62](872c2b8da417200e.md#mcbbf7592b2503d1f)（方法）
 - [LanListener.Dispose · L73](872c2b8da417200e.md#m5f6403734e035e45)（方法）
 - [LanSession.Cheats.set · L27](9fb633eebffe669c.md#mea5d3063d84d0e75)（访问器）

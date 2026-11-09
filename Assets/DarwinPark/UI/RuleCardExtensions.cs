@@ -10,7 +10,9 @@ namespace DarwinPark.UI
     // ★ 新增：在原尺寸规则卡内分页，模式切换及清尸配置不挤压底栏其他控件。
     public sealed class RuleCardExtensions:MonoBehaviour
     {
-        private SimulationRulesPanel _owner;private RectTransform _card;private InputField _fraction,_seconds;private Button _enabled,_mode,_mutationTab,_cleanupTab;private Text _stageHint;
+        private SimulationRulesPanel _owner;private RectTransform _card;private InputField _fraction,_seconds;private Button _enabled,_mode;private Text _stageHint;
+        // ★ 适配：规则列表使用独立注册入口，原页草稿、保存和卡片尺寸保持不变。
+        public SimulationRuleList Rules {get;private set;}
         private bool _cleanupPage,_mutationEnabled,_cleanupEnabled,_mutationDirty,_cleanupDirty;private int _modeValue;private string _timedPercent,_stagePercent,_period,_cleanupPeriod;
         public bool SecondsEditable=>!_cleanupPage&&_modeValue==0;
         public void Bind(SimulationRulesPanel owner,InputField fraction,InputField seconds,Button enabled)
@@ -18,8 +20,7 @@ namespace DarwinPark.UI
             _owner=owner;_card=owner.Card;_fraction=fraction;_seconds=seconds;_enabled=enabled;
             _fraction.onValueChanged.AddListener(_=>InputChanged());_seconds.onValueChanged.AddListener(_=>InputChanged());
             _card.Find("Title").GetComponent<RectTransform>().sizeDelta=new Vector2(95,18);
-            _mutationTab=AddButton("MutationTab","变异",()=>Page(false),112,2,64,21);
-            _cleanupTab=AddButton("CleanupTab","清尸",()=>Page(true),182,2,68,21);
+            Rules=new SimulationRuleList(_card);Rules.Register("mutation","变异规则",()=>Page(false));Rules.Register("corpseCleanup","定时清尸",()=>Page(true));
             _mode=AddButton("MutationMode","定时抽样",SwitchMode,10,25,158,23);
             _stageHint=UIFactory.NewText("StageTrigger",_card,"出生 / 成年 / 老年，各一次",11);Place(_stageHint.rectTransform,55,82,195,23);
         }
@@ -46,7 +47,6 @@ namespace DarwinPark.UI
             _fraction.SetTextWithoutNotify(_cleanupPage?_cleanupPeriod:_modeValue==0?_timedPercent:_stagePercent);_seconds.SetTextWithoutNotify(_period);
             _seconds.gameObject.SetActive(!_cleanupPage&&_modeValue==0);_card.Find("PeriodUnit").gameObject.SetActive(!_cleanupPage&&_modeValue==0);
             Text("PeriodLabel",_cleanupPage?"保护":_modeValue==0?"周期":"触发");_stageHint.gameObject.SetActive(_cleanupPage||_modeValue==1);_stageHint.text=_cleanupPage?"跳过已领取 / 运输中的尸体":"出生 / 成年 / 老年，各一次";
-            UIVisualTheme.StyleButton(_mutationTab,!_cleanupPage);UIVisualTheme.StyleButton(_cleanupTab,_cleanupPage);
         }
         private static float Parse(string value){if(!float.TryParse(value,NumberStyles.Float,CultureInfo.InvariantCulture,out var result)||float.IsNaN(result)||float.IsInfinity(result))throw new FormatException("请输入有效数值");return result;}
         public void Save()

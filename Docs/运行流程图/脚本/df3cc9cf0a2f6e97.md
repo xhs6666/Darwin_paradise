@@ -264,10 +264,10 @@ flowchart TD
 - [GeneInstance.Create · L20](f82e1498d67f5afd.md#m72e94c278de3cf8b)（方法）
 - [GeneDatabase.Get · L136](ec0a03483435a863.md#me6a5fefe6c3492f9)（方法）
 - [DarwinEntity.Genes.get · L14](70798dde169f2e8b.md#m622eb1adf401d431)（访问器）
-- [EntityLifeCycle.RestoreProgress · L50](9f4138bfbae654b7.md#m1e9381f9a38ed7be)（方法）
+- [EntityLifeCycle.RestoreProgress · L52](9f4138bfbae654b7.md#m007c73a0c714c238)（方法）
 - [LifeCycleSettings.Load · L16](ace76969fe8f61de.md#mbd2925785484f343)（方法）
-- [EntityGeneController.RestoreStageState · L54](7494d53178552f0e.md#m41fb3375c42f6c22)（方法）
-- [EntityGeneController.Recalculate · L111](7494d53178552f0e.md#mf588f8c1148316c6)（方法）
+- [EntityGeneController.RestoreStageState · L56](7494d53178552f0e.md#m37c1dbfa64e7c2ce)（方法）
+- [EntityGeneController.Recalculate · L114](7494d53178552f0e.md#mf96a252d67ac45a1)（方法）
 - [WorldControlsRegression.Added · L41](df3cc9cf0a2f6e97.md#md1ac202b5275de8f)（局部函数）
 
 <a id="md1ac202b5275de8f"></a>
@@ -704,12 +704,12 @@ flowchart TD
 - [DarwinEntity.Genes.get · L14](70798dde169f2e8b.md#m622eb1adf401d431)（访问器）
 - [RandomPlanetSpawner.StartBatch · L26](1c13222a547b265c.md#mdc9f2d6b461c868a)（方法）
 - [RandomPlanetSpawner.Ensure · L25](1c13222a547b265c.md#m2f7496d9d5575b34)（方法）
-- [EntityGeneController.GetLogic · L231](7494d53178552f0e.md#mf5ee6292befedc7b)（方法）
+- [EntityGeneController.GetLogic · L236](7494d53178552f0e.md#md77252f0fc72a9b1)（方法）
 - [EntityStats.Feed · L95](75aa86a368efdf24.md#mc025822ff1eb86a0)（方法）
 - [EntityStats.TryGet · L90](75aa86a368efdf24.md#m24ee1433e4a70d94)（方法）
-- [ReproductionGeneLogic.OnUpdate · L39](ac319ea70bd8b723.md#mf655ffa9d27689fe)（方法）
-- [EntityGeneController.Recalculate · L111](7494d53178552f0e.md#mf588f8c1148316c6)（方法）
-- [ReproductionGeneLogic.RestoreState · L38](ac319ea70bd8b723.md#m35d2d9ff730867da)（方法）
+- [ReproductionGeneLogic.OnUpdate · L40](ac319ea70bd8b723.md#m7cb6727410b8cffa)（方法）
+- [EntityGeneController.Recalculate · L114](7494d53178552f0e.md#mf96a252d67ac45a1)（方法）
+- [ReproductionGeneLogic.RestoreState · L39](ac319ea70bd8b723.md#m024a77bf70fc78fe)（方法）
 - [WorldEntityActions.SetLimit · L12](afe657f09857fa47.md#md5c2fa4e19f790fe)（方法）
 - [EntityPopulationLimit.RestoreScope · L32](44f717c5df79d270.md#m58883b4959fd76ed)（方法）
 - [WorldSessionManager.SaveNow · L169](08741c7b7b9d9344.md#mcf18d8aac368dda6)（方法）
