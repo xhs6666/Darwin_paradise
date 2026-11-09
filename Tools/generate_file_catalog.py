@@ -14,6 +14,8 @@ files={p for p in files if (root/p).is_file() or p=='Docs/开发设计/项目文
 # ★ 修复（防Bug回归）：精简后排除已删除meta，同时纳入待提交的新文件，避免目录统计滞后于实际源码。
 meta=sum(p.endswith('.meta') and (root/p).is_file() for p in tracked)
 files={p for p in files if not p.endswith('.meta') and not p.startswith('Docs/运行流程图/脚本/') and not p.startswith('Tools/FlowDocs/obj/')}
+# ★ 修复（防Bug回归）：玩家配置备份是本机可变数据，不纳入维护源码索引，也不能为生成文档删除玩家备份。
+files={p for p in files if not p.endswith(('.bak','.tmp'))}
 modules={'GameRoot':'启动与实体装配','Core':'公共基础服务','Genetics':'基因数据、表达与演化','Entities':'实体、生命与生态','AI':'AI决策模块','Environment':'环境参数与采样','Planet':'星球生成与视觉','UI':'界面、操控、世界与联机','Editor':'编辑器工具与回归','Tutorial':'Unity模板说明'}
 
 def link(p,label=None):return f'[{label or p}](../../{p})'

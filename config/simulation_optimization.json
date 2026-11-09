@@ -16,6 +16,9 @@
   "localCompetition": true,
   "singletonKernel": true,
   "resourceInstancing": true,
+  // 云/大气使用外接低模代理；细分4～128，重载世界时应用。海面和地形碰撞保持精度。
+  "weatherProxyMeshes": true,
+  "weatherProxySubdivisions": 16,
   "visualRefreshSeconds": 0.25,
   "lightDistance": 80
 }

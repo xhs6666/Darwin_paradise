@@ -2873,7 +2873,7 @@ flowchart TD
 - [LanSession.CancelConnecting · L299](9fb633eebffe669c.md#mcfcb9a748cd4e6d6)（方法）
 - [LanConnection.Dispose · L62](872c2b8da417200e.md#mcbbf7592b2503d1f)（方法）
 - [LanSession.CloseHost · L288](9fb633eebffe669c.md#m7507ff22288cb80e)（方法）
-- [WorldSessionManager.ReturnToMenu · L143](08741c7b7b9d9344.md#m9b5ae3c7460432a8)（方法）
+- [WorldSessionManager.ReturnToMenu · L146](08741c7b7b9d9344.md#md314c4b712637cae)（方法）
 - [LanSession.OwnedEntityId.set · L30](9fb633eebffe669c.md#mab85f356abbbcca4)（访问器）
 - [LanSession.Cheats.set · L27](9fb633eebffe669c.md#mea5d3063d84d0e75)（访问器）
 - [WorldAuthority.Reset · L18](2361e41ab2baa157.md#m85b42b819afac5cb)（方法）

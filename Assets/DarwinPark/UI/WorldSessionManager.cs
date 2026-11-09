@@ -127,6 +127,9 @@ namespace DarwinPark.UI
             // ★ 适配：实体身份恢复后再恢复待变异名单，不能读档时重新抽样。
             DarwinPark.Entities.Simulation.MutationRoundController.Ensure(ServiceLocator.Get<SimulationClock>().gameObject);
             DarwinPark.Entities.Simulation.MutationRoundController.Restore(data.mutationRounds);
+            // ★ 适配：恢复资源后再恢复清理名单，不重抽或丢失计时。
+            DarwinPark.Entities.Simulation.CorpseCleanupController.Ensure(ServiceLocator.Get<SimulationClock>().gameObject);
+            DarwinPark.Entities.Simulation.CorpseCleanupController.Restore(data.corpseCleanup);
             // ★ 适配：旧长孕育必须与新的生长表达同时迁移，否则读档后可能在生产前衰老死亡。
             EcologyLegacySaveUpgrade.Apply(data,EntityRegistry.All);
             var camera=Camera.main;var orbit=camera.GetComponent<OrbitCamera>();
@@ -159,6 +162,7 @@ namespace DarwinPark.UI
             Debug.Log("[世界] 返回主界面 id="+Current?.id+"，联机副本="+WorldAuthority.IsReplica);
             EntityPopulationLimit.Clear();
             DarwinPark.Entities.Simulation.MutationRoundController.Restore(null);
+            DarwinPark.Entities.Simulation.CorpseCleanupController.Restore(null);
             PopulationMaintenance.Restore(null);FindFirstObjectByType<RandomPlanetSpawner>()?.ResetWorld();
             Current=null;_autoSave=0;Progress=0;Status="";SaveStatus="";
         }
@@ -184,6 +188,7 @@ namespace DarwinPark.UI
             Current.gameSettings=EntityPopulationLimit.Capture();
             Current.maintenance=PopulationMaintenance.Capture();
             Current.mutationRounds=DarwinPark.Entities.Simulation.MutationRoundController.Capture();
+            Current.corpseCleanup=DarwinPark.Entities.Simulation.CorpseCleanupController.Capture();
             WorldSaveStore.Write(Current);SaveStatus="已保存 "+DateTime.Now.ToString("HH:mm:ss");
             Debug.Log("[存档] 保存成功 id="+Current.id+"，实体="+Current.entities.Count+"，模拟时间="+Current.gameTime+"，文件="+WorldSaveStore.FileFor(Current.id));
         }

@@ -94,24 +94,8 @@ namespace DarwinPark.Planet
                 Debug.LogError($"[PlanetWeather] {name} 缺少可用 Shader，请检查场景引用。", this);
                 return null;
             }
-            var vertices = new Vector3[data.Vertices.Length];
-            var normals = new Vector3[vertices.Length];
-            for (int i = 0; i < vertices.Length; i++)
-            {
-                normals[i] = data.Vertices[i].normalized;
-                vertices[i] = normals[i] * radius;
-            }
-            mesh = new Mesh { name = name, indexFormat = IndexFormat.UInt32 };
-            // ★ 修复（防Bug回归）：壳层按自身球面校正每个三角形绕序，不能沿用受陡坡影响的面剔除结果。
-            var triangles = (int[])data.Triangles.Clone();
-            for (int i = 0; i < triangles.Length; i += 3)
-            {
-                Vector3 a = vertices[triangles[i]], b = vertices[triangles[i+1]], c = vertices[triangles[i+2]];
-                if (Vector3.Dot(Vector3.Cross(b-a,c-a), a+b+c) < 0)
-                { int t = triangles[i+1]; triangles[i+1] = triangles[i+2]; triangles[i+2] = t; }
-            }
-            mesh.vertices = vertices; mesh.normals = normals; mesh.triangles = triangles;
-            mesh.RecalculateBounds();
+            // ★ 适配：海面保留原深度顶点；云和大气改用外接低模代理，解析积分和地形碰撞保持原逻辑。
+            mesh=WeatherShellGeometry.Create(data,radius,name);
             var go = new GameObject(name, typeof(MeshFilter), typeof(MeshRenderer));
             go.layer = gameObject.layer;
             go.transform.SetParent(transform, false);

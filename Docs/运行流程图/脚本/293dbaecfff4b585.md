@@ -421,7 +421,7 @@ flowchart TD
 - [CorpseEntityRecord.Normalize · L23](8a2345f1e54b1c75.md#m649806250b80642a)（方法）
 - [EcologyQueries.ToWorld · L40](bdf7ccc2c9c0452f.md#m320932c05ccecbf7)（方法）
 - [AntColonySettings.Current.get · L31](cb0a937e97c8fbb3.md#mcd121159f407ccdf)（访问器）
-- [SimulationOptimization.Current.get · L16](11c9091e70893352.md#m3c7aafe98160d109)（访问器）
+- [SimulationOptimization.Current.get · L18](11c9091e70893352.md#m81dac8318af42ca9)（访问器）
 - [ColonyResource.State.set · L24](293dbaecfff4b585.md#m07fea10388841ca3)（访问器）
 - [ColonyFoodSources.Register · L15](4c419a1a067d428c.md#mf32bc84088ad1316)（方法）
 - [ResourceCoordinates.Observe · L44](93d731ac01e3af48.md#m8772c0d40540a8d7)（方法）
@@ -637,7 +637,7 @@ flowchart TD
 - [AntColonySettings.Current.get · L31](cb0a937e97c8fbb3.md#mcd121159f407ccdf)（访问器）
 - [EntityStats.CapacityRemaining · L92](75aa86a368efdf24.md#m574f0a6509120d00)（方法）
 - [ColonyFeeding.AvailableEnergy · L29](2cb56c08d08ff8ec.md#m39bf48fc3c592882)（方法）
-- [GameplayTuning.Current.get · L40](db546e5713b32d53.md#m1bbf27bd17853fc4)（访问器）
+- [GameplayTuning.Current.get · L44](db546e5713b32d53.md#m5713e7f86902b6fa)（访问器）
 - [ColonyResource.State.get · L24](293dbaecfff4b585.md#m41824f1a0e160aa5)（访问器）
 - [ResourceCoordinates.Observe · L44](93d731ac01e3af48.md#m8772c0d40540a8d7)（方法）
 - [EntityStats.Feed · L95](75aa86a368efdf24.md#mc025822ff1eb86a0)（方法）

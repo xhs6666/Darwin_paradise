@@ -46,6 +46,14 @@
   // 每帧最多执行的已抽选变异数；超额名单留到后续帧，暂停不推进。
   "mutationAttemptsPerFrame": 16,
   // 定时全局轮次：按全部活体数量随机选取10%，无放回；30模拟秒一轮。名额向上取整，锁定角色/孵化卵排除。
+  // 变异触发：0定时抽样，1出生/成年/老年阶段抽签。切换不补抽已经登记的阶段。
+  "mutationMode": 0,
+  "stageMutationProbability": 0.3,
+  "stageEnvironmentBoost": 0.25,
+  // 可选定时清理：模拟秒；分帧删除未领取尸体，保留能量块和工匠货物。
+  "corpseCleanupEnabled": false,
+  "corpseCleanupSeconds": 300,
+  "corpseCleanupPerFrame": 64,
   "mutationRoundsEnabled": true,
   "mutationPopulationFraction": 0.1,
   "mutationRoundSeconds": 30,

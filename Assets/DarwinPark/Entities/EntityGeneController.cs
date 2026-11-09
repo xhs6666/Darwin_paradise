@@ -282,9 +282,11 @@ namespace DarwinPark.Entities
 
         public void TryStageMutation(AgeState stage)
         {
-            // ★ 适配：保留旧档阶段位与检查计数，不再在出生/成年/老年额外抽签；调用方统一重算阶段属性。
+            // ★ 适配：两种模式共用旧档阶段位，切到阶段模式不能补抽已过去的阶段；调用方统一重算阶段属性。
             int bit=1<<(int)stage;if((_mutatedStages&bit)!=0)return;
             _mutatedStages|=bit;StageMutationChecks++;
+            // ★ 适配：阶段模式允许一次抽签；重算仍由生命周期调用方统一执行，避免双重重算。
+            Simulation.StageMutationPolicy.TryMutate(this);
         }
     }
 }

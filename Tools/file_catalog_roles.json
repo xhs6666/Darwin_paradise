@@ -343,7 +343,14 @@
     "Assets/DarwinPark/Entities/Ecology/StatePriorityCache.cs": "按实体授权和注册表版本缓存状态优先级，避免逐小步LINQ排序。",
     "Assets/DarwinPark/Entities/Simulation/ActionMotionBatch.cs": "同批小步末尾才写物理移动，累计时间独立保存并支持嵌套实体回调。",
     "Assets/DarwinPark/Editor/ColonyTaskStressAudit.cs": "测试专用战斗归因与补给隔离，记录王后实际受击和营养，正式游戏不使用无伤害隔离。",
-    "Assets/DarwinPark/Entities/Ecology/EntityResourcePlan.cs": "普通实体的能量块/食腐顺序资源计划，当前耗尽后接续，邻近补给插队并成对保存/恢复与清理。"
+    "Assets/DarwinPark/Entities/Ecology/EntityResourcePlan.cs": "普通实体的能量块/食腐顺序资源计划，当前耗尽后接续，邻近补给插队并成对保存/恢复与清理。",
+    "Assets/DarwinPark/Core/RuleSelectionEdits.cs": "规则模式与清尸JSON的字段级校验、保留注释和原子保存。",
+    "Assets/DarwinPark/Entities/Simulation/StageMutationPolicy.cs": "阶段变异概率与资格策略，互斥于定时抽样并复用实体生命周期去重。",
+    "Assets/DarwinPark/Entities/Simulation/CorpseCleanupController.cs": "按模拟周期快照未领取尸体、分帧删除及完整保存恢复清理进度。",
+    "Assets/DarwinPark/UI/RuleCardExtensions.cs": "同尺寸规则卡的变异/清尸分页、模式切换、独立草稿和提交。",
+    "Assets/DarwinPark/Planet/Terrain/WeatherShellGeometry.cs": "云和大气的外接低模球面代理及高精度海面兼容生成。",
+    "Assets/DarwinPark/Editor/RuleModesCleanupRegression.cs": "原生阶段变异、清尸货物保护、预算、磁盘读档、规则卡和天气代理回归。",
+    "Assets/DarwinPark/Editor/RenderDistanceAuditRegression.cs": "同一完整存档远近镜头与聚焦过渡的CPU/GPU渲染隔离对照。"
   },
   "files": {
     "Assets/Scenes/SampleScene.unity": "主要运行场景：挂载星球、环境、时钟、UI和游戏启动组件。",
@@ -487,6 +494,13 @@
     "Docs/操作指南/规则控制与观察基因.md": "第一页规则卡、外部配置、定时变异与观察基因两状态的使用说明。",
     "Docs/验证记录/观察基因全局变异与规则卡验证-2026-11-08.md": "抽样、读档、视野路由、规则卡与兼容检查及完整场景采样的真实结果和限制。",
     "Assets/Resources/simulation_optimization.json": "带中文注释的计算优化默认配置；发布后复制到外部config目录。",
-    "config/simulation_optimization.json": "可外部调整并热加载的任务队列、查询周期、缓存、接地与外观优化参数。"
+    "config/simulation_optimization.json": "可外部调整并热加载的任务队列、查询周期、缓存、接地与外观优化参数。",
+    "Docs/开发设计/规则模式清尸与天气渲染优化.md": "互斥变异模式、清理队列持久化、规则卡分页与天气代理的维护设计。",
+    "Docs/验证记录/规则清尸与远近渲染验证-2026-11-09.md": "固定世界远近渲染、真实GPU计时、阶段/清尸专项和兼容构建的验收证据。",
+    "Docs/验证记录/规则清尸渲染证据-2026-11-09/performance.json": "固定云相位与同一存档的新旧天气网格CPU/GPU原始对照报告，含逐样本数量及输入SHA256。",
+    "Docs/验证记录/规则清尸渲染证据-2026-11-09/stage-rules.png": "本轮原生Unity截图，供规则卡布局或天气外观复核。",
+    "Docs/验证记录/规则清尸渲染证据-2026-11-09/cleanup-rules.png": "本轮原生Unity截图，供规则卡布局或天气外观复核。",
+    "Docs/验证记录/规则清尸渲染证据-2026-11-09/far-before.png": "本轮原生Unity截图，供规则卡布局或天气外观复核。",
+    "Docs/验证记录/规则清尸渲染证据-2026-11-09/far-after.png": "本轮原生Unity截图，供规则卡布局或天气外观复核。"
   }
 }

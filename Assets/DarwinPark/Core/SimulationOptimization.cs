@@ -8,6 +8,8 @@ namespace DarwinPark.Core
     [Serializable] public sealed class SimulationOptimization
     {
         public int version=1,workerQueueLimit=12,expressionCacheLimit=256,maximumResourceCells=4096;
+        // ★ 新增：仅云/大气代理使用低模；可通过外部配置回退旧网格作对照，世界重载时应用。
+        public bool weatherProxyMeshes=true;public int weatherProxySubdivisions=16;
         public bool taskQueue=true,expressionCache=true,localCompetition=true,singletonKernel=true,resourceInstancing=true;
         public float groundProbeMoveTolerance=.1f,groundProbeVerticalSpeed=.1f;
         public float decisionSeconds=.25f,mateSearchSeconds=.5f,groundProbeSeconds=.2f,resourceCellSize=32,visualRefreshSeconds=.25f,lightDistance=80;
@@ -17,6 +19,7 @@ namespace DarwinPark.Core
         public static SimulationOptimization Parse(string text)
         {
             var value=JsonUtility.FromJson<SimulationOptimization>(CommentedJson.Strip(text));
+            if(value!=null&&(value.weatherProxySubdivisions<4||value.weatherProxySubdivisions>128))throw new InvalidDataException("天气代理细分必须为4～128");
             if(value==null||value.version!=1||value.workerQueueLimit<1||value.workerQueueLimit>128||value.expressionCacheLimit<1||value.expressionCacheLimit>4096||value.maximumResourceCells<1||value.maximumResourceCells>1000000)throw new InvalidDataException("计算优化配置版本或数量无效");
             foreach(var field in typeof(SimulationOptimization).GetFields())if(field.FieldType==typeof(float)){float n=(float)field.GetValue(value);if(!float.IsFinite(n)||n<=0)throw new InvalidDataException("计算优化参数必须为正有限数："+field.Name);}
             return value;

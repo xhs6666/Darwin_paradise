@@ -14,7 +14,7 @@ namespace DarwinPark.Core
             if(!float.IsFinite(fraction)||!float.IsFinite(seconds)||fraction<0||fraction>1||seconds<1||seconds>86400)throw new InvalidDataException("比例须为0到100%，周期须为1到86400模拟秒");
             string text=Set(original,"mutationRoundsEnabled",enabled?"true":"false");text=Set(text,"mutationPopulationFraction",fraction.ToString("R",CultureInfo.InvariantCulture));text=Set(text,"mutationRoundSeconds",seconds.ToString("R",CultureInfo.InvariantCulture));GameplayTuning.Parse(text);return text;
         }
-        private static string Set(string text,string key,string literal)
+        internal static string Set(string text,string key,string literal)
         {
             string clean=CommentedJson.Strip(text);var match=Regex.Match(clean,"\\\""+Regex.Escape(key)+"\\\"\\s*:\\s*(?<value>true|false|-?[0-9]+(?:\\.[0-9]+)?(?:[eE][+-]?[0-9]+)?)");
             if(match.Success){var value=match.Groups["value"];return text.Substring(0,value.Index)+literal+text.Substring(value.Index+value.Length);}

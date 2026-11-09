@@ -31,7 +31,7 @@ namespace DarwinPark.Entities.Simulation
         private static bool Eligible(DarwinEntity entity)=>EcologyQueries.Alive(entity)&&entity.Genes!=null&&entity.Genes.isActiveAndEnabled&&entity.Genes.Genome?.Genes.Count>0&&entity.GetComponent<AntColonyMember>()?.Frozen!=true&&entity.GetComponent<EggIncubation>()?.Incubating!=true;
         public static void Advance(float dt)
         {
-            if(dt<=0||WorldAuthority.IsReplica)return;var tuning=GameplayTuning.Current;if(!tuning.mutationRoundsEnabled)return;
+            if(dt<=0||WorldAuthority.IsReplica)return;var tuning=GameplayTuning.Current;if(!tuning.mutationRoundsEnabled||tuning.mutationMode!=0)return;
             using var performance=PerformanceTimings.Measure(PerformanceTimings.Area.MutationRounds);
             _state.elapsed+=dt;
             if(Pending.Count==0&&_state.elapsed>=tuning.mutationRoundSeconds)

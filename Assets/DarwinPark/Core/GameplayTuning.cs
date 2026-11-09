@@ -30,6 +30,10 @@ namespace DarwinPark.Core
         // ★ 新增：按全部活体数量确定每轮名额；每帧限额只分摊队列，不丢弃剩余名单。
         public bool mutationRoundsEnabled=true;
         public float mutationPopulationFraction=.1f,mutationRoundSeconds=30;
+        // ★ 适配：0定时抽样，1原生命阶段；共用变异总开关。
+        public int mutationMode=0,corpseCleanupPerFrame=64;
+        public float stageMutationProbability=.3f,stageEnvironmentBoost=.25f,corpseCleanupSeconds=300;
+        public bool corpseCleanupEnabled=false;
         public float multipleBirthMaximum=5;
         public float colonyBirthReservedSlots=2, colonySuccessorPopulation=3;
         public float mergeMaximumCatchupSeconds=5;
@@ -42,6 +46,7 @@ namespace DarwinPark.Core
         {
             var value=JsonUtility.FromJson<GameplayTuning>(CommentedJson.Strip(json));
             if(value==null||value.version!=1)throw new InvalidDataException("游戏数值配置版本无效");
+            if(value.mutationMode<0||value.mutationMode>1||value.stageMutationProbability>1||value.stageEnvironmentBoost>1||value.corpseCleanupSeconds<1||value.corpseCleanupSeconds>86400||value.corpseCleanupPerFrame<1||value.corpseCleanupPerFrame>4096)throw new InvalidDataException("变异模式、阶段概率或尸体清理周期/预算无效");
             if(value.mergePhaseBuckets<1||value.mergePhaseBuckets>256)throw new InvalidDataException("合并错峰批次数必须为1到256");
             if(value.colonyEmergencyFeedThreshold>10)throw new InvalidDataException("紧急补给饱食线必须为0到10");
             if(value.mutationPopulationFraction>1||value.mutationRoundSeconds<1||value.mutationRoundSeconds>86400)throw new InvalidDataException("全局变异比例须为0到1，轮次周期须为1到86400模拟秒");

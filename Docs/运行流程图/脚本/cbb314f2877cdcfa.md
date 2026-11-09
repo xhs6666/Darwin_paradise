@@ -579,8 +579,8 @@ flowchart TD
 - [EntityStatePresentation.Current · L11](cedd13b7a8825ed4.md#mb284f7b351983ca5)（方法）
 - [GeneTreeStorage.Load · L56](a885bad0d7dedee8.md#mb7b2bb500297e5d5)（方法）
 - [EntitySaveState.Capture · L22](a1ec8fcd9d7d3ddb.md#md994065ded6697b7)（方法）
-- [WorldSaveStore.Write · L127](d67a35e5e3814c15.md#m80ba103a33c1e31e)（方法）
-- [WorldSaveStore.Read · L73](d67a35e5e3814c15.md#ma5ea70603e428e29)（方法）
+- [WorldSaveStore.Write · L130](d67a35e5e3814c15.md#m2b2380b8cd595921)（方法）
+- [WorldSaveStore.Read · L74](d67a35e5e3814c15.md#mde52fadbe0185af1)（方法）
 - [EntitySaveState.Restore · L32](a1ec8fcd9d7d3ddb.md#md1cca8b8dd3628a4)（方法）
 - [GeneTreeStorage.SaveTo · L100](a885bad0d7dedee8.md#maa795acf9a4622f6)（方法）
 - [EntityStateController.Rebind · L23](0f8869eb7018091e.md#maeef551437ab5638)（方法）

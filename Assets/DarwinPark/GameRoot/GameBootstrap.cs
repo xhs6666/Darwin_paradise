@@ -30,6 +30,8 @@ namespace DarwinPark.GameRoot
             Entities.Simulation.EntityWorkScheduler.Ensure(gameObject);
             // ★ 适配：全局变异与个体阶段拆开，独立根组件统一推进。
             Entities.Simulation.MutationRoundController.Ensure(gameObject);
+            // ★ 适配：清理规则由独立根组件统一推进，不给每个尸体新增Update。
+            Entities.Simulation.CorpseCleanupController.Ensure(gameObject);
             if (entityPrefab == null)
             {
                 Debug.LogError("[Bootstrap] 没有指定实体预制体！请把预制体拖到 GameRoot 的 Inspector 面板里");
