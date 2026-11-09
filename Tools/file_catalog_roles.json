@@ -350,7 +350,15 @@
     "Assets/DarwinPark/UI/RuleCardExtensions.cs": "同尺寸规则卡的变异/清尸分页、模式切换、独立草稿和提交。",
     "Assets/DarwinPark/Planet/Terrain/WeatherShellGeometry.cs": "云和大气的外接低模球面代理及高精度海面兼容生成。",
     "Assets/DarwinPark/Editor/RuleModesCleanupRegression.cs": "原生阶段变异、清尸货物保护、预算、磁盘读档、规则卡和天气代理回归。",
-    "Assets/DarwinPark/Editor/RenderDistanceAuditRegression.cs": "同一完整存档远近镜头与聚焦过渡的CPU/GPU渲染隔离对照。"
+    "Assets/DarwinPark/Editor/RenderDistanceAuditRegression.cs": "同一完整存档远近镜头与聚焦过渡的CPU/GPU渲染隔离对照。",
+    "Assets/DarwinPark/Planet/Terrain/RadialTerrainSurface.cs": "在生成星球的Cube-Sphere格中直接定位真实三角形接触点/法线，不支持的网格回退物理。",
+    "Assets/DarwinPark/Entities/EntityGroundProbe.cs": "重力、安全网和操控共用的单物理步接地样本、失效核验及物理写入去重。",
+    "Assets/DarwinPark/Entities/PlanetGroundPhysics.cs": "保留重力/下沉/接触制动的独立物理入口，复用移动资格和真实地面。",
+    "Assets/DarwinPark/Entities/SurfaceAnchorPhysics.cs": "共享真实地面的穿地、高空拉回与救援计算，不再重复采样高度。",
+    "Assets/DarwinPark/Entities/ManualGroundPhysics.cs": "操控实体穿地接触间隙修正，共用重力接触面并保留跳跃资格。",
+    "Assets/DarwinPark/Entities/VerifiedGroundRest.cs": "仅以真实星球接触验证静止休眠，修复斜坡径向落点误差。",
+    "Assets/DarwinPark/Editor/GroundPhysicsRegression.cs": "真实物理射线等价、地形变换、落地休眠、击退、水下、操控及重建回归。",
+    "Assets/DarwinPark/Editor/GroundPhysicsBenchmark.cs": "同一完整存档的旧/新重力与固定移动物理原生计时；Editor专用防数量漂移夹具。"
   },
   "files": {
     "Assets/Scenes/SampleScene.unity": "主要运行场景：挂载星球、环境、时钟、UI和游戏启动组件。",
@@ -501,6 +509,9 @@
     "Docs/验证记录/规则清尸渲染证据-2026-11-09/stage-rules.png": "本轮原生Unity截图，供规则卡布局或天气外观复核。",
     "Docs/验证记录/规则清尸渲染证据-2026-11-09/cleanup-rules.png": "本轮原生Unity截图，供规则卡布局或天气外观复核。",
     "Docs/验证记录/规则清尸渲染证据-2026-11-09/far-before.png": "本轮原生Unity截图，供规则卡布局或天气外观复核。",
-    "Docs/验证记录/规则清尸渲染证据-2026-11-09/far-after.png": "本轮原生Unity截图，供规则卡布局或天气外观复核。"
+    "Docs/验证记录/规则清尸渲染证据-2026-11-09/far-after.png": "本轮原生Unity截图，供规则卡布局或天气外观复核。",
+    "Docs/开发设计/重力接地共享查询优化.md": "真实三角形接地共享、物理写入去重、斜坡休眠和热载入参数设计。",
+    "Docs/验证记录/重力接地优化验证-2026-11-09.md": "重力接地专项、受控同存档性能和现行操控/搬运/休眠发布兼容证据。",
+    "Docs/验证记录/重力接地证据-2026-11-09/performance.json": "4eb5de1与本轮重力实现的固定输入、计时、回调和休眠/射线计数原始对照报告。"
   }
 }

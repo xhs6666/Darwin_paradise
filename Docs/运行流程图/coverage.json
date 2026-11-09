@@ -1,16 +1,16 @@
 {
   "stats": {
-    "scripts": 360,
-    "csharp": 350,
+    "scripts": 368,
+    "csharp": 358,
     "gpu": 10,
-    "methods": 3779,
-    "graphs": 3782,
-    "profileGraphs": 6428,
-    "nodes": 35880,
-    "calls": 48520,
-    "internalLinks": 14077,
+    "methods": 3826,
+    "graphs": 3829,
+    "profileGraphs": 6492,
+    "nodes": 36452,
+    "calls": 49297,
+    "internalLinks": 14243,
     "unresolved": 10,
-    "hash": "84ff35d7cff1cda8"
+    "hash": "138a5fc17350bf3a"
   },
   "diagnostics": [
     {
@@ -219,7 +219,7 @@
       "Path": "Assets/DarwinPark/Core/SimulationOptimization.cs",
       "Scope": "Runtime",
       "methods": 6,
-      "Hash": "d7022c88160fc7fe66fe279f9dde0b41d6a9bf6e5b74806547c20c32a6f63315"
+      "Hash": "97806c3d6d6c4a7ac82b506dc997de8610cbf17274d32d7b04e8f0b25149e878"
     },
     {
       "Id": "44755274b83df7ba",
@@ -439,6 +439,20 @@
       "Hash": "f7796a122068defc4c84048044b25f33a080ee9f69f268d6ba3b0047f659d1ba"
     },
     {
+      "Id": "047e34d05752f3cb",
+      "Path": "Assets/DarwinPark/Editor/GroundPhysicsBenchmark.cs",
+      "Scope": "Editor",
+      "methods": 14,
+      "Hash": "da218959d4dffec856ddad0f68bb1c34a983a6a9de490165d1c33faef6509752"
+    },
+    {
+      "Id": "a1c4cb548c26ab52",
+      "Path": "Assets/DarwinPark/Editor/GroundPhysicsRegression.cs",
+      "Scope": "Editor",
+      "methods": 16,
+      "Hash": "35621187263fa102abdbe4d33fb9d5770f1be2837084d2a475f1632eed512955"
+    },
+    {
       "Id": "795f355c3f14dbd5",
       "Path": "Assets/DarwinPark/Editor/HudInputRegression.cs",
       "Scope": "Editor",
@@ -471,7 +485,7 @@
       "Path": "Assets/DarwinPark/Editor/LayoutRandomSpawnRegression.cs",
       "Scope": "Editor",
       "methods": 23,
-      "Hash": "d81f0227d5aea1647e898ad03a123929bfa8f80a89eab81255fd6eeb940de15d"
+      "Hash": "952308942d6064f6b36fbc074dec7aebc07efff55912fb5fba6aa1a0163936c2"
     },
     {
       "Id": "92ed3746ce41b5f8",
@@ -1181,11 +1195,18 @@
       "Hash": "da4865c1a8bb1320f673568bb2ce675c732767529fc3d41ddb0c96f2bff79357"
     },
     {
+      "Id": "6cefee808441951d",
+      "Path": "Assets/DarwinPark/Entities/EntityGroundProbe.cs",
+      "Scope": "Runtime",
+      "methods": 7,
+      "Hash": "f67bbabd73d7c1b83e8c334f64ecf346253ccaf18dc4ad9369c169f18b7b9e9f"
+    },
+    {
       "Id": "fa3269c9da0aa692",
       "Path": "Assets/DarwinPark/Entities/EntityJumpMotor.cs",
       "Scope": "Runtime",
       "methods": 10,
-      "Hash": "fc14c91b2b7b31439fad5fddb726a28578146a93abbaed5e8a09ff9b866c8fac"
+      "Hash": "069db1849742ce870033f8d6fc4e5acc1c0e4c7b92209f4e04f4e0778f1c661f"
     },
     {
       "Id": "9f4138bfbae654b7",
@@ -1227,7 +1248,7 @@
       "Path": "Assets/DarwinPark/Entities/EntitySurfaceAnchor.cs",
       "Scope": "Runtime",
       "methods": 3,
-      "Hash": "b19b29be7249219bd64466d84c2f768ad41093837bf447f0c32b7aa5cce0a041"
+      "Hash": "11f08f087e0dfa032f22fd72fca93cba45529fb2f1cc06e9bc42053fcb6cc191"
     },
     {
       "Id": "901cef6b99719cf7",
@@ -1384,6 +1405,13 @@
       "Hash": "8c58fed42e3ff21353e8c29a1455e9d071267098ba6e80b8ade36eec778c42d8"
     },
     {
+      "Id": "2dedd2812512cf4e",
+      "Path": "Assets/DarwinPark/Entities/ManualGroundPhysics.cs",
+      "Scope": "Runtime",
+      "methods": 1,
+      "Hash": "b153e1e3d1033276c8264259fb1c82abb3bce7296655263d133fcc122e702c7f"
+    },
+    {
       "Id": "eeef5e6fb7a6f46b",
       "Path": "Assets/DarwinPark/Entities/OffspringPlacement.cs",
       "Scope": "Runtime",
@@ -1395,7 +1423,14 @@
       "Path": "Assets/DarwinPark/Entities/PlanetGravity.cs",
       "Scope": "Runtime",
       "methods": 4,
-      "Hash": "1127e616abeee7c4d3b60464af9e1fac4629812c8197f4b6d276f86118da1dd0"
+      "Hash": "e3ecb93bea86ca102afdeae1ccc964711183155c314be9ddaf66f1b43b950d91"
+    },
+    {
+      "Id": "231de97ac6543a96",
+      "Path": "Assets/DarwinPark/Entities/PlanetGroundPhysics.cs",
+      "Scope": "Runtime",
+      "methods": 1,
+      "Hash": "7e208e00e8b3989b43eedfc508edc97ed871ee66743130ff557913244d0fff12"
     },
     {
       "Id": "923ccc4e86c4786c",
@@ -1478,8 +1513,8 @@
       "Id": "19e6d310d5522440",
       "Path": "Assets/DarwinPark/Entities/StationaryBodyRest.cs",
       "Scope": "Runtime",
-      "methods": 5,
-      "Hash": "3a6e089256f9d6df60f89ff3801cc31c9c9fcf4621a53f99dbff07bb5e279de9"
+      "methods": 7,
+      "Hash": "11d89fceec3eca893c313d4484c406ff9e7229ecc2117adae3232d52bf858c72"
     },
     {
       "Id": "5c9856aea4a5298c",
@@ -1494,6 +1529,20 @@
       "Scope": "Runtime",
       "methods": 16,
       "Hash": "806f1a84462fed6ae70ab7ba1c5f932c47b12bef9dd0224ed7e025f30c151eb5"
+    },
+    {
+      "Id": "f3e5fa3c77faa61b",
+      "Path": "Assets/DarwinPark/Entities/SurfaceAnchorPhysics.cs",
+      "Scope": "Runtime",
+      "methods": 1,
+      "Hash": "095ee09814c84e4e0b9f95d372693b2d6bb2b044b22b21cd88df426edc071875"
+    },
+    {
+      "Id": "98886fc65903f4d9",
+      "Path": "Assets/DarwinPark/Entities/VerifiedGroundRest.cs",
+      "Scope": "Runtime",
+      "methods": 1,
+      "Hash": "c8c47396904ced0933eee1cd0b0796ff7ab87f08ead54835f1b173851b5e31f1"
     },
     {
       "Id": "5c434d0ba85333b1",
@@ -1926,8 +1975,8 @@
       "Id": "415285cf043354a9",
       "Path": "Assets/DarwinPark/Planet/Terrain/PlanetTerrainMeshBuilder.cs",
       "Scope": "Runtime",
-      "methods": 9,
-      "Hash": "881dee28605e863d35e8dbcffee6b869a61496bec44128f1e9e25e3f9fb6ae01"
+      "methods": 10,
+      "Hash": "a4b43989bb972c97ecacbaaa5677f400be5356b4886e3343f95e4cc56cb4f852"
     },
     {
       "Id": "fd5c1d83b88a7c8b",
@@ -1935,6 +1984,13 @@
       "Scope": "Runtime",
       "methods": 4,
       "Hash": "5f00070b622570719ea5147375a43210694acffe94a1194c971c8383652596b6"
+    },
+    {
+      "Id": "4eb5c0c8143bed20",
+      "Path": "Assets/DarwinPark/Planet/Terrain/RadialTerrainSurface.cs",
+      "Scope": "Runtime",
+      "methods": 3,
+      "Hash": "ac6c188f9590574e343297cd5addfeb4b95fede505433cbe838f2a8fa855501a"
     },
     {
       "Id": "df19ec02d4bd3618",
@@ -2549,11 +2605,11 @@
   "modes": [
     {
       "mode": "Roslyn\u7F16\u8BD1\u5668\u63A7\u5236\u6D41",
-      "count": 3201
+      "count": 3244
     },
     {
       "mode": "\u8BED\u6CD5\u63A7\u5236\u7ED3\u6784 / \u58F0\u660E\uFF08\u975ECFG\uFF09",
-      "count": 555
+      "count": 559
     },
     {
       "mode": "GPU\u63A7\u5236\u7ED3\u6784\uFF08\u540D\u79F0\u94FE\u63A5\uFF0C\u4E0D\u4F5CC#\u7C7B\u578B\u63A8\u65AD\uFF09",

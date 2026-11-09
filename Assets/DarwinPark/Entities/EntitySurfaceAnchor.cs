@@ -29,11 +29,12 @@ namespace DarwinPark.Entities
 
         private Rigidbody _rb;
         private PlanetTerrainMeshBuilder _builder;
-        private float _airTime;
+        private float _airTime;private PlanetGravity _gravity;private EntityGroundProbe _grounding;
 
         private void Awake()
         {
             _rb = GetComponent<Rigidbody>();
+            _gravity=GetComponent<PlanetGravity>();_grounding=_gravity!=null?_gravity.Grounding:new EntityGroundProbe(_rb);
             FindPlanet();
         }
 
@@ -55,67 +56,8 @@ namespace DarwinPark.Entities
             FindPlanet();
             if (_builder == null || _builder.Data == null) return;
 
-            Vector3 center = _builder.transform.position;
-            Vector3 worldOffset = transform.position - center;
-            float distance = worldOffset.magnitude;
-            if (distance < 1f) return;
-            Vector3 radial = worldOffset / distance;
-            // 地形数据在星球本地空间；星球旋转时用本地方向采样，避免高度查错。
-            Vector3 localDir = _builder.transform.InverseTransformDirection(radial).normalized;
-
-            // 水下实体不套用地表高度约束：海面到海床本来就超过 maxAltitude，
-            // 否则会把正在游泳/下沉的实体硬拽到海底。溺水由 EntityEnvironmentHazard 处理。
-            if (distance < _builder.WaterRadius)
-            {
-                _airTime = 0f;
-                return;
-            }
-
-            float surfaceHeight = PlanetTerrainSampler.SampleHeight(_builder.Data, localDir);
-            float surfaceRadius = _builder.radius + surfaceHeight * _builder.heightScale;
-            float altitude = distance - surfaceRadius;
-
-            // 掉进地形内部：推回地表，避免卡在山体里。
-            if (altitude < -2f)
-            {
-                _rb.position = center + radial * (surfaceRadius + 0.5f);
-                _rb.linearVelocity = Vector3.ProjectOnPlane(_rb.linearVelocity, radial);
-                _airTime = 0f;
-                return;
-            }
-
-            if (altitude <= maxAltitude)
-            {
-                _airTime = 0f;
-                return;
-            }
-
-            _airTime += Time.fixedDeltaTime;
-
-            Vector3 velocity = _rb.linearVelocity;
-            float outward = Vector3.Dot(velocity, radial);
-            if (altitude > hardAltitude && outward > 0f)
-                velocity -= radial * outward;
-            _rb.linearVelocity = velocity;
-
-            if (altitude > maxAltitude)
-            {
-                float excess = altitude - maxAltitude;
-                float pull = Mathf.Min(pullAcceleration, 4f + excess * 8f);
-                // 只改径向分量，保留切向移动，表现上仍然在“跑”，只是不再升高。
-                Vector3 radialVelocity = radial * Vector3.Dot(_rb.linearVelocity, radial);
-                if (Vector3.Dot(radialVelocity, radial) > 0f)
-                    _rb.linearVelocity -= radialVelocity;
-                _rb.AddForce(-radial * pull, ForceMode.Acceleration);
-            }
-
-            // ★ 修复（防Bug回归）：12~45 米区间同样可能卡住；超时后恢复，极高处则立即救援。
-            if (_airTime >= rescueDelay || altitude > rescueAltitude)
-            {
-                _rb.position = center + radial * (surfaceRadius + 1f);
-                _rb.linearVelocity = Vector3.ProjectOnPlane(_rb.linearVelocity, radial) * 0.5f;
-                _airTime = 0f;
-            }
+            // ★ 适配：共享重力已定位的真实地面，不为同一实体再次执行双线性高度采样。
+            SurfaceAnchorPhysics.Advance(this,_rb,_grounding.Read(_builder.transform),ref _airTime);
         }
     }
 }

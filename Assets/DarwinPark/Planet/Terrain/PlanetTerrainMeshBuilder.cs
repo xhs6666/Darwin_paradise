@@ -77,6 +77,8 @@ namespace DarwinPark.Planet
 
         public PlanetTerrainData Data { get; private set; }
         private Mesh _mesh;
+        // ★ 适配：直接接地查询只接受当前生成网格，外部替换碰撞网格仍回退PhysX。
+        public Mesh GeneratedMesh=>_mesh;
 
         // ★ 适配：有世界选择流程时延迟生成，避免菜单出现前阻塞。
         private void Start(){if(!WorldRuntimeGate.Managed)Build();}

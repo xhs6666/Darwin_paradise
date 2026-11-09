@@ -347,3 +347,5 @@
 | 2026-11-08 | 普通实体也应有顺序补给/食腐计划 | 仅工匠排队仍不能覆盖普通营养实体；按能力维护资源目标序列、扫描计时和存档，完成/失效打断行动缓存 | EntityResourcePlan、EnergyBlockMetabolism、CorpseFeeding、EcologySaveState、ActionDecisionCadence | 两块能量/两具尸体按序完成；近食插队、实时资格、实际耗尽、磁盘恢复、旧空快照清理、清场释放引用 |
 
 | 2026-11-09 | 拉远渲染大量冗余几何；规则不能切换阶段变异或周期清尸 | 云/大气复制百万级地形代理；旧规则仅支持定时抽样 | WeatherShellGeometry.cs、PlanetWeatherVisuals.cs、StageMutationPolicy.cs、CorpseCleanupController.cs、RuleCardExtensions.cs及存档适配 | 解析球外接低模、海岸精度保留；固定远近CPU/GPU对照；模式互斥阶段去重；清尸分帧且删除前复核货物保护、进度真实写盘和恢复 |
+
+| 2026-11-09 | 重力/安全网重复探地与写入，斜坡静止体难以休眠 | 重复PhysX和高度采样，径向落点不等于真实斜坡接触，重复解析移动资格 | RadialTerrainSurface.cs、EntityGroundProbe.cs、PlanetGroundPhysics.cs、SurfaceAnchorPhysics.cs、ManualGroundPhysics.cs、VerifiedGroundRest.cs及原入口适配 | 真实三角形与PhysX逐点对比；非生成网格/缩放回退；表达/变换/碰撞失效；接触验证后才休眠；移动/跳跃/搬运/水下/救援回归及同场景前后计时 |

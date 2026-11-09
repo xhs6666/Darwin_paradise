@@ -51,7 +51,8 @@ namespace DarwinPark.EditorTools
             check(copies[1].Genes.Genome.Genes[0].Value==initial&&template.genes[0].value==initial&&!ReferenceEquals(copies[0].Genes.Genome,copies[1].Genes.Genome),"随机模板副本互不共享基因或改写模板");
             before=EntityRegistry.All.ToArray();GameInputGate.Blocked=true;check(!service.StartBatch(null,10,true)&&EntityRegistry.All.Count==before.Length,"覆盖菜单阻止启动随机生成");GameInputGate.Blocked=false;
             check(service.StartBatch(null,service.maxCount,true)&&!service.StartBatch(null,10,true),"生成任务运行中不叠加重复任务");
-            int paused=EntityRegistry.All.Count;GameInputGate.Blocked=true;yield return null;yield return null;check(EntityRegistry.All.Count==paused,"打开覆盖菜单暂停尚未完成的生成任务");GameInputGate.Blocked=false;
+            // ★ 修复（防Bug回归）：跨帧测试须打开真实菜单；单独设置Blocked会被现行遗留门控恢复器正确释放。
+            int paused=EntityRegistry.All.Count;var menu=Object.FindFirstObjectByType<GameMainMenu>();menu.ShowPause();yield return null;yield return null;check(EntityRegistry.All.Count==paused,"打开覆盖菜单暂停尚未完成的生成任务");typeof(GameMainMenu).GetMethod("Resume",BindingFlags.NonPublic|BindingFlags.Instance).Invoke(menu,null);
             ui.transform.Find("Cancel").GetComponent<Button>().onClick.Invoke();int cancelled=EntityRegistry.All.Count;yield return null;check(!service.IsBusy&&EntityRegistry.All.Count==cancelled,"取消按钮停止剩余生成并保留已生成实体");
             float clearance=service.landClearance;int attempts=service.attemptsPerEntity;service.landClearance=planet.radius*10;service.attemptsPerEntity=1;
             before=EntityRegistry.All.ToArray();service.StartBatch(null,2,true);while(service.IsBusy)yield return null;

@@ -1634,8 +1634,8 @@ flowchart TD
 - [EntityManualControl.QueueAttack · L24](a6969896da35e1f0.md#md160ef2315358c16)（方法）
 - [EntityManualControl.SetAim · L27](a6969896da35e1f0.md#m70f09d0090a1fa41)（方法）
 - [EcologyQueries.Up · L41](bdf7ccc2c9c0452f.md#maca7070196f125fd)（方法）
-- [EntityJumpMotor.Bind · L20](fa3269c9da0aa692.md#m7322ba5e17678995)（方法）
-- [EntityJumpMotor.TryJump · L22](fa3269c9da0aa692.md#m5d4b3420e4d2918e)（方法）
+- [EntityJumpMotor.Bind · L21](fa3269c9da0aa692.md#m557fb326ad4e3346)（方法）
+- [EntityJumpMotor.TryJump · L23](fa3269c9da0aa692.md#m9ce1ecd9a46ddda6)（方法）
 - [LanSession.Cheats.get · L27](9fb633eebffe669c.md#m570973099b8f82d5)（访问器）
 - [LanEditExecutor.Apply · L27](2816321496f6360e.md#m1f827c7e486ff073)（方法）
 

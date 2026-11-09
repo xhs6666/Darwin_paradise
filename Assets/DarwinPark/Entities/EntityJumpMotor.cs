@@ -16,7 +16,8 @@ namespace DarwinPark.Entities
         private Transform _planet;
         private MeshCollider _ground;
         private EntityManualControl _manual;
-        private void Awake() { _body = GetComponent<Rigidbody>(); _collider = GetComponent<Collider>(); _manual = GetComponent<EntityManualControl>(); }
+        private EntityGroundProbe _probe;
+        private void Awake() { _body = GetComponent<Rigidbody>(); _collider = GetComponent<Collider>(); _manual = GetComponent<EntityManualControl>();_probe=GetComponent<PlanetGravity>()?.Grounding??new EntityGroundProbe(_body); }
         public void Bind(Transform planet)
         { _planet = planet; _ground = planet != null ? planet.GetComponent<MeshCollider>() : null; IsJumping = false; }
         public bool TryJump(bool allowed)
@@ -57,17 +58,8 @@ namespace DarwinPark.Entities
         public bool ResolveGroundContact()
         {
             if (_planet == null || _ground == null) return false;
-            Vector3 up = (_body.position - _planet.position).normalized;
-            float outer = _ground.bounds.extents.magnitude + groundTolerance;
-            if (!_ground.Raycast(new Ray(_planet.position + up * outer, -up), out var hit, outer * 2)) return false;
-            var bounds = _collider.bounds;
-            float support = Vector3.Dot(bounds.extents, new Vector3(Mathf.Abs(up.x), Mathf.Abs(up.y), Mathf.Abs(up.z)));
-            float gap = Vector3.Dot(bounds.center-hit.point,up)-support;
-            if (gap >= 0) return false;
-            _body.position += up * (-gap + Physics.defaultContactOffset);
-            float radial = Vector3.Dot(_body.linearVelocity,up);
-            if (radial < 0) { _body.linearVelocity -= up * radial; IsJumping = false; }
-            return true;
+            // ★ 适配：与重力/安全网共享当前三角形，真实接触间隙和向下速度修正规则保持不变。
+            bool corrected=ManualGroundPhysics.Resolve(_body,_collider,_probe.Read(_planet),out bool cancel);if(cancel)IsJumping=false;return corrected;
         }
         private void OnDisable() => Cancel();
     }

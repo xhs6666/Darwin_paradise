@@ -12,6 +12,8 @@ namespace DarwinPark.Core
         public bool weatherProxyMeshes=true;public int weatherProxySubdivisions=16;
         public bool taskQueue=true,expressionCache=true,localCompetition=true,singletonKernel=true,resourceInstancing=true;
         public float groundProbeMoveTolerance=.1f,groundProbeVerticalSpeed=.1f;
+        // ★ 新增：接地直接查询可独立回退；角度和速度阈值仅跳过近乎相同的物理写入。
+        public bool directGroundQueries=true;public float groundNormalAngleDegrees=.15f,groundVelocityEpsilon=.0001f;
         public float decisionSeconds=.25f,mateSearchSeconds=.5f,groundProbeSeconds=.2f,resourceCellSize=32,visualRefreshSeconds=.25f,lightDistance=80;
         private static SimulationOptimization _current;private static long _stamp;private static float _poll;
         public static string FilePath=>Path.Combine(GamePaths.Root,"config","simulation_optimization.json");
@@ -20,6 +22,7 @@ namespace DarwinPark.Core
         {
             var value=JsonUtility.FromJson<SimulationOptimization>(CommentedJson.Strip(text));
             if(value!=null&&(value.weatherProxySubdivisions<4||value.weatherProxySubdivisions>128))throw new InvalidDataException("天气代理细分必须为4～128");
+            if(value!=null&&(value.groundNormalAngleDegrees>1||value.groundVelocityEpsilon>.01f))throw new InvalidDataException("接地写入阈值超出有效范围");
             if(value==null||value.version!=1||value.workerQueueLimit<1||value.workerQueueLimit>128||value.expressionCacheLimit<1||value.expressionCacheLimit>4096||value.maximumResourceCells<1||value.maximumResourceCells>1000000)throw new InvalidDataException("计算优化配置版本或数量无效");
             foreach(var field in typeof(SimulationOptimization).GetFields())if(field.FieldType==typeof(float)){float n=(float)field.GetValue(value);if(!float.IsFinite(n)||n<=0)throw new InvalidDataException("计算优化参数必须为正有限数："+field.Name);}
             return value;
