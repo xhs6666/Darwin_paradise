@@ -1,0 +1,142 @@
+[
+  {
+    "case": "Before450",
+    "context": "user-running api=Direct3D12 size=2560x1385 initialEntities=463 entities=496 resources=3542 running=True speed=1 controlledProtection=0 circles=0 eye=(1273.62, -90.39, -23.91) near=0.3",
+    "frames": 65,
+    "frameMean": 48.80740923076919,
+    "frameMaximum": 231.3756000000069,
+    "automaticMean": 9.983156923076924,
+    "automaticCalls": 189,
+    "reproductionMean": 2.6340246153846145
+  },
+  {
+    "case": "Before500",
+    "context": "user-running api=Direct3D12 size=2560x1385 initialEntities=513 entities=548 resources=3542 running=True speed=1 controlledProtection=0 circles=0 eye=(1273.62, -90.39, -23.91) near=0.3",
+    "frames": 54,
+    "frameMean": 56.33186111111104,
+    "frameMaximum": 278.475499999999,
+    "automaticMean": 9.978781481481482,
+    "automaticCalls": 130,
+    "reproductionMean": 3.0892814814814815
+  },
+  {
+    "case": "Before625",
+    "context": "user-running api=Direct3D12 size=2560x1385 initialEntities=626 entities=624 resources=3544 running=True speed=1 controlledProtection=0 circles=0 eye=(1273.62, -90.39, -23.91) near=0.3",
+    "frames": 67,
+    "frameMean": 45.06343582089555,
+    "frameMaximum": 79.3529000000035,
+    "automaticMean": 0.0,
+    "automaticCalls": 0,
+    "reproductionMean": 3.2596179104477607
+  },
+  {
+    "case": "Before625NoAuto",
+    "context": "user-running api=Direct3D12 size=2560x1385 initialEntities=626 entities=624 resources=3544 running=True speed=1 controlledProtection=0 circles=0 eye=(1273.62, -90.39, -23.91) near=0.3",
+    "frames": 59,
+    "frameMean": 51.53933728813559,
+    "frameMaximum": 98.34709999999802,
+    "automaticMean": 0.0,
+    "automaticCalls": 0,
+    "reproductionMean": 3.628437288135593
+  },
+  {
+    "case": "Before625NoNatural",
+    "context": "user-running api=Direct3D12 size=2560x1385 initialEntities=625 entities=619 resources=3544 running=True speed=1 controlledProtection=0 circles=0 eye=(1273.62, -90.39, -23.91) near=0.3",
+    "frames": 72,
+    "frameMean": 42.15195138888895,
+    "frameMaximum": 67.74649999999838,
+    "automaticMean": 0.0,
+    "automaticCalls": 0,
+    "reproductionMean": 0.5373875
+  },
+  {
+    "case": "ColdBefore625",
+    "context": "user-running api=Direct3D12 size=2560x1385 initialEntities=625 entities=635 resources=3543 running=True speed=1 controlledProtection=0 circles=0 eye=(770.71, -88.31, -44.91) near=0.3",
+    "frames": 59,
+    "frameMean": 51.38066440677968,
+    "frameMaximum": 292.5572000000045,
+    "automaticMean": 2.4679406779661015,
+    "automaticCalls": 29,
+    "reproductionMean": 3.29884406779661
+  },
+  {
+    "case": "ColdBefore625NoAuto",
+    "context": "user-running api=Direct3D12 size=2560x1385 initialEntities=625 entities=623 resources=3543 running=True speed=1 controlledProtection=0 circles=0 eye=(770.71, -88.31, -44.91) near=0.3",
+    "frames": 63,
+    "frameMean": 47.83638730158725,
+    "frameMaximum": 130.9761999999992,
+    "automaticMean": 0.0,
+    "automaticCalls": 0,
+    "reproductionMean": 3.2417492063492075
+  },
+  {
+    "case": "ColdBefore625NoNatural",
+    "context": "user-running api=Direct3D12 size=2560x1385 initialEntities=625 entities=633 resources=3543 running=True speed=1 controlledProtection=0 circles=0 eye=(770.71, -88.31, -44.91) near=0.3",
+    "frames": 55,
+    "frameMean": 54.716143636363576,
+    "frameMaximum": 288.7437999999953,
+    "automaticMean": 5.055883636363637,
+    "automaticCalls": 58,
+    "reproductionMean": 0.6374309090909088
+  },
+  {
+    "case": "RejectedBefore625",
+    "context": "user-running api=Direct3D12 size=2560x1385 initialEntities=625 entities=623 resources=3543 running=True speed=1 controlledProtection=0 circles=0 eye=(770.71, -88.31, -44.91) near=0.3",
+    "frames": 30,
+    "frameMean": 101.19029333333316,
+    "frameMaximum": 160.2145999999962,
+    "automaticMean": 37.730473333333336,
+    "automaticCalls": 960,
+    "reproductionMean": 3.998956666666667
+  },
+  {
+    "case": "RejectedBefore625NoNatural",
+    "context": "user-running api=Direct3D12 size=2560x1385 initialEntities=625 entities=621 resources=3543 running=True speed=1 controlledProtection=0 circles=0 eye=(770.71, -88.31, -44.91) near=0.3",
+    "frames": 31,
+    "frameMean": 96.96508064516138,
+    "frameMaximum": 176.9703000000078,
+    "automaticMean": 37.5840548387097,
+    "automaticCalls": 992,
+    "reproductionMean": 0.6893741935483871
+  },
+  {
+    "case": "After450",
+    "context": "user-running api=Direct3D12 size=2560x1385 initialEntities=450 spawnAttempts=27 globalFallbacks=1 slices=13 entities=462 resources=3541 running=True speed=1 controlledProtection=0 circles=0 eye=(770.71, -88.31, -44.91) near=0.3",
+    "frames": 84,
+    "frameMean": 36.00259880952382,
+    "frameMaximum": 107.76660000000504,
+    "automaticMean": 0.4203023809523809,
+    "automaticCalls": 27,
+    "reproductionMean": 2.336030952380953
+  },
+  {
+    "case": "After500",
+    "context": "user-running api=Direct3D12 size=2560x1385 initialEntities=500 spawnAttempts=17 globalFallbacks=0 slices=17 entities=512 resources=3541 running=True speed=1 controlledProtection=0 circles=0 eye=(770.71, -88.31, -44.91) near=0.3",
+    "frames": 69,
+    "frameMean": 43.681379710145,
+    "frameMaximum": 123.25069999999982,
+    "automaticMean": 0.6899028985507246,
+    "automaticCalls": 17,
+    "reproductionMean": 2.775020289855072
+  },
+  {
+    "case": "After625",
+    "context": "user-running api=Direct3D12 size=2560x1385 initialEntities=625 spawnAttempts=21 globalFallbacks=0 slices=21 entities=635 resources=3543 running=True speed=1 controlledProtection=0 circles=0 eye=(770.71, -88.31, -44.91) near=0.3",
+    "frames": 54,
+    "frameMean": 55.904511111110985,
+    "frameMaximum": 147.7786000000023,
+    "automaticMean": 1.6023166666666666,
+    "automaticCalls": 21,
+    "reproductionMean": 3.7212129629629636
+  },
+  {
+    "case": "RejectedAfter625",
+    "context": "user-running api=Direct3D12 size=2560x1385 initialEntities=625 spawnAttempts=1152 globalFallbacks=1144 slices=43 entities=623 resources=3543 running=True speed=1 controlledProtection=0 circles=0 eye=(770.71, -88.31, -44.91) near=0.3",
+    "frames": 63,
+    "frameMean": 48.14851111111098,
+    "frameMaximum": 135.85569999999692,
+    "automaticMean": 0.46804761904761905,
+    "automaticCalls": 1152,
+    "reproductionMean": 3.251888888888889
+  }
+]

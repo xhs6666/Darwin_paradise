@@ -375,7 +375,9 @@
     "Assets/DarwinPark/Entities/Ecology/ProducerPlacementSearch.cs": "自动补充生产者时复用每个王后的活动圆快照，并保留原球面范围与拥挤投放判定。",
     "Assets/DarwinPark/UI/PerformanceCaptureNotice.cs": "在游戏画面直接显示性能采样完成、报告路径或失败原因，纯绘制且不接收鼠标。",
     "Assets/DarwinPark/Editor/UserFrameHierarchyAudit.cs": "独立工程录制普通CPU层级，保存逐帧自耗时和GC分配，定位采样计时缺口。",
-    "Assets/DarwinPark/Editor/ProducerPlacementChecks.cs": "固定随机种子对照原生产者位置选择，并检查可选组件同帧新增和销毁的即时性。"
+    "Assets/DarwinPark/Editor/ProducerPlacementChecks.cs": "固定随机种子对照原生产者位置选择，并检查可选组件同帧新增和销毁的即时性。",
+    "Assets/DarwinPark/Entities/Ecology/ProducerPlacementSnapshot.cs": "一次同步投放片段复用活体、生产者和缺粮王后坐标；跨帧或出生注销后重新采集，球面范围采用原acos语义。",
+    "Assets/DarwinPark/Editor/SpawnBudgetChecks.cs": "通过真实生成协程拒绝前两次出生，验证局部失败转全局及预算分帧后依然完成全部请求。"
   },
   "files": {
     "Assets/Scenes/SampleScene.unity": "主要运行场景：挂载星球、环境、时钟、UI和游戏启动组件。",

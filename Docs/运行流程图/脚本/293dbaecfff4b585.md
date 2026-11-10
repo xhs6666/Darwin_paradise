@@ -421,7 +421,7 @@ flowchart TD
 - [CorpseEntityRecord.Normalize · L23](8a2345f1e54b1c75.md#m649806250b80642a)（方法）
 - [EcologyQueries.ToWorld · L41](bdf7ccc2c9c0452f.md#mc67423f4877c3534)（方法）
 - [AntColonySettings.Current.get · L31](cb0a937e97c8fbb3.md#mcd121159f407ccdf)（访问器）
-- [SimulationOptimization.Current.get · L23](11c9091e70893352.md#m354909aa8678017c)（访问器）
+- [SimulationOptimization.Current.get · L25](11c9091e70893352.md#mde7abfdc18429e4a)（访问器）
 - [ColonyResource.State.set · L24](293dbaecfff4b585.md#m07fea10388841ca3)（访问器）
 - [ColonyFoodSources.Register · L15](4c419a1a067d428c.md#mf32bc84088ad1316)（方法）
 - [ResourceCoordinates.Observe · L44](93d731ac01e3af48.md#m8772c0d40540a8d7)（方法）

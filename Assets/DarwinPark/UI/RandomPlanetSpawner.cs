@@ -19,6 +19,7 @@ namespace DarwinPark.UI
         public bool IsBusy {get;private set;}
         public int Spawned {get;private set;}
         public int Requested {get;private set;}
+        public int PlacementAttempts{get;private set;}public int GlobalFallbacks{get;private set;}public int YieldedSlices{get;private set;}
         public string Status {get;private set;}="选择数量，一键分散到星球各处";
         private Coroutine _job;
         private float _nextMaintenance;private int _nextRule;private string _automaticRule;
@@ -39,7 +40,7 @@ namespace DarwinPark.UI
             if(planet==null||planet.Data==null||surface==null){Status="地表尚未就绪";return false;}
             // ★ 修复（防Bug回归）：自动维持现在默认持续运行，不能复用手动生成的模式切换而周期性打断操控/放置。
             if(automatic==null){EntityViewController.Instance?.ExitView();EntityPlacementTool.Instance?.CancelPlacement();}
-            Requested=Mathf.Clamp(count,1,maxCount);Spawned=0;IsBusy=true;Status="随机生成中…";
+            Requested=Mathf.Clamp(count,1,maxCount);Spawned=0;PlacementAttempts=GlobalFallbacks=YieldedSlices=0;IsBusy=true;Status="随机生成中…";
             _automaticRule=automatic?.id;
             // ★ 新增：成批任务只输出开始与结束，避免数量越多日志越慢。
             Debug.Log("[生成] 全星球随机生成，数量="+Requested+"，仅陆地="+landOnly);
@@ -47,7 +48,8 @@ namespace DarwinPark.UI
         }
         private IEnumerator Generate(PlanetTerrainMeshBuilder planet,MeshCollider surface,RandomSpawnRecipe source,bool landOnly)
         {
-            int attempted=0,budget=Requested*Mathf.Max(1,attemptsPerEntity),slice=0;
+            int attempted=0,budget=Requested*Mathf.Max(1,attemptsPerEntity),slice=0,failedLocal=0;
+            var placement=new ProducerPlacementSnapshot();double sliceStart=Time.realtimeSinceStartupAsDouble;
             while(Spawned<Requested&&attempted<budget)
             {
                 // ★ 适配：后台补充让出有限王后出生名额，不会影响手动指定投放。
@@ -65,14 +67,19 @@ namespace DarwinPark.UI
                 // ★ 适配：默认生产者优先补到缺粮种群活动区，仍走真实地表/陆地检查。
                 using(PerformanceTimings.Measure(PerformanceTimings.Area.AutomaticSpawn))
                 {
-                attempted++;slice++;var ruleForPlacement=_automaticRule==null?null:PopulationMaintenance.Rules.FirstOrDefault(r=>r.id==_automaticRule);
-                var direction=EcologyMaintenancePolicy.SpawnDirection(ruleForPlacement,planet.transform.position);float outside=surface.bounds.extents.magnitude+spawnHeight;
+                if(slice==0){sliceStart=Time.realtimeSinceStartupAsDouble;placement.Invalidate();}
+                attempted++;slice++;PlacementAttempts++;var ruleForPlacement=_automaticRule==null?null:PopulationMaintenance.Rules.FirstOrDefault(r=>r.id==_automaticRule);
+                // ★ 修复（防Bug回归）：海中/拥挤的王后附近不能反复占满每帧搜索；连续失败后转全局，成功后再优先局部。
+                bool local=ruleForPlacement?.category==PopulationRuleCategory.Producers;
+                bool fallback=local&&failedLocal>=SimulationOptimization.Current.localPlacementFailureLimit;if(fallback)GlobalFallbacks++;
+                var direction=fallback?Random.onUnitSphere:EcologyMaintenancePolicy.SpawnDirection(ruleForPlacement,planet.transform.position,placement);float outside=surface.bounds.extents.magnitude+spawnHeight;
                 if(surface.Raycast(new Ray(planet.transform.position+direction*outside,-direction),out var hit,outside*2)&&
                     (!landOnly||(hit.point-planet.transform.position).magnitude>planet.WaterRadius+landClearance)&&
-                    Spawn(source.CreateGenome(),hit.point+direction*spawnHeight))Spawned++;
+                    Spawn(source.CreateGenome(),hit.point+direction*spawnHeight)){Spawned++;failedLocal=0;placement.Invalidate();}else if(local)failedLocal++;
                 Status="已生成 "+Spawned+" / "+Requested;
                 }
-                if(slice>=Mathf.Max(1,attemptsPerFrame)){slice=0;yield return null;}
+                // ★ 修复（防Bug回归）：失败尝试也消耗CPU；达到真实时间预算就让帧，不改变最终请求数、世界时间或繁殖上限。
+                if(slice>=Mathf.Max(1,attemptsPerFrame)||(Time.realtimeSinceStartupAsDouble-sliceStart)*1000>=SimulationOptimization.Current.spawnFrameBudgetMilliseconds){YieldedSlices++;slice=0;yield return null;}
             }
             Finish(Spawned==Requested?"已随机生成 "+Spawned+" 个实体":"合适地表不足，已生成 "+Spawned+" / "+Requested);
         }

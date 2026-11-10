@@ -4,7 +4,7 @@
 
 [12条业务主流程](主流程.md) · [生成工具与维护说明](../../Tools/FlowDocs/README.md)
 
-覆盖 **375 个C#脚本、10 个Shader/HLSL文件、3967 个方法/构造/访问器/局部函数/回调/GPU函数**。没有显式方法的数据脚本也在索引中。未扫描Unity Packages/Library生成文件；Tools为离线生成器，不进入游戏运行图。
+覆盖 **377 个C#脚本、10 个Shader/HLSL文件、3988 个方法/构造/访问器/局部函数/回调/GPU函数**。没有显式方法的数据脚本也在索引中。未扫描Unity Packages/Library生成文件；Tools为离线生成器，不进入游戏运行图。
 
 
 ## 阅读与维护
@@ -105,7 +105,7 @@
 |Editor|[Assets/DarwinPark/Editor/MainMenuBackgroundRecorder.cs](脚本/ba405663a24f549a.md)|Editor|4|
 |Editor|[Assets/DarwinPark/Editor/MenuUpgradeRegression.cs](脚本/f55a1b1542251c77.md)|Editor|17|
 |Editor|[Assets/DarwinPark/Editor/MergeAlgorithmAuditRegression.cs](脚本/a8573e4637b62b8c.md)|Editor|14|
-|Editor|[Assets/DarwinPark/Editor/NearViewPerformanceAudit.cs](脚本/f44d9a167c505ecf.md)|Editor|20|
+|Editor|[Assets/DarwinPark/Editor/NearViewPerformanceAudit.cs](脚本/f44d9a167c505ecf.md)|Editor|23|
 |Editor|[Assets/DarwinPark/Editor/NutrientUtilizationRegression.cs](脚本/5280b7c1dd3cc658.md)|Editor|11|
 |Editor|[Assets/DarwinPark/Editor/NutritionEcologyRegression.cs](脚本/6ba59357fc88cff0.md)|Editor|46|
 |Editor|[Assets/DarwinPark/Editor/ObservationMutationRegression.cs](脚本/4acb930dd1eb9363.md)|Editor|23|
@@ -123,6 +123,7 @@
 |Editor|[Assets/DarwinPark/Editor/SchedulerPerformanceRegression.cs](脚本/0a17f5e2b9d73a74.md)|Editor|14|
 |Editor|[Assets/DarwinPark/Editor/SimulationBehaviorRegression.cs](脚本/845c11bed26d879e.md)|Editor|4|
 |Editor|[Assets/DarwinPark/Editor/SocialEcologyRegression.cs](脚本/217494895b1b18ec.md)|Editor|25|
+|Editor|[Assets/DarwinPark/Editor/SpawnBudgetChecks.cs](脚本/f53ba9f0d0261dd8.md)|Editor|3|
 |Editor|[Assets/DarwinPark/Editor/StationaryPerformanceRegression.cs](脚本/c740ddb4a4340bed.md)|Editor|26|
 |Editor|[Assets/DarwinPark/Editor/SurfaceInteractionRegression.cs](脚本/3229e96fb60a3e5b.md)|Editor|5|
 |Editor|[Assets/DarwinPark/Editor/TaskCoordinateOptimizationRegression.cs](脚本/274ce3a54a3e2b5f.md)|Editor|19|
@@ -197,6 +198,7 @@
 |Entities|[Assets/DarwinPark/Entities/Ecology/PredationSizePolicy.cs](脚本/80ea865fb0f12053.md)|Runtime|2|
 |Entities|[Assets/DarwinPark/Entities/Ecology/ProducerClassification.cs](脚本/ad32a2250ced390a.md)|Runtime|4|
 |Entities|[Assets/DarwinPark/Entities/Ecology/ProducerPlacementSearch.cs](脚本/68c6f349d3942cc4.md)|Runtime|1|
+|Entities|[Assets/DarwinPark/Entities/Ecology/ProducerPlacementSnapshot.cs](脚本/94d51265e18d4726.md)|Runtime|9|
 |Entities|[Assets/DarwinPark/Entities/Ecology/QueenBirthDelivery.cs](脚本/10252933c19b3182.md)|Runtime|2|
 |Entities|[Assets/DarwinPark/Entities/Ecology/ResourceCoordinates.cs](脚本/93d731ac01e3af48.md)|Runtime|19|
 |Entities|[Assets/DarwinPark/Entities/Ecology/ResourceGroups.cs](脚本/97a3c8522367343a.md)|Runtime|7|
@@ -379,7 +381,7 @@
 |UI|[Assets/DarwinPark/UI/PopulationCommandPanel.cs](脚本/be52342abb2dced2.md)|Runtime|9|
 |UI|[Assets/DarwinPark/UI/PopulationRangeLayer.cs](脚本/7ad316e94c5af908.md)|Runtime|16|
 |UI|[Assets/DarwinPark/UI/PopulationWorkbench.cs](脚本/6ca6fcae89e529ec.md)|Runtime|45|
-|UI|[Assets/DarwinPark/UI/RandomPlanetSpawner.cs](脚本/1c13222a547b265c.md)|Runtime|24|
+|UI|[Assets/DarwinPark/UI/RandomPlanetSpawner.cs](脚本/1c13222a547b265c.md)|Runtime|30|
 |UI|[Assets/DarwinPark/UI/RandomSpawnPanel.cs](脚本/ff6518313bce61e2.md)|Runtime|18|
 |UI|[Assets/DarwinPark/UI/RandomSpawnPresetStore.cs](脚本/9f09efd086264861.md)|Runtime|8|
 |UI|[Assets/DarwinPark/UI/RandomSpawnWorkbench.cs](脚本/0763b7475b3c75db.md)|Runtime|87|

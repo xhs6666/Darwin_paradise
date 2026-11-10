@@ -9,6 +9,8 @@ namespace DarwinPark.Core
     {
         public int version=1,workerQueueLimit=12,expressionCacheLimit=256,maximumResourceCells=4096;
         // ★ 新增：仅云/大气代理使用低模；可通过外部配置回退旧网格作对照，世界重载时应用。
+        // ★ 新增：自动补充只分摊搜索工作，不降低目标数量；局部失败后允许改搜全局陆地。
+        public float spawnFrameBudgetMilliseconds=2;public int localPlacementFailureLimit=8;
         public bool weatherProxyMeshes=true;public int weatherProxySubdivisions=16;
         public bool taskQueue=true,expressionCache=true,localCompetition=true,singletonKernel=true,resourceInstancing=true;
         public float groundProbeMoveTolerance=.1f,groundProbeVerticalSpeed=.1f;
@@ -27,7 +29,7 @@ namespace DarwinPark.Core
             if(value!=null&&(value.weatherProxySubdivisions<4||value.weatherProxySubdivisions>128))throw new InvalidDataException("天气代理细分必须为4～128");
             if(value!=null&&(value.groundNormalAngleDegrees>1||value.groundVelocityEpsilon>.01f))throw new InvalidDataException("接地写入阈值超出有效范围");
             if(value!=null&&(value.entitySkyDensityMultiplier<1||value.entitySkyDensityMultiplier>32))throw new InvalidDataException("实体视角天空散射倍率必须为1～32");
-            if(value==null||value.version!=1||value.workerQueueLimit<1||value.workerQueueLimit>128||value.expressionCacheLimit<1||value.expressionCacheLimit>4096||value.maximumResourceCells<1||value.maximumResourceCells>1000000)throw new InvalidDataException("计算优化配置版本或数量无效");
+            if(value==null||value.version!=1||value.localPlacementFailureLimit<1||value.localPlacementFailureLimit>1024||value.workerQueueLimit<1||value.workerQueueLimit>128||value.expressionCacheLimit<1||value.expressionCacheLimit>4096||value.maximumResourceCells<1||value.maximumResourceCells>1000000)throw new InvalidDataException("计算优化配置版本或数量无效");
             foreach(var field in typeof(SimulationOptimization).GetFields())if(field.FieldType==typeof(float)){float n=(float)field.GetValue(value);if(!float.IsFinite(n)||n<=0)throw new InvalidDataException("计算优化参数必须为正有限数："+field.Name);}
             return value;
         }

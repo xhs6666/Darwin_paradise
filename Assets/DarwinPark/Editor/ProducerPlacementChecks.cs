@@ -45,6 +45,10 @@ namespace DarwinPark.EditorTools
                         if(mode==0&&seed==0)check(old>0&&now==0,"投放范围由逐候选解析改为每王后同步快照");
                     }
                 }
+                // ★ 新增：同一同步片段重复尝试不重复分类/数范围；停用和重新注册立即撤销旧快照。
+                var snapshot=new ProducerPlacementSnapshot();snapshot.Direction(center,settings);int builds=snapshot.Builds;long visits=snapshot.ProducerChecks;snapshot.Direction(center,settings);
+                check(snapshot.Builds==builds&&snapshot.ProducerChecks==visits,"同帧失败重试复用生产者统计，不再按尝试数放大扫描");
+                producer.gameObject.SetActive(false);snapshot.Direction(center,settings);check(snapshot.Builds==builds+1,"同帧注销撤销投放快照");producer.gameObject.SetActive(true);snapshot.Direction(center,settings);check(snapshot.Builds==builds+2,"同帧重新注册刷新投放快照");
                 check(OptionalComponent.Read<EggIncubation>(queen)==queen.GetComponent<EggIncubation>(),"可选组件查询保留存在或缺失的原语义");
                 var probe=new GameObject("OptionalComponentProbe");var owner=probe.AddComponent<Light>();
                 check(OptionalComponent.Read<BoxCollider>(owner)==null,"缺失可选组件返回空");var added=probe.AddComponent<BoxCollider>();check(OptionalComponent.Read<BoxCollider>(owner)==added,"同帧新增可选组件立即可见");UnityEngine.Object.DestroyImmediate(added);check(OptionalComponent.Read<BoxCollider>(owner)==null,"同帧销毁可选组件立即失效");UnityEngine.Object.DestroyImmediate(probe);

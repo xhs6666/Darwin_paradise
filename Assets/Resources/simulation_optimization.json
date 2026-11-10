@@ -6,6 +6,10 @@
   "activeExecutionPlan": true,
   "activeComponentReuse": true,
   "workerQueueLimit": 12,
+  // 随机/自动生成每帧搜索预算（真实毫秒）；一次尝试不可拆分，超出后下一帧继续。
+  "spawnFrameBudgetMilliseconds": 2,
+  // 局部投放连续失败达到此次数，转全局寻找真实陆地，成功后重新优先补种群。
+  "localPlacementFailureLimit": 8,
   // 单位均为模拟秒，接地/外观检测为真实秒。约2秒检测外部修改；实例化材质开关在新建资源材质时应用。
   "decisionSeconds": 0.25,
   "mateSearchSeconds": 0.5,

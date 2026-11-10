@@ -1,16 +1,16 @@
 {
   "stats": {
-    "scripts": 385,
-    "csharp": 375,
+    "scripts": 387,
+    "csharp": 377,
     "gpu": 10,
-    "methods": 3967,
-    "graphs": 3970,
-    "profileGraphs": 6676,
-    "nodes": 37665,
-    "calls": 51277,
-    "internalLinks": 14789,
+    "methods": 3988,
+    "graphs": 3991,
+    "profileGraphs": 6712,
+    "nodes": 37860,
+    "calls": 51482,
+    "internalLinks": 14855,
     "unresolved": 10,
-    "hash": "19650e9cde6a352f"
+    "hash": "318379009b614648"
   },
   "diagnostics": [
     {
@@ -233,7 +233,7 @@
       "Path": "Assets/DarwinPark/Core/SimulationOptimization.cs",
       "Scope": "Runtime",
       "methods": 6,
-      "Hash": "3c59c05a27c1e423eeb5564844bbbb17953af3f19d782c700faa9c3a3bf59cde"
+      "Hash": "ffa09e1cec49d2096e8e1f1c8aa53a1e04e398ff543b43d7ddbcb1eff067d5ea"
     },
     {
       "Id": "44755274b83df7ba",
@@ -561,8 +561,8 @@
       "Id": "f44d9a167c505ecf",
       "Path": "Assets/DarwinPark/Editor/NearViewPerformanceAudit.cs",
       "Scope": "Editor",
-      "methods": 20,
-      "Hash": "58007c2d97c595661160383278a25c0f3bbc3698213948b6b56cb466d8c19171"
+      "methods": 23,
+      "Hash": "c6702978597563a59d6b959cff1ccff30df7a591fccfec7114aa626710a7b37a"
     },
     {
       "Id": "5280b7c1dd3cc658",
@@ -618,7 +618,7 @@
       "Path": "Assets/DarwinPark/Editor/PopulationMaintenanceRegression.cs",
       "Scope": "Editor",
       "methods": 66,
-      "Hash": "efd0191cb3ea24cd07db67d7dc038f212be4e7ad23311742b203e1edcde77710"
+      "Hash": "67d682fbf34e84aa87c08a2993ffe09b5e5cac05699fd6da41148f80a7dcf1dd"
     },
     {
       "Id": "9157b2281b645f60",
@@ -632,7 +632,7 @@
       "Path": "Assets/DarwinPark/Editor/ProducerPlacementChecks.cs",
       "Scope": "Editor",
       "methods": 3,
-      "Hash": "c9e819d272dd37ab80e2cefa5429fe06018850f1edaf09ac4e554612949a4431"
+      "Hash": "83e127b40286c6eb3cc6f9c82f64b785ad1c4e9d685935db94b0213555210b3f"
     },
     {
       "Id": "f5351f9e1fa97815",
@@ -682,6 +682,13 @@
       "Scope": "Editor",
       "methods": 25,
       "Hash": "ae5b1d6c621d7e5648b898ce495870fad0267c547d406446b40e13e773477771"
+    },
+    {
+      "Id": "f53ba9f0d0261dd8",
+      "Path": "Assets/DarwinPark/Editor/SpawnBudgetChecks.cs",
+      "Scope": "Editor",
+      "methods": 3,
+      "Hash": "7c3a1e79e50455d3495b53c74396a2f6e84767270fee7b41485cb9663163d7e6"
     },
     {
       "Id": "c740ddb4a4340bed",
@@ -940,7 +947,7 @@
       "Path": "Assets/DarwinPark/Entities/Ecology/EcologyMaintenancePolicy.cs",
       "Scope": "Runtime",
       "methods": 8,
-      "Hash": "5cf6588a221ed7ee8b7033b147b65d50124c20f30d831bc131fb9d3d1bbc0ee0"
+      "Hash": "bcc9ffe630b48cbdf8c8b98f83d8c7663c53789a2a0296dd52c39c13982b2a63"
     },
     {
       "Id": "5cf9761659037d31",
@@ -1199,7 +1206,14 @@
       "Path": "Assets/DarwinPark/Entities/Ecology/ProducerPlacementSearch.cs",
       "Scope": "Runtime",
       "methods": 1,
-      "Hash": "3f91f40c8a4fff36c36156f152426b59c3198d40e6ea2e4901357e65dedf5dc5"
+      "Hash": "d65d0ed0ceeed76c33a3ee5610e800113db3e24a7951ca785d341298977f4d0b"
+    },
+    {
+      "Id": "94d51265e18d4726",
+      "Path": "Assets/DarwinPark/Entities/Ecology/ProducerPlacementSnapshot.cs",
+      "Scope": "Runtime",
+      "methods": 9,
+      "Hash": "eb3f7553a035c653a0158f1ff3eeae9eb29237105dabd97cf436dc105da3d234"
     },
     {
       "Id": "10252933c19b3182",
@@ -2479,8 +2493,8 @@
       "Id": "1c13222a547b265c",
       "Path": "Assets/DarwinPark/UI/RandomPlanetSpawner.cs",
       "Scope": "Runtime",
-      "methods": 24,
-      "Hash": "7f3df199173b659b701703494989286a8f57e1acb522a7acc88e7520b68bf162"
+      "methods": 30,
+      "Hash": "6cb383e48ab0a6aa012cd29bbde15651dbe7b26b8330fb50524391948c5fd74d"
     },
     {
       "Id": "ff6518313bce61e2",
@@ -2724,11 +2738,11 @@
   "modes": [
     {
       "mode": "Roslyn\u7F16\u8BD1\u5668\u63A7\u5236\u6D41",
-      "count": 3371
+      "count": 3382
     },
     {
       "mode": "\u8BED\u6CD5\u63A7\u5236\u7ED3\u6784 / \u58F0\u660E\uFF08\u975ECFG\uFF09",
-      "count": 573
+      "count": 583
     },
     {
       "mode": "GPU\u63A7\u5236\u7ED3\u6784\uFF08\u540D\u79F0\u94FE\u63A5\uFF0C\u4E0D\u4F5CC#\u7C7B\u578B\u63A8\u65AD\uFF09",

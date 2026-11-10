@@ -36,22 +36,40 @@ namespace DarwinPark.EditorTools
         }
         private static IEnumerator Sample(string name,bool warm=true,Action transition=null)
         {
-            if(warm)yield return new WaitForSecondsRealtime(.8f);double began=EditorApplication.timeSinceStartup,previous=began;using var sample=new PerformanceSampleSession();
+            if(warm)yield return new WaitForSecondsRealtime(.8f);int initialPopulation=EntityRegistry.All.Count;double began=EditorApplication.timeSinceStartup,previous=began;using var sample=new PerformanceSampleSession();
             transition?.Invoke();
             while(EditorApplication.timeSinceStartup-began<3){yield return null;double now=EditorApplication.timeSinceStartup;sample.RecordFrame((now-previous)*1000);previous=now;}
-            var camera=Camera.main;var report=sample.Finish($"{name} api={SystemInfo.graphicsDeviceType} size={Screen.width}x{Screen.height} entities={EntityRegistry.All.Count} resources={ColonyResource.All.Count()} running={ServiceLocator.Get<SimulationClock>().IsRunning} speed={ServiceLocator.Get<SimulationClock>().ConfiguredTimeScale} controlledProtection={(_protected?1:0)} circles={PopulationRangeLayer.ActiveCircleCount} eye={camera.transform.position} near={camera.nearClipPlane}");File.WriteAllText(Path.Combine(Folder,name+".json"),JsonUtility.ToJson(report,true));File.WriteAllText(Path.Combine(Folder,name+"-gpu.txt"),report.metrics.First(m=>m.name=="GPU Frame Time") is var gpu&&gpu.available?$"samples={gpu.samples} mean={gpu.mean:R} max={gpu.maximum:R}":"GPU unavailable");
+            var camera=Camera.main;var report=sample.Finish($"{name} api={SystemInfo.graphicsDeviceType} size={Screen.width}x{Screen.height} initialEntities={initialPopulation} spawnAttempts={Object.FindFirstObjectByType<RandomPlanetSpawner>().PlacementAttempts} globalFallbacks={Object.FindFirstObjectByType<RandomPlanetSpawner>().GlobalFallbacks} slices={Object.FindFirstObjectByType<RandomPlanetSpawner>().YieldedSlices} entities={EntityRegistry.All.Count} resources={ColonyResource.All.Count()} running={ServiceLocator.Get<SimulationClock>().IsRunning} speed={ServiceLocator.Get<SimulationClock>().ConfiguredTimeScale} controlledProtection={(_protected?1:0)} circles={PopulationRangeLayer.ActiveCircleCount} eye={camera.transform.position} near={camera.nearClipPlane}");File.WriteAllText(Path.Combine(Folder,name+".json"),JsonUtility.ToJson(report,true));File.WriteAllText(Path.Combine(Folder,name+"-gpu.txt"),report.metrics.First(m=>m.name=="GPU Frame Time") is var gpu&&gpu.available?$"samples={gpu.samples} mean={gpu.mean:R} max={gpu.maximum:R}":"GPU unavailable");
             if(name.Contains("baseline")){yield return new WaitForEndOfFrame();ScreenCapture.CaptureScreenshot(Path.Combine(Folder,name+".png"));yield return null;}
         }
         private static IEnumerator Run()
         {
-            var world=WorldSaveStore.Read(Path.Combine(Folder,"input/world.json"));var session=Object.FindFirstObjectByType<WorldSessionManager>();session.autoSaveInterval=36000;session.Open(world);while(session.Busy)yield return null;
+            var world=WorldSaveStore.Read(Path.Combine(Folder,"input/world.json"));
+            // ★ 新增：数量阈值审计保留王后优先的嵌套子集，停用自动投放与自然繁殖仅用于独立测试，不写回原存档。
+            var args=System.Environment.GetCommandLineArgs();int countArg=Array.IndexOf(args,"-populationCount");if(countArg>=0){int keep=int.Parse(args[countArg+1]);world.entities=world.entities.OrderByDescending(e=>e.ecology?.ant?.role=="Queen").Take(keep).ToList();world.running=false;}
+            var session=Object.FindFirstObjectByType<WorldSessionManager>();session.autoSaveInterval=36000;session.Open(world);while(session.Busy)yield return null;
             var clock=ServiceLocator.Get<SimulationClock>();clock.Pause();FramePacingSettings.SetLimit(0);var camera=Camera.main;var orbit=camera.GetComponent<OrbitCamera>();orbit.enabled=false;var planet=EcologyQueries.Planet;var weather=planet.GetComponent<PlanetWeatherVisuals>();weather.cloudSpeed=0;PopulationRangeLayer.SetVisible(false);
             // ★ 新增：用户现场报告复查使用原镜头与实际视口，保留完整生态，不用先前413实体世界替代新495实体现场。
             if(Array.IndexOf(System.Environment.GetCommandLineArgs(),"-userReportOnly")>=0)
             {
-                var saved=JsonUtility.FromJson<PerformanceReport>(File.ReadAllText(Path.Combine(Folder,"user-report.json")));camera.transform.SetPositionAndRotation(saved.viewStart.position,saved.viewStart.rotation);clock.SetTimeScale(1);
+                var saved=JsonUtility.FromJson<PerformanceReport>(File.ReadAllText(Path.Combine(Folder,"user-report.json")));var capturedView=saved.viewWorst??saved.viewStart;camera.transform.SetPositionAndRotation(capturedView.position,capturedView.rotation);clock.SetTimeScale(1);
                 File.WriteAllText(Path.Combine(Folder,"profiler-state.txt"),"enabled="+UnityEngine.Profiling.Profiler.enabled+" deep="+UnityEditorInternal.ProfilerDriver.deepProfiling);
-                bool trace=Array.IndexOf(System.Environment.GetCommandLineArgs(),"-noHierarchy")<0;if(trace)UserFrameHierarchyAudit.Start();clock.Play();yield return Sample("user-running");if(trace)UserFrameHierarchyAudit.Finish(Folder);clock.Pause();yield return Sample("user-paused");yield break;
+                // ★ 新增：阈值本身不保证该三秒窗口有投放，显式保留12个生产者缺口的压力对照，所有变更仅存在测试副本内存。
+                if(Array.IndexOf(args,"-forceDeficit")>=0)
+                {
+                    var automatic=Object.FindFirstObjectByType<RandomPlanetSpawner>();automatic.Cancel();automatic.enabled=false;if(Array.IndexOf(args,"-rejectLanding")>=0)automatic.landClearance=100000;var rules=PopulationMaintenance.Capture();var producerRule=rules.rules.First(r=>r.category==PopulationRuleCategory.Producers);producerRule.enabled=true;producerRule.minimumCount=100000;PopulationMaintenance.Restore(rules);producerRule=PopulationMaintenance.Rules.First(r=>r.id==producerRule.id);
+                    bool started=(bool)typeof(RandomPlanetSpawner).GetMethod("StartInternal",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(automatic,new object[]{producerRule.source,12,producerRule.landOnly,producerRule});if(!started)throw new InvalidOperationException("强制投放缺口未启动");
+                }
+                if(Array.IndexOf(args,"-noAutoSpawn")>=0){var automatic=Object.FindFirstObjectByType<RandomPlanetSpawner>();automatic.Cancel();automatic.enabled=false;}
+                if(Array.IndexOf(args,"-noNaturalBirth")>=0)
+                {
+                    foreach(var actor in EntityRegistry.All)
+                    {
+                        foreach(var gene in actor.Genes.Genome.Genes)if(actor.Genes.GetLogic(gene) is DarwinPark.Entities.Logic.ReproductionGeneLogic logic)typeof(DarwinPark.Entities.Logic.ReproductionGeneLogic).GetField("_cooldownTimer",BindingFlags.NonPublic|BindingFlags.Instance).SetValue(logic,100000f);
+                        var member=actor.GetComponent<AntColonyMember>();if(member!=null){member.State.reproductionTimer=100000;member.State.reproductionCooldown=100000;}
+                    }
+                }
+                bool trace=Array.IndexOf(System.Environment.GetCommandLineArgs(),"-noHierarchy")<0;if(trace)UserFrameHierarchyAudit.Start();clock.Play();yield return Sample("user-running",Array.IndexOf(args,"-forceDeficit")<0);if(trace)UserFrameHierarchyAudit.Finish(Folder);clock.Pause();yield return Sample("user-paused");yield break;
             }
             var target=EntityRegistry.All.Where(e=>EcologyQueries.Alive(e)&&e.Genes.GetAttribute("moveSpeed")>0&&!planet.IsSubmerged(e.transform.position)).OrderBy(e=>(e.transform.position-camera.transform.position).sqrMagnitude).First();Vector3 point=target.transform.position,center=planet.transform.position,up=(point-center).normalized;var rotation=Quaternion.LookRotation(-up,Mathf.Abs(up.y)>.99f?Vector3.right:Vector3.up);
             // ★ 新增：在切换动作前启动计时，测首次镜头切换，不能用预热后的稳态掩盖进入控制的尖峰。

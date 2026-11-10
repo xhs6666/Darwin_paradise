@@ -30,13 +30,13 @@ namespace DarwinPark.Entities.Ecology
         }
         public static string Describe(PopulationMaintenanceRule rule)=>rule.category==PopulationRuleCategory.Source?"":(rule.category==PopulationRuleCategory.Producers?"按实际静止自养能力统计":"按实际移动能力统计")+" · 保底 "+rule.minimumCount;
         // ★ 新增：默认生产者优先投放到缺少植物的定居蚁群活动区，仍由原地形射线检查陆地，不能在空中/海底硬生成。
-        public static Vector3 SpawnDirection(PopulationMaintenanceRule rule,Vector3 planetCenter)
+        public static Vector3 SpawnDirection(PopulationMaintenanceRule rule,Vector3 planetCenter,ProducerPlacementSnapshot snapshot=null)
         {
             using var performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.ProducerPlacement);
             var settings=EcologyDefaults.Current;
             if(rule?.category!=PopulationRuleCategory.Producers||settings.localProducerTarget<=0)return UnityEngine.Random.onUnitSphere;
             // ★ 适配：同步投放查询统一交给范围快照搜索，不在每个实体上重复调用Circles。
-            return ProducerPlacementSearch.Direction(planetCenter,settings);
+            return snapshot!=null?snapshot.Direction(planetCenter,settings):ProducerPlacementSearch.Direction(planetCenter,settings);
         }
     }
 }
