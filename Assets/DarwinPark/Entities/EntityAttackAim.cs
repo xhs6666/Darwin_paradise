@@ -9,6 +9,8 @@ namespace DarwinPark.Entities
     {
         public static DarwinEntity Pick(GameObject self,Ray ray,float distance,float radius=0)
         {
+            // ★ 适配：将手动准星扫描单独计时，定位控制时的帧尖峰。
+            using var performance=PerformanceTimings.Measure(PerformanceTimings.Area.ManualAim);
             DarwinEntity best=null;float nearest=distance;
             foreach(var entity in EntityRegistry.All)
             {

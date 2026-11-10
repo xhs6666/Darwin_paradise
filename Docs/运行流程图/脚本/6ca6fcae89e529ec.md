@@ -1205,7 +1205,7 @@ flowchart TD
 - [PopulationWorkbench.Close · L68](6ca6fcae89e529ec.md#m09bed70d853d69f9)（方法）
 - [EntityViewController.Instance.get · L15](0ad0345f83229ef0.md#mb3b8144b56e80842)（访问器）
 - [EntityViewController.ExitView · L105](0ad0345f83229ef0.md#mca8619c7f27942c9)（方法）
-- [OrbitCamera.FocusOn · L170](42eb429559b42bcb.md#m90f6d4818e064f1d)（方法）
+- [OrbitCamera.FocusOn · L172](42eb429559b42bcb.md#m1f87e8c62262b27b)（方法）
 
 <a id="mb29b44848dbf7f08"></a>
 
@@ -1751,7 +1751,7 @@ flowchart TD
 - [PopulationWorkbench.Close · L68](6ca6fcae89e529ec.md#m09bed70d853d69f9)（方法）
 - [EntityViewController.Instance.get · L15](0ad0345f83229ef0.md#mb3b8144b56e80842)（访问器）
 - [EntityViewController.ExitView · L105](0ad0345f83229ef0.md#mca8619c7f27942c9)（方法）
-- [OrbitCamera.FocusOn · L170](42eb429559b42bcb.md#m90f6d4818e064f1d)（方法）
+- [OrbitCamera.FocusOn · L172](42eb429559b42bcb.md#m1f87e8c62262b27b)（方法）
 
 <a id="m8fdf376ec8da7e06"></a>
 

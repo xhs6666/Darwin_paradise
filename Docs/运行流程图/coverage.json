@@ -1,16 +1,16 @@
 {
   "stats": {
-    "scripts": 378,
-    "csharp": 368,
+    "scripts": 380,
+    "csharp": 370,
     "gpu": 10,
-    "methods": 3923,
-    "graphs": 3926,
-    "profileGraphs": 6620,
-    "nodes": 37214,
-    "calls": 50526,
-    "internalLinks": 14577,
+    "methods": 3947,
+    "graphs": 3950,
+    "profileGraphs": 6649,
+    "nodes": 37448,
+    "calls": 50900,
+    "internalLinks": 14673,
     "unresolved": 10,
-    "hash": "f9dda1005ef78ebd"
+    "hash": "ce6a20d65962410e"
   },
   "diagnostics": [
     {
@@ -110,6 +110,13 @@
       "Hash": "0342e5f23eec0978d4705f3baa2638dda5d51a93b66710524741552c211dd3e4"
     },
     {
+      "Id": "df1a6456e756b7d5",
+      "Path": "Assets/DarwinPark/Core/GpuPerformanceSample.cs",
+      "Scope": "Runtime",
+      "methods": 5,
+      "Hash": "ae6c38f5bd3d0a89570bd1b07bdb62d65581c322147978f6d99bce4ed541cffd"
+    },
+    {
       "Id": "d8a018f478416f7b",
       "Path": "Assets/DarwinPark/Core/Logging/DiagnosticFiles.cs",
       "Scope": "Runtime",
@@ -191,7 +198,7 @@
       "Path": "Assets/DarwinPark/Core/OrbitCamera.cs",
       "Scope": "Runtime",
       "methods": 9,
-      "Hash": "ab72e3cb0fff2ce86d8242a9d8c15a999709569c26ac8c94f1ccd6fef8bdc38e"
+      "Hash": "c2ec684d9135365787ca15f251e7ad6e73089d223d720030e33a5598a5b306be"
     },
     {
       "Id": "f1d4e0eb3e10983c",
@@ -205,7 +212,7 @@
       "Path": "Assets/DarwinPark/Core/RuntimePerformance.cs",
       "Scope": "Runtime",
       "methods": 16,
-      "Hash": "0006df4bf93548f1151cdc4e4007a676eac16223fd2a601ccaed8d99812f6006"
+      "Hash": "add3d95547824da6cdacd2996ecc8e4b535bdea4bf6e3f7484015a6b7add19ec"
     },
     {
       "Id": "f2fdbe9f9ccd93cb",
@@ -400,8 +407,8 @@
       "Id": "01132a1f55d36dec",
       "Path": "Assets/DarwinPark/Editor/EntityInspectionFramePacingRegression.cs",
       "Scope": "Editor",
-      "methods": 29,
-      "Hash": "a89a27ba2298e5b0cc62e433fd35f73bdf657bec7dee987500896044b6c1f872"
+      "methods": 30,
+      "Hash": "cebb77ffd6ae5e6649186ffaa350da3df7a54fd454552bb3f81b1da216158f71"
     },
     {
       "Id": "c42720484a16e881",
@@ -542,6 +549,13 @@
       "Scope": "Editor",
       "methods": 14,
       "Hash": "3d68cc0e181deae9e8c1af462a2b859a77c9a017dbcd96d72bf562aaee765278"
+    },
+    {
+      "Id": "f44d9a167c505ecf",
+      "Path": "Assets/DarwinPark/Editor/NearViewPerformanceAudit.cs",
+      "Scope": "Editor",
+      "methods": 18,
+      "Hash": "841f5475b912bc2eaa8c7a2424fef474528bd66333a34cdec90e6f327fba93f4"
     },
     {
       "Id": "5280b7c1dd3cc658",
@@ -1220,7 +1234,7 @@
       "Path": "Assets/DarwinPark/Entities/EntityAttackAim.cs",
       "Scope": "Runtime",
       "methods": 1,
-      "Hash": "87e8cc6c2955333fee462fdf9d8465bcc385e91ff7e308d787844d2a935421eb"
+      "Hash": "a02a7d986d62f2edc901c3f7a020920f0c625f0990d6767f5c58ee5ca7ab850a"
     },
     {
       "Id": "7494d53178552f0e",
@@ -2675,11 +2689,11 @@
   "modes": [
     {
       "mode": "Roslyn\u7F16\u8BD1\u5668\u63A7\u5236\u6D41",
-      "count": 3332
+      "count": 3354
     },
     {
       "mode": "\u8BED\u6CD5\u63A7\u5236\u7ED3\u6784 / \u58F0\u660E\uFF08\u975ECFG\uFF09",
-      "count": 568
+      "count": 570
     },
     {
       "mode": "GPU\u63A7\u5236\u7ED3\u6784\uFF08\u540D\u79F0\u94FE\u63A5\uFF0C\u4E0D\u4F5CC#\u7C7B\u578B\u63A8\u65AD\uFF09",

@@ -1,0 +1,4 @@
+FAIL
+System.InvalidOperationException: 控制目标在输入样本中死亡，不能把退出镜头当控制结果
+  at DarwinPark.EditorTools.NearViewPerformanceAudit+<Run>d__9.MoveNext () [0x009ce] in D:\unity_project\Darwin_paradise\Artifacts\NutritionEcologyProject\Assets\DarwinPark\Editor\NearViewPerformanceAudit.cs:59 
+  at DarwinPark.EditorTools.NearViewPerformanceAudit+<Guard>d__7.MoveNext () [0x00069] in D:\unity_project\Darwin_paradise\Artifacts\NutritionEcologyProject\Assets\DarwinPark\Editor\NearViewPerformanceAudit.cs:34 

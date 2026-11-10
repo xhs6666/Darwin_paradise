@@ -125,6 +125,8 @@ namespace DarwinPark.Core
 
         private void KeepAboveSurface()
         {
+            // ★ 适配：镜头地表检测独立计时，不与实体接地混算。
+            using var performance=PerformanceTimings.Measure(PerformanceTimings.Area.CameraGround);
             if (target == null) return;
             var collider = target.GetComponent<MeshCollider>();
             Vector3 direction = (transform.position - target.position).normalized;

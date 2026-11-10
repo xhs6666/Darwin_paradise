@@ -4,7 +4,7 @@
 
 [12条业务主流程](主流程.md) · [生成工具与维护说明](../../Tools/FlowDocs/README.md)
 
-覆盖 **368 个C#脚本、10 个Shader/HLSL文件、3923 个方法/构造/访问器/局部函数/回调/GPU函数**。没有显式方法的数据脚本也在索引中。未扫描Unity Packages/Library生成文件；Tools为离线生成器，不进入游戏运行图。
+覆盖 **370 个C#脚本、10 个Shader/HLSL文件、3947 个方法/构造/访问器/局部函数/回调/GPU函数**。没有显式方法的数据脚本也在索引中。未扫描Unity Packages/Library生成文件；Tools为离线生成器，不进入游戏运行图。
 
 
 ## 阅读与维护
@@ -41,6 +41,7 @@
 |Core|[Assets/DarwinPark/Core/GameInputGate.cs](脚本/52955daae7e592ab.md)|Runtime|4|
 |Core|[Assets/DarwinPark/Core/GamePaths.cs](脚本/26c9919989227f6e.md)|Runtime|4|
 |Core|[Assets/DarwinPark/Core/GameplayTuning.cs](脚本/db546e5713b32d53.md)|Runtime|6|
+|Core|[Assets/DarwinPark/Core/GpuPerformanceSample.cs](脚本/df1a6456e756b7d5.md)|Runtime|5|
 |Core|[Assets/DarwinPark/Core/Logging/DiagnosticFiles.cs](脚本/d8a018f478416f7b.md)|Runtime|12|
 |Core|[Assets/DarwinPark/Core/Logging/DiagnosticMemory.cs](脚本/da5a4e8a86332124.md)|Runtime|3|
 |Core|[Assets/DarwinPark/Core/Logging/Log.cs](脚本/735e5abf0df2bddc.md)|Runtime|4|
@@ -82,7 +83,7 @@
 |Editor|[Assets/DarwinPark/Editor/EcologyCompatibilityBatch.cs](脚本/f06a5e7cb329977c.md)|Editor|6|
 |Editor|[Assets/DarwinPark/Editor/EntityControlRegression.cs](脚本/b536fa681c9ba1d5.md)|Editor|10|
 |Editor|[Assets/DarwinPark/Editor/EntityGeneFilterRegression.cs](脚本/809edd2bc8d1c735.md)|Editor|16|
-|Editor|[Assets/DarwinPark/Editor/EntityInspectionFramePacingRegression.cs](脚本/01132a1f55d36dec.md)|Editor|29|
+|Editor|[Assets/DarwinPark/Editor/EntityInspectionFramePacingRegression.cs](脚本/01132a1f55d36dec.md)|Editor|30|
 |Editor|[Assets/DarwinPark/Editor/EntityPanelMotionRegression.cs](脚本/c42720484a16e881.md)|Editor|22|
 |Editor|[Assets/DarwinPark/Editor/EntityPlanningMergeRegression.cs](脚本/763da58492f54d4c.md)|Editor|46|
 |Editor|[Assets/DarwinPark/Editor/EntityStateRegression.cs](脚本/cbb314f2877cdcfa.md)|Editor|25|
@@ -103,6 +104,7 @@
 |Editor|[Assets/DarwinPark/Editor/MainMenuBackgroundRecorder.cs](脚本/ba405663a24f549a.md)|Editor|4|
 |Editor|[Assets/DarwinPark/Editor/MenuUpgradeRegression.cs](脚本/f55a1b1542251c77.md)|Editor|17|
 |Editor|[Assets/DarwinPark/Editor/MergeAlgorithmAuditRegression.cs](脚本/a8573e4637b62b8c.md)|Editor|14|
+|Editor|[Assets/DarwinPark/Editor/NearViewPerformanceAudit.cs](脚本/f44d9a167c505ecf.md)|Editor|18|
 |Editor|[Assets/DarwinPark/Editor/NutrientUtilizationRegression.cs](脚本/5280b7c1dd3cc658.md)|Editor|11|
 |Editor|[Assets/DarwinPark/Editor/NutritionEcologyRegression.cs](脚本/6ba59357fc88cff0.md)|Editor|46|
 |Editor|[Assets/DarwinPark/Editor/ObservationMutationRegression.cs](脚本/4acb930dd1eb9363.md)|Editor|23|
