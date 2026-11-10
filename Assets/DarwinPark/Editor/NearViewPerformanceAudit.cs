@@ -34,9 +34,10 @@ namespace DarwinPark.EditorTools
             while(stack.Count>0){bool next=false;object current=null;try{next=stack.Peek().MoveNext();if(next)current=stack.Peek().Current;}catch(Exception ex){error=ex.ToString();Debug.LogException(ex);break;}if(!next){stack.Pop();continue;}if(current is IEnumerator nested)stack.Push(nested);else yield return current;}
             File.WriteAllText(Path.Combine(Folder,"result.txt"),(error==null?"PASS":"FAIL")+"\n"+error);SessionState.SetBool(Key,false);EditorApplication.Exit(error==null?0:1);
         }
-        private static IEnumerator Sample(string name)
+        private static IEnumerator Sample(string name,bool warm=true,Action transition=null)
         {
-            yield return new WaitForSecondsRealtime(.8f);double began=EditorApplication.timeSinceStartup,previous=began;using var sample=new PerformanceSampleSession();
+            if(warm)yield return new WaitForSecondsRealtime(.8f);double began=EditorApplication.timeSinceStartup,previous=began;using var sample=new PerformanceSampleSession();
+            transition?.Invoke();
             while(EditorApplication.timeSinceStartup-began<3){yield return null;double now=EditorApplication.timeSinceStartup;sample.RecordFrame((now-previous)*1000);previous=now;}
             var camera=Camera.main;var report=sample.Finish($"{name} api={SystemInfo.graphicsDeviceType} size={Screen.width}x{Screen.height} entities={EntityRegistry.All.Count} resources={ColonyResource.All.Count()} running={ServiceLocator.Get<SimulationClock>().IsRunning} speed={ServiceLocator.Get<SimulationClock>().ConfiguredTimeScale} controlledProtection={(_protected?1:0)} circles={PopulationRangeLayer.ActiveCircleCount} eye={camera.transform.position} near={camera.nearClipPlane}");File.WriteAllText(Path.Combine(Folder,name+".json"),JsonUtility.ToJson(report,true));File.WriteAllText(Path.Combine(Folder,name+"-gpu.txt"),report.metrics.First(m=>m.name=="GPU Frame Time") is var gpu&&gpu.available?$"samples={gpu.samples} mean={gpu.mean:R} max={gpu.maximum:R}":"GPU unavailable");
             if(name.Contains("baseline")){yield return new WaitForEndOfFrame();ScreenCapture.CaptureScreenshot(Path.Combine(Folder,name+".png"));yield return null;}
@@ -46,6 +47,12 @@ namespace DarwinPark.EditorTools
             var world=WorldSaveStore.Read(Path.Combine(Folder,"input/world.json"));var session=Object.FindFirstObjectByType<WorldSessionManager>();session.autoSaveInterval=36000;session.Open(world);while(session.Busy)yield return null;
             var clock=ServiceLocator.Get<SimulationClock>();clock.Pause();FramePacingSettings.SetLimit(0);var camera=Camera.main;var orbit=camera.GetComponent<OrbitCamera>();orbit.enabled=false;var planet=EcologyQueries.Planet;var weather=planet.GetComponent<PlanetWeatherVisuals>();weather.cloudSpeed=0;PopulationRangeLayer.SetVisible(false);
             var target=EntityRegistry.All.Where(e=>EcologyQueries.Alive(e)&&e.Genes.GetAttribute("moveSpeed")>0&&!planet.IsSubmerged(e.transform.position)).OrderBy(e=>(e.transform.position-camera.transform.position).sqrMagnitude).First();Vector3 point=target.transform.position,center=planet.transform.position,up=(point-center).normalized;var rotation=Quaternion.LookRotation(-up,Mathf.Abs(up.y)>.99f?Vector3.right:Vector3.up);
+            // ★ 新增：在切换动作前启动计时，测首次镜头切换，不能用预热后的稳态掩盖进入控制的尖峰。
+            if(Array.IndexOf(System.Environment.GetCommandLineArgs(),"-coldOnly")>=0)
+            {
+                _protected=true;target.GetComponent<EntityLifeCycle>().RestoreProgress(40);var health=target.GetComponent<DarwinPark.Entities.Stats.EntityStats>();health.SetMax("health",1000000);health.Modify("health",1000000,false);clock.SetTimeScale(1);camera.transform.SetPositionAndRotation(center+up*800,rotation);clock.Play();yield return Sample("first-far-running");
+                yield return Sample("first-near-transition",false,()=>camera.transform.SetPositionAndRotation(point+up*10,rotation));var control=Object.FindFirstObjectByType<EntityViewController>();yield return Sample("first-control-transition",false,()=>{if(!control.EnterView(target))throw new InvalidOperationException("first control rejected");});clock.Pause();control.ExitView();yield break;
+            }
             camera.transform.SetPositionAndRotation(center+up*800,rotation);yield return Sample("far-paused-baseline");camera.transform.SetPositionAndRotation(point+up*10,rotation);yield return Sample("near-paused-baseline");clock.Play();yield return Sample("near-running");clock.Pause();
             // ★ 新增：输入压力样本只保护被控的一个实体，防止自然死亡切镜头污染控制结果；其余实体仍正常生态。
             _protected=true;target.GetComponent<EntityLifeCycle>().RestoreProgress(40);var protectedStats=target.GetComponent<DarwinPark.Entities.Stats.EntityStats>();protectedStats.SetMax("health",1000000);protectedStats.Modify("health",1000000,false);

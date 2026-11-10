@@ -4,7 +4,7 @@
 
 [12条业务主流程](主流程.md) · [生成工具与维护说明](../../Tools/FlowDocs/README.md)
 
-覆盖 **370 个C#脚本、10 个Shader/HLSL文件、3947 个方法/构造/访问器/局部函数/回调/GPU函数**。没有显式方法的数据脚本也在索引中。未扫描Unity Packages/Library生成文件；Tools为离线生成器，不进入游戏运行图。
+覆盖 **370 个C#脚本、10 个Shader/HLSL文件、3949 个方法/构造/访问器/局部函数/回调/GPU函数**。没有显式方法的数据脚本也在索引中。未扫描Unity Packages/Library生成文件；Tools为离线生成器，不进入游戏运行图。
 
 
 ## 阅读与维护
@@ -104,7 +104,7 @@
 |Editor|[Assets/DarwinPark/Editor/MainMenuBackgroundRecorder.cs](脚本/ba405663a24f549a.md)|Editor|4|
 |Editor|[Assets/DarwinPark/Editor/MenuUpgradeRegression.cs](脚本/f55a1b1542251c77.md)|Editor|17|
 |Editor|[Assets/DarwinPark/Editor/MergeAlgorithmAuditRegression.cs](脚本/a8573e4637b62b8c.md)|Editor|14|
-|Editor|[Assets/DarwinPark/Editor/NearViewPerformanceAudit.cs](脚本/f44d9a167c505ecf.md)|Editor|18|
+|Editor|[Assets/DarwinPark/Editor/NearViewPerformanceAudit.cs](脚本/f44d9a167c505ecf.md)|Editor|20|
 |Editor|[Assets/DarwinPark/Editor/NutrientUtilizationRegression.cs](脚本/5280b7c1dd3cc658.md)|Editor|11|
 |Editor|[Assets/DarwinPark/Editor/NutritionEcologyRegression.cs](脚本/6ba59357fc88cff0.md)|Editor|46|
 |Editor|[Assets/DarwinPark/Editor/ObservationMutationRegression.cs](脚本/4acb930dd1eb9363.md)|Editor|23|

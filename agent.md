@@ -378,3 +378,5 @@
 
 
 |2026-11-10|用户明确近景/控制掉帧，而原采样缺GPU与镜头信息|新增按需GPU帧计时与镜头/倍率/积压上下文，单独计准星和相机探地；真实控制输入夹具判定仍在控制，目标死亡样本必须作废|GpuPerformanceSample、RuntimePerformance、NearViewPerformanceAudit、EntityAttackAim、OrbitCamera、ProjectSettings|GPU无数据不能报为零成本；异步GPU最大值不能强配最慢镜头；1倍与16倍分开，补算预算降幅必须说明吞吐损失，不暗改默认玩法；109项原生检查通过|
+
+用户补充确认该近景/控制问题发生在1倍速。16倍复现不适用于此现场；新增先计时后切镜头的首切测量，最大约77ms，仍未复现250ms，待现场报告。禁止以高倍样本替代1倍用户反馈。

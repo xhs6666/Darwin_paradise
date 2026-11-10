@@ -3,14 +3,14 @@
     "scripts": 380,
     "csharp": 370,
     "gpu": 10,
-    "methods": 3947,
-    "graphs": 3950,
-    "profileGraphs": 6649,
-    "nodes": 37448,
-    "calls": 50900,
-    "internalLinks": 14673,
+    "methods": 3949,
+    "graphs": 3952,
+    "profileGraphs": 6651,
+    "nodes": 37462,
+    "calls": 50930,
+    "internalLinks": 14686,
     "unresolved": 10,
-    "hash": "ce6a20d65962410e"
+    "hash": "8857daef9c33edff"
   },
   "diagnostics": [
     {
@@ -554,8 +554,8 @@
       "Id": "f44d9a167c505ecf",
       "Path": "Assets/DarwinPark/Editor/NearViewPerformanceAudit.cs",
       "Scope": "Editor",
-      "methods": 18,
-      "Hash": "841f5475b912bc2eaa8c7a2424fef474528bd66333a34cdec90e6f327fba93f4"
+      "methods": 20,
+      "Hash": "a6246cbfb9320263ad62754ee07269014cf53987e98d412f6086ad72a9890829"
     },
     {
       "Id": "5280b7c1dd3cc658",
@@ -2689,7 +2689,7 @@
   "modes": [
     {
       "mode": "Roslyn\u7F16\u8BD1\u5668\u63A7\u5236\u6D41",
-      "count": 3354
+      "count": 3356
     },
     {
       "mode": "\u8BED\u6CD5\u63A7\u5236\u7ED3\u6784 / \u58F0\u660E\uFF08\u975ECFG\uFF09",
