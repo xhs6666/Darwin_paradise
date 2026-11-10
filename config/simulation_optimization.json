@@ -1,6 +1,9 @@
 {
   // 顺序计划的后续目标上限；当前货物和补给不因查询节奏改变而丢失。
   "version": 1,
+  // 自动生成搜索预算（真实毫秒）及局部连续失败转全局阈值。
+  "spawnFrameBudgetMilliseconds": 2,
+  "localPlacementFailureLimit": 8,
   "taskQueue": true,
   // 活跃实体跳过确定的空行为，组件仅在同步批次内复用；可分别关闭作性能对照。
   "activeExecutionPlan": true,
