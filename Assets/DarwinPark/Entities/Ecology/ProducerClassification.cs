@@ -1,3 +1,4 @@
+using DarwinPark.Core; // ★ 适配：实时可选组件查询避免空查找的编辑器分配。
 using System.Collections.Generic;
 using UnityEngine;
 namespace DarwinPark.Entities.Ecology
@@ -18,7 +19,7 @@ namespace DarwinPark.Entities.Ecology
                 if(genes.Evaluation!=null)foreach(var gene in genes.Evaluation.Genes)if(gene.IsActive){if(gene.Definition.Id==nutrition.heterotrophyGene||gene.Definition.Id==nutrition.scavengerGene)heterotroph=true;if(gene.Definition.Id==settings.nutritionGene&&(primary==null||gene.EffectiveStrength>primary.EffectiveStrength))primary=gene;}
                 entry.candidate=!heterotroph&&primary?.State!=null&&System.Array.IndexOf(settings.producerStates,primary.State.StateId)>=0;
             }
-            if(!entry.candidate||genes.GetComponent<EggIncubation>()?.Incubating==true)return false;
+            if(!entry.candidate||OptionalComponent.Read<EggIncubation>(genes)?.Incubating==true)return false;
             // 基础速度本来为0时，角色/光环的乘法不可能产生行动，无需再次查询整条种群链。
             return !genes.Evaluation.Attributes.TryGetValue(settings.movementAttribute,out var move)||move<=0||genes.GetAttribute(settings.movementAttribute)<=0;
         }

@@ -63,12 +63,15 @@ namespace DarwinPark.UI
                 // ★ 适配：联机房主的Esc只暂停自己的输入，不应阻止其他管理员权限成员的生成任务。
                 if(GameInputGate.Blocked&&!WorldAuthority.Online){yield return null;continue;}
                 // ★ 适配：默认生产者优先补到缺粮种群活动区，仍走真实地表/陆地检查。
+                using(PerformanceTimings.Measure(PerformanceTimings.Area.AutomaticSpawn))
+                {
                 attempted++;slice++;var ruleForPlacement=_automaticRule==null?null:PopulationMaintenance.Rules.FirstOrDefault(r=>r.id==_automaticRule);
                 var direction=EcologyMaintenancePolicy.SpawnDirection(ruleForPlacement,planet.transform.position);float outside=surface.bounds.extents.magnitude+spawnHeight;
                 if(surface.Raycast(new Ray(planet.transform.position+direction*outside,-direction),out var hit,outside*2)&&
                     (!landOnly||(hit.point-planet.transform.position).magnitude>planet.WaterRadius+landClearance)&&
                     Spawn(source.CreateGenome(),hit.point+direction*spawnHeight))Spawned++;
                 Status="已生成 "+Spawned+" / "+Requested;
+                }
                 if(slice>=Mathf.Max(1,attemptsPerFrame)){slice=0;yield return null;}
             }
             Finish(Spawned==Requested?"已随机生成 "+Spawned+" 个实体":"合适地表不足，已生成 "+Spawned+" / "+Requested);

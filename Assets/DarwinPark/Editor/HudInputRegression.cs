@@ -65,9 +65,17 @@ namespace DarwinPark.EditorTools
             // 模拟脚本重载造成的非持久UnityEvent丢失，旧_uiBuilt仍为true。
             foreach(var stale in ServiceLocator.Get<UIRoot>().MainCanvas.GetComponentsInChildren<Button>(true))stale.onClick.RemoveAllListeners();
             string input=Path.Combine(Folder,"input/world.json");
-            if(File.Exists(input)){var world=WorldSaveStore.Read(input);JsonUtility.FromJsonOverwrite(world.terrainParameters,planet);planet.subdivisions=24;world.terrainParameters=JsonUtility.ToJson(planet);session.Open(world);}
+            if(File.Exists(input)){var world=WorldSaveStore.Read(input);JsonUtility.FromJsonOverwrite(world.terrainParameters,planet);planet.subdivisions=24;world.terrainParameters=JsonUtility.ToJson(planet);world.running=false;session.Open(world);}
             else {planet.subdivisions=24;typeof(WorldSessionManager).GetField("_initialTerrain",Private).SetValue(session,JsonUtility.ToJson(planet));session.Create("界面点击回归",27291,.5f,20,44);}
-            yield return Wait(()=>!session.Busy);ServiceLocator.Get<SimulationClock>().Pause();Object.FindFirstObjectByType<RandomPlanetSpawner>().enabled=false;yield return null;yield return null;Dump("loaded");
+            yield return Wait(()=>!session.Busy);yield return null;yield return null;
+            var loadedClock=ServiceLocator.Get<SimulationClock>();var loadedPanel=Object.FindFirstObjectByType<SimulationControlPanel>();
+            if(File.Exists(input))
+            {
+                Check(!loadedClock.IsRunning&&((Image)typeof(SimulationControlPanel).GetField("_playIcon",Private).GetValue(loadedPanel)).sprite==(Sprite)typeof(SimulationControlPanel).GetField("_iconPlay",Private).GetValue(loadedPanel),"暂停存档加载后按钮立即显示播放，而非默认运行图标");
+                float beforePlay=loadedClock.GameTime;ModuleClick(loadedPanel.GetComponentsInChildren<Button>().Single(b=>b.name=="PlayBtn"));yield return null;yield return null;yield return null;
+                Check(loadedClock.IsRunning&&loadedClock.GameTime>beforePlay,"读档后真实点击播放，状态和模拟时间一起推进");
+            }
+            loadedClock.Pause();Object.FindFirstObjectByType<RandomPlanetSpawner>().enabled=false;yield return null;yield return null;Dump("loaded");
             var panel=Object.FindFirstObjectByType<SimulationControlPanel>();var root=ServiceLocator.Get<UIRoot>();
             if(File.Exists(Path.Combine(Folder,"interactive.flag")))
             {
@@ -83,6 +91,12 @@ namespace DarwinPark.EditorTools
             var list=root.MainCanvas.GetComponentsInChildren<Button>().Single(b=>b.name=="AllPopulations");Click(list);yield return null;Check(PopulationWorkbench.Instance?.Visible==true,"存档加载后种群列表实际点击打开");PopulationWorkbench.Instance.Close();yield return null;Dump("population closed");
             var previous=(Button)typeof(SimulationControlPanel).GetField("_tabPrevBtn",Private).GetValue(panel);Click(previous);yield return null;
             yield return null;yield return null;
+            // ★ 新增：分别覆盖宽屏与窄屏入口，布局调整只属于测试，最后恢复，不用窗口碰巧足够宽作为隐含前提。
+            var filter=root.MainCanvas.GetComponentInChildren<MapEntityGeneFilterUI>();var launch=filter.GetComponentsInChildren<Button>(true).Single(b=>b.name=="OpenEntityFilter");var statistics=filter.GetComponent<MapEntityStatisticsUI>();float originalLeft=statistics.leftOffset,originalMinimum=filter.minimumWidth;
+            statistics.leftOffset=12;yield return null;yield return null;Check(filter.WideLayout,"夹具实际进入宽屏停靠布局");
+            bool wasVisible=filter.Card.gameObject.activeSelf;ModuleClick(launch);yield return null;Check(filter.Card.gameObject.activeSelf!=wasVisible,"宽屏筛选标题按钮实际改变卡片可见状态");ModuleClick(launch);yield return null;Check(filter.Card.gameObject.activeSelf==wasVisible,"再次点击宽屏筛选恢复原状态");
+            statistics.leftOffset=originalLeft;filter.minimumWidth=100000;yield return null;yield return null;Check(!filter.WideLayout,"夹具实际进入窄屏浮卡布局");wasVisible=filter.Card.gameObject.activeSelf;ModuleClick(launch);yield return null;Check(filter.Card.gameObject.activeSelf!=wasVisible,"窄屏筛选标题按钮实际改变卡片可见状态");
+            filter.minimumWidth=originalMinimum;yield return null;yield return null;
             var dropdown=root.MainCanvas.GetComponentsInChildren<Dropdown>().First(d=>d.name=="IncludeGenes");
             Canvas.ForceUpdateCanvases();var pointer=new PointerEventData(EventSystem.current){button=PointerEventData.InputButton.Left,position=Center(dropdown.GetComponent<RectTransform>())};ExecuteEvents.Execute(dropdown.gameObject,pointer,ExecuteEvents.pointerClickHandler);yield return null;yield return null;
             Check(dropdown.transform.Find("Dropdown List")!=null,"存档加载后筛选下拉可以展开");RuntimeDropdownDismissal.CloseOpenPopups();yield return new WaitForSecondsRealtime(.3f);Dump("dropdown closed");
@@ -120,8 +134,9 @@ namespace DarwinPark.EditorTools
             menu.ShowPause();for(int cycle=0;cycle<3;cycle++){menu.enabled=false;menu.enabled=true;}
             var loaded=(Action)typeof(WorldSessionManager).GetField("Loaded",Private).GetValue(session);
             Check(loaded.GetInvocationList().Count(d=>d.Target is GameMainMenu bound&&bound==menu)==1,"菜单反复启停后读档通知只有一个有效绑定");
-            if(File.Exists(input)){session.Open(WorldSaveStore.Read(input));yield return Wait(()=>!session.Busy);ServiceLocator.Get<SimulationClock>().Pause();yield return null;yield return null;
-                Check(!menu.Visible&&root.MainCanvas.enabled&&root.MainCanvas.GetComponent<GraphicRaycaster>().enabled,"菜单重新启用后再次进入存档可正常返回可交互HUD");}
+            if(File.Exists(input)){var runningWorld=WorldSaveStore.Read(input);runningWorld.running=true;session.Open(runningWorld);yield return Wait(()=>!session.Busy);yield return null;yield return null;yield return null;
+                Check(!menu.Visible&&root.MainCanvas.enabled&&root.MainCanvas.GetComponent<GraphicRaycaster>().enabled,"菜单重新启用后再次进入存档可正常返回可交互HUD");
+                Check(loadedClock.IsRunning&&loadedClock.GameDeltaTime>0,"运行中存档加载完成自动恢复真实模拟，而非只改图标");loadedClock.Pause();}
             Dump("recovery scenarios complete");
             yield return new WaitForEndOfFrame();ScreenCapture.CaptureScreenshot(Path.Combine(Folder,"loaded-hud.png"));yield return null;
         }

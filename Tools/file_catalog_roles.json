@@ -370,7 +370,12 @@
     "Assets/DarwinPark/Entities/Ecology/EcologyMobility.cs": "比例统计读取真实移动能力；基础为零时省去不可能改变资格的乘法/限幅修饰链。",
     "Assets/DarwinPark/Editor/LiveSimulationAudit.cs": "使用真实最新存档、完整生命环境/出生/维持负载，按用户DX12和视口尺寸记录总帧及细分耗时；支持旧/新路径外部隔离对照。",
     "Assets/DarwinPark/Core/GpuPerformanceSample.cs": "按需收集真实GPU帧时间并去重时间戳，缺省明确不可用；记录起止/最大帧间隔时镜头、控制模式、倍率和积压。",
-    "Assets/DarwinPark/Editor/NearViewPerformanceAudit.cs": "固定最新世界与DX12视口，对照远近/真实控制、移动攻击、图层和渲染开关；仅Editor中原型比较补算预算的响应/吞吐权衡。"
+    "Assets/DarwinPark/Editor/NearViewPerformanceAudit.cs": "固定最新世界与DX12视口，对照远近/真实控制、移动攻击、图层和渲染开关；仅Editor中原型比较补算预算的响应/吞吐权衡。",
+    "Assets/DarwinPark/Core/OptionalComponent.cs": "实时读取可选组件，避免编辑器为空GetComponent构造诊断字符串，不跨帧缓存。",
+    "Assets/DarwinPark/Entities/Ecology/ProducerPlacementSearch.cs": "自动补充生产者时复用每个王后的活动圆快照，并保留原球面范围与拥挤投放判定。",
+    "Assets/DarwinPark/UI/PerformanceCaptureNotice.cs": "在游戏画面直接显示性能采样完成、报告路径或失败原因，纯绘制且不接收鼠标。",
+    "Assets/DarwinPark/Editor/UserFrameHierarchyAudit.cs": "独立工程录制普通CPU层级，保存逐帧自耗时和GC分配，定位采样计时缺口。",
+    "Assets/DarwinPark/Editor/ProducerPlacementChecks.cs": "固定随机种子对照原生产者位置选择，并检查可选组件同帧新增和销毁的即时性。"
   },
   "files": {
     "Assets/Scenes/SampleScene.unity": "主要运行场景：挂载星球、环境、时钟、UI和游戏启动组件。",

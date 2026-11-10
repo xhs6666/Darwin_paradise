@@ -2,7 +2,7 @@
 
 [返回总索引](../README.md) · `Runtime` · `Assets/DarwinPark/Entities/Simulation/EntityWorkScheduler.cs`
 
-[源文件](../../../Assets/DarwinPark/Entities/Simulation/EntityWorkScheduler.cs) · 源码校验：`63dfadd3465712e99d72a439578acb351af6d6a82075c4bfbaada448687a7870`
+[源文件](../../../Assets/DarwinPark/Entities/Simulation/EntityWorkScheduler.cs) · 源码校验：`fe01a5022f733507b0114a437ce19e72068a420c89592c8e3abc27428efa3f9b`
 
 方法按源文件位置排列。事件/回调引用不表示立即执行；分支与异常说明见总索引。完整源码与可点击关系图请打开离线手册。
 
@@ -738,7 +738,7 @@ flowchart TD
   b51{"判断：entry.life==null"}
   b52["entry.life=genes.GetComponent&lt;EntityLifeCycle&gt;();"]
   b53{"判断：entry.manual==null"}
-  b54["entry.manual=genes.GetComponent&lt;EntityManualControl&gt;();"]
+  b54["entry.manual=OptionalComponent.Read&lt;EntityManualControl&gt;(genes);"]
   b55{"entry.frame=Time.frameCount;<br/>entry.ordinal=0;<br/>entry.count=1;<br/>判断：tuning.mergeStationaryEntities"}
   b56["entry.dormant=false;<br/>entry.quiet=0;<br/>entry.nextDue=double.NaN;<br/>QueueActive(entry);"]
   b57{"判断：phaseChanged"}
@@ -761,7 +761,7 @@ flowchart TD
   b74{"判断：entry.stateId!=currentState"}
   b75["entry.stateId=currentState;<br/>entry.quiet=0;"]
   b76{"判断：entry.supported"}
-  b77["entry.nutritionParasite=genes.GetComponent&lt;NutritionParasite&gt;();<br/>entry.parasite=genes.GetComponent&lt;ParasiteBehavior&gt;();<br/>entry.egg=genes.GetComponent&lt;EggIncubation&gt;();"]
+  b77["entry.nutritionParasite=OptionalComponent.Read&lt;NutritionParasite&gt;(genes);<br/>entry.parasite=OptionalComponent.Read&lt;ParasiteBehavior&gt;(genes);<br/>entry.egg=OptionalComponent.Read&lt;EggIncubation&gt;(genes);"]
   b78{"判断：stationary"}
   b79["Eligible(entry)"]
   b80["stationary"]
@@ -1065,28 +1065,29 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [PerformanceTimings.Measure · L24](a8403a4c7503726d.md#m5b1de577e94d50e9)（方法）
+- [PerformanceTimings.Measure · L24](a8403a4c7503726d.md#mb452516394f3ebae)（方法）
 - [EntityRegistry.MembershipRevision.get · L15](2093aaf08559c9f2.md#m6afb6f184d119e11)（访问器）
 - [DarwinEntity.Genes.get · L14](70798dde169f2e8b.md#m622eb1adf401d431)（访问器）
 - [EntityWorkScheduler.Get · L84](465ccdbb260bcac2.md#m044ae5be02b795dc)（方法）
 - [EntityWorkScheduler.DormantMembers.set · L64](465ccdbb260bcac2.md#m6a6594139c13a5ea)（访问器）
 - [GameplayTuning.Current.get · L44](db546e5713b32d53.md#m5713e7f86902b6fa)（访问器）
-- [EntityWorkScheduler.QueueActive · L205](465ccdbb260bcac2.md#m672ed45ffde0e643)（方法）
+- [OptionalComponent.Read · L7](806c46b42ced4d36.md#m69622a4dee165c5a)（方法）
+- [EntityWorkScheduler.QueueActive · L206](465ccdbb260bcac2.md#m81708dbab6fd4c7a)（方法）
 - [EntityGeneController.LogicRevision.get · L19](7494d53178552f0e.md#me69facc1c0f1e164)（访问器）
 - [StationaryCohortKernel.Supported · L12](9d3f50e550ab5beb.md#mc9ba7d3589415ea3)（方法）
-- [EntityWorkScheduler.Signature · L256](465ccdbb260bcac2.md#mc3b24284c9c754cb)（方法）
-- [EntityWorkScheduler.Eligible · L228](465ccdbb260bcac2.md#m4319a62dcad242db)（方法）
+- [EntityWorkScheduler.Signature · L257](465ccdbb260bcac2.md#m2607707df172e323)（方法）
+- [EntityWorkScheduler.Eligible · L229](465ccdbb260bcac2.md#m0e8baae2eeaa4717)（方法）
 - [EntityWorkScheduler.DormantMembers.get · L64](465ccdbb260bcac2.md#mf38e594d3d450fdf)（访问器）
 - [EntityWorkScheduler.Entry.pending.set · L22](465ccdbb260bcac2.md#m05caefbe3ec968d5)（访问器）
 - [EntityWorkScheduler.Entry.pending.get · L22](465ccdbb260bcac2.md#m2277186a9d64d8a1)（访问器）
 - [CohortDeadline.Next · L9](7dc9f0a2697792f4.md#m9e1d17c91ceb218b)（方法）
-- [EntityWorkScheduler.AddGroup · L237](465ccdbb260bcac2.md#m70e59be0206db03b)（方法）
-- [EntityWorkScheduler.TrimSignatures · L198](465ccdbb260bcac2.md#m7d7407f9753f8baf)（方法）
-- [EntityWorkScheduler.AdvanceActive · L211](465ccdbb260bcac2.md#mc68b98afedff74cd)（方法）
+- [EntityWorkScheduler.AddGroup · L238](465ccdbb260bcac2.md#mc69fd9f6dc6d9869)（方法）
+- [EntityWorkScheduler.TrimSignatures · L199](465ccdbb260bcac2.md#m670ae50e4da12d78)（方法）
+- [EntityWorkScheduler.AdvanceActive · L212](465ccdbb260bcac2.md#m6388d3fd207c0299)（方法）
 - [SingletonSettlement.Advance · L22](aa60fc9f4553ae15.md#m354a8ce1a94cb2a0)（方法）
 - [SimulationSubsteps.Count · L10](44755274b83df7ba.md#m9b3c9def7f9642d1)（方法）
 - [SimulationSubsteps.Slice · L11](44755274b83df7ba.md#ma075f8159da64c99)（方法）
-- [EntityWorkScheduler.CanShare · L222](465ccdbb260bcac2.md#mb7ec59e3d2860e5c)（方法）
+- [EntityWorkScheduler.CanShare · L223](465ccdbb260bcac2.md#m4d55d11465b72a14)（方法）
 - [StationaryCohortKernel.LifeSpeed · L25](9d3f50e550ab5beb.md#mdb19e021772f12ab)（方法）
 - [StationaryCohortKernel.Sample · L33](9d3f50e550ab5beb.md#mf4245e22058e4dde)（方法）
 - [EntityWorkScheduler.RepresentativeSteps.set · L62](465ccdbb260bcac2.md#mdd3172e7ffeba215)（访问器）
@@ -1100,11 +1101,11 @@ flowchart TD
 - [ReproductionGeneLogic.OnUpdate · L40](ac319ea70bd8b723.md#m7cb6727410b8cffa)（方法）
 - [EntityGeneController.AdvanceSimulation · L73](7494d53178552f0e.md#m0056817ce3208fda)（方法）
 - [StationaryCohortKernel.AdvanceCore · L43](9d3f50e550ab5beb.md#mcdd84fc49043442b)（方法）
-- [EntityWorkScheduler.回调@151 · L151](465ccdbb260bcac2.md#mf53e72ece7e2c15f)（回调/委托）
+- [EntityWorkScheduler.回调@152 · L152](465ccdbb260bcac2.md#m241439d28590efc6)（回调/委托）
 
-<a id="mf53e72ece7e2c15f"></a>
+<a id="m241439d28590efc6"></a>
 
-## 回调@151 · L151
+## 回调@152 · L152
 
 `( … => 回调`
 
@@ -1122,9 +1123,9 @@ flowchart TD
 
 ```
 
-<a id="m7d7407f9753f8baf"></a>
+<a id="m670ae50e4da12d78"></a>
 
-## TrimSignatures · L198
+## TrimSignatures · L199
 
 `private void TrimSignatures()`
 
@@ -1179,9 +1180,9 @@ flowchart TD
 
 ```
 
-<a id="m672ed45ffde0e643"></a>
+<a id="m81708dbab6fd4c7a"></a>
 
-## QueueActive · L205
+## QueueActive · L206
 
 `private void QueueActive(Entry entry)`
 
@@ -1224,9 +1225,9 @@ flowchart TD
 - [EntityManualControl.IsControlled.get · L12](a6969896da35e1f0.md#m125d8f7da7ab33bf)（访问器）
 - [EntityStats.CapacityRemaining · L92](75aa86a368efdf24.md#m574f0a6509120d00)（方法）
 
-<a id="mc68b98afedff74cd"></a>
+<a id="m6388d3fd207c0299"></a>
 
-## AdvanceActive · L211
+## AdvanceActive · L212
 
 `private static void AdvanceActive(List<Entry> entries,float dt,GameplayTuning tuning)`
 
@@ -1275,9 +1276,9 @@ flowchart TD
 - [EntityGeneController.AdvanceSimulation · L73](7494d53178552f0e.md#m0056817ce3208fda)（方法）
 - [StationaryCohortKernel.AdvanceCore · L43](9d3f50e550ab5beb.md#mcdd84fc49043442b)（方法）
 
-<a id="mb7ec59e3d2860e5c"></a>
+<a id="m4d55d11465b72a14"></a>
 
-## CanShare · L222
+## CanShare · L223
 
 `private static bool CanShare(Cohort group,Entry first)`
 
@@ -1325,12 +1326,12 @@ flowchart TD
 项目内调用/回调引用：
 
 - [EntityGeneController.LogicRevision.get · L19](7494d53178552f0e.md#me69facc1c0f1e164)（访问器）
-- [EntityWorkScheduler.Eligible · L228](465ccdbb260bcac2.md#m4319a62dcad242db)（方法）
+- [EntityWorkScheduler.Eligible · L229](465ccdbb260bcac2.md#m0e8baae2eeaa4717)（方法）
 - [EntityGeneController.CurrentAge.get · L37](7494d53178552f0e.md#md08823d8f9a2fa16)（访问器）
 
-<a id="m4319a62dcad242db"></a>
+<a id="m0e8baae2eeaa4717"></a>
 
-## Eligible · L228
+## Eligible · L229
 
 `private static bool Eligible(Entry entry)`
 
@@ -1469,9 +1470,9 @@ flowchart TD
 - [EntityGeneController.Evaluation.get · L18](7494d53178552f0e.md#mc0039c100a31b455)（访问器）
 - [EntityGeneController.GetAttribute · L286](7494d53178552f0e.md#m18bff2b38f95b556)（方法）
 
-<a id="m70e59be0206db03b"></a>
+<a id="mc69fd9f6dc6d9869"></a>
 
-## AddGroup · L237
+## AddGroup · L238
 
 `private void AddGroup(Entry entry,GameplayTuning tuning)`
 
@@ -1554,9 +1555,9 @@ flowchart TD
 - [EntityWorkScheduler.SharedState.SharedState.ctor · L33](465ccdbb260bcac2.md#m42f9e4d3d4ec77b4)（构造函数）
 - [EntityWorkScheduler.Entry.pending.get · L22](465ccdbb260bcac2.md#m2277186a9d64d8a1)（访问器）
 
-<a id="mc3b24284c9c754cb"></a>
+<a id="m2607707df172e323"></a>
 
-## Signature · L256
+## Signature · L257
 
 `private static string Signature(EntityGeneController genes)`
 
@@ -1620,11 +1621,11 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [PerformanceTimings.Measure · L24](a8403a4c7503726d.md#m5b1de577e94d50e9)（方法）
+- [PerformanceTimings.Measure · L24](a8403a4c7503726d.md#mb452516394f3ebae)（方法）
 
-<a id="m4a056b4dc8df7518"></a>
+<a id="mc143fc56211bbfab"></a>
 
-## Reset · L268
+## Reset · L269
 
 `[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)] private static void Reset()`
 

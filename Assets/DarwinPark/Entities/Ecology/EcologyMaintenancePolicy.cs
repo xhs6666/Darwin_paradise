@@ -32,19 +32,11 @@ namespace DarwinPark.Entities.Ecology
         // ★ 新增：默认生产者优先投放到缺少植物的定居蚁群活动区，仍由原地形射线检查陆地，不能在空中/海底硬生成。
         public static Vector3 SpawnDirection(PopulationMaintenanceRule rule,Vector3 planetCenter)
         {
+            using var performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.ProducerPlacement);
             var settings=EcologyDefaults.Current;
             if(rule?.category!=PopulationRuleCategory.Producers||settings.localProducerTarget<=0)return UnityEngine.Random.onUnitSphere;
-            foreach(var queen in AntColonyMember.All)
-            {
-                if(queen.Role!=AntRole.Queen||queen.State.founding)continue;int count=0;
-                foreach(var entity in EntityRegistry.All)if(EcologyQueries.Alive(entity)&&ColonyActivityRange.Contains(queen.Population,entity.transform.position)&&EcologyEnergyBudget.IsProducer(entity.Genes))count++;
-                if(count>=settings.localProducerTarget)continue;
-                var up=EcologyQueries.Up(queen.transform.position);var tangent=Vector3.ProjectOnPlane(UnityEngine.Random.onUnitSphere,up).normalized;
-                var point=queen.transform.position+tangent*UnityEngine.Random.Range(Mathf.Min(settings.plantSpacing,queen.Radius*.4f),queen.Radius*.8f);
-                bool crowded=false;foreach(var entity in EntityRegistry.All)if(EcologyQueries.Alive(entity)&&(entity.transform.position-point).sqrMagnitude<settings.plantSpacing*settings.plantSpacing){crowded=true;break;}
-                if(!crowded)return (point-planetCenter).normalized;
-            }
-            return UnityEngine.Random.onUnitSphere;
+            // ★ 适配：同步投放查询统一交给范围快照搜索，不在每个实体上重复调用Circles。
+            return ProducerPlacementSearch.Direction(planetCenter,settings);
         }
     }
 }

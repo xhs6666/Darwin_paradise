@@ -56,14 +56,14 @@ namespace DarwinPark.Entities.Simulation
         public static void Invalidate(EntityGeneController owner){if(_current.owner==owner&&_current.plan!=null)_current.plan.components.Clear();}
         public static T Read<T>(EntityGeneController owner)where T:Component
         {
-            // ★ 修复（防Bug回归）：物理/代谢等批次外调用不应增加全局计数和配置查询；对象引用不同时直接原生查询。
-            if(_current.plan==null||!ReferenceEquals(_current.owner,owner))return owner==null?null:owner.GetComponent<T>();
+            // ★ 修复（防Bug回归）：批次外直接TryGet，不增加计数/查配置；缺失可选组件不能在编辑器每次分配诊断字符串。
+            if(_current.plan==null||!ReferenceEquals(_current.owner,owner))return owner==null?null:OptionalComponent.Read<T>(owner);
             if(owner==null)return null;
-            if(!_current.plan.KnownOnly||!SimulationOptimization.Current.activeComponentReuse)return owner.GetComponent<T>();
+            if(!_current.plan.KnownOnly||!SimulationOptimization.Current.activeComponentReuse)return OptionalComponent.Read<T>(owner);
             ActiveSimulationPlan.ComponentReads++;
             if(_current.revision!=owner.LogicRevision){_current.plan.components.Clear();_current.revision=owner.LogicRevision;}
             var values=_current.plan.components;var type=typeof(T);if(values.TryGetValue(type,out var cached)){if(ReferenceEquals(cached,null)||cached!=null){ActiveSimulationPlan.ComponentHits++;return cached as T;}values.Remove(type);}
-            var result=owner.GetComponent<T>();values[type]=result;return result;
+            var result=OptionalComponent.Read<T>(owner);values[type]=result;return result;
         }
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]private static void Reset(){_current=default;Parents.Clear();}
     }

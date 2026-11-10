@@ -1,0 +1,60 @@
+frame=14 self=236.809 total=564.156 bytes=94770540 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.UI.dll!DarwinPark.UI::RandomPlanetSpawner.Update() [Invoke]/DarwinPark.UI.dll!DarwinPark.UI::RandomPlanetSpawner.Generate() [Coroutine: MoveNext] [Invoke]
+frame=9 self=129.756 total=302.282 bytes=52459110 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.UI.dll!DarwinPark.UI::RandomPlanetSpawner.Update() [Invoke]/DarwinPark.UI.dll!DarwinPark.UI::RandomPlanetSpawner.Generate() [Coroutine: MoveNext] [Invoke]
+frame=15 self=34.322 total=73.124 bytes=11516900 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Simulation::EntityWorkScheduler.Update() [Invoke]
+frame=10 self=28.774 total=66.678 bytes=10809570 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Simulation::EntityWorkScheduler.Update() [Invoke]
+frame=9 self=27.666 total=63.683 bytes=7550634 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Simulation::EntityWorkScheduler.Update() [Invoke]
+frame=13 self=24.889 total=50.703 bytes=7508002 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Simulation::EntityWorkScheduler.Update() [Invoke]
+frame=11 self=24.220 total=55.020 bytes=9109072 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Simulation::EntityWorkScheduler.Update() [Invoke]
+frame=12 self=19.308 total=44.191 bytes=7114610 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Simulation::EntityWorkScheduler.Update() [Invoke]
+frame=13 self=16.564 total=16.564 bytes=0 calls=1 /Main Thread/EditorLoop
+frame=14 self=16.453 total=41.104 bytes=7399054 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Simulation::EntityWorkScheduler.Update() [Invoke]
+frame=8 self=13.091 total=32.661 bytes=5886492 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Simulation::EntityWorkScheduler.Update() [Invoke]
+frame=8 self=7.474 total=7.474 bytes=0 calls=1 /Main Thread/EditorLoop
+frame=12 self=7.347 total=7.347 bytes=0 calls=1 /Main Thread/EditorLoop
+frame=9 self=7.280 total=7.280 bytes=0 calls=1 /Main Thread/EditorLoop
+frame=10 self=7.210 total=7.210 bytes=0 calls=1 /Main Thread/EditorLoop
+frame=15 self=7.188 total=7.188 bytes=0 calls=1 /Main Thread/EditorLoop
+frame=13 self=7.140 total=7.140 bytes=0 calls=1 /Main Thread/EditorLoop
+frame=11 self=7.128 total=7.128 bytes=0 calls=1 /Main Thread/EditorLoop
+frame=14 self=6.997 total=6.997 bytes=0 calls=1 /Main Thread/EditorLoop
+frame=12 self=5.507 total=5.507 bytes=0 calls=1 /Main Thread/PlayerLoop/UpdateScene/FixedUpdate.ScriptRunBehaviourFixedUpdate/FixedBehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities::PlanetGravity.FixedUpdate() [Invoke]/GetComponentNullErrorMessage/GC.Collect
+frame=14 self=5.444 total=5.444 bytes=0 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.UI.dll!DarwinPark.UI::RandomPlanetSpawner.Update() [Invoke]/DarwinPark.UI.dll!DarwinPark.UI::RandomPlanetSpawner.Generate() [Coroutine: MoveNext] [Invoke]/GetComponentNullErrorMessage/GC.Collect
+frame=9 self=5.295 total=5.295 bytes=0 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Simulation::EntityWorkScheduler.Update() [Invoke]/GC.Collect
+frame=15 self=4.125 total=4.125 bytes=0 calls=1 /Main Thread/EditorLoop
+frame=9 self=3.193 total=305.773 bytes=52469780 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.UI.dll!DarwinPark.UI::RandomPlanetSpawner.Update() [Invoke]
+frame=9 self=3.134 total=3.134 bytes=0 calls=1 /Main Thread/PlayerLoop/UpdateScene/FixedUpdate.ScriptRunBehaviourFixedUpdate/FixedBehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities::PlanetGravity.FixedUpdate() [Invoke]/GetComponentNullErrorMessage/GC.Collect
+frame=14 self=3.130 total=8.574 bytes=570 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.UI.dll!DarwinPark.UI::RandomPlanetSpawner.Update() [Invoke]/DarwinPark.UI.dll!DarwinPark.UI::RandomPlanetSpawner.Generate() [Coroutine: MoveNext] [Invoke]/GetComponentNullErrorMessage
+frame=14 self=3.110 total=3.110 bytes=0 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.UI.dll!DarwinPark.UI::RandomPlanetSpawner.Update() [Invoke]/DarwinPark.UI.dll!DarwinPark.UI::RandomPlanetSpawner.Generate() [Coroutine: MoveNext] [Invoke]/GetComponentNullErrorMessage/GC.Collect
+frame=14 self=3.110 total=567.576 bytes=94781200 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.UI.dll!DarwinPark.UI::RandomPlanetSpawner.Update() [Invoke]
+frame=12 self=3.101 total=3.101 bytes=0 calls=1 /Main Thread/PlayerLoop/UpdateScene/FixedUpdate.ScriptRunBehaviourFixedUpdate/FixedBehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities::PlanetGravity.FixedUpdate() [Invoke]/GetComponentNullErrorMessage/GC.Collect
+frame=12 self=2.897 total=8.404 bytes=566 calls=1 /Main Thread/PlayerLoop/UpdateScene/FixedUpdate.ScriptRunBehaviourFixedUpdate/FixedBehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities::PlanetGravity.FixedUpdate() [Invoke]/GetComponentNullErrorMessage
+frame=10 self=2.614 total=2.614 bytes=0 calls=1 /Main Thread/EditorLoop
+frame=11 self=2.253 total=2.253 bytes=0 calls=1 /Main Thread/EditorLoop
+frame=15 self=2.131 total=3.234 bytes=292330 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Ecology::PopulationBehavior.Update() [Invoke]
+frame=15 self=2.094 total=2.094 bytes=0 calls=1 /Main Thread/EditorLoop
+frame=10 self=2.085 total=2.085 bytes=0 calls=1 /Main Thread/EditorLoop
+frame=10 self=1.939 total=2.968 bytes=295168 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Ecology::PopulationBehavior.Update() [Invoke]
+frame=9 self=1.927 total=1.927 bytes=0 calls=1 /Main Thread/EditorLoop
+frame=8 self=1.913 total=1.913 bytes=0 calls=1 /Main Thread/EditorLoop
+frame=11 self=1.877 total=2.887 bytes=286926 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Ecology::PopulationBehavior.Update() [Invoke]
+frame=14 self=1.867 total=1.867 bytes=0 calls=1 /Main Thread/EditorLoop
+frame=12 self=1.654 total=1.654 bytes=0 calls=1 /Main Thread/EditorLoop
+frame=8 self=1.610 total=2.495 bytes=248418 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Ecology::PopulationBehavior.Update() [Invoke]
+frame=8 self=1.510 total=1.510 bytes=0 calls=1 /Main Thread/PlayerLoop/RenderPlayModeViewCameras/UnityEngine.CoreModule.dll!UnityEngine.Rendering::RenderPipelineManager.DoRenderLoop_Internal() [Invoke]/Inl_UniversalRenderTotal/Inl_RenderCameraStack/Inl_UniversalRenderPipeline.RenderSingleCameraInternal: Main Camera/CullScriptable/CullResults.CreateSharedRendererScene/EndRenderQueueExtraction/QueuePrepareIntegrateMainThreadObjects
+frame=14 self=1.379 total=2.649 bytes=457698 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Ecology::PopulationArchiveObserver.Update() [Invoke]
+frame=14 self=1.335 total=2.334 bytes=285010 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Ecology::PopulationBehavior.Update() [Invoke]
+frame=12 self=1.332 total=2.325 bytes=279306 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Ecology::PopulationBehavior.Update() [Invoke]
+frame=8 self=1.298 total=2.536 bytes=490654 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Ecology::PopulationArchiveObserver.Update() [Invoke]
+frame=13 self=1.292 total=2.288 bytes=279808 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Ecology::PopulationBehavior.Update() [Invoke]
+frame=12 self=1.259 total=1.259 bytes=586 calls=1 /Main Thread/PlayerLoop/UpdateScene/FixedUpdate.ScriptRunBehaviourFixedUpdate/FixedBehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities::PlanetGravity.FixedUpdate() [Invoke]/GetComponentNullErrorMessage
+frame=15 self=1.235 total=2.198 bytes=280286 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Ecology::PopulationBehavior.Update() [Invoke]
+frame=14 self=1.136 total=1.136 bytes=0 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Planet.dll!DarwinPark.Planet::PlanetOreSystem.Update() [Invoke]
+frame=9 self=1.129 total=1.129 bytes=0 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Planet.dll!DarwinPark.Planet::PlanetOreSystem.Update() [Invoke]
+frame=11 self=1.127 total=1.127 bytes=0 calls=1 /Main Thread/EditorLoop
+frame=15 self=1.107 total=2.442 bytes=384212 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Ecology::PopulationArchiveObserver.Update() [Invoke]
+frame=10 self=1.064 total=2.302 bytes=378482 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Ecology::PopulationArchiveObserver.Update() [Invoke]
+frame=14 self=1.011 total=1.011 bytes=570 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.UI.dll!DarwinPark.UI::RandomPlanetSpawner.Update() [Invoke]/DarwinPark.UI.dll!DarwinPark.UI::RandomPlanetSpawner.Generate() [Coroutine: MoveNext] [Invoke]/GetComponentNullErrorMessage
+frame=9 self=0.937 total=0.937 bytes=566 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Ecology::PopulationBehavior.Update() [Invoke]/GetComponentNullErrorMessage
+frame=12 self=0.861 total=0.861 bytes=0 calls=1 /Main Thread/EditorLoop
+frame=8 self=0.725 total=0.725 bytes=0 calls=1 /Main Thread/EditorLoop
+frame=14 self=0.679 total=0.679 bytes=0 calls=1 /Main Thread/EditorLoop

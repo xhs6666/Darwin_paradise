@@ -1,0 +1,107 @@
+{
+  "/Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Simulation::EntityWorkScheduler.Update() [Invoke]": {
+    "calls": 111179.0,
+    "bytes": 63862394.0,
+    "self": 213.99240044259932
+  },
+  "/Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Ecology::PopulationArchiveObserver.Update() [Invoke]": {
+    "calls": 2466.0,
+    "bytes": 1437544.0,
+    "self": 4.66800000902731
+  },
+  "/Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Ecology::PopulationBehavior.Update() [Invoke]": {
+    "calls": 11546.0,
+    "bytes": 6562636.0,
+    "self": 25.685700014582835
+  },
+  "/Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Vitals::EntityVitals.Update() [Invoke]": {
+    "calls": 37536.0,
+    "bytes": 21528392.0,
+    "self": 69.78220004215837
+  },
+  "/Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Ecology::CorpseFeeding.Update() [Invoke]": {
+    "calls": 672.0,
+    "bytes": 387104.0,
+    "self": 1.2737000053748488
+  },
+  "/Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Ecology::TerritoryBehavior.Update() [Invoke]": {
+    "calls": 1614.0,
+    "bytes": 914580.0,
+    "self": 3.7680000060936436
+  },
+  "/Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Ecology::NutritionParasite.Update() [Invoke]": {
+    "calls": 696.0,
+    "bytes": 395376.0,
+    "self": 1.5820999972056597
+  },
+  "/Main Thread/PlayerLoop/UpdateScene/FixedUpdate.ScriptRunBehaviourFixedUpdate/FixedBehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities::PlanetGravity.FixedUpdate() [Invoke]": {
+    "calls": 96499.0,
+    "bytes": 55441758.0,
+    "self": 192.22270010074135
+  },
+  "/Main Thread/PlayerLoop/UpdateScene/PreLateUpdate.ScriptRunBehaviourLateUpdate/LateBehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Ecology::ColonyMemberMarker.LateUpdate() [Invoke]": {
+    "calls": 1612.0,
+    "bytes": 932888.0,
+    "self": 3.0854000031249598
+  },
+  "/Main Thread/PlayerLoop/UpdateScene/PreLateUpdate.ScriptRunBehaviourLateUpdate/LateBehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Stats::EntityStats.LateUpdate() [Invoke]": {
+    "calls": 4259.0,
+    "bytes": 2493866.0,
+    "self": 8.06230002141092
+  },
+  "/Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Vitals::EntityVitals.Update() [Invoke]/DarwinPark.Entities.dll!DarwinPark.Entities.Stats::EntityStats.FlashRoutine() [Coroutine: MoveNext] [Invoke]": {
+    "calls": 570.0,
+    "bytes": 327500.0,
+    "self": 1.0888000013073906
+  },
+  "/Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunDelayedDynamicFrameRate/CoroutinesDelayedCalls/DarwinPark.Entities.dll!DarwinPark.Entities.Stats::EntityStats.Start() [Invoke]": {
+    "calls": 26.0,
+    "bytes": 16068.0,
+    "self": 0.05479999980889261
+  },
+  "/Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunDelayedDynamicFrameRate/CoroutinesDelayedCalls/DarwinPark.Entities.dll!DarwinPark.Entities.Stats::EntityStats.FlashRoutine() [Coroutine: MoveNext] [Invoke]": {
+    "calls": 7.0,
+    "bytes": 4058.0,
+    "self": 0.015899999998509884
+  },
+  "/Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.UI.dll!DarwinPark.UI::RandomPlanetSpawner.Update() [Invoke]/DarwinPark.UI.dll!DarwinPark.UI::RandomPlanetSpawner.Generate() [Coroutine: MoveNext] [Invoke]": {
+    "calls": 239451.0,
+    "bytes": 136257326.0,
+    "self": 458.0199004118331
+  },
+  "/Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Simulation::EntityWorkScheduler.Update() [Invoke]/DarwinPark.Entities.dll!DarwinPark.Entities.Stats::EntityStats.FlashRoutine() [Coroutine: MoveNext] [Invoke]": {
+    "calls": 13.0,
+    "bytes": 7514.0,
+    "self": 0.025700000813230872
+  },
+  "/Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.UI.dll!DarwinPark.UI::RandomPlanetSpawner.Update() [Invoke]/DarwinPark.UI.dll!DarwinPark.UI::RandomPlanetSpawner.Generate() [Coroutine: MoveNext] [Invoke]/GameObject.AddComponent/DarwinPark.Entities.dll!DarwinPark.Entities::EntityGeneController.Awake() [Invoke]": {
+    "calls": 120.0,
+    "bytes": 73488.0,
+    "self": 0.27210000006016344
+  },
+  "/Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Simulation::EntityWorkScheduler.Update() [Invoke]/GameObject.Deactivate/GameObject.ActivateAwakeRecursively/DarwinPark.Entities.dll!DarwinPark.Entities.Stats::EntityStats.OnDisable() [Invoke]": {
+    "calls": 2.0,
+    "bytes": 1168.0,
+    "self": 0.004399999976158142
+  },
+  "/Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Simulation::EntityWorkScheduler.Update() [Invoke]/GameObject.AddComponent/DarwinPark.Entities.dll!DarwinPark.Entities.Ecology::CombatIntent.OnEnable() [Invoke]": {
+    "calls": 26.0,
+    "bytes": 15444.0,
+    "self": 0.051000000443309546
+  },
+  "/Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Ecology::PopulationBehavior.Update() [Invoke]/GameObject.Deactivate/GameObject.ActivateAwakeRecursively/DarwinPark.Entities.dll!DarwinPark.Entities.Stats::EntityStats.OnDisable() [Invoke]": {
+    "calls": 4.0,
+    "bytes": 2356.0,
+    "self": 0.00890000001527369
+  },
+  "/Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunDelayedDynamicFrameRate/CoroutinesDelayedCalls/DarwinPark.Entities.dll!DarwinPark.Entities::EntityLifeCycle.Start() [Invoke]": {
+    "calls": 12.0,
+    "bytes": 7336.0,
+    "self": 0.025200000498443842
+  },
+  "/Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Simulation::EntityWorkScheduler.Update() [Invoke]/GameObject.AddComponent/DarwinPark.Entities.dll!DarwinPark.Entities::EntityGeneController.Awake() [Invoke]": {
+    "calls": 10.0,
+    "bytes": 6124.0,
+    "self": 0.02590000000782311
+  }
+}

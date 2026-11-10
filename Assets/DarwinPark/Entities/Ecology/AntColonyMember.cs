@@ -1,3 +1,4 @@
+using DarwinPark.Core; // ★ 适配：实时可选组件查询避免空查找的编辑器分配。
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,7 +38,7 @@ namespace DarwinPark.Entities.Ecology
         // ★ 修复（防Bug回归）：固定分工的文本只在变化时解析，不能每次读取移动属性都重新解析枚举。
         public AntRole Role {get{if(_roleText!=State.role){_roleText=State.role;_role=Enum.TryParse<AntRole>(State.role,out var role)?role:AntRole.None;}return _role;}}
         public bool Active=>Population!=null&&Population.Active&&Population.Mode==EcologySettings.Load().antState;
-        public bool Young=>Genes.CurrentAge==AgeState.Infant||GetComponent<EggIncubation>()?.Incubating==true;
+        public bool Young=>Genes.CurrentAge==AgeState.Infant||OptionalComponent.Read<EggIncubation>(this)?.Incubating==true;
         public string GroupId=>Population.GroupId;
         public string Id=>EcologyIdentity.Of(Entity);
         public IEnumerable<AntColonyMember> Group=>Population.GroupMembers.Select(p=>p.GetComponent<AntColonyMember>()).Where(m=>m!=null&&m.Active);
@@ -58,7 +59,7 @@ namespace DarwinPark.Entities.Ecology
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)] private static void Reset()=>Members.Clear();
         public static AntColonyMember Ensure(PopulationBehavior pop)=>pop.GetComponent<AntColonyMember>()??pop.gameObject.AddComponent<AntColonyMember>();
         public static AntColonyMember QueenFor(PopulationBehavior pop)=>pop.GetComponent<AntColonyMember>()?.Queen;
-        public static bool IsManaged(EntityGeneController genes)=>genes!=null&&genes.GetComponent<AntColonyMember>()?.Active==true;
+        public static bool IsManaged(EntityGeneController genes)=>genes!=null&&OptionalComponent.Read<AntColonyMember>(genes)?.Active==true;
         public void Assign(AntRole role,string group=null)
         {
             if(group!=null)Population.JoinColony(group,role==AntRole.Queen);
@@ -94,7 +95,7 @@ namespace DarwinPark.Entities.Ecology
             if(Role==AntRole.None)Assign(Population.LeaderFlag?AntRole.Queen:ChooseBirthRole());
             State.scan-=dt;State.reproductionCooldown=Mathf.Max(0,State.reproductionCooldown-dt);
             ColonyResource.Feed(this,dt);
-            if(GetComponent<EggIncubation>()?.Incubating==true)return;
+            if(OptionalComponent.Read<EggIncubation>(this)?.Incubating==true)return;
             if(Young){Activity=ColonyActivity.Young;return;}
             if(Role==AntRole.Reproductive){BeginFounding();return;}
             if(State.founding)
@@ -183,7 +184,7 @@ namespace DarwinPark.Entities.Ecology
         }
         public static IReadOnlyDictionary<string,float> ExpressionSuppression(EntityGeneController genes)
         {
-            var member=genes.GetComponent<AntColonyMember>();if(member==null||!member.Active||member.Role==AntRole.None)return null;
+            var member=OptionalComponent.Read<AntColonyMember>(genes);if(member==null||!member.Active||member.Role==AntRole.None)return null;
             if(member._suppressionRole!=member.State.role)
             {
                 member._suppression.Clear();foreach(var id in AntColonySettings.Current.Rule(member.Role).suppressedGenes)member._suppression[id]=AntColonySettings.Current.geneSuppression;
@@ -196,7 +197,7 @@ namespace DarwinPark.Entities.Ecology
         }
         public static float Attribute(EntityGeneController genes,string id,float value)
         {
-            var member=genes.GetComponent<AntColonyMember>();if(member==null||!member.Active||member.Role==AntRole.None)return value;
+            var member=OptionalComponent.Read<AntColonyMember>(genes);if(member==null||!member.Active||member.Role==AntRole.None)return value;
             var rule=AntColonySettings.Current.Rule(member.Role);
             if(id=="attack")return member.Young?0:value*rule.attackMultiplier;
             if(id=="moveSpeed")return value*(member.State.founding?1:rule.moveMultiplier);

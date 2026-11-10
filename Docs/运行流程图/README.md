@@ -4,7 +4,7 @@
 
 [12条业务主流程](主流程.md) · [生成工具与维护说明](../../Tools/FlowDocs/README.md)
 
-覆盖 **370 个C#脚本、10 个Shader/HLSL文件、3949 个方法/构造/访问器/局部函数/回调/GPU函数**。没有显式方法的数据脚本也在索引中。未扫描Unity Packages/Library生成文件；Tools为离线生成器，不进入游戏运行图。
+覆盖 **375 个C#脚本、10 个Shader/HLSL文件、3967 个方法/构造/访问器/局部函数/回调/GPU函数**。没有显式方法的数据脚本也在索引中。未扫描Unity Packages/Library生成文件；Tools为离线生成器，不进入游戏运行图。
 
 
 ## 阅读与维护
@@ -53,6 +53,7 @@
 |Core|[Assets/DarwinPark/Core/Logging/RuntimeLogSettings.cs](脚本/ade1290a5194a825.md)|Runtime|2|
 |Core|[Assets/DarwinPark/Core/Logging/SessionLogWriter.cs](脚本/40cf249053355538.md)|Runtime|12|
 |Core|[Assets/DarwinPark/Core/MutationRuleEdits.cs](脚本/063e584187dad139.md)|Runtime|3|
+|Core|[Assets/DarwinPark/Core/OptionalComponent.cs](脚本/806c46b42ced4d36.md)|Runtime|1|
 |Core|[Assets/DarwinPark/Core/OrbitCamera.cs](脚本/42eb429559b42bcb.md)|Runtime|9|
 |Core|[Assets/DarwinPark/Core/RuleSelectionEdits.cs](脚本/f1d4e0eb3e10983c.md)|Runtime|4|
 |Core|[Assets/DarwinPark/Core/RuntimePerformance.cs](脚本/a8403a4c7503726d.md)|Runtime|16|
@@ -67,7 +68,7 @@
 |Core|[Assets/DarwinPark/Core/UI/UIRoot.cs](脚本/9c1421378791f0e0.md)|Runtime|9|
 |Core|[Assets/DarwinPark/Core/UI/UIVisualTheme.cs](脚本/ca525a798a08f966.md)|Runtime|16|
 |Core|[Assets/DarwinPark/Core/WorldAuthority.cs](脚本/2361e41ab2baa157.md)|Runtime|2|
-|Editor|[Assets/DarwinPark/Editor/ActiveControlsRegression.cs](脚本/2eab88692e68527d.md)|Editor|28|
+|Editor|[Assets/DarwinPark/Editor/ActiveControlsRegression.cs](脚本/2eab88692e68527d.md)|Editor|29|
 |Editor|[Assets/DarwinPark/Editor/ActiveSimulationBenchmark.cs](脚本/7532f6e210474791.md)|Editor|13|
 |Editor|[Assets/DarwinPark/Editor/AntColonyRegression.cs](脚本/1314e8c23331e578.md)|Editor|39|
 |Editor|[Assets/DarwinPark/Editor/ColonyContinuityRegression.cs](脚本/9386360ce717a3bf.md)|Editor|50|
@@ -83,7 +84,7 @@
 |Editor|[Assets/DarwinPark/Editor/EcologyCompatibilityBatch.cs](脚本/f06a5e7cb329977c.md)|Editor|6|
 |Editor|[Assets/DarwinPark/Editor/EntityControlRegression.cs](脚本/b536fa681c9ba1d5.md)|Editor|10|
 |Editor|[Assets/DarwinPark/Editor/EntityGeneFilterRegression.cs](脚本/809edd2bc8d1c735.md)|Editor|16|
-|Editor|[Assets/DarwinPark/Editor/EntityInspectionFramePacingRegression.cs](脚本/01132a1f55d36dec.md)|Editor|30|
+|Editor|[Assets/DarwinPark/Editor/EntityInspectionFramePacingRegression.cs](脚本/01132a1f55d36dec.md)|Editor|31|
 |Editor|[Assets/DarwinPark/Editor/EntityPanelMotionRegression.cs](脚本/c42720484a16e881.md)|Editor|22|
 |Editor|[Assets/DarwinPark/Editor/EntityPlanningMergeRegression.cs](脚本/763da58492f54d4c.md)|Editor|46|
 |Editor|[Assets/DarwinPark/Editor/EntityStateRegression.cs](脚本/cbb314f2877cdcfa.md)|Editor|25|
@@ -94,7 +95,7 @@
 |Editor|[Assets/DarwinPark/Editor/GeneTreeWorkbenchRegression.cs](脚本/b594bef24a5dce2b.md)|Editor|3|
 |Editor|[Assets/DarwinPark/Editor/GroundPhysicsBenchmark.cs](脚本/047e34d05752f3cb.md)|Editor|14|
 |Editor|[Assets/DarwinPark/Editor/GroundPhysicsRegression.cs](脚本/a1c4cb548c26ab52.md)|Editor|16|
-|Editor|[Assets/DarwinPark/Editor/HudInputRegression.cs](脚本/795f355c3f14dbd5.md)|Editor|24|
+|Editor|[Assets/DarwinPark/Editor/HudInputRegression.cs](脚本/795f355c3f14dbd5.md)|Editor|26|
 |Editor|[Assets/DarwinPark/Editor/InteractionUXRegression.cs](脚本/7bb23131e3b3865d.md)|Editor|14|
 |Editor|[Assets/DarwinPark/Editor/LanMultiplayerRegression.cs](脚本/140d316a72ec89d5.md)|Editor|64|
 |Editor|[Assets/DarwinPark/Editor/LayersSettingsRegression.cs](脚本/74c9e2e7a7587584.md)|Editor|15|
@@ -114,6 +115,7 @@
 |Editor|[Assets/DarwinPark/Editor/PopulationArchiveRegression.cs](脚本/17091ce4f3e6bbb1.md)|Editor|34|
 |Editor|[Assets/DarwinPark/Editor/PopulationMaintenanceRegression.cs](脚本/fda63d99884ef0fb.md)|Editor|66|
 |Editor|[Assets/DarwinPark/Editor/PopulationPerformanceRegression.cs](脚本/9157b2281b645f60.md)|Editor|19|
+|Editor|[Assets/DarwinPark/Editor/ProducerPlacementChecks.cs](脚本/639f07f7d384b725.md)|Editor|3|
 |Editor|[Assets/DarwinPark/Editor/ProjectOptimizationRegression.cs](脚本/f5351f9e1fa97815.md)|Editor|41|
 |Editor|[Assets/DarwinPark/Editor/RenderDistanceAuditRegression.cs](脚本/d5422be5a065ae18.md)|Editor|16|
 |Editor|[Assets/DarwinPark/Editor/RuleModesCleanupRegression.cs](脚本/0c519783f10a24d8.md)|Editor|15|
@@ -126,6 +128,7 @@
 |Editor|[Assets/DarwinPark/Editor/TaskCoordinateOptimizationRegression.cs](脚本/274ce3a54a3e2b5f.md)|Editor|19|
 |Editor|[Assets/DarwinPark/Editor/TerrainVideoSettingsRegression.cs](脚本/0c1be03c62f93352.md)|Editor|13|
 |Editor|[Assets/DarwinPark/Editor/UIStyleRegression.cs](脚本/07acc7eed21a3625.md)|Editor|21|
+|Editor|[Assets/DarwinPark/Editor/UserFrameHierarchyAudit.cs](脚本/778dd6bf439321fc.md)|Editor|4|
 |Editor|[Assets/DarwinPark/Editor/WaterAndExitRegression.cs](脚本/3fa9502d023c4aca.md)|Editor|6|
 |Editor|[Assets/DarwinPark/Editor/WorldControlsRegression.cs](脚本/df3cc9cf0a2f6e97.md)|Editor|15|
 |Editor|[Assets/DarwinPark/Editor/WorldFlowRegression.cs](脚本/27d8b89659be5bc3.md)|Editor|6|
@@ -193,6 +196,7 @@
 |Entities|[Assets/DarwinPark/Entities/Ecology/PopulationGroupIndex.cs](脚本/6bb343d8be5beae5.md)|Runtime|12|
 |Entities|[Assets/DarwinPark/Entities/Ecology/PredationSizePolicy.cs](脚本/80ea865fb0f12053.md)|Runtime|2|
 |Entities|[Assets/DarwinPark/Entities/Ecology/ProducerClassification.cs](脚本/ad32a2250ced390a.md)|Runtime|4|
+|Entities|[Assets/DarwinPark/Entities/Ecology/ProducerPlacementSearch.cs](脚本/68c6f349d3942cc4.md)|Runtime|1|
 |Entities|[Assets/DarwinPark/Entities/Ecology/QueenBirthDelivery.cs](脚本/10252933c19b3182.md)|Runtime|2|
 |Entities|[Assets/DarwinPark/Entities/Ecology/ResourceCoordinates.cs](脚本/93d731ac01e3af48.md)|Runtime|19|
 |Entities|[Assets/DarwinPark/Entities/Ecology/ResourceGroups.cs](脚本/97a3c8522367343a.md)|Runtime|7|
@@ -368,6 +372,7 @@
 |UI|[Assets/DarwinPark/UI/MapPopulationListUI.cs](脚本/628d691916fbb56b.md)|Runtime|22|
 |UI|[Assets/DarwinPark/UI/NutritionReplicaPresentation.cs](脚本/a956a3ed597cf878.md)|Runtime|1|
 |UI|[Assets/DarwinPark/UI/NutritionStatusPresentation.cs](脚本/495e56e5dfb8b3fa.md)|Runtime|1|
+|UI|[Assets/DarwinPark/UI/PerformanceCaptureNotice.cs](脚本/9586755aef05e502.md)|Runtime|5|
 |UI|[Assets/DarwinPark/UI/PlacementQuantityPopup.cs](脚本/8e55f714deb963c4.md)|Runtime|5|
 |UI|[Assets/DarwinPark/UI/PlanetParameterEditor.cs](脚本/ac36b95043305d58.md)|Runtime|6|
 |UI|[Assets/DarwinPark/UI/PopulationCharts.cs](脚本/eed554ca8394b767.md)|Runtime|18|

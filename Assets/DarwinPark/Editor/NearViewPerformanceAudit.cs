@@ -26,7 +26,7 @@ namespace DarwinPark.EditorTools
         // ★ 新增：用已记录的用户Game视口尺寸对照DX12，不能把不同视野/渲染量混为同一帧数。
         private static void MatchView(EditorWindow view)
         {
-            var assembly=typeof(UnityEditor.Editor).Assembly;var sizesType=assembly.GetType("UnityEditor.GameViewSizes");var sizes=sizesType.GetProperty("instance",BindingFlags.Public|BindingFlags.Static|BindingFlags.FlattenHierarchy).GetValue(null);var get=sizesType.GetMethod("GetGroup");var group=get.Invoke(sizes,new[]{Enum.Parse(get.GetParameters()[0].ParameterType,"Standalone")});var sizeType=assembly.GetType("UnityEditor.GameViewSize");var mode=assembly.GetType("UnityEditor.GameViewSizeType");var size=Activator.CreateInstance(sizeType,BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance,null,new[]{Enum.Parse(mode,"FixedResolution"),(object)1237,1382,"PerformanceAudit"},null);group.GetType().GetMethod("AddCustomSize").Invoke(group,new[]{size});int count=(int)group.GetType().GetMethod("GetTotalCount").Invoke(group,null);view.GetType().GetProperty("selectedSizeIndex",BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance).SetValue(view,count-1);
+            var assembly=typeof(UnityEditor.Editor).Assembly;var sizesType=assembly.GetType("UnityEditor.GameViewSizes");var sizes=sizesType.GetProperty("instance",BindingFlags.Public|BindingFlags.Static|BindingFlags.FlattenHierarchy).GetValue(null);var get=sizesType.GetMethod("GetGroup");var group=get.Invoke(sizes,new[]{Enum.Parse(get.GetParameters()[0].ParameterType,"Standalone")});var sizeType=assembly.GetType("UnityEditor.GameViewSize");var mode=assembly.GetType("UnityEditor.GameViewSizeType");var size=Activator.CreateInstance(sizeType,BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance,null,new[]{Enum.Parse(mode,"FixedResolution"),(object)(File.Exists(Path.Combine(Folder,"user-report.json"))?2560:1237),(File.Exists(Path.Combine(Folder,"user-report.json"))?1385:1382),"PerformanceAudit"},null);group.GetType().GetMethod("AddCustomSize").Invoke(group,new[]{size});int count=(int)group.GetType().GetMethod("GetTotalCount").Invoke(group,null);view.GetType().GetProperty("selectedSizeIndex",BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance).SetValue(view,count-1);
         }
         private static IEnumerator Guard()
         {
@@ -46,6 +46,13 @@ namespace DarwinPark.EditorTools
         {
             var world=WorldSaveStore.Read(Path.Combine(Folder,"input/world.json"));var session=Object.FindFirstObjectByType<WorldSessionManager>();session.autoSaveInterval=36000;session.Open(world);while(session.Busy)yield return null;
             var clock=ServiceLocator.Get<SimulationClock>();clock.Pause();FramePacingSettings.SetLimit(0);var camera=Camera.main;var orbit=camera.GetComponent<OrbitCamera>();orbit.enabled=false;var planet=EcologyQueries.Planet;var weather=planet.GetComponent<PlanetWeatherVisuals>();weather.cloudSpeed=0;PopulationRangeLayer.SetVisible(false);
+            // ★ 新增：用户现场报告复查使用原镜头与实际视口，保留完整生态，不用先前413实体世界替代新495实体现场。
+            if(Array.IndexOf(System.Environment.GetCommandLineArgs(),"-userReportOnly")>=0)
+            {
+                var saved=JsonUtility.FromJson<PerformanceReport>(File.ReadAllText(Path.Combine(Folder,"user-report.json")));camera.transform.SetPositionAndRotation(saved.viewStart.position,saved.viewStart.rotation);clock.SetTimeScale(1);
+                File.WriteAllText(Path.Combine(Folder,"profiler-state.txt"),"enabled="+UnityEngine.Profiling.Profiler.enabled+" deep="+UnityEditorInternal.ProfilerDriver.deepProfiling);
+                bool trace=Array.IndexOf(System.Environment.GetCommandLineArgs(),"-noHierarchy")<0;if(trace)UserFrameHierarchyAudit.Start();clock.Play();yield return Sample("user-running");if(trace)UserFrameHierarchyAudit.Finish(Folder);clock.Pause();yield return Sample("user-paused");yield break;
+            }
             var target=EntityRegistry.All.Where(e=>EcologyQueries.Alive(e)&&e.Genes.GetAttribute("moveSpeed")>0&&!planet.IsSubmerged(e.transform.position)).OrderBy(e=>(e.transform.position-camera.transform.position).sqrMagnitude).First();Vector3 point=target.transform.position,center=planet.transform.position,up=(point-center).normalized;var rotation=Quaternion.LookRotation(-up,Mathf.Abs(up.y)>.99f?Vector3.right:Vector3.up);
             // ★ 新增：在切换动作前启动计时，测首次镜头切换，不能用预热后的稳态掩盖进入控制的尖峰。
             if(Array.IndexOf(System.Environment.GetCommandLineArgs(),"-coldOnly")>=0)

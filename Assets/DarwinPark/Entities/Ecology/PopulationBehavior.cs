@@ -47,7 +47,7 @@ namespace DarwinPark.Entities.Ecology
         // ★ 适配：缓存属性组件但实时读取生命值，同帧死亡立即生效，不用每次关系查询都查找相同组件。
         private bool Alive {get{if(_stats==null)_stats=GetComponent<EntityStats>();return _entity!=null&&_entity.isActiveAndEnabled&&_stats!=null&&_stats.TryGet("health",out float hp)&&hp>0;}}
         public bool Active=>PopulationGene!=null&&Alive&&
-            (GetComponent<EggIncubation>()?.Incubating!=true||
+            (OptionalComponent.Read<EggIncubation>(this)?.Incubating!=true||
              Mode==_settings.antState&&!string.IsNullOrEmpty(GroupId)&&GetComponent<AntColonyMember>()?.Role is AntRole role&&role!=AntRole.None);
         // ★ 适配：蚁群领袖由王后分工确定，狼群仍沿用原有决斗与加入顺序。
         public PopulationBehavior Leader=>PopulationGroupIndex.Leader(this);
@@ -88,7 +88,7 @@ namespace DarwinPark.Entities.Ecology
             _mode=Mode;EnsureMembership();
             // ★ 适配：种群状态改变后独立成群也记录真实来源；加入既有种群不会改写其谱系。
             if(!string.IsNullOrEmpty(previousGroup)&&previousGroup!=GroupId&&LeaderFlag)PopulationArchive.RecordFounding(previousGroup,GroupId,Mode,_entity.DisplayName,"种群状态变化形成新种群");
-            if(GetComponent<EggIncubation>()?.Incubating==true)return;
+            if(OptionalComponent.Read<EggIncubation>(this)?.Incubating==true)return;
             // ★ 适配：固定分工独立推进，旧全群采集与决斗不能覆盖蚁群角色。
             if(Mode==_settings.antState){AntColonyMember.Ensure(this).Advance(dt);return;}
             _duelRemaining=Mathf.Max(0,_duelRemaining-dt);_manualRemaining=Mathf.Max(0,_manualRemaining-dt);

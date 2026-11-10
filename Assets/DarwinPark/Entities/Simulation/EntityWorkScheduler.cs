@@ -114,7 +114,7 @@ namespace DarwinPark.Entities.Simulation
             {
                 var genes=entry.genes;if(genes==null||!genes.isActiveAndEnabled)continue;
                 if(entry.life==null)entry.life=genes.GetComponent<EntityLifeCycle>();
-                if(entry.manual==null)entry.manual=genes.GetComponent<EntityManualControl>();
+                if(entry.manual==null)entry.manual=OptionalComponent.Read<EntityManualControl>(genes);
                 entry.frame=Time.frameCount;entry.ordinal=0;entry.count=1;
                 // ★ 修复（防Bug回归）：关闭合并时不做空间/签名检查；优先级只取样一次，不能在排序比较器里反复GetComponent。
                 if(!tuning.mergeStationaryEntities){entry.dormant=false;entry.quiet=0;entry.nextDue=double.NaN;QueueActive(entry);continue;}
@@ -129,7 +129,8 @@ namespace DarwinPark.Entities.Simulation
                 }
                 string currentState=entry.supported?entry.state?.Current?.id??"":"";
                 if(entry.stateId!=currentState){entry.stateId=currentState;entry.quiet=0;}
-                if(entry.supported){entry.nutritionParasite=genes.GetComponent<NutritionParasite>();entry.parasite=genes.GetComponent<ParasiteBehavior>();entry.egg=genes.GetComponent<EggIncubation>();}
+                // ★ 修复（防Bug回归）：正常缺失的寄生/孵化组件不能在每帧调度中生成编辑器诊断分配。
+                if(entry.supported){entry.nutritionParasite=OptionalComponent.Read<NutritionParasite>(genes);entry.parasite=OptionalComponent.Read<ParasiteBehavior>(genes);entry.egg=OptionalComponent.Read<EggIncubation>(genes);}
                 bool eligible=stationary&&Eligible(entry);
                 entry.quiet=eligible?entry.quiet+dt:0;
                 entry.dormant=eligible&&entry.quiet>=tuning.mergeQuietSeconds;

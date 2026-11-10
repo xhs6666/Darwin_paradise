@@ -69,6 +69,8 @@ namespace DarwinPark.EditorTools
             Check(filter.Matches.Contains(c),"禁用或不生效仍算携带基因");filter.SetGene("gene_growth",true);Check(filter.Matches.Count==3,"多个必须包含条件按全部满足组合");
             filter.SetGene("gene_nutrition",false);Check(filter.Matches.Count==2&&filter.Matches.Contains(a)&&filter.Matches.Contains(c),"包含与不包含条件同时生效");
             filter.SetGene("gene_locomotion",false);Check(!filter.Criteria.Included.Contains("gene_locomotion")&&filter.Matches.Count==1&&filter.Matches[0]==e,"同一基因切换规则互斥，多个排除任一命中即排除");
+            // ★ 修复（测试夹具）：窄屏默认隐藏条件卡，必须通过实际入口展开并等待下拉初始化，不能对停用对象直接Show。
+            if(!filter.Card.gameObject.activeInHierarchy)filter.ToggleCriteria();yield return null;yield return null;
             filter.ResetFilter();var include=filter.Card.Find("IncludeGenes").GetComponent<Dropdown>();int index=include.options.FindIndex(o=>o.text.Contains("行动基因"));Check(index>=2,"实际下拉菜单包含可选行动基因");
             include.Show();yield return new WaitForSecondsRealtime(.25f);Check(include.transform.Find("Dropdown List")!=null&&!include.template.gameObject.activeSelf,"初始化后正常展开且隐藏原始模板");yield return Capture("dropdown-open");
             var outside=Click(new Vector2(Screen.width*.2f,Screen.height*.7f));Check(outside.name=="Blocker","点击列表外部实际命中关闭遮罩而非底层世界");yield return new WaitForSecondsRealtime(.25f);Check(include.transform.Find("Dropdown List")==null&&!include.template.gameObject.activeSelf,"点击外部彻底收起列表和模板");

@@ -12,7 +12,7 @@ namespace DarwinPark.Core
     public static class PerformanceTimings
     {
         // ★ 适配：把活体大项继续细分，避免把行动、邻域重建和补给开销都误归因为合并算法。
-        public enum Area { Scheduler,Genes,StatePerception,Vitals,Environment,Population,ColonyTasks,GroundAnchor,Gravity,BottomUI,ResourceVisuals,GeneSignature,GeneRecalculation,Nutrition,Reproduction,Locomotion,Neighborhood,Feeding,Formation,Perception,MutationRounds,ResourceSearch,SingletonSettlement,CorpseCleanup,BirthFactory,BirthIdentity,BirthPlacement,BreedingMaintenance,MateSearch,CoordinateGrid,ManualAim,CameraGround,Count }
+        public enum Area { Scheduler,Genes,StatePerception,Vitals,Environment,Population,ColonyTasks,GroundAnchor,Gravity,BottomUI,ResourceVisuals,GeneSignature,GeneRecalculation,Nutrition,Reproduction,Locomotion,Neighborhood,Feeding,Formation,Perception,MutationRounds,ResourceSearch,SingletonSettlement,CorpseCleanup,BirthFactory,BirthIdentity,BirthPlacement,BreedingMaintenance,MateSearch,CoordinateGrid,ManualAim,CameraGround,AutomaticSpawn,ProducerPlacement,Count }
         private static readonly long[] Ticks=new long[(int)Area.Count],Calls=new long[(int)Area.Count];
         public static bool Capturing {get;private set;}
         public readonly struct Scope:IDisposable
@@ -38,7 +38,7 @@ namespace DarwinPark.Core
         private readonly GpuPerformanceSample _gpu;private readonly PerformanceViewState _viewStart;private PerformanceViewState _viewWorst;private double _worst;
         private readonly double[][] _areas;private readonly long[] _calls;private readonly double[] _frames;
         private readonly List<(string name,ProfilerRecorder recorder)> _engine=new List<(string,ProfilerRecorder)>();private bool _closed;private int _count;
-        private static readonly string[] EngineNames={"Main Thread","Render Thread","PlayerLoop","BehaviourUpdate","FixedBehaviourUpdate","Physics.Simulate","Physics.Processing","Physics.FetchResults","GC.Collect","GC Allocated In Frame","Gfx.WaitForPresentOnGfxThread","Gfx.WaitForRenderThread","Gfx.PresentFrame","Gfx.ProcessCommands","WaitForTargetFPS","Draw Calls Count","Triangles Count","SetPass Calls Count"};
+        private static readonly string[] EngineNames={"Main Thread","Render Thread","PlayerLoop","BehaviourUpdate","FixedBehaviourUpdate","Physics.Simulate","Physics.Processing","Physics.FetchResults","GC.Collect","GC Allocated In Frame","Gfx.WaitForPresentOnGfxThread","Gfx.WaitForRenderThread","Gfx.PresentFrame","Gfx.ProcessCommands","WaitForTargetFPS","Draw Calls Count","Triangles Count","SetPass Calls Count","Camera.Render","RenderPipelineManager.DoRenderLoop_Internal","RenderLoop.Draw","Canvas.BuildBatch","Canvas.SendWillRenderCanvases","GUI.Repaint","EditorLoop","SceneView.Repaint"};
         public PerformanceSampleSession(int capacity=8192)
         {
             _gpu=new GpuPerformanceSample(capacity);_viewStart=PerformanceViewState.Capture();

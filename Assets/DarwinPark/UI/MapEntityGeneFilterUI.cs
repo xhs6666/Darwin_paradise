@@ -27,7 +27,7 @@ namespace DarwinPark.UI
         private MapEntityStatisticsUI _stats;private RectTransform _card;
         private Dropdown _include,_exclude;private Text _count,_hint;private Button _show;
         private EntityFilterResultsUI _results;private string _catalog;private float _next;
-        private bool _floating;
+        private bool _floating,_wideHidden;
         private readonly List<GeneDefinition> _genes=new List<GeneDefinition>();
         private readonly List<DarwinEntity> _matches=new List<DarwinEntity>();
         public static void Attach(MapEntityStatisticsUI stats){if(stats.GetComponent<MapEntityGeneFilterUI>()==null)stats.gameObject.AddComponent<MapEntityGeneFilterUI>();}
@@ -105,14 +105,15 @@ namespace DarwinPark.UI
             var parent=(RectTransform)_card.parent;var stats=(RectTransform)_stats.transform;
             float x=stats.offsetMax.x+gap,available=parent.rect.width-x-12;
             WideLayout=available>=minimumWidth;float width=WideLayout?Mathf.Min(preferredWidth,available):Mathf.Min(preferredWidth,parent.rect.width-24);
-            _card.gameObject.SetActive(WideLayout||_floating);
+            _card.gameObject.SetActive(WideLayout?!_wideHidden:_floating);
             var anchor=new Vector2(0,1);if(_card.anchorMin!=anchor||_card.anchorMax!=anchor||_card.pivot!=anchor){_card.anchorMin=_card.anchorMax=anchor;_card.pivot=anchor;}
             var position=WideLayout?new Vector2(x,0):new Vector2(Mathf.Clamp(stats.offsetMin.x,12,Mathf.Max(12,parent.rect.width-width-12)),cardHeight+gap);
             var size=new Vector2(width,cardHeight);
             if(_card.anchoredPosition!=position)_card.anchoredPosition=position;if(_card.sizeDelta!=size)_card.sizeDelta=size;
             if(Time.unscaledTime>=_next)RefreshNow();
         }
-        public void ToggleCriteria(){_results?.Hide();_floating=!_floating;if(_card!=null){_card.gameObject.SetActive(true);_card.SetAsLastSibling();}RefreshNow();}
+        // ★ 修复（防Bug回归）：宽屏的卡片本来已显示，旧按钮只改窄屏标记造成视觉无响应；两种布局各自切换真实可见状态。
+        public void ToggleCriteria(){_results?.Hide();RuntimeDropdownDismissal.CloseOpenPopups();if(WideLayout)_wideHidden=!_wideHidden;else _floating=!_floating;if(_card!=null){_card.gameObject.SetActive(WideLayout?!_wideHidden:_floating);_card.SetAsLastSibling();}RefreshNow();}
         public void OpenResults()
         {
             RefreshNow();if(!WorldRuntimeGate.Ready)return;

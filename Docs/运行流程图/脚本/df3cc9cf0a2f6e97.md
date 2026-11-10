@@ -690,7 +690,7 @@ flowchart TD
 - [UIRoot.MainCanvas.get · L14](9c1421378791f0e0.md#maa2cc9baf1248477)（访问器）
 - [WorldControlsRegression.Check · L31](df3cc9cf0a2f6e97.md#mc0b7eac680c69043)（方法）
 - [WorldControlsRegression.Capture · L45](df3cc9cf0a2f6e97.md#m974146b009019aa5)（方法）
-- [EcologyQueries.Surface · L47](bdf7ccc2c9c0452f.md#m2f1f6873ee5fc8df)（方法）
+- [EcologyQueries.Surface · L48](bdf7ccc2c9c0452f.md#m40ee3e975d7f5137)（方法）
 - [WorldControlsRegression.Spawn · L38](df3cc9cf0a2f6e97.md#mfbfd05229d9bc7a3)（方法）
 - [MapEntityStatisticsUI.RefreshNow · L74](da03211264cb6014.md#ma30ab70fe8c10f4f)（方法）
 - [MapEntityStatisticsUI.Total.get · L16](da03211264cb6014.md#m2b470c44fd65b06c)（访问器）
@@ -729,7 +729,7 @@ flowchart TD
 - [WorldControlsRegression.回调@74 · L74](df3cc9cf0a2f6e97.md#me4659b6632234020)（回调/委托）
 - [WorldControlsRegression.回调@79 · L79](df3cc9cf0a2f6e97.md#mc5f09efc878c8364)（回调/委托）
 - [WorldControlsRegression.回调@83 · L83](df3cc9cf0a2f6e97.md#me4cb90bd177600d2)（回调/委托）
-- [EcologyIdentity.Of · L21](bdf7ccc2c9c0452f.md#m1143cf9570a93b72)（方法）
+- [EcologyIdentity.Of · L22](bdf7ccc2c9c0452f.md#mb23020fe763aafd3)（方法）
 
 <a id="m8002cc9a6391c193"></a>
 
@@ -793,7 +793,7 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [EcologyIdentity.Find · L20](bdf7ccc2c9c0452f.md#m58f756a3ba9ec990)（方法）
+- [EcologyIdentity.Find · L21](bdf7ccc2c9c0452f.md#mb670b64dc2baff58)（方法）
 
 <a id="me4cb90bd177600d2"></a>
 
@@ -817,4 +817,4 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [EcologyIdentity.Find · L20](bdf7ccc2c9c0452f.md#m58f756a3ba9ec990)（方法）
+- [EcologyIdentity.Find · L21](bdf7ccc2c9c0452f.md#mb670b64dc2baff58)（方法）

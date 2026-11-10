@@ -120,6 +120,8 @@ namespace DarwinPark.EditorTools
         {
             Clear();string group=Guid.NewGuid().ToString("N");var queen=Spawn(home,("gene_growth",50),("gene_population",20));var q=AntColonyMember.Ensure(queen.GetComponent<PopulationBehavior>());q.Assign(AntRole.Queen,group);var workers=new List<AntColonyMember>();
             for(int i=0;i<8;i++){var e=Spawn(home+EcologyQueries.Up(home)*(i+1)*.8f,("gene_growth",50),("gene_population",20),("gene_locomotion",50));var m=AntColonyMember.Ensure(e.GetComponent<PopulationBehavior>());m.Assign(AntRole.Worker,group);workers.Add(m);}
+            // ★ 适配：复查优化前后的真实投放判定及可选组件即时性。
+            ProducerPlacementChecks.Verify(q,Check);
             var destinations=workers.Select(m=>{m.Destination(out var p,out _,out _);return p;}).ToArray();Check(destinations.All(p=>EcologyQueries.Distance(p,home)>1)&&destinations.Distinct().Count()==8,"休息工匠获得不同地表站位，不以王后身体为终点");
             var initial=workers.Select(m=>m.transform.position).ToArray();foreach(var m in workers){var desired=ColonyFormation.Avoid(m.Genes,Vector3.zero,5);Check(Mathf.Abs(Vector3.Dot(desired,EcologyQueries.Up(m.transform.position)))<.001f&&desired.sqrMagnitude>0,"同轴堆叠成员产生切向避让而非向上吸附");}
             yield return null;var mode=Physics.simulationMode;Physics.simulationMode=SimulationMode.Script;clock.Play();

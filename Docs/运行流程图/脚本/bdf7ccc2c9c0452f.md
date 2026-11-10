@@ -2,13 +2,13 @@
 
 [返回总索引](../README.md) · `Runtime` · `Assets/DarwinPark/Entities/Ecology/EcologyIdentity.cs`
 
-[源文件](../../../Assets/DarwinPark/Entities/Ecology/EcologyIdentity.cs) · 源码校验：`6e20a484e56abcdef706dccca449900df1ef5a8f548b6d486cfeaad8d7161a64`
+[源文件](../../../Assets/DarwinPark/Entities/Ecology/EcologyIdentity.cs) · 源码校验：`2492d57e48e33997bcc8f02d27dc35240cfe3f8eefbbe70cacb4d850cb82251b`
 
 方法按源文件位置排列。事件/回调引用不表示立即执行；分支与异常说明见总索引。完整源码与可点击关系图请打开离线手册。
 
-<a id="m989150a58b56a6c2"></a>
+<a id="m7ac96c56a47a45d3"></a>
 
-## Id.get · L14
+## Id.get · L15
 
 `get`
 
@@ -26,9 +26,9 @@ flowchart TD
 
 ```
 
-<a id="m49c42c1725782f99"></a>
+<a id="mfb0d5b1814d3e594"></a>
 
-## Id.set · L14
+## Id.set · L15
 
 `private set`
 
@@ -46,9 +46,9 @@ flowchart TD
 
 ```
 
-<a id="m8f343f942b17b807"></a>
+<a id="me29a2247bba15e88"></a>
 
-## OnEnable · L15
+## OnEnable · L16
 
 `private void OnEnable()`
 
@@ -68,11 +68,11 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [EcologyIdentity.Id.get · L14](bdf7ccc2c9c0452f.md#m989150a58b56a6c2)（访问器）
+- [EcologyIdentity.Id.get · L15](bdf7ccc2c9c0452f.md#m7ac96c56a47a45d3)（访问器）
 
-<a id="m4d069aaa794dcdd9"></a>
+<a id="m360f829a5f85f872"></a>
 
-## OnDisable · L16
+## OnDisable · L17
 
 `private void OnDisable()`
 
@@ -98,11 +98,11 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [EcologyIdentity.Id.get · L14](bdf7ccc2c9c0452f.md#m989150a58b56a6c2)（访问器）
+- [EcologyIdentity.Id.get · L15](bdf7ccc2c9c0452f.md#m7ac96c56a47a45d3)（访问器）
 
-<a id="m0a1c898af0605edf"></a>
+<a id="m98cb86822bff605e"></a>
 
-## Reset · L17
+## Reset · L18
 
 `[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)] private static void Reset()`
 
@@ -120,9 +120,9 @@ flowchart TD
 
 ```
 
-<a id="m393d203b2d4098fb"></a>
+<a id="m4b6a41779b342bc3"></a>
 
-## Restore · L18
+## Restore · L19
 
 `public void Restore(string id)`
 
@@ -148,13 +148,13 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [EcologyIdentity.OnDisable · L16](bdf7ccc2c9c0452f.md#m4d069aaa794dcdd9)（方法）
-- [EcologyIdentity.Id.set · L14](bdf7ccc2c9c0452f.md#m49c42c1725782f99)（访问器）
-- [EcologyIdentity.OnEnable · L15](bdf7ccc2c9c0452f.md#m8f343f942b17b807)（方法）
+- [EcologyIdentity.OnDisable · L17](bdf7ccc2c9c0452f.md#m360f829a5f85f872)（方法）
+- [EcologyIdentity.Id.set · L15](bdf7ccc2c9c0452f.md#mfb0d5b1814d3e594)（访问器）
+- [EcologyIdentity.OnEnable · L16](bdf7ccc2c9c0452f.md#me29a2247bba15e88)（方法）
 
-<a id="m58f756a3ba9ec990"></a>
+<a id="mb670b64dc2baff58"></a>
 
-## Find · L20
+## Find · L21
 
 `public static DarwinEntity Find(string id)`
 
@@ -188,9 +188,9 @@ flowchart TD
 
 ```
 
-<a id="m1143cf9570a93b72"></a>
+<a id="mb23020fe763aafd3"></a>
 
-## Of · L21
+## Of · L22
 
 `public static string Of(DarwinEntity entity)`
 
@@ -210,12 +210,12 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [EcologyIdentity.Id.get · L14](bdf7ccc2c9c0452f.md#m989150a58b56a6c2)（访问器）
-- [EcologyIdentity.Ensure · L22](bdf7ccc2c9c0452f.md#m40609054a6d444d0)（方法）
+- [EcologyIdentity.Id.get · L15](bdf7ccc2c9c0452f.md#m7ac96c56a47a45d3)（访问器）
+- [EcologyIdentity.Ensure · L23](bdf7ccc2c9c0452f.md#m8adfd15f583f225a)（方法）
 
-<a id="m40609054a6d444d0"></a>
+<a id="m8adfd15f583f225a"></a>
 
-## Ensure · L22
+## Ensure · L23
 
 `public static EcologyIdentity Ensure(GameObject obj)`
 
@@ -240,9 +240,9 @@ flowchart TD
 
 ```
 
-<a id="mb75bba579a9de112"></a>
+<a id="m161b5058306f1ffe"></a>
 
-## Planet.get · L27
+## Planet.get · L28
 
 `public static PlanetTerrainMeshBuilder Planet`
 
@@ -260,9 +260,9 @@ flowchart TD
 
 ```
 
-<a id="m4fb10ad424167e3b"></a>
+<a id="m200839bb9db5ec55"></a>
 
-## Active · L28
+## Active · L29
 
 `public static GeneEvaluation Active(EntityGeneController genes,string id)`
 
@@ -274,10 +274,10 @@ flowchart TD
 flowchart TD
   b0(["入口"])
   b1{"判断：genes==null"}
-  b2{"genes.GetComponent&lt;EggIncubation&gt;()<br/>判断：genes.GetComponent&lt;EggIncubation&gt;()"}
+  b2{"OptionalComponent.Read&lt;EggIncubation&gt;(genes)<br/>判断：OptionalComponent.Read&lt;EggIncubation&gt;(genes)"}
   b3[".Incubating"]
-  b4["genes.GetComponent&lt;EggIncubation&gt;()"]
-  b5{"判断：genes.GetComponent&lt;EggIncubation&gt;()?.Incubating==true"}
+  b4["OptionalComponent.Read&lt;EggIncubation&gt;(genes)"]
+  b5{"判断：OptionalComponent.Read&lt;EggIncubation&gt;(genes)?.Incubating==true"}
   b6["结果：null"]
   b7{"selected=null<br/>判断：genes.Evaluation!=null"}
   b8["genes.Evaluation.Genes"]
@@ -321,11 +321,12 @@ flowchart TD
 
 项目内调用/回调引用：
 
+- [OptionalComponent.Read · L7](806c46b42ced4d36.md#m69622a4dee165c5a)（方法）
 - [EntityGeneController.Evaluation.get · L18](7494d53178552f0e.md#mc0039c100a31b455)（访问器）
 
-<a id="mb2877c487f449970"></a>
+<a id="m8352bfacbe2996a8"></a>
 
-## Alive · L38
+## Alive · L39
 
 `public static bool Alive(DarwinEntity entity)`
 
@@ -363,9 +364,9 @@ flowchart TD
 
 - [EntityStats.TryGet · L90](75aa86a368efdf24.md#m24ee1433e4a70d94)（方法）
 
-<a id="m1a07639eacf3aa47"></a>
+<a id="mfa1ace432c73012a"></a>
 
-## ToLocal · L39
+## ToLocal · L40
 
 `public static Vector3 ToLocal(Vector3 point)`
 
@@ -390,9 +391,9 @@ flowchart TD
 
 ```
 
-<a id="m320932c05ccecbf7"></a>
+<a id="mc67423f4877c3534"></a>
 
-## ToWorld · L40
+## ToWorld · L41
 
 `public static Vector3 ToWorld(Vector3 point)`
 
@@ -417,9 +418,9 @@ flowchart TD
 
 ```
 
-<a id="maca7070196f125fd"></a>
+<a id="ma73e6bbbc726282f"></a>
 
-## Up · L41
+## Up · L42
 
 `public static Vector3 Up(Vector3 point)`
 
@@ -444,9 +445,9 @@ flowchart TD
 
 ```
 
-<a id="mba9c3e3c95d0f2dd"></a>
+<a id="m6e395dce655ebcac"></a>
 
-## Distance · L42
+## Distance · L43
 
 `public static float Distance(Vector3 a,Vector3 b)`
 
@@ -471,12 +472,12 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [EcologyQueries.Up · L41](bdf7ccc2c9c0452f.md#maca7070196f125fd)（方法）
+- [EcologyQueries.Up · L42](bdf7ccc2c9c0452f.md#ma73e6bbbc726282f)（方法）
 - [PlanetTerrainMeshBuilder.WaterRadius.get · L96](415285cf043354a9.md#md3a3867afb75f981)（访问器）
 
-<a id="m2f1f6873ee5fc8df"></a>
+<a id="m40ee3e975d7f5137"></a>
 
-## Surface · L47
+## Surface · L48
 
 `public static Vector3 Surface(Vector3 point)`
 
@@ -514,5 +515,5 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [EcologyQueries.Up · L41](bdf7ccc2c9c0452f.md#maca7070196f125fd)（方法）
+- [EcologyQueries.Up · L42](bdf7ccc2c9c0452f.md#ma73e6bbbc726282f)（方法）
 - [PlanetTerrainMeshBuilder.WaterRadius.get · L96](415285cf043354a9.md#md3a3867afb75f981)（访问器）

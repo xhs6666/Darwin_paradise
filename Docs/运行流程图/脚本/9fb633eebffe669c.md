@@ -989,7 +989,7 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [EcologyIdentity.Of · L21](bdf7ccc2c9c0452f.md#m1143cf9570a93b72)（方法）
+- [EcologyIdentity.Of · L22](bdf7ccc2c9c0452f.md#mb23020fe763aafd3)（方法）
 - [LanSession.OwnedEntityId.get · L30](9fb633eebffe669c.md#m5adc535c48d20cbe)（访问器）
 - [LanSession.SendCommand · L90](9fb633eebffe669c.md#me286a0c67c4d8ecd)（方法）
 - [LanSession.SetRtsMode · L113](9fb633eebffe669c.md#md00374cca68a1203)（方法）
@@ -1030,7 +1030,7 @@ flowchart TD
 
 - [LanSession.SendCommand · L90](9fb633eebffe669c.md#me286a0c67c4d8ecd)（方法）
 - [LanSession.Assign · L126](9fb633eebffe669c.md#ma7c3594af76ac1d7)（方法）
-- [EcologyIdentity.Find · L20](bdf7ccc2c9c0452f.md#m58f756a3ba9ec990)（方法）
+- [EcologyIdentity.Find · L21](bdf7ccc2c9c0452f.md#mb670b64dc2baff58)（方法）
 - [EntityViewController.EnterView · L73](0ad0345f83229ef0.md#mbd7be6d2bbd0ec83)（方法）
 - [EntityViewController.Instance.get · L15](0ad0345f83229ef0.md#mb3b8144b56e80842)（访问器）
 
@@ -1123,8 +1123,8 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [EcologyIdentity.Find · L20](bdf7ccc2c9c0452f.md#m58f756a3ba9ec990)（方法）
-- [AntColonyMember.Role.get · L38](baebd85c05598377.md#mab30d459d599e4df)（访问器）
+- [EcologyIdentity.Find · L21](bdf7ccc2c9c0452f.md#mb670b64dc2baff58)（方法）
+- [AntColonyMember.Role.get · L39](baebd85c05598377.md#mbe541ad55a93b0dd)（访问器）
 
 <a id="m0ea9caea7490455d"></a>
 
@@ -1150,7 +1150,7 @@ flowchart TD
 
 - [LanSession.QueenControls · L107](9fb633eebffe669c.md#m2c85ed6e23c64b8a)（方法）
 - [LanSession.OwnedEntityId.get · L30](9fb633eebffe669c.md#m5adc535c48d20cbe)（访问器）
-- [EcologyIdentity.Find · L20](bdf7ccc2c9c0452f.md#m58f756a3ba9ec990)（方法）
+- [EcologyIdentity.Find · L21](bdf7ccc2c9c0452f.md#mb670b64dc2baff58)（方法）
 
 <a id="md00374cca68a1203"></a>
 
@@ -1247,7 +1247,7 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [EcologyIdentity.Of · L21](bdf7ccc2c9c0452f.md#m1143cf9570a93b72)（方法）
+- [EcologyIdentity.Of · L22](bdf7ccc2c9c0452f.md#mb23020fe763aafd3)（方法）
 - [ColonyResource.State.get · L24](293dbaecfff4b585.md#m41824f1a0e160aa5)（访问器）
 - [LanSession.SendCommand · L90](9fb633eebffe669c.md#me286a0c67c4d8ecd)（方法）
 - [LanSession.ApplyRts · L168](9fb633eebffe669c.md#m303c5d9b3bcf7ddd)（方法）
@@ -1422,8 +1422,8 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [EcologyIdentity.Find · L20](bdf7ccc2c9c0452f.md#m58f756a3ba9ec990)（方法）
-- [EcologyQueries.Alive · L38](bdf7ccc2c9c0452f.md#mb2877c487f449970)（方法）
+- [EcologyIdentity.Find · L21](bdf7ccc2c9c0452f.md#mb670b64dc2baff58)（方法）
+- [EcologyQueries.Alive · L39](bdf7ccc2c9c0452f.md#m8352bfacbe2996a8)（方法）
 - [AntColonyWorker.IsCarried · L132](8a0cca2020271b6f.md#m78b7b08c935b36c0)（方法）
 - [LanSession.Reply · L184](9fb633eebffe669c.md#ma2abc3394057f288)（方法）
 - [LanSession.OwnedEntityId.get · L30](9fb633eebffe669c.md#m5adc535c48d20cbe)（访问器）
@@ -1624,16 +1624,16 @@ flowchart TD
 - [LanSession.Reply · L184](9fb633eebffe669c.md#ma2abc3394057f288)（方法）
 - [LanSession.Assign · L126](9fb633eebffe669c.md#ma7c3594af76ac1d7)（方法）
 - [LanSession.ApplyRts · L168](9fb633eebffe669c.md#m303c5d9b3bcf7ddd)（方法）
-- [EcologyIdentity.Find · L20](bdf7ccc2c9c0452f.md#m58f756a3ba9ec990)（方法）
+- [EcologyIdentity.Find · L21](bdf7ccc2c9c0452f.md#mb670b64dc2baff58)（方法）
 - [EntityManualControl.Release · L37](a6969896da35e1f0.md#m40fd112901a759d7)（方法）
 - [EntityManualControl.BeginControl · L32](a6969896da35e1f0.md#mf0dadf914f9961c7)（方法）
-- [EcologyQueries.Alive · L38](bdf7ccc2c9c0452f.md#mb2877c487f449970)（方法）
+- [EcologyQueries.Alive · L39](bdf7ccc2c9c0452f.md#m8352bfacbe2996a8)（方法）
 - [LanSession.Finite · L182](9fb633eebffe669c.md#m751b2ad72d2d10c5)（方法）
 - [EnergyBlockMetabolism.TryRelease · L40](123c1bf82bdb8ea2.md#mda6f8903d669c1f6)（方法）
 - [EntityManualControl.SetInput · L33](a6969896da35e1f0.md#mb1079fe9e2dced13)（方法）
 - [EntityManualControl.QueueAttack · L24](a6969896da35e1f0.md#md160ef2315358c16)（方法）
 - [EntityManualControl.SetAim · L27](a6969896da35e1f0.md#m70f09d0090a1fa41)（方法）
-- [EcologyQueries.Up · L41](bdf7ccc2c9c0452f.md#maca7070196f125fd)（方法）
+- [EcologyQueries.Up · L42](bdf7ccc2c9c0452f.md#ma73e6bbbc726282f)（方法）
 - [EntityJumpMotor.Bind · L21](fa3269c9da0aa692.md#m557fb326ad4e3346)（方法）
 - [EntityJumpMotor.TryJump · L23](fa3269c9da0aa692.md#m9ce1ecd9a46ddda6)（方法）
 - [LanSession.Cheats.get · L27](9fb633eebffe669c.md#m570973099b8f82d5)（访问器）
@@ -1739,10 +1739,10 @@ flowchart TD
 - [LanSession.Finite · L182](9fb633eebffe669c.md#m751b2ad72d2d10c5)（方法）
 - [LanSession.Reply · L184](9fb633eebffe669c.md#ma2abc3394057f288)（方法）
 - [LanSession.OwnedEntityId.get · L30](9fb633eebffe669c.md#m5adc535c48d20cbe)（访问器）
-- [EcologyIdentity.Find · L20](bdf7ccc2c9c0452f.md#m58f756a3ba9ec990)（方法）
+- [EcologyIdentity.Find · L21](bdf7ccc2c9c0452f.md#mb670b64dc2baff58)（方法）
 - [ColonyResource.Find · L28](293dbaecfff4b585.md#m1324285ab40ac6f4)（方法）
-- [EcologyQueries.Up · L41](bdf7ccc2c9c0452f.md#maca7070196f125fd)（方法）
-- [EcologyQueries.Surface · L47](bdf7ccc2c9c0452f.md#m2f1f6873ee5fc8df)（方法）
+- [EcologyQueries.Up · L42](bdf7ccc2c9c0452f.md#ma73e6bbbc726282f)（方法）
+- [EcologyQueries.Surface · L48](bdf7ccc2c9c0452f.md#m40ee3e975d7f5137)（方法）
 - [RtsOrderController.Ensure · L18](cac3b6501f41ca35.md#ma6dc1578afbc7e64)（方法）
 - [RtsOrderController.Issue · L28](cac3b6501f41ca35.md#ma9a81bead88c4251)（方法）
 - [LanSession.回调@172 · L172](9fb633eebffe669c.md#m7112018f2338aa4f)（回调/委托）
@@ -1785,7 +1785,7 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [EcologyQueries.Alive · L38](bdf7ccc2c9c0452f.md#mb2877c487f449970)（方法）
+- [EcologyQueries.Alive · L39](bdf7ccc2c9c0452f.md#m8352bfacbe2996a8)（方法）
 - [LanSession.Cheats.get · L27](9fb633eebffe669c.md#m570973099b8f82d5)（访问器）
 - [LanSession.QueenControls · L107](9fb633eebffe669c.md#m2c85ed6e23c64b8a)（方法）
 - [LanSession.回调@172 · L172](9fb633eebffe669c.md#m7de3fd01dcd66fe3)（回调/委托）
@@ -1819,7 +1819,7 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [EcologyIdentity.Of · L21](bdf7ccc2c9c0452f.md#m1143cf9570a93b72)（方法）
+- [EcologyIdentity.Of · L22](bdf7ccc2c9c0452f.md#mb23020fe763aafd3)（方法）
 
 <a id="m751b2ad72d2d10c5"></a>
 
@@ -2098,7 +2098,7 @@ flowchart TD
 - [LanSession.SendMessage · L89](9fb633eebffe669c.md#m6d646648c755fb11)（方法）
 - [LanSession.Status.set · L31](9fb633eebffe669c.md#m5f42294bb375d2f9)（访问器）
 - [LanSession.OwnedEntityId.get · L30](9fb633eebffe669c.md#m5adc535c48d20cbe)（访问器）
-- [EcologyIdentity.Find · L20](bdf7ccc2c9c0452f.md#m58f756a3ba9ec990)（方法）
+- [EcologyIdentity.Find · L21](bdf7ccc2c9c0452f.md#mb670b64dc2baff58)（方法）
 - [EntityViewController.EnterView · L73](0ad0345f83229ef0.md#mbd7be6d2bbd0ec83)（方法）
 - [EntityViewController.Instance.get · L15](0ad0345f83229ef0.md#mb3b8144b56e80842)（访问器）
 
@@ -2364,12 +2364,12 @@ flowchart TD
 - [LanSession.Status.get · L31](9fb633eebffe669c.md#md8607b7380abb030)（访问器）
 - [LanSession.RejectedCommands.set · L33](9fb633eebffe669c.md#m6c8d154ade39ec49)（访问器）
 - [LanSession.RejectedCommands.get · L33](9fb633eebffe669c.md#m548d782d81b2ab74)（访问器）
-- [EcologyIdentity.Find · L20](bdf7ccc2c9c0452f.md#m58f756a3ba9ec990)（方法）
+- [EcologyIdentity.Find · L21](bdf7ccc2c9c0452f.md#mb670b64dc2baff58)（方法）
 - [EntityManualControl.Release · L37](a6969896da35e1f0.md#m40fd112901a759d7)（方法）
 - [LanSession.Roster · L186](9fb633eebffe669c.md#mafeddb5e9882547a)（方法）
 - [LanSession.LeaveToMenu · L292](9fb633eebffe669c.md#m00e936ab853b36f8)（方法）
 - [WorldSessionManager.Busy.get · L24](08741c7b7b9d9344.md#m4483e2e4f28f7c85)（访问器）
-- [EcologyQueries.Alive · L38](bdf7ccc2c9c0452f.md#mb2877c487f449970)（方法）
+- [EcologyQueries.Alive · L39](bdf7ccc2c9c0452f.md#m8352bfacbe2996a8)（方法）
 - [LanSession.SendMessage · L89](9fb633eebffe669c.md#m6d646648c755fb11)（方法）
 - [EntityManualControl.SetInput · L33](a6969896da35e1f0.md#mb1079fe9e2dced13)（方法）
 - [EntityManualControl.ClearAttack · L26](a6969896da35e1f0.md#m9a16d6f4efae7238)（方法）
@@ -2577,7 +2577,7 @@ flowchart TD
 - [WorldSessionManager.Open · L60](08741c7b7b9d9344.md#m7bd56ef45131b4e5)（方法）
 - [LanSession.OwnedEntityId.set · L30](9fb633eebffe669c.md#mab85f356abbbcca4)（访问器）
 - [LanSession.OwnedEntityId.get · L30](9fb633eebffe669c.md#m5adc535c48d20cbe)（访问器）
-- [EcologyIdentity.Find · L20](bdf7ccc2c9c0452f.md#m58f756a3ba9ec990)（方法）
+- [EcologyIdentity.Find · L21](bdf7ccc2c9c0452f.md#mb670b64dc2baff58)（方法）
 - [GameInputGate.Blocked.set · L8](52955daae7e592ab.md#m578697f6379686f4)（访问器）
 - [EntityViewController.EnterView · L73](0ad0345f83229ef0.md#mbd7be6d2bbd0ec83)（方法）
 - [LanSession.ApplyFrame · L260](9fb633eebffe669c.md#m271cf3f3a4ebbffd)（方法）
@@ -2730,17 +2730,17 @@ flowchart TD
 - [SimulationClock.ApplyRemoteState · L76](a8f444aec9614b0a.md#m2a1c12e8c6ba769d)（方法）
 - [ServiceLocator.Get · L33](f2fdbe9f9ccd93cb.md#m2ae625299520c56d)（方法）
 - [SunSystem.OrbitAngle.set · L27](15af8ca97f781b7f.md#mdfb5515951cbcd65)（访问器）
-- [EcologyIdentity.Find · L20](bdf7ccc2c9c0452f.md#m58f756a3ba9ec990)（方法）
+- [EcologyIdentity.Find · L21](bdf7ccc2c9c0452f.md#mb670b64dc2baff58)（方法）
 - [EntitySaveState.Restore · L32](a1ec8fcd9d7d3ddb.md#md1cca8b8dd3628a4)（方法）
 - [LanReplicaActor.Apply · L20](75ae66582735754a.md#m0ae859a28c328c32)（方法）
-- [EcologyIdentity.Of · L21](bdf7ccc2c9c0452f.md#m1143cf9570a93b72)（方法）
+- [EcologyIdentity.Of · L22](bdf7ccc2c9c0452f.md#mb23020fe763aafd3)（方法）
 - [ColonyResource.Find · L28](293dbaecfff4b585.md#m1324285ab40ac6f4)（方法）
 - [ColonyResource.Create · L45](293dbaecfff4b585.md#m7e8d2b0e06e1cad5)（方法）
 - [ColonyResource.State.get · L24](293dbaecfff4b585.md#m41824f1a0e160aa5)（访问器）
 - [ColonyResource.CarryTo · L85](293dbaecfff4b585.md#m0524c6be86580a92)（方法）
-- [EcologyQueries.ToWorld · L40](bdf7ccc2c9c0452f.md#m320932c05ccecbf7)（方法）
+- [EcologyQueries.ToWorld · L41](bdf7ccc2c9c0452f.md#mc67423f4877c3534)（方法）
 - [ColonyResource.Remove · L108](293dbaecfff4b585.md#mb9333347c7434224)（方法）
-- [RandomPlanetSpawner.ApplyRemoteProgress · L99](1c13222a547b265c.md#m46bb439a8958c4a8)（方法）
+- [RandomPlanetSpawner.ApplyRemoteProgress · L102](1c13222a547b265c.md#m90ea4ce4d7cc68c7)（方法）
 - [RandomPlanetSpawner.Ensure · L25](1c13222a547b265c.md#m2f7496d9d5575b34)（方法）
 - [PopulationMaintenance.Restore · L157](923ccc4e86c4786c.md#m6eadf366fa1602cc)（方法）
 - [PlanetOreSystem.RestoreAmounts · L111](86b3fbb4d9436121.md#mf32079659fe75cd5)（方法）
@@ -2814,7 +2814,7 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [EcologyIdentity.Find · L20](bdf7ccc2c9c0452f.md#m58f756a3ba9ec990)（方法）
+- [EcologyIdentity.Find · L21](bdf7ccc2c9c0452f.md#mb670b64dc2baff58)（方法）
 - [EntityManualControl.Release · L37](a6969896da35e1f0.md#m40fd112901a759d7)（方法）
 - [LanConnection.Dispose · L62](872c2b8da417200e.md#mcbbf7592b2503d1f)（方法）
 - [LanListener.Dispose · L73](872c2b8da417200e.md#m5f6403734e035e45)（方法）

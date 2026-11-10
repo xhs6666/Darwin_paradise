@@ -1,3 +1,4 @@
+using DarwinPark.Core; // ★ 适配：实时可选组件查询避免空查找的编辑器分配。
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -28,7 +29,7 @@ namespace DarwinPark.Entities.Ecology
         public static GeneEvaluation Active(EntityGeneController genes,string id)
         {
             // ★ 修复（防Bug回归）：卵虽继承了社会/寄生基因，未孵化时不能开采、当领袖或附着宿主。
-            if(genes==null||genes.GetComponent<EggIncubation>()?.Incubating==true)return null;
+            if(genes==null||OptionalComponent.Read<EggIncubation>(genes)?.Incubating==true)return null;
             // ★ 修复（防Bug回归）：只寻找最强表达，线性选择无需为每次感知和成员查询创建排序迭代器。
             GeneEvaluation selected=null;
             if(genes.Evaluation!=null)foreach(var gene in genes.Evaluation.Genes)

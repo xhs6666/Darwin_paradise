@@ -179,7 +179,7 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [EcologyQueries.Active · L28](bdf7ccc2c9c0452f.md#m4fb10ad424167e3b)（方法）
+- [EcologyQueries.Active · L29](bdf7ccc2c9c0452f.md#m200839bb9db5ec55)（方法）
 - [NutritionEcologySettings.Current.get · L19](846a17351dbd6aa4.md#mb3eb930022e314f3)（访问器）
 
 <a id="m65972a59ce611781"></a>
@@ -204,7 +204,7 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [EcologyQueries.Active · L28](bdf7ccc2c9c0452f.md#m4fb10ad424167e3b)（方法）
+- [EcologyQueries.Active · L29](bdf7ccc2c9c0452f.md#m200839bb9db5ec55)（方法）
 
 <a id="m165db6c6d3d0933e"></a>
 
@@ -253,7 +253,7 @@ flowchart TD
 项目内调用/回调引用：
 
 - [EcologySettings.Load · L18](90428a275d065ef6.md#mb0575490373edaf2)（方法）
-- [EcologyIdentity.Ensure · L22](bdf7ccc2c9c0452f.md#m40609054a6d444d0)（方法）
+- [EcologyIdentity.Ensure · L23](bdf7ccc2c9c0452f.md#m8adfd15f583f225a)（方法）
 
 <a id="m92afb1ae749564d1"></a>
 
@@ -401,7 +401,7 @@ flowchart TD
 项目内调用/回调引用：
 
 - [ParasiteBehavior.Detach · L86](ec21ecbd299caaed.md#m858d10391da0e50c)（方法）
-- [EcologyQueries.Alive · L38](bdf7ccc2c9c0452f.md#mb2877c487f449970)（方法）
+- [EcologyQueries.Alive · L39](bdf7ccc2c9c0452f.md#m8352bfacbe2996a8)（方法）
 - [ParasiteBehavior.Host.get · L16](ec21ecbd299caaed.md#m854b55763184d078)（访问器）
 - [EntityGeneController.GetAttribute · L286](7494d53178552f0e.md#m18bff2b38f95b556)（方法）
 - [EntityStats.TryGet · L90](75aa86a368efdf24.md#m24ee1433e4a70d94)（方法）
@@ -412,7 +412,7 @@ flowchart TD
 - [ParasiteBehavior.CanHost · L60](ec21ecbd299caaed.md#mfe0f00ac7c08fc7a)（方法）
 - [ParasiteBehavior.HostRadius · L69](ec21ecbd299caaed.md#m502aac50801d7dc6)（方法）
 - [ParasiteBehavior.TryAttach · L70](ec21ecbd299caaed.md#mbdecb89dac39aa1f)（方法）
-- [EcologyQueries.Up · L41](bdf7ccc2c9c0452f.md#maca7070196f125fd)（方法）
+- [EcologyQueries.Up · L42](bdf7ccc2c9c0452f.md#ma73e6bbbc726282f)（方法）
 - [ServiceLocator.TryGet · L26](f2fdbe9f9ccd93cb.md#m143b24e6d58471b0)（方法）
 
 <a id="ma2477ff63c367952"></a>
@@ -522,7 +522,7 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [EcologyQueries.Alive · L38](bdf7ccc2c9c0452f.md#mb2877c487f449970)（方法）
+- [EcologyQueries.Alive · L39](bdf7ccc2c9c0452f.md#m8352bfacbe2996a8)（方法）
 - [EntityStats.TryGet · L90](75aa86a368efdf24.md#m24ee1433e4a70d94)（方法）
 - [ParasiteBehavior.Host.get · L16](ec21ecbd299caaed.md#m854b55763184d078)（访问器）
 
@@ -697,7 +697,7 @@ flowchart TD
 - [ParasiteBehavior.Detach · L86](ec21ecbd299caaed.md#m858d10391da0e50c)（方法）
 - [ParasiteBehavior.Host.set · L16](ec21ecbd299caaed.md#mb11b1f8f75e0ff5c)（访问器）
 - [EntityGeneController.GetAttribute · L286](7494d53178552f0e.md#m18bff2b38f95b556)（方法）
-- [EcologyQueries.Up · L41](bdf7ccc2c9c0452f.md#maca7070196f125fd)（方法）
+- [EcologyQueries.Up · L42](bdf7ccc2c9c0452f.md#ma73e6bbbc726282f)（方法）
 - [ParasiteBehavior.Follow · L85](ec21ecbd299caaed.md#m773aeb15453932c0)（方法）
 
 <a id="mc6d24cdaa44999b8"></a>

@@ -114,6 +114,8 @@ namespace DarwinPark.UI
             {
                 _clock.OnRunningChanged -= OnRunningChanged;
                 _clock.OnRunningChanged += OnRunningChanged;
+                // ★ 修复（防Bug回归）：读档先恢复暂停再重建HUD，必须立即同步当前状态，不能等待下一次事件才改掉默认暂停图标。
+                OnRunningChanged(_clock.IsRunning);
             }
         }
 
