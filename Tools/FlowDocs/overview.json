@@ -742,7 +742,7 @@
       },
       {
         "id": "n3",
-        "text": "比例导致的新孕育等待",
+        "text": "可选比例调节导致的新孕育等待",
         "target": "PopulationMaintenance.BreedingReady",
         "kind": "step"
       },
@@ -1014,7 +1014,7 @@
   },
   {
     "title": "07 · 随机生成与维持比例",
-    "description": "两种来源、独立JSON条件、分帧补充和繁殖调节。",
+    "description": "两种手动生成来源、独立JSON条件，以及默认关闭的比例繁殖调节。",
     "nodes": [
       {
         "id": "n0",
@@ -1036,19 +1036,19 @@
       },
       {
         "id": "n3",
-        "text": "模拟运行时轮询规则",
-        "target": "RandomPlanetSpawner.Update",
+        "text": "第一页显式开启比例调节（默认关）",
+        "target": "PopulationRatioRulePage.Toggle",
         "kind": "step"
       },
       {
         "id": "n4",
-        "text": "计算新增后分母与补充数",
-        "target": "PopulationMaintenance.Needed",
+        "text": "新孕育时检查开关和超额份额",
+        "target": "PopulationMaintenance.BreedingScale",
         "kind": "step"
       },
       {
         "id": "n5",
-        "text": "按来源发起生成",
+        "text": "用户显式请求按来源生成",
         "target": "RandomPlanetSpawner.StartRecipe",
         "kind": "step"
       },
@@ -1066,7 +1066,7 @@
       },
       {
         "id": "n8",
-        "text": "统一手动/维持任务启动入口",
+        "text": "手动任务入口；拒绝旧自动请求",
         "target": "RandomPlanetSpawner.StartInternal",
         "kind": "step"
       }
@@ -1081,31 +1081,31 @@
       [
         "n0",
         "n2",
-        "显式启用规则",
+        "保存来源和目标",
         "flow"
       ],
       [
         "n0",
         "n5",
-        "应用来源后手动生成",
+        "显式点击生成",
         "exception"
       ],
       [
         "n2",
         "n3",
-        "后续轮询",
+        "第一页另行启用",
         "exception"
       ],
       [
         "n3",
         "n4",
-        "",
-        "flow"
+        "后续新孕育时检查",
+        "exception"
       ],
       [
         "n4",
-        "n8",
-        "不足时",
+        "n7",
+        "只有开启且超额",
         "flow"
       ],
       [
@@ -1119,15 +1119,9 @@
         "n6",
         "",
         "flow"
-      ],
-      [
-        "n2",
-        "n7",
-        "繁殖逻辑查询",
-        "exception"
       ]
     ],
-    "note": "不自动删除超量实体；条件库跨世界复用，运行规则保留世界内快照。暂停、权限和数量上限仍生效。"
+    "note": "开启或关闭都不直接补员；关闭不调节比例，开启仅延缓超额类别新孕育。已开始的孕育继续，手动生成仍受权限、地表和数量上限限制。"
   },
   {
     "title": "08 · 操控、输入与UI门控",

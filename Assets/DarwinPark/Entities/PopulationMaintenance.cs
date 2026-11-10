@@ -81,7 +81,7 @@ namespace DarwinPark.Entities
             }
         }
     }
-    // ★ 新增：规则是世界数据；只在不足时补充，超量用额外繁殖间隔降低出生率，不删除实体或改动正在孕育的后代。
+    // ★ 新增：比例是世界数据；总规则默认关闭，启用后只用额外繁殖间隔调节超额类别，不直接补员。
     public static class PopulationMaintenance
     {
         private static readonly List<PopulationMaintenanceRule> Items=new();private static readonly Dictionary<string,int> Counts=new();private static HashSet<string> RoundedPartitions=new();private static int _frame=-1;private static long _membership=-1;
@@ -100,7 +100,7 @@ namespace DarwinPark.Entities
         public static int Needed(PopulationMaintenanceRule rule)
         {
             // ★ 适配：优化重复计算，停用/零目标规则无需先统计全世界。
-            if(!rule.enabled||rule.ratio<=0)return 0;int count=Count(rule),total=Denominator(rule);
+            if(!rule.enabled||rule.ratio<=0||rule.ratio>=1)return 0;int count=Count(rule),total=Denominator(rule);
             if(count<rule.minimumCount)return Math.Min(rule.minimumCount-count,PopulationMaintenanceSettings.Current.maximumRefillPerCycle);
             if(total==0)return Math.Min(PopulationMaintenanceSettings.Current.emptyWorldSeedCount,PopulationMaintenanceSettings.Current.maximumRefillPerCycle);if(count>=total*rule.ratio)return 0;
             // 新实体同时增加分子和分母，不能用ratio*当前总数直接补差。
@@ -122,14 +122,17 @@ namespace DarwinPark.Entities
         {
             // ★ 适配：把比例规则检查从孕育总项细分出来，正常世界不可在测试中关闭。
             using var performance=PerformanceTimings.Measure(PerformanceTimings.Area.BreedingMaintenance);
-            // ★ 适配：优化重复计算，保留停用规则供界面查看，但没有有效调节规则时不扫描全体实体。
+            // ★ 适配：优化重复计算，保留停用目标供界面查看，总规则关闭时也不扫描全体实体。
+            // ★ 适配：世界目标配置与本机规则开关分开，旧档不隐式授权繁殖干预。
+            if(!GameplayTuning.Current.populationRatioControlEnabled)return 1;
             bool active=false;for(int i=0;i<Items.Count;i++)if(Items[i].enabled){active=true;break;}if(!active)return 1;Refresh();float factor=1;
             foreach(var rule in Items)if(rule.enabled&&EcologyMaintenancePolicy.Matches(rule,genes)&&Denominator(rule)>0){float share=Counts[rule.id]/(float)Denominator(rule);if(share>rule.ratio)factor=Mathf.Min(factor,rule.ratio/share);}return factor;
         }
         public static bool BreedingReady(EntityGeneController genes,ref float waited,float dt)
         {
             float scale=BreedingScale(genes);if(scale>=1){waited=0;return true;}if(scale<=0){waited=0;return false;}
-            float delay=PopulationMaintenanceSettings.Current.extraBreedingDelaySeconds*(1/scale-1);waited=Mathf.Min(delay,waited+Mathf.Max(0,dt));return waited>=delay;
+            float interval=PopulationMaintenanceSettings.Current.extraBreedingDelaySeconds;
+            float delay=interval*(1/scale-1);waited=Mathf.Min(delay,waited+Mathf.Max(0,dt));return waited>=delay;
         }
         public static bool Set(PopulationMaintenanceRule rule)
         {
@@ -144,7 +147,7 @@ namespace DarwinPark.Entities
         {
             if(state==null||state.version==0&&(state.rules==null||state.rules.Count==0))return;
             if(state.version!=1||state.rules==null||state.rules.Count>PopulationMaintenanceSettings.Current.maximumRules)throw new InvalidDataException("数量维持规则版本或数量无效");var ids=new HashSet<string>();
-            foreach(var rule in state.rules){if(rule==null||!Enum.IsDefined(typeof(PopulationRuleCategory),rule.category)||rule.minimumCount<0||rule.minimumCount>100000||!Guid.TryParseExact(rule.id,"N",out _)||!ids.Add(rule.id)||!float.IsFinite(rule.ratio)||rule.ratio<0||rule.ratio>=1||rule.source==null)throw new InvalidDataException("数量维持比例或来源无效（比例须小于100%）");rule.source.Validate(catalog);}
+            foreach(var rule in state.rules){if(rule==null||!Enum.IsDefined(typeof(PopulationRuleCategory),rule.category)||rule.minimumCount<0||rule.minimumCount>100000||!Guid.TryParseExact(rule.id,"N",out _)||!ids.Add(rule.id)||!float.IsFinite(rule.ratio)||rule.ratio<0||rule.ratio>1||rule.source==null)throw new InvalidDataException("数量维持比例或来源无效（比例须为0到100%）");rule.source.Validate(catalog);}
             // ★ 修复（防Bug回归）：互斥条件的目标总和超过100%无解，必须在写盘/启动生成前拒绝，而非一直补到世界上限。
             CheckPartitions(state.rules);
         }

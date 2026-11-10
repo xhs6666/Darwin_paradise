@@ -702,8 +702,8 @@ flowchart TD
 - [WorldGameSettingsPanel.Close · L39](6df051f7f7177d08.md#m019774ab8575ddd2)（方法）
 - [LanEditActions.Spawn · L21](2816321496f6360e.md#mbc8b29c9f546988e)（方法）
 - [DarwinEntity.Genes.get · L14](70798dde169f2e8b.md#m622eb1adf401d431)（访问器）
-- [RandomPlanetSpawner.StartBatch · L27](1c13222a547b265c.md#mbebfcec3ac8848b1)（方法）
-- [RandomPlanetSpawner.Ensure · L26](1c13222a547b265c.md#m073d6771457e1083)（方法）
+- [RandomPlanetSpawner.StartBatch · L27](1c13222a547b265c.md#m31c2d3856b252b84)（方法）
+- [RandomPlanetSpawner.Ensure · L26](1c13222a547b265c.md#m459920defc5e207e)（方法）
 - [EntityGeneController.GetLogic · L240](7494d53178552f0e.md#m9be6a2566c76c275)（方法）
 - [EntityStats.Feed · L95](75aa86a368efdf24.md#mc025822ff1eb86a0)（方法）
 - [EntityStats.TryGet · L90](75aa86a368efdf24.md#m24ee1433e4a70d94)（方法）

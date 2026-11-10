@@ -2740,9 +2740,9 @@ flowchart TD
 - [ColonyResource.CarryTo · L85](293dbaecfff4b585.md#m0524c6be86580a92)（方法）
 - [EcologyQueries.ToWorld · L41](bdf7ccc2c9c0452f.md#mc67423f4877c3534)（方法）
 - [ColonyResource.Remove · L108](293dbaecfff4b585.md#mb9333347c7434224)（方法）
-- [RandomPlanetSpawner.ApplyRemoteProgress · L109](1c13222a547b265c.md#mdce96ed6d946c11b)（方法）
-- [RandomPlanetSpawner.Ensure · L26](1c13222a547b265c.md#m073d6771457e1083)（方法）
-- [PopulationMaintenance.Restore · L157](923ccc4e86c4786c.md#m6eadf366fa1602cc)（方法）
+- [RandomPlanetSpawner.ApplyRemoteProgress · L92](1c13222a547b265c.md#mcbb12383b373f0ce)（方法）
+- [RandomPlanetSpawner.Ensure · L26](1c13222a547b265c.md#m459920defc5e207e)（方法）
+- [PopulationMaintenance.Restore · L160](923ccc4e86c4786c.md#mfbf66f0b98faa357)（方法）
 - [PlanetOreSystem.RestoreAmounts · L111](86b3fbb4d9436121.md#mf32079659fe75cd5)（方法）
 - [PlanetOreSystem.Instance.get · L8](86b3fbb4d9436121.md#m53f6a6af4b6dc252)（访问器）
 - [PlanetOreSystem.RegenTimer.set · L110](86b3fbb4d9436121.md#ma831f663fb815b50)（访问器）

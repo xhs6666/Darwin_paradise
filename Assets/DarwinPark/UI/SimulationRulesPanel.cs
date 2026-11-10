@@ -22,7 +22,7 @@ namespace DarwinPark.UI
             Label("Title","规则控制",10,3,240,18,13).color=UIVisualTheme.Muted;
             _toggle=Button("MutationEnabled","定时全局变异",Toggle,10,25,240,23);
             Label("FractionLabel","抽样",10,54,42,23,13);_fraction=Input("Fraction",55,54,100);Label("FractionUnit","% 活体",163,54,85,23,12);
-            Label("PeriodLabel","周期",10,82,42,23,13);_seconds=Input("Seconds",55,82,100);Label("PeriodUnit","模拟秒",163,82,85,23,12);
+            Label("PeriodLabel","周期",10,82,42,23,13);_seconds=Input("Seconds",55,82,100);Label("PeriodUnit","游戏天",163,82,85,23,12);
             _apply=Button("ApplyRules","应用并保存",Apply,10,111,151,25);_reload=Button("ReloadRules","重载",Reload,167,111,83,25);
             _status=Label("Status","",10,139,240,19,11);_status.resizeTextForBestFit=true;_status.resizeTextMinSize=9;_status.resizeTextMaxSize=11;
             _launch=UIFactory.NewButton("OpenRules",transform,"规则",()=>{_floating=!_floating;},new Vector2(66,26)).GetComponent<Button>();

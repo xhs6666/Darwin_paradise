@@ -22,10 +22,10 @@ namespace DarwinPark.EditorTools
             {
                 var source=EcologyDefaults.Template("producer");var rule=new PopulationMaintenanceRule{id=Guid.NewGuid().ToString("N"),source=source,category=PopulationRuleCategory.Producers,ratio=.7f,minimumCount=30};PopulationMaintenance.Restore(new PopulationMaintenanceState{rules=new List<PopulationMaintenanceRule>{rule}});
                 config.spawnFrameBudgetMilliseconds=.0001f;config.localPlacementFailureLimit=1;DarwinEntity.Spawner=(genome,point,name)=>{calls++;if(calls>2)original(genome,point,name);};EntityRegistry.OnRegistered+=Capture;clock.Play();int frame=Time.frameCount;
-                bool started=(bool)typeof(RandomPlanetSpawner).GetMethod("StartInternal",BindingFlags.NonPublic|BindingFlags.Instance).Invoke(spawner,new object[]{source,3,true,rule});check(started,"生成预算夹具启动真实自动补充协程");
+                bool started=spawner.StartRecipe(source,3,true);check(started,"生成预算夹具启动真实手动生成协程");
                 double began=EditorApplication.timeSinceStartup;while(spawner.IsBusy){if(EditorApplication.timeSinceStartup-began>20)throw new TimeoutException(spawner.Status);yield return null;}
                 check(spawner.Spawned==3&&spawner.Requested==3&&created.Count==3,"前两次出生失败后仍补齐请求的三个实体");
-                check(spawner.GlobalFallbacks>0,"局部投放失败后实际转全局搜索");check(spawner.YieldedSlices>=3&&Time.frameCount>frame+2,"时间预算让真实生成跨帧完成，不降低请求数量");
+                check(spawner.GlobalFallbacks==0,"比例规则不启动旧自动补员局部搜索");check(spawner.YieldedSlices>=3&&Time.frameCount>frame+2,"时间预算让真实生成跨帧完成，不降低请求数量");
             }
             finally
             {

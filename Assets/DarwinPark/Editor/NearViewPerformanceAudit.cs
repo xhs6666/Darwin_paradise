@@ -58,7 +58,7 @@ namespace DarwinPark.EditorTools
                 if(Array.IndexOf(args,"-forceDeficit")>=0)
                 {
                     var automatic=Object.FindFirstObjectByType<RandomPlanetSpawner>();automatic.Cancel();automatic.enabled=false;if(Array.IndexOf(args,"-rejectLanding")>=0)automatic.landClearance=100000;var rules=PopulationMaintenance.Capture();var producerRule=rules.rules.First(r=>r.category==PopulationRuleCategory.Producers);producerRule.enabled=true;producerRule.minimumCount=100000;PopulationMaintenance.Restore(rules);producerRule=PopulationMaintenance.Rules.First(r=>r.id==producerRule.id);
-                    bool started=(bool)typeof(RandomPlanetSpawner).GetMethod("StartInternal",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(automatic,new object[]{producerRule.source,12,producerRule.landOnly,producerRule});if(!started)throw new InvalidOperationException("强制投放缺口未启动");
+                    bool started=automatic.StartRecipe(producerRule.source,12,producerRule.landOnly);if(!started)throw new InvalidOperationException("强制投放缺口未启动");
                 }
                 if(Array.IndexOf(args,"-noAutoSpawn")>=0){var automatic=Object.FindFirstObjectByType<RandomPlanetSpawner>();automatic.Cancel();automatic.enabled=false;}
                 if(Array.IndexOf(args,"-noNaturalBirth")>=0)

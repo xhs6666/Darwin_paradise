@@ -73,7 +73,7 @@ namespace DarwinPark.UI
         {try{_owner.SetRecipe(_draft);_owner.SetLandOnly(_landOnly);Close();return true;}catch(Exception ex){Status(ex.Message);return false;}}
         public bool SaveRule(float percent)
         {
-            if(!float.IsFinite(percent)||percent<0||percent>=100){Status("目标比例请输入0～99之间的百分数");return false;}
+            if(!float.IsFinite(percent)||percent<0||percent>100){Status("目标比例请输入0～100之间的百分数");return false;}
             var previous=PopulationMaintenance.Rules.FirstOrDefault(r=>r.id==_editingId);bool same=previous!=null&&SameSource(previous.source,_draft);
             var rule=new PopulationMaintenanceRule{id=_editingId??Guid.NewGuid().ToString("N"),enabled=_ruleEnabled,ratio=percent/100f,landOnly=_landOnly,source=Draft,category=same?previous.category:PopulationRuleCategory.Source,minimumCount=same?previous.minimumCount:0};
             try
@@ -97,7 +97,7 @@ namespace DarwinPark.UI
         }
         private void ReloadPresets(){try{_presets=RandomSpawnPresetStore.Load();}catch(Exception ex){Status("读取基因条件失败："+ex.Message);Debug.LogWarning("[生成条件] "+ex.Message);_presets=new();}}
         private void Status(string message){_status=message;if(_statusText!=null)_statusText.text=message;}
-        private void Persist(){if(LanSession.Instance?.IsClient!=true){FindFirstObjectByType<WorldSessionManager>().SaveNow(_running);Status("规则已保存：不足时补充，超量时减少繁殖");}else Status("已发送给房主，等待同步");}
+        private void Persist(){if(LanSession.Instance?.IsClient!=true){FindFirstObjectByType<WorldSessionManager>().SaveNow(_running);Status(GameplayTuning.Current.populationRatioControlEnabled?"比例已保存：只抑制超额繁殖，不自动生成":"比例已保存：比例调节未开启（第一页规则控制）");}else Status("已发送给房主，等待同步");}
         private static RectTransform Rect(string name,Transform parent,float left,float top,float right,float bottom)
         {
             var rt=UIFactory.NewRect(name,parent).GetComponent<RectTransform>();rt.anchorMin=new Vector2(left,0);rt.anchorMax=new Vector2(right,1);rt.offsetMin=new Vector2(0,bottom);rt.offsetMax=new Vector2(0,-top);return rt;

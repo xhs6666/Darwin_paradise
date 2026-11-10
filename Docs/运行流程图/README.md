@@ -4,7 +4,7 @@
 
 [12条业务主流程](主流程.md) · [生成工具与维护说明](../../Tools/FlowDocs/README.md)
 
-覆盖 **377 个C#脚本、10 个Shader/HLSL文件、3988 个方法/构造/访问器/局部函数/回调/GPU函数**。没有显式方法的数据脚本也在索引中。未扫描Unity Packages/Library生成文件；Tools为离线生成器，不进入游戏运行图。
+覆盖 **381 个C#脚本、10 个Shader/HLSL文件、4007 个方法/构造/访问器/局部函数/回调/GPU函数**。没有显式方法的数据脚本也在索引中。未扫描Unity Packages/Library生成文件；Tools为离线生成器，不进入游戏运行图。
 
 
 ## 阅读与维护
@@ -55,6 +55,7 @@
 |Core|[Assets/DarwinPark/Core/MutationRuleEdits.cs](脚本/063e584187dad139.md)|Runtime|3|
 |Core|[Assets/DarwinPark/Core/OptionalComponent.cs](脚本/806c46b42ced4d36.md)|Runtime|1|
 |Core|[Assets/DarwinPark/Core/OrbitCamera.cs](脚本/42eb429559b42bcb.md)|Runtime|9|
+|Core|[Assets/DarwinPark/Core/PopulationRatioRuleEdits.cs](脚本/9580649cce6b5f38.md)|Runtime|1|
 |Core|[Assets/DarwinPark/Core/RuleSelectionEdits.cs](脚本/f1d4e0eb3e10983c.md)|Runtime|4|
 |Core|[Assets/DarwinPark/Core/RuntimePerformance.cs](脚本/a8403a4c7503726d.md)|Runtime|16|
 |Core|[Assets/DarwinPark/Core/Services/ServiceLocator.cs](脚本/f2fdbe9f9ccd93cb.md)|Runtime|5|
@@ -71,7 +72,7 @@
 |Editor|[Assets/DarwinPark/Editor/ActiveControlsRegression.cs](脚本/2eab88692e68527d.md)|Editor|29|
 |Editor|[Assets/DarwinPark/Editor/ActiveSimulationBenchmark.cs](脚本/7532f6e210474791.md)|Editor|13|
 |Editor|[Assets/DarwinPark/Editor/AntColonyRegression.cs](脚本/1314e8c23331e578.md)|Editor|39|
-|Editor|[Assets/DarwinPark/Editor/ColonyContinuityRegression.cs](脚本/9386360ce717a3bf.md)|Editor|50|
+|Editor|[Assets/DarwinPark/Editor/ColonyContinuityRegression.cs](脚本/9386360ce717a3bf.md)|Editor|51|
 |Editor|[Assets/DarwinPark/Editor/ColonyFeedingAuditRegression.cs](脚本/e4d7714ee72a340e.md)|Editor|9|
 |Editor|[Assets/DarwinPark/Editor/ColonyFeedingLiveRegression.cs](脚本/f0f27807f77705fe.md)|Editor|15|
 |Editor|[Assets/DarwinPark/Editor/ColonyFeedingTemplateRegression.cs](脚本/e3a5269cbeb35cff.md)|Editor|14|
@@ -115,6 +116,7 @@
 |Editor|[Assets/DarwinPark/Editor/PopulationArchiveRegression.cs](脚本/17091ce4f3e6bbb1.md)|Editor|34|
 |Editor|[Assets/DarwinPark/Editor/PopulationMaintenanceRegression.cs](脚本/fda63d99884ef0fb.md)|Editor|66|
 |Editor|[Assets/DarwinPark/Editor/PopulationPerformanceRegression.cs](脚本/9157b2281b645f60.md)|Editor|19|
+|Editor|[Assets/DarwinPark/Editor/PopulationRatioRuleChecks.cs](脚本/8a1ed94562678893.md)|Editor|5|
 |Editor|[Assets/DarwinPark/Editor/ProducerPlacementChecks.cs](脚本/639f07f7d384b725.md)|Editor|3|
 |Editor|[Assets/DarwinPark/Editor/ProjectOptimizationRegression.cs](脚本/f5351f9e1fa97815.md)|Editor|41|
 |Editor|[Assets/DarwinPark/Editor/RenderDistanceAuditRegression.cs](脚本/d5422be5a065ae18.md)|Editor|16|
@@ -380,14 +382,15 @@
 |UI|[Assets/DarwinPark/UI/PopulationCharts.cs](脚本/eed554ca8394b767.md)|Runtime|18|
 |UI|[Assets/DarwinPark/UI/PopulationCommandPanel.cs](脚本/be52342abb2dced2.md)|Runtime|9|
 |UI|[Assets/DarwinPark/UI/PopulationRangeLayer.cs](脚本/7ad316e94c5af908.md)|Runtime|16|
+|UI|[Assets/DarwinPark/UI/PopulationRatioRulePage.cs](脚本/fbcf38a1243f31af.md)|Runtime|9|
 |UI|[Assets/DarwinPark/UI/PopulationWorkbench.cs](脚本/6ca6fcae89e529ec.md)|Runtime|45|
-|UI|[Assets/DarwinPark/UI/RandomPlanetSpawner.cs](脚本/1c13222a547b265c.md)|Runtime|30|
+|UI|[Assets/DarwinPark/UI/RandomPlanetSpawner.cs](脚本/1c13222a547b265c.md)|Runtime|27|
 |UI|[Assets/DarwinPark/UI/RandomSpawnPanel.cs](脚本/ff6518313bce61e2.md)|Runtime|18|
 |UI|[Assets/DarwinPark/UI/RandomSpawnPresetStore.cs](脚本/9f09efd086264861.md)|Runtime|8|
 |UI|[Assets/DarwinPark/UI/RandomSpawnWorkbench.cs](脚本/0763b7475b3c75db.md)|Runtime|87|
 |UI|[Assets/DarwinPark/UI/RightClickHandler.cs](脚本/889ceb71f450c954.md)|Runtime|1|
 |UI|[Assets/DarwinPark/UI/RtsSelectionInput.cs](脚本/3c8b37f7bbd7a10f.md)|Runtime|17|
-|UI|[Assets/DarwinPark/UI/RuleCardExtensions.cs](脚本/92d59cd12a5696c3.md)|Runtime|25|
+|UI|[Assets/DarwinPark/UI/RuleCardExtensions.cs](脚本/92d59cd12a5696c3.md)|Runtime|26|
 |UI|[Assets/DarwinPark/UI/RuntimeDiagnosticWorldState.cs](脚本/7bd14a39565df6a0.md)|Runtime|2|
 |UI|[Assets/DarwinPark/UI/RuntimeDiagnosticsUI.cs](脚本/cb25084667099cf5.md)|Runtime|1|
 |UI|[Assets/DarwinPark/UI/RuntimeDropdownDismissal.cs](脚本/bab72c915cc299c5.md)|Runtime|13|
@@ -397,6 +400,7 @@
 |UI|[Assets/DarwinPark/UI/SimulationControlPanel.cs](脚本/76bc7add9187fd1f.md)|Runtime|37|
 |UI|[Assets/DarwinPark/UI/SimulationRuleList.cs](脚本/8e0c9b70cd52abbf.md)|Runtime|7|
 |UI|[Assets/DarwinPark/UI/SimulationRulesPanel.cs](脚本/dd1021765f4bd253.md)|Runtime|16|
+|UI|[Assets/DarwinPark/UI/SimulationTimeHelp.cs](脚本/a6e8ca06f4cafa96.md)|Runtime|5|
 |UI|[Assets/DarwinPark/UI/WorldEntityActions.cs](脚本/afe657f09857fa47.md)|Runtime|2|
 |UI|[Assets/DarwinPark/UI/WorldGameSettingsPanel.cs](脚本/6df051f7f7177d08.md)|Runtime|13|
 |UI|[Assets/DarwinPark/UI/WorldHudInputLifecycle.cs](脚本/f3fd2d972c3899f1.md)|Runtime|9|

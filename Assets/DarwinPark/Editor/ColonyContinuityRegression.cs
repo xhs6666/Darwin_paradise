@@ -56,6 +56,8 @@ namespace DarwinPark.EditorTools
         private static IEnumerator Capture(string name){yield return new WaitForSecondsRealtime(.3f);Canvas.ForceUpdateCanvases();yield return null;yield return new WaitForEndOfFrame();ScreenCapture.CaptureScreenshot(Path.Combine(Folder,name+".png"));yield return null;}
         private static IEnumerator Run()
         {
+            // ★ 适配：此链路回归显式开启比例抑制；所有种源通过手动请求创建。
+            GameplayTuning.Current.populationRatioControlEnabled=true;
             _externalExisted=File.Exists(EcologyDefaults.ConfigurationPath);if(_externalExisted)_externalBackup=File.ReadAllText(EcologyDefaults.ConfigurationPath);
             string defaults=Resources.Load<TextAsset>("Entities/ecology_defaults").text;Directory.CreateDirectory(Path.GetDirectoryName(EcologyDefaults.ConfigurationPath));File.WriteAllText(EcologyDefaults.ConfigurationPath,defaults);EcologyDefaults.UseSnapshot(defaults);
             var config=EcologyDefaults.Current;Check(config.producerRatio==.7f&&config.mobileRatio==.3f&&config.minimumPopulation==100,"默认70/30和100个体保底来自可外调JSON");
@@ -63,8 +65,8 @@ namespace DarwinPark.EditorTools
             session.Create("新种群延续验证",742091,.5f,20,44);yield return Wait(()=>!session.Busy,"创建真实世界");var clock=ServiceLocator.Get<SimulationClock>();clock.Pause();GameInputGate.Blocked=false;
             Check(session.Current!=null&&PopulationMaintenance.Rules.Count==2&&PopulationMaintenance.Rules.All(r=>r.enabled),"新世界自动启用两条生态规则");
             var producer=PopulationMaintenance.Rules.Single(r=>r.category==PopulationRuleCategory.Producers);var mobile=PopulationMaintenance.Rules.Single(r=>r.category==PopulationRuleCategory.Mobile);
-            clock.Play();yield return Wait(()=>PopulationMaintenance.Count(producer)>=70&&PopulationMaintenance.Count(mobile)>=30&&!Object.FindFirstObjectByType<RandomPlanetSpawner>().IsBusy,"自动补到70/30",90);clock.Pause();
-            Check(PopulationMaintenance.Count(producer)==70&&PopulationMaintenance.Count(mobile)==30,"真实自动生成70个静止自养生产者和30个移动消化者");
+            var manualSpawner=Object.FindFirstObjectByType<RandomPlanetSpawner>();Check(manualSpawner.StartRecipe(producer.source,70,true),"显式投放生产者样本");yield return Wait(()=>!manualSpawner.IsBusy,"投放生产者");Check(manualSpawner.StartRecipe(mobile.source,30,true),"显式投放移动样本");yield return Wait(()=>!manualSpawner.IsBusy,"投放移动者");
+            Check(PopulationMaintenance.Count(producer)==70&&PopulationMaintenance.Count(mobile)==30,"手动请求生成70个静止自养生产者和30个移动消化者");
             var altered=EntityRegistry.All.First(e=>EcologyEnergyBudget.IsProducer(e.Genes));altered.Genes.Genome.Genes.First(g=>g.DefinitionId=="gene_repair").Value=61;altered.Genes.Recalculate();yield return null;
             Check(!producer.source.Matches(altered.Genes.Genome)&&PopulationMaintenance.Count(producer)==70,"变异后的生产者仍计入实际能力比例，不依赖精确模板");
             var home=Home(planet);var inert=new RandomSpawnRecipe{template=new Genome()};inert.template.Add(GeneInstance.Create("gene_growth",20,0));var outside=Spawn(inert,home+Vector3.up*2);
@@ -72,12 +74,12 @@ namespace DarwinPark.EditorTools
             // ★ 新增：默认规则持续补充时不能退出玩家模式，使用真正的自动补充和实体视角/放置预览验证。
             var controlled=EntityRegistry.All.First(e=>e.Genes.GetAttribute("moveSpeed")>0);var view=EntityViewController.Instance;Check(view.EnterView(controlled),"可进入实际实体操控用于补充回归");
             Object.DestroyImmediate(EntityRegistry.All.First(e=>EcologyEnergyBudget.IsProducer(e.Genes)).gameObject);clock.Play();
-            yield return Wait(()=>PopulationMaintenance.Count(producer)>=70&&!Object.FindFirstObjectByType<RandomPlanetSpawner>().IsBusy,"操控期间自动补充");clock.Pause();
-            Check(view.Target==controlled&&controlled.GetComponent<EntityManualControl>().IsControlled,"实际自动补充不会退出实体操控");view.ExitView();
+            float controlTime=clock.GameTime;yield return Wait(()=>clock.GameTime>controlTime+1,"操控期间比例调节");clock.Pause();
+            Check(view.Target==controlled&&controlled.GetComponent<EntityManualControl>().IsControlled,"比例调节不干扰实体操控");view.ExitView();
             var placement=EntityPlacementTool.Instance;placement.BeginPlacement(Object.FindFirstObjectByType<SimulationControlPanel>().EntityPrefab,null);Check(placement.IsPlacing,"可进入真实放置预览用于补充回归");
             Object.DestroyImmediate(EntityRegistry.All.First(e=>EcologyEnergyBudget.IsProducer(e.Genes)).gameObject);clock.Play();
-            yield return Wait(()=>PopulationMaintenance.Count(producer)>=70&&!Object.FindFirstObjectByType<RandomPlanetSpawner>().IsBusy,"放置期间自动补充");clock.Pause();
-            Check(placement.IsPlacing,"实际自动补充不会取消放置预览");placement.CancelPlacement();
+            float placementTime=clock.GameTime;yield return Wait(()=>clock.GameTime>placementTime+1,"放置期间比例调节");clock.Pause();
+            Check(placement.IsPlacing,"比例调节不取消放置预览");placement.CancelPlacement();
             var control=Object.FindFirstObjectByType<SimulationControlPanel>();typeof(SimulationControlPanel).GetMethod("SwitchPage",Private).Invoke(control,new object[]{1});yield return null;var panel=Object.FindFirstObjectByType<RandomSpawnPanel>();var work=RandomSpawnWorkbench.Ensure();work.Open(panel,true);yield return null;
             var root=ServiceLocator.Get<UIRoot>().MainCanvas.transform.Find("RandomSpawnWorkbenchBlocker/RandomSpawnWorkbench");Check(work.MaintenanceSources().Any(s=>s.name.Contains("创始王后"))&&work.MaintenanceSources().Any(s=>s.name.Contains("清道夫")),"可繁衍的生产者、移动者、王后和食腐模板自动列出");
             var extra=new PopulationMaintenanceRule{id=Guid.NewGuid().ToString("N"),ratio=.1f,source=new RandomSpawnRecipe{method=RandomSpawnMethod.Genes,name="保留自定义",included=new(){"gene_growth"}}};Check(PopulationMaintenance.Set(extra),"可保留自定义重叠规则");
@@ -114,7 +116,7 @@ namespace DarwinPark.EditorTools
             float dt=.05f;const int steps=14000;var prepared=new HashSet<DarwinEntity>();var seenAnts=new HashSet<string>{queen.Id};var firstRoles=new List<AntRole>();var trace=new List<string>();bool queenCollected=false,workerCollected=false;int peak=1;
             var spawner=Object.FindFirstObjectByType<RandomPlanetSpawner>();spawner.enabled=false;clock.enabled=false;ServiceLocator.Register(clock);float startTime=clock.GameTime;clock.RestoreState(startTime,1);clock.Play();GameInputGate.Blocked=false;EntityPopulationLimit.UseSnapshot(new WorldGameSettings{entityLimit=180});
             var simulation=Physics.simulationMode;Physics.simulationMode=SimulationMode.Script;var gameTime=typeof(SimulationClock).GetField("<GameTime>k__BackingField",Private);var delta=typeof(SimulationClock).GetField("<GameDeltaTime>k__BackingField",Private);var budget=typeof(SimulationClock).GetField("_budgetedFrame",Private);
-            var vitals=typeof(EntityVitals).GetMethod("AdvanceVitals",Private);var gravity=typeof(PlanetGravity).GetMethod("FixedUpdate",Private);var refill=typeof(RandomPlanetSpawner).GetMethod("Update",Private);
+            var vitals=typeof(EntityVitals).GetMethod("AdvanceVitals",Private);var gravity=typeof(PlanetGravity).GetMethod("FixedUpdate",Private);
             try
             {
                 for(int step=0;step<steps;step++)
@@ -129,7 +131,7 @@ namespace DarwinPark.EditorTools
                     }
                     peak=Mathf.Max(peak,AntColonyMember.All.Count());Physics.SyncTransforms();Physics.Simulate(dt);
                     if(ColonyTaskStressAudit.StopRequested())yield break;
-                    if(step%20==0){refill.Invoke(spawner,null);yield return null;}
+                    if(step%20==0)yield return null;
                     if(step%1000==0){trace.Add("t="+time+" alive="+EntityRegistry.All.Count+" ants="+AntColonyMember.All.Count()+" workers="+AntColonyMember.All.Count(m=>m.Role==AntRole.Worker&&!m.Young)+" resources="+ColonyResource.All.Sum(r=>r.State.energy)+" queenCollected="+queenCollected+" workerCollected="+workerCollected+" queen="+string.Join(";",AntColonyMember.All.Where(m=>m.Role==AntRole.Queen).Select(m=>m.Id.Substring(0,4)+"/"+m.Genes.IsGestating+"/"+m.State.reproductionTimer+"/"+m.GetComponent<EntityLifeCycle>().Progress+"/"+StationaryValues(m))));File.WriteAllLines(Path.Combine(Folder,"continuity-trace.txt"),trace);}
                 }
                 clock.Pause();

@@ -34,6 +34,8 @@ namespace DarwinPark.Core
         public int mutationMode=0,corpseCleanupPerFrame=64;
         public float stageMutationProbability=.3f,stageEnvironmentBoost=.25f,corpseCleanupSeconds=300;
         public bool corpseCleanupEnabled=false;
+        // ★ 新增：比例调节默认关闭；启用后只抑制超额繁殖，不直接生成实体。
+        public bool populationRatioControlEnabled=false;
         public float multipleBirthMaximum=5;
         public float colonyBirthReservedSlots=2, colonySuccessorPopulation=3;
         public float mergeMaximumCatchupSeconds=5;

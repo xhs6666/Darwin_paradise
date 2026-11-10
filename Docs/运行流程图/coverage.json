@@ -1,16 +1,16 @@
 {
   "stats": {
-    "scripts": 387,
-    "csharp": 377,
+    "scripts": 391,
+    "csharp": 381,
     "gpu": 10,
-    "methods": 3988,
-    "graphs": 3991,
-    "profileGraphs": 6712,
-    "nodes": 37860,
-    "calls": 51482,
-    "internalLinks": 14855,
+    "methods": 4007,
+    "graphs": 4010,
+    "profileGraphs": 6744,
+    "nodes": 37972,
+    "calls": 51728,
+    "internalLinks": 14924,
     "unresolved": 10,
-    "hash": "318379009b614648"
+    "hash": "b0fdc243ca284fd4"
   },
   "diagnostics": [
     {
@@ -107,7 +107,7 @@
       "Path": "Assets/DarwinPark/Core/GameplayTuning.cs",
       "Scope": "Runtime",
       "methods": 6,
-      "Hash": "0342e5f23eec0978d4705f3baa2638dda5d51a93b66710524741552c211dd3e4"
+      "Hash": "85e0abb80f14cbfc046e0a41bfa0651161ba1b7741aa711bcddc4eeccdffe503"
     },
     {
       "Id": "df1a6456e756b7d5",
@@ -208,6 +208,13 @@
       "Hash": "c2ec684d9135365787ca15f251e7ad6e73089d223d720030e33a5598a5b306be"
     },
     {
+      "Id": "9580649cce6b5f38",
+      "Path": "Assets/DarwinPark/Core/PopulationRatioRuleEdits.cs",
+      "Scope": "Runtime",
+      "methods": 1,
+      "Hash": "f15acd4b303d03e896bd9f359c870855d141cae587430b59fd89eece930ef806"
+    },
+    {
       "Id": "f1d4e0eb3e10983c",
       "Path": "Assets/DarwinPark/Core/RuleSelectionEdits.cs",
       "Scope": "Runtime",
@@ -303,7 +310,7 @@
       "Path": "Assets/DarwinPark/Editor/ActiveControlsRegression.cs",
       "Scope": "Editor",
       "methods": 29,
-      "Hash": "d5931cbf672d2de0e2f2c3c8d5b297fa2230371fa0f39e23c71691898a97c694"
+      "Hash": "834fcbc0d53d576b85ea802a55521ebe0b2cf87374ef07c84280028e43384eef"
     },
     {
       "Id": "7532f6e210474791",
@@ -323,8 +330,8 @@
       "Id": "9386360ce717a3bf",
       "Path": "Assets/DarwinPark/Editor/ColonyContinuityRegression.cs",
       "Scope": "Editor",
-      "methods": 50,
-      "Hash": "1fed6327672dafd654d9e3011b74b12a9e45c8e3c6d0426ffdc818fec12e47be"
+      "methods": 51,
+      "Hash": "9cb8a3a03f3cb82ed7476f2cf7d24afd240b555cfe99d90418fa2c8dadaab80e"
     },
     {
       "Id": "e4d7714ee72a340e",
@@ -562,7 +569,7 @@
       "Path": "Assets/DarwinPark/Editor/NearViewPerformanceAudit.cs",
       "Scope": "Editor",
       "methods": 23,
-      "Hash": "c6702978597563a59d6b959cff1ccff30df7a591fccfec7114aa626710a7b37a"
+      "Hash": "5ead2d7a26bd8950671f8b45b9ac08e76d04179d097656ee3fc04c03b79c6e63"
     },
     {
       "Id": "5280b7c1dd3cc658",
@@ -618,7 +625,7 @@
       "Path": "Assets/DarwinPark/Editor/PopulationMaintenanceRegression.cs",
       "Scope": "Editor",
       "methods": 66,
-      "Hash": "67d682fbf34e84aa87c08a2993ffe09b5e5cac05699fd6da41148f80a7dcf1dd"
+      "Hash": "b0984b97a12772156c6a05817e87bb7bd353968d69daad64bb22f1d102648702"
     },
     {
       "Id": "9157b2281b645f60",
@@ -626,6 +633,13 @@
       "Scope": "Editor",
       "methods": 19,
       "Hash": "5d0af774fc48d1b88d63b5747be8d9d227eede893730ca26b54c335cb6ca4114"
+    },
+    {
+      "Id": "8a1ed94562678893",
+      "Path": "Assets/DarwinPark/Editor/PopulationRatioRuleChecks.cs",
+      "Scope": "Editor",
+      "methods": 5,
+      "Hash": "059832e668d362108090d7483c1823cbf0a2cf40ab6a2530d17159ab82dfa608"
     },
     {
       "Id": "639f07f7d384b725",
@@ -688,7 +702,7 @@
       "Path": "Assets/DarwinPark/Editor/SpawnBudgetChecks.cs",
       "Scope": "Editor",
       "methods": 3,
-      "Hash": "7c3a1e79e50455d3495b53c74396a2f6e84767270fee7b41485cb9663163d7e6"
+      "Hash": "33a6a94d74112d47b9bf2d77e70344172dc039c935f54e2d3d3ce2e36a895648"
     },
     {
       "Id": "c740ddb4a4340bed",
@@ -1528,7 +1542,7 @@
       "Path": "Assets/DarwinPark/Entities/PopulationMaintenance.cs",
       "Scope": "Runtime",
       "methods": 36,
-      "Hash": "698b8498110962008ff7a5ba7d9c4cb0b3c553a1c3781537a1507aa4d329b0a0"
+      "Hash": "760d44a62ea4b3a53dbc7f7c420b0d623caaec9e05963abe4c4f4f9d3e45f4ba"
     },
     {
       "Id": "9f8bb5c506593a21",
@@ -2483,6 +2497,13 @@
       "Hash": "e417d196769a8a5e37f5fb23749927f4126fb37f6988339fa48f03c2622bfbf4"
     },
     {
+      "Id": "fbcf38a1243f31af",
+      "Path": "Assets/DarwinPark/UI/PopulationRatioRulePage.cs",
+      "Scope": "Runtime",
+      "methods": 9,
+      "Hash": "6e4349f11575a02db82aaaa9b516cc8126ba9e672093647b55f4a03fca1b1a31"
+    },
+    {
       "Id": "6ca6fcae89e529ec",
       "Path": "Assets/DarwinPark/UI/PopulationWorkbench.cs",
       "Scope": "Runtime",
@@ -2493,8 +2514,8 @@
       "Id": "1c13222a547b265c",
       "Path": "Assets/DarwinPark/UI/RandomPlanetSpawner.cs",
       "Scope": "Runtime",
-      "methods": 30,
-      "Hash": "6cb383e48ab0a6aa012cd29bbde15651dbe7b26b8330fb50524391948c5fd74d"
+      "methods": 27,
+      "Hash": "d31044fdfd347fae732ff626c57e155322d8fc43dbdb9166e12279fd3877eb69"
     },
     {
       "Id": "ff6518313bce61e2",
@@ -2515,7 +2536,7 @@
       "Path": "Assets/DarwinPark/UI/RandomSpawnWorkbench.cs",
       "Scope": "Runtime",
       "methods": 87,
-      "Hash": "155f19e6cf2d18a1c345505353c1165178e028a8e1568af74f8577c1e84e1a1c"
+      "Hash": "99e5847f9f7ce60022b19fa2067df82a954a385a98efdd36edb0eee3cc98ac6c"
     },
     {
       "Id": "889ceb71f450c954",
@@ -2535,8 +2556,8 @@
       "Id": "92d59cd12a5696c3",
       "Path": "Assets/DarwinPark/UI/RuleCardExtensions.cs",
       "Scope": "Runtime",
-      "methods": 25,
-      "Hash": "4fd742517ee77f32dfd749b3906dc6a9514d19dd220b7ce6fc8642f12734de25"
+      "methods": 26,
+      "Hash": "3738431f334b69fab6e552c5f2083fb1fda89b7a02f59fa19919a92328db42d4"
     },
     {
       "Id": "7bd14a39565df6a0",
@@ -2599,7 +2620,14 @@
       "Path": "Assets/DarwinPark/UI/SimulationRulesPanel.cs",
       "Scope": "Runtime",
       "methods": 16,
-      "Hash": "f3a73fa03a7dd8d3cb73e938aec1d5fe93666bf5d59a39ccc3f0d60bc4abfa7a"
+      "Hash": "9017448f9462cdd5ce86761fa248e4fe4416ac5c0a603679ae1edbe50520931b"
+    },
+    {
+      "Id": "a6e8ca06f4cafa96",
+      "Path": "Assets/DarwinPark/UI/SimulationTimeHelp.cs",
+      "Scope": "Runtime",
+      "methods": 5,
+      "Hash": "b6e542177214c85ecc259d89abcedc2cf53b701a4865ff29bfe736807b767fa2"
     },
     {
       "Id": "afe657f09857fa47",
@@ -2738,11 +2766,11 @@
   "modes": [
     {
       "mode": "Roslyn\u7F16\u8BD1\u5668\u63A7\u5236\u6D41",
-      "count": 3382
+      "count": 3398
     },
     {
       "mode": "\u8BED\u6CD5\u63A7\u5236\u7ED3\u6784 / \u58F0\u660E\uFF08\u975ECFG\uFF09",
-      "count": 583
+      "count": 586
     },
     {
       "mode": "GPU\u63A7\u5236\u7ED3\u6784\uFF08\u540D\u79F0\u94FE\u63A5\uFF0C\u4E0D\u4F5CC#\u7C7B\u578B\u63A8\u65AD\uFF09",
