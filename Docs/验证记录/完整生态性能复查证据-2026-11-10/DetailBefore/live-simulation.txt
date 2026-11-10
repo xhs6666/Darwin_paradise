@@ -1,0 +1,1 @@
+simulated=8.004395 population=413->418 resources=3238

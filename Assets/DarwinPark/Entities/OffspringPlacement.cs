@@ -8,6 +8,8 @@ namespace DarwinPark.Entities
     {
         public static bool TryGetPosition(Vector3 parent,bool spread,out Vector3 position)
         {
+            // ★ 适配：真实出生定位计时，保留地形射线语义。
+            using var performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.BirthPlacement);
             position=parent;
             var builder=Object.FindFirstObjectByType<PlanetTerrainMeshBuilder>();
             var ground=builder!=null?builder.GetComponent<MeshCollider>():null;

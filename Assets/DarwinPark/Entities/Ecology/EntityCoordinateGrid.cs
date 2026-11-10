@@ -25,6 +25,8 @@ namespace DarwinPark.Entities.Ecology
         }
         public static void Query(Vector3 point,float radius,List<EntityCoordinate> result)
         {
+            // ★ 适配：空间路由单独计时，不能把候选构建都归为繁殖计时。
+            using var performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.CoordinateGrid);
             result.Clear();if(radius<=0)return;Ensure();var min=Cell(point-Vector3.one*radius);var max=Cell(point+Vector3.one*radius);double volume=((double)max.x-min.x+1)*((double)max.y-min.y+1)*((double)max.z-min.z+1);float squared=radius*radius;
             // 极大视野才扫描紧凑坐标；正常视野只走周围粗格，既不做逐目标Unity组件查询，也不广播全地图。
             if(volume>ObservationSettings.Current.maximumCellsPerQuery){foreach(var item in Positions){CandidateVisits++;if((item.position-point).sqrMagnitude<=squared)result.Add(item);}return;}

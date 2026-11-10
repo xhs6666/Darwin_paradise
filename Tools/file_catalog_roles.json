@@ -366,7 +366,9 @@
     "Assets/DarwinPark/Planet/AtmosphereViewPolicy.cs": "气壳覆盖最高地形，并仅在实体视角增强天空散射；退出恢复轨道密度。",
     "Assets/DarwinPark/Editor/ActiveControlsRegression.cs": "原生验证活跃计算等价、缓存边界、规则列表与基因整卡悬浮交互。",
     "Assets/DarwinPark/Editor/ActiveSimulationBenchmark.cs": "相同只读405实体世界，以独立进程对照活跃优化开关，记录分项和调用次数。",
-    "Assets/DarwinPark/Editor/ControlAtmosphereAudit.cs": "实际第一人称天空有无大气像素对照，并验证昼夜、地形遮挡和退出恢复。"
+    "Assets/DarwinPark/Editor/ControlAtmosphereAudit.cs": "实际第一人称天空有无大气像素对照，并验证昼夜、地形遮挡和退出恢复。",
+    "Assets/DarwinPark/Entities/Ecology/EcologyMobility.cs": "比例统计读取真实移动能力；基础为零时省去不可能改变资格的乘法/限幅修饰链。",
+    "Assets/DarwinPark/Editor/LiveSimulationAudit.cs": "使用真实最新存档、完整生命环境/出生/维持负载，按用户DX12和视口尺寸记录总帧及细分耗时；支持旧/新路径外部隔离对照。"
   },
   "files": {
     "Assets/Scenes/SampleScene.unity": "主要运行场景：挂载星球、环境、时钟、UI和游戏启动组件。",

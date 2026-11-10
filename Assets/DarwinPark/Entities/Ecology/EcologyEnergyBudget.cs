@@ -23,18 +23,8 @@ namespace DarwinPark.Entities.Ecology
             if(reserve>=LifeCycleSettings.Load().nutrientCost*Mathf.Max(settings.minimumReproductionSize,size))return false;
             return genes.Evaluation.Genes.Exists(g=>g.IsActive&&genes.GetLogic(g.Gene) is ReproductionGeneLogic);
         }
-        public static bool IsProducer(EntityGeneController genes)
-        {
-            var settings=EcologyBalanceSettings.Current;
-            // ★ 修复（防Bug回归）：密集生态每步大量查询角色，只线性选主表达，避免为每个邻居创建 LINQ 排序集合。
-            if(genes==null||ActiveSimulationBatch.Read<EggIncubation>(genes)?.Incubating==true)return false;
-            // ★ 适配：异养后代/食腐分支接管营养方式，不能同时借父基因的光合状态凭空生产。
-            if(EcologyQueries.Active(genes,NutritionEcologySettings.Current.heterotrophyGene)!=null||EcologyQueries.Active(genes,NutritionEcologySettings.Current.scavengerGene)!=null)return false;
-            GeneEvaluation gene=null;
-            if(genes.Evaluation!=null)foreach(var candidate in genes.Evaluation.Genes)
-                if(candidate.IsActive&&candidate.Definition.Id==settings.nutritionGene&&(gene==null||candidate.EffectiveStrength>gene.EffectiveStrength))gene=candidate;
-            return gene?.State!=null&&System.Array.IndexOf(settings.producerStates,gene.State.StateId)>=0&&genes.GetAttribute(settings.movementAttribute)<=0;
-        }
+        // ★ 修复（防Bug回归）：比例规则和空间竞争共用已存在的表达分类；不能在每个繁殖检查重复遍历并走零速度修饰链。
+        public static bool IsProducer(EntityGeneController genes)=>ProducerClassification.IsProducer(genes);
         public static float Competition(EntityGeneController genes)
         {
             // ★ 适配：按真实距离统计同一批生产者，帧内子步共用竞争结果，消除逐实体逐子步全图扫描。

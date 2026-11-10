@@ -120,6 +120,8 @@ namespace DarwinPark.Entities
         }
         public static float BreedingScale(EntityGeneController genes)
         {
+            // ★ 适配：把比例规则检查从孕育总项细分出来，正常世界不可在测试中关闭。
+            using var performance=PerformanceTimings.Measure(PerformanceTimings.Area.BreedingMaintenance);
             // ★ 适配：优化重复计算，保留停用规则供界面查看，但没有有效调节规则时不扫描全体实体。
             bool active=false;for(int i=0;i<Items.Count;i++)if(Items[i].enabled){active=true;break;}if(!active)return 1;Refresh();float factor=1;
             foreach(var rule in Items)if(rule.enabled&&EcologyMaintenancePolicy.Matches(rule,genes)&&Denominator(rule)>0){float share=Counts[rule.id]/(float)Denominator(rule);if(share>rule.ratio)factor=Mathf.Min(factor,rule.ratio/share);}return factor;

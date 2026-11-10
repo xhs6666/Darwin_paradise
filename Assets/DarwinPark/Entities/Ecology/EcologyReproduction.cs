@@ -14,8 +14,10 @@ namespace DarwinPark.Entities.Ecology
             if(EcologyQueries.Active(parent,NutritionEcologySettings.Current.eggGene)!=null)return EggHostPregnancy.TryDeposit(parent,genome);
             // ★ 适配：出生上限与投放共用，拒绝时保留母体孕育。
             if(!EntityPopulationLimit.CanSpawn)return false;
-            var before=EntityRegistry.All.ToArray();DarwinEntity.Spawner?.Invoke(genome,position,"");
-            var child=EntityRegistry.All.FirstOrDefault(e=>!before.Contains(e));if(child==null)return false;
+            var before=EntityRegistry.All.ToArray();
+            // ★ 适配：区分实际创建与全表寻找新生者，避免将出生尖峰误归因于孕育计时。
+            using(DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.BirthFactory))DarwinEntity.Spawner?.Invoke(genome,position,"");
+            DarwinEntity child;using(DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.BirthIdentity))child=EntityRegistry.All.FirstOrDefault(e=>!before.Contains(e));if(child==null)return false;
             // ★ 适配：出生立即固定分工与种群标记，早于幼年变异和任何 AI 帧。
             AntColonyMember.OnBirth(parent,child);
             // ★ 修复（防Bug回归）：先确立孵化状态，不能让尚未孵化的狼群卵被统计为已独立建群。

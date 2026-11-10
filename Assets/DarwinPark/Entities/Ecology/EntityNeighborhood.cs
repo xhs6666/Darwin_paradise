@@ -67,7 +67,9 @@ namespace DarwinPark.Entities.Ecology
         {
             // ★ 修复（防Bug回归）：离开世界后可能不再查询，注销时就释放桶内引用，不能等下一次重建才放开旧实体。
             if(removed&&entity!=null&&entity.Genes!=null&&Entries.TryGetValue(entity.Genes,out var entry))
-            {if(entry.producer)Dirty(entry.cell);RemoveCell(entry);Entries.Remove(entity.Genes);ProducerClassification.Remove(entity.Genes);}
+            {if(entry.producer)Dirty(entry.cell);RemoveCell(entry);Entries.Remove(entity.Genes);}
+            // ★ 修复（防Bug回归）：规则可能先于空间快照查询分类，注销不应依赖快照是否已经收录。
+            if(removed&&entity!=null&&entity.Genes!=null)ProducerClassification.Remove(entity.Genes);
             _frame=-1;_version++;_positionVersion++;
         }
         // ★ 适配：在重算完成、生命归零/恢复以及模拟前同步，帧内表达变化和移动不等待下一次全表重建。

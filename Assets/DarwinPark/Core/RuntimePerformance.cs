@@ -12,7 +12,7 @@ namespace DarwinPark.Core
     public static class PerformanceTimings
     {
         // ★ 适配：把活体大项继续细分，避免把行动、邻域重建和补给开销都误归因为合并算法。
-        public enum Area { Scheduler,Genes,StatePerception,Vitals,Environment,Population,ColonyTasks,GroundAnchor,Gravity,BottomUI,ResourceVisuals,GeneSignature,GeneRecalculation,Nutrition,Reproduction,Locomotion,Neighborhood,Feeding,Formation,Perception,MutationRounds,ResourceSearch,SingletonSettlement,CorpseCleanup,Count }
+        public enum Area { Scheduler,Genes,StatePerception,Vitals,Environment,Population,ColonyTasks,GroundAnchor,Gravity,BottomUI,ResourceVisuals,GeneSignature,GeneRecalculation,Nutrition,Reproduction,Locomotion,Neighborhood,Feeding,Formation,Perception,MutationRounds,ResourceSearch,SingletonSettlement,CorpseCleanup,BirthFactory,BirthIdentity,BirthPlacement,BreedingMaintenance,MateSearch,CoordinateGrid,Count }
         private static readonly long[] Ticks=new long[(int)Area.Count],Calls=new long[(int)Area.Count];
         public static bool Capturing {get;private set;}
         public readonly struct Scope:IDisposable

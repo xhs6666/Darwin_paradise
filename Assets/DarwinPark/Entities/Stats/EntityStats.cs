@@ -137,6 +137,8 @@ namespace DarwinPark.Entities.Stats
         /// </summary>
         private void PlayHitFlash()
         {
+            // ★ 修复（防Bug回归）：同帧死亡后剩余代谢可能仍扣血，停用实体不能启动闪烁协程并写错误堆栈。
+            if(!isActiveAndEnabled||!gameObject.activeInHierarchy)return;
             if (_isFlashing)
             {
                 // 如果正在闪烁，刷新持续时间

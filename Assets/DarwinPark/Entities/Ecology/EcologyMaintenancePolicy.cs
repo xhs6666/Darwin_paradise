@@ -12,7 +12,7 @@ namespace DarwinPark.Entities.Ecology
         public static void ResetCounts()=>_eligible=0;
         public static PopulationRuleCategory Observe(EntityGeneController genes)
         {
-            var category=EcologyEnergyBudget.IsProducer(genes)?PopulationRuleCategory.Producers:genes.GetAttribute(EcologyBalanceSettings.Current.movementAttribute)>0?PopulationRuleCategory.Mobile:PopulationRuleCategory.Source;
+            var category=EcologyEnergyBudget.IsProducer(genes)?PopulationRuleCategory.Producers:EcologyMobility.CanMove(genes)?PopulationRuleCategory.Mobile:PopulationRuleCategory.Source;
             if(category!=PopulationRuleCategory.Source)_eligible++;return category;
         }
         public static bool Matches(PopulationMaintenanceRule rule,EntityGeneController genes,PopulationRuleCategory category)
@@ -20,7 +20,7 @@ namespace DarwinPark.Entities.Ecology
         public static bool Matches(PopulationMaintenanceRule rule,EntityGeneController genes)
         {
             if(rule.category==PopulationRuleCategory.Source)return rule.source.Matches(genes.Genome);
-            return rule.category==PopulationRuleCategory.Producers?EcologyEnergyBudget.IsProducer(genes):genes.GetAttribute(EcologyBalanceSettings.Current.movementAttribute)>0;
+            return rule.category==PopulationRuleCategory.Producers?EcologyEnergyBudget.IsProducer(genes):EcologyMobility.CanMove(genes);
         }
         public static int Denominator(PopulationMaintenanceRule rule,int all)=>rule.category==PopulationRuleCategory.Source?all:_eligible;
         public static bool Disjoint(PopulationMaintenanceRule a,PopulationMaintenanceRule b,Func<RandomSpawnRecipe,RandomSpawnRecipe,bool> original)

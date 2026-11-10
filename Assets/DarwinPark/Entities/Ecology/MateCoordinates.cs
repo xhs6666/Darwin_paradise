@@ -20,6 +20,8 @@ namespace DarwinPark.Entities.Ecology
         }
         public DarwinEntity Find(EntityGeneController owner,float range,float required)
         {
+            // ★ 适配：独立记录配偶查询与坐标路由成本。
+            using var performance=PerformanceTimings.Measure(PerformanceTimings.Area.MateSearch);
             if(Valid(owner,_mate,range,required))return _mate;
             _mate=null;if(_remaining>0)return null;_remaining=SimulationOptimization.Current.mateSearchSeconds;
             EntityCoordinateGrid.Query(owner.transform.position,range,_candidates);float best=float.PositiveInfinity;

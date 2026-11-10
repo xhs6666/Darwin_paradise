@@ -88,7 +88,10 @@ namespace DarwinPark.Entities
             int steps=DarwinPark.Core.SimulationSubsteps.Count(dt);
             // ★ 适配：行为计时仍逐小步，物理转向只在本批最后一步执行。
             Simulation.ActionMotionBatch.Begin(this,dt);
-            Simulation.ActiveSimulationBatch.Begin(this,_activePlan);
+            // ★ 修复（防Bug回归）：禁用组件复用时不建批缓存；两项均关闭时直接运行原逻辑快照，作为真实回退路径。
+            bool reuse=SimulationOptimization.Current.activeComponentReuse;
+            bool planned=SimulationOptimization.Current.activeExecutionPlan||reuse;
+            if(reuse)Simulation.ActiveSimulationBatch.Begin(this,_activePlan);
             try
             {
             for(int index=0;index<steps;index++)
@@ -105,10 +108,11 @@ namespace DarwinPark.Entities
                 // ★ 修复（防Bug回归）：仍使用逻辑快照防止重算时修改集合，但复用缓冲区，避免每个实体每个子步分配新列表。
                 // ★ 适配：优化重复计算，只在逻辑重算后重建快照；回调中的重算仅标记失效，不能修改正在遍历的列表。
                 if(_snapshotRevision!=LogicRevision){_simulationLogics.Clear();_simulationLogics.AddRange(_activeLogics.Values);_snapshotRevision=LogicRevision;_activePlan.Invalidate();LogicSnapshotBuilds++;}
-                _activePlan.Run(this,_simulationLogics,step);
+                if(planned)_activePlan.Run(this,_simulationLogics,step);
+                else foreach(var logic in _simulationLogics)logic.OnUpdate(step);
             }
             }
-            finally{Simulation.ActiveSimulationBatch.End(this);Simulation.ActionMotionBatch.End(this);}
+            finally{if(reuse)Simulation.ActiveSimulationBatch.End(this);Simulation.ActionMotionBatch.End(this);}
         }
 
         public void Recalculate()

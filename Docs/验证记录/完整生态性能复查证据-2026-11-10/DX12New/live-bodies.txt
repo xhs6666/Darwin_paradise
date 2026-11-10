@@ -1,0 +1,1 @@
+total=423 sleeping=289 kinematic=0

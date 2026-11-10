@@ -17,6 +17,7 @@ using UnityEngine;
 using Object=UnityEngine.Object;
 namespace DarwinPark.EditorTools
 {
+    // ★ 修复（防Bug回归）：本夹具关闭生命/环境并限制出生，仅作隔离微测；正常生态使用LiveSimulationAudit。
     // ★ 新增：旧源码和新源码运行同一独立世界，独立进程重复对照活跃执行开关；测试限制仅在本Editor脚本应用。
     [InitializeOnLoad]public static class ActiveSimulationBenchmark
     {

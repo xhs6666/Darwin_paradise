@@ -34,7 +34,10 @@ namespace DarwinPark.Entities.Simulation
         }
         public void Run(EntityGeneController owner,IReadOnlyList<IGeneLogic> logics,float dt)
         {
-            Prepare(owner,logics);int revision=_revision;bool enabled=SimulationOptimization.Current.activeExecutionPlan;
+            bool enabled=SimulationOptimization.Current.activeExecutionPlan;
+            // ★ 修复（防Bug回归）：关闭优化必须真正跳过建表，不能只关闭过滤却继续支付计划维护成本。
+            if(!enabled&&!SimulationOptimization.Current.activeComponentReuse){foreach(var logic in logics)logic.OnUpdate(dt);return;}
+            Prepare(owner,logics);int revision=_revision;
             for(int i=0;i<logics.Count;i++)
             {
                 // 回调中重算后，原快照剩余部分恢复逐项调用；下个小步才重建，避免漏掉刚变为主表达的行为。
@@ -53,8 +56,11 @@ namespace DarwinPark.Entities.Simulation
         public static void Invalidate(EntityGeneController owner){if(_current.owner==owner&&_current.plan!=null)_current.plan.components.Clear();}
         public static T Read<T>(EntityGeneController owner)where T:Component
         {
-            if(owner==null)return null;ActiveSimulationPlan.ComponentReads++;
-            if(_current.owner!=owner||_current.plan==null||!_current.plan.KnownOnly||!SimulationOptimization.Current.activeComponentReuse)return owner.GetComponent<T>();
+            // ★ 修复（防Bug回归）：物理/代谢等批次外调用不应增加全局计数和配置查询；对象引用不同时直接原生查询。
+            if(_current.plan==null||!ReferenceEquals(_current.owner,owner))return owner==null?null:owner.GetComponent<T>();
+            if(owner==null)return null;
+            if(!_current.plan.KnownOnly||!SimulationOptimization.Current.activeComponentReuse)return owner.GetComponent<T>();
+            ActiveSimulationPlan.ComponentReads++;
             if(_current.revision!=owner.LogicRevision){_current.plan.components.Clear();_current.revision=owner.LogicRevision;}
             var values=_current.plan.components;var type=typeof(T);if(values.TryGetValue(type,out var cached)){if(ReferenceEquals(cached,null)||cached!=null){ActiveSimulationPlan.ComponentHits++;return cached as T;}values.Remove(type);}
             var result=owner.GetComponent<T>();values[type]=result;return result;

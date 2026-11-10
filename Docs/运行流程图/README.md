@@ -4,7 +4,7 @@
 
 [12条业务主流程](主流程.md) · [生成工具与维护说明](../../Tools/FlowDocs/README.md)
 
-覆盖 **366 个C#脚本、10 个Shader/HLSL文件、3903 个方法/构造/访问器/局部函数/回调/GPU函数**。没有显式方法的数据脚本也在索引中。未扫描Unity Packages/Library生成文件；Tools为离线生成器，不进入游戏运行图。
+覆盖 **368 个C#脚本、10 个Shader/HLSL文件、3923 个方法/构造/访问器/局部函数/回调/GPU函数**。没有显式方法的数据脚本也在索引中。未扫描Unity Packages/Library生成文件；Tools为离线生成器，不进入游戏运行图。
 
 
 ## 阅读与维护
@@ -66,7 +66,7 @@
 |Core|[Assets/DarwinPark/Core/UI/UIRoot.cs](脚本/9c1421378791f0e0.md)|Runtime|9|
 |Core|[Assets/DarwinPark/Core/UI/UIVisualTheme.cs](脚本/ca525a798a08f966.md)|Runtime|16|
 |Core|[Assets/DarwinPark/Core/WorldAuthority.cs](脚本/2361e41ab2baa157.md)|Runtime|2|
-|Editor|[Assets/DarwinPark/Editor/ActiveControlsRegression.cs](脚本/2eab88692e68527d.md)|Editor|23|
+|Editor|[Assets/DarwinPark/Editor/ActiveControlsRegression.cs](脚本/2eab88692e68527d.md)|Editor|28|
 |Editor|[Assets/DarwinPark/Editor/ActiveSimulationBenchmark.cs](脚本/7532f6e210474791.md)|Editor|13|
 |Editor|[Assets/DarwinPark/Editor/AntColonyRegression.cs](脚本/1314e8c23331e578.md)|Editor|39|
 |Editor|[Assets/DarwinPark/Editor/ColonyContinuityRegression.cs](脚本/9386360ce717a3bf.md)|Editor|50|
@@ -99,6 +99,7 @@
 |Editor|[Assets/DarwinPark/Editor/LayersSettingsRegression.cs](脚本/74c9e2e7a7587584.md)|Editor|15|
 |Editor|[Assets/DarwinPark/Editor/LayoutRandomSpawnRegression.cs](脚本/8995681fbd6854d1.md)|Editor|23|
 |Editor|[Assets/DarwinPark/Editor/LifeCycleCombatRegression.cs](脚本/92ed3746ce41b5f8.md)|Editor|14|
+|Editor|[Assets/DarwinPark/Editor/LiveSimulationAudit.cs](脚本/e6e68fc03d2d6235.md)|Editor|14|
 |Editor|[Assets/DarwinPark/Editor/MainMenuBackgroundRecorder.cs](脚本/ba405663a24f549a.md)|Editor|4|
 |Editor|[Assets/DarwinPark/Editor/MenuUpgradeRegression.cs](脚本/f55a1b1542251c77.md)|Editor|17|
 |Editor|[Assets/DarwinPark/Editor/MergeAlgorithmAuditRegression.cs](脚本/a8573e4637b62b8c.md)|Editor|14|
@@ -154,6 +155,7 @@
 |Entities|[Assets/DarwinPark/Entities/Ecology/EcologyEnergyBudget.cs](脚本/06a91c8201f26593.md)|Runtime|6|
 |Entities|[Assets/DarwinPark/Entities/Ecology/EcologyIdentity.cs](脚本/bdf7ccc2c9c0452f.md)|Runtime|17|
 |Entities|[Assets/DarwinPark/Entities/Ecology/EcologyMaintenancePolicy.cs](脚本/554e3f13e11b3808.md)|Runtime|8|
+|Entities|[Assets/DarwinPark/Entities/Ecology/EcologyMobility.cs](脚本/5cf9761659037d31.md)|Runtime|1|
 |Entities|[Assets/DarwinPark/Entities/Ecology/EcologyMotion.cs](脚本/6ed9d0eedb456d32.md)|Runtime|5|
 |Entities|[Assets/DarwinPark/Entities/Ecology/EcologyPerformanceSettings.cs](脚本/d5a013a7598d7dff.md)|Runtime|2|
 |Entities|[Assets/DarwinPark/Entities/Ecology/EcologyReproduction.cs](脚本/eaaa574d7ae50e29.md)|Runtime|2|
