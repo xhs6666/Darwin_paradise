@@ -11,7 +11,7 @@ namespace DarwinPark.Entities
             // ★ 适配：真实出生定位计时，保留地形射线语义。
             using var performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.BirthPlacement);
             position=parent;
-            var builder=Object.FindFirstObjectByType<PlanetTerrainMeshBuilder>();
+            var builder=DarwinPark.Entities.Ecology.EcologyQueries.Planet;
             var ground=builder!=null?builder.GetComponent<MeshCollider>():null;
             if(ground==null || builder.Data==null){Debug.LogWarning("[繁殖] 地形未就绪，暂缓出生");return false;}
             var settings=LifeCycleSettings.Load();var up=(parent-builder.transform.position).normalized;
@@ -20,6 +20,9 @@ namespace DarwinPark.Entities
             float max=spread?settings.stationaryBirthMaxRadius:settings.movingBirthRadius;
             float radius=Mathf.Sqrt(Random.Range(min*min,max*max));float angle=Random.Range(0,Mathf.PI*2);
             var direction=(parent-builder.transform.position+(a*Mathf.Cos(angle)+b*Mathf.Sin(angle))*radius).normalized;
+            // ★ 修复（防Bug回归）：已生成地形直接定位相同真实三角形，出生不反复搜索场景或射线遍历大网格。
+            if(DarwinPark.Core.SimulationOptimization.Current.directGroundQueries&&RadialTerrainSurface.TrySample(builder,ground,builder.transform.position+direction*(builder.radius+builder.heightScale),out var surface))
+            {position=surface.point+direction*settings.birthHeight;return true;}
             float outside=ground.bounds.extents.magnitude+settings.birthHeight;
             if(!ground.Raycast(new Ray(builder.transform.position+direction*outside,-direction),out var hit,outside))return false;
             position=hit.point+direction*settings.birthHeight;return true;

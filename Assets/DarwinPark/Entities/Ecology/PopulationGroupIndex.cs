@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+// ★ 修复（防Bug回归）：普通CPU层级确认空组件诊断字符串仍在生命/基因等高频入口分配；正常缺失改TryGet即时读取。
 namespace DarwinPark.Entities.Ecology
 {
     // ★ 修复（防Bug回归）：移动属性会高频询问领袖和王后，不能每次排序全世界成员；关系仅在成员、表达或角色变化时重建。
@@ -31,7 +32,7 @@ namespace DarwinPark.Entities.Ecology
                 if(member==null||member.GroupId!=key.Item1||member.Mode!=key.Item2||!member.Active)continue;
                 group.members.Add(member);
                 if(group.leader==null||member.LeaderFlag&&!group.leader.LeaderFlag||member.LeaderFlag==group.leader.LeaderFlag&&Earlier(member,group.leader))group.leader=member;
-                var ant=member.GetComponent<AntColonyMember>();
+                var ant=DarwinPark.Core.OptionalComponent.Read<AntColonyMember>(member);
                 if(key.Item2==EcologySettings.Load().antState&&ant!=null&&ant.Role==AntRole.Queen&&Earlier(member,group.queen!=null?group.queen.Population:null))group.queen=ant;
             }
             Groups[key]=group;return group;

@@ -2,10 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// ★ 修复（防Bug回归）：可选组件允许正常缺失，使用即时TryGet，保留安装/销毁可见性并消除编辑器空查询分配。
 namespace DarwinPark.Entities.Stats
 {
     public class EntityStats : MonoBehaviour
     {
+        // ★ 新增：实际属性/容量变化使补给决策立即失效，不逐次重新读取多份字典。
+        public long ValueRevision {get;private set;}
         private Dictionary<string, float> _stats = new();
         private Dictionary<string, float> _maxStats = new();
 
@@ -59,7 +62,7 @@ namespace DarwinPark.Entities.Stats
         private void LateUpdate()=>RefreshAppearance();
         private void RefreshAppearance()
         {
-            if(_population==null)_population=GetComponent<Ecology.PopulationBehavior>();
+            if(_population==null)_population=DarwinPark.Core.OptionalComponent.Read<Ecology.PopulationBehavior>(this);
             bool sync=_population!=null&&_population.Active&&Ecology.PopulationArchive.Find(_population.GroupId)?.syncEntityColor==true;
             Color color=sync?Ecology.ColonyAppearance.ColorFor(_population.GroupId):Color.white;
             if(sync==_appliedSync&&_isFlashing==_appliedFlash&&(!sync||color==_appliedColor))return;
@@ -86,7 +89,7 @@ namespace DarwinPark.Entities.Stats
         public List<DarwinPark.Entities.StatSaveValue> CaptureValues()
         {var values=new List<DarwinPark.Entities.StatSaveValue>();foreach(var pair in _stats)values.Add(new DarwinPark.Entities.StatSaveValue{id=pair.Key,value=pair.Value,max=_maxStats.TryGetValue(pair.Key,out var max)?max:100});return values;}
         public void RestoreValues(List<DarwinPark.Entities.StatSaveValue> values)
-        {foreach(var value in values){_stats[value.id]=value.value;_maxStats[value.id]=value.max;}Ecology.EntityNeighborhood.Changed(GetComponent<EntityGeneController>());}
+        {foreach(var value in values){_stats[value.id]=value.value;_maxStats[value.id]=value.max;}ValueRevision++;Ecology.EntityNeighborhood.Changed(GetComponent<EntityGeneController>());}
         public bool TryGet(string id, out float value) => _stats.TryGetValue(id, out value);
         // ★ 适配：营养转移只需当前空位，不应每帧构造整份存档数值列表。
         public float CapacityRemaining(string id)=>_stats.TryGetValue(id,out float value)&&_maxStats.TryGetValue(id,out float maximum)?Mathf.Max(0,maximum-value):0;
@@ -110,14 +113,15 @@ namespace DarwinPark.Entities.Stats
         // 捕食/饥饿等瞬时伤害仍走原来的闪烁路径。
         public void Modify(string id, float delta, bool playHitFlash)
         {
-            if (_stats.ContainsKey(id))
+            // ★ 修复（防Bug回归）：代谢/进食每小步都会修改属性，读取一次旧值与上限即可，不重复散列同一个键。
+            if (_stats.TryGetValue(id,out float before))
             {
-                float max = _maxStats.ContainsKey(id) ? _maxStats[id] : 100f;
+                float max = _maxStats.TryGetValue(id,out var maximum) ? maximum : 100f;
                 // ★ 适配：任何来源的生命损失都唤醒个体，下帧不再沿用近邻的健康结算。
                 if(id=="health"&&delta<0)Simulation.EntityWorkScheduler.Wake(GetComponent<EntityGeneController>());
-                float before=_stats[id];_stats[id] = Mathf.Clamp(before + delta, 0f, max);
+                float after=Mathf.Clamp(before + delta, 0f, max);_stats[id] = after;if(after!=before)ValueRevision++;
                 // ★ 适配：同帧死亡或恢复立刻失效邻居计数；普通扣血不重建空间数据。
-                if(id=="health"&&(before>0)!=(_stats[id]>0))Ecology.EntityNeighborhood.Changed(GetComponent<EntityGeneController>());
+                if(id=="health"&&(before>0)!=(after>0))Ecology.EntityNeighborhood.Changed(GetComponent<EntityGeneController>());
 
                 // ★ 核心修改：如果是扣血，触发变红闪烁
                 if (playHitFlash && id == "health" && delta < 0)
@@ -129,7 +133,7 @@ namespace DarwinPark.Entities.Stats
 
         public void SetMax(string id, float max)
         {
-            if (_maxStats.ContainsKey(id)) _maxStats[id] = max;
+            if (_maxStats.ContainsKey(id)&&_maxStats[id]!=max){_maxStats[id] = max;ValueRevision++;}
         }
 
         /// <summary>

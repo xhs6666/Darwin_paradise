@@ -3,6 +3,7 @@ using DarwinPark.Core;
 using DarwinPark.Entities.Stats;
 using DarwinPark.Planet;
 
+// ★ 修复（防Bug回归）：普通CPU层级确认空组件诊断字符串仍在生命/基因等高频入口分配；正常缺失改TryGet即时读取。
 namespace DarwinPark.Entities.Vitals
 {
     public class EntityVitals : MonoBehaviour
@@ -44,12 +45,14 @@ namespace DarwinPark.Entities.Vitals
         }
 
         // ★ 适配：供代表和醒来补算使用，与普通Update共用小步逻辑。
-        public void AdvanceShared(float dt){/* ★ 适配：统一子步保留尾数，避免浮点残差多跑整轮结算。 */using var performance=PerformanceTimings.Measure(PerformanceTimings.Area.Vitals);int steps=SimulationSubsteps.Count(dt);for(int i=0;i<steps;i++)AdvanceVitals(SimulationSubsteps.Slice(dt,i,steps));}
+        public void AdvanceShared(float dt){/* ★ 适配：统一子步保留尾数，避免浮点残差多跑整轮结算。 */int steps=SimulationSubsteps.Count(dt);for(int i=0;i<steps;i++)AdvanceVitals(SimulationSubsteps.Slice(dt,i,steps));}
 
         private void AdvanceVitals(float dt)
         {
+            // ★ 修复（防Bug回归）：普通Update与共享结算都在实际代谢入口采样，不能漏报绝大多数活体代谢。
+            using var performance=PerformanceTimings.Measure(PerformanceTimings.Area.Vitals);
             // ★ 适配：卵不进行自主觅食/运动代谢，但保留生命值与可被攻击破坏的碰撞体。
-            if(GetComponent<DarwinPark.Entities.Ecology.EggIncubation>()?.Incubating==true)
+            if(OptionalComponent.Read<DarwinPark.Entities.Ecology.EggIncubation>(this)?.Incubating==true)
             {if(_stats.TryGet("health",out var eggHealth)&&eggHealth<=0)Ecology.EntityDeathSettlement.Die(GetComponent<DarwinEntity>());return;}
             // 1. 营养吸收与消耗
             // ★ 修复（防Bug回归）：营养基因已结算生产，此处重复凭空产粮会掩盖生态收支；这里只计算消耗。
@@ -69,10 +72,11 @@ namespace DarwinPark.Entities.Vitals
             }
 
             // 修复逻辑
-            float repairEfficiency = _genes.GetAttribute("repairEfficiency");
-            float repairCapability = _genes.GetAttribute("repairCapability");
-            if (_stats.TryGet("health", out var hp) && _stats.TryGet("nutrient", out var nut2))
+            // ★ 修复（防Bug回归）：满血或无口粮时不能修复，无须为每个健康个体重复查询两项基因属性。
+            if (_stats.TryGet("health", out var hp) && hp<100f && _stats.TryGet("nutrient", out var nut2) && nut2>5f)
             {
+                float repairEfficiency = _genes.GetAttribute("repairEfficiency");
+                float repairCapability = _genes.GetAttribute("repairCapability");
                 // ★ 修复（防Bug回归）：缺氧溺水期间暂停自然修复，避免持续伤害被同帧修复抵消成“不掉血”。
                 if (hp < 100f && hp > repairCapability && nut2 > 5f && repairEfficiency > 0f &&
                     GetComponent<EntityEnvironmentHazard>()?.IsDrowning != true)

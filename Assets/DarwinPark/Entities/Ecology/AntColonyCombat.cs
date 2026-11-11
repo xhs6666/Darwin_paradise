@@ -1,5 +1,6 @@
 using UnityEngine;
 
+// ★ 修复（防Bug回归）：可选组件允许正常缺失，使用即时TryGet，保留安装/销毁可见性并消除编辑器空查询分配。
 namespace DarwinPark.Entities.Ecology
 {
     // ★ 新增：最终伤害入口执行同群识别和分工限制，玩家攻击也不能绕过工匠/王后的零战斗能力。
@@ -8,13 +9,13 @@ namespace DarwinPark.Entities.Ecology
         public static bool CanAttack(DarwinEntity attacker,DarwinEntity target)
         {
             if(attacker==null||target==null)return true;
-            if(attacker.GetComponent<PopulationBehavior>()?.SameGroup(target)==true)return false;
-            var member=attacker.GetComponent<AntColonyMember>();
+            if(DarwinPark.Core.OptionalComponent.Read<PopulationBehavior>(attacker)?.SameGroup(target)==true)return false;
+            var member=DarwinPark.Core.OptionalComponent.Read<AntColonyMember>(attacker);
             return member==null||!member.Active||member.Role==AntRole.None||member.Role==AntRole.Soldier&&!member.Young;
         }
         public static bool SettleSoldierAttack(EntityGeneController genes,DarwinEntity target,bool killed)
         {
-            var member=genes.GetComponent<AntColonyMember>();if(member==null||!member.Active||member.Role!=AntRole.Soldier)return false;
+            var member=DarwinPark.Core.OptionalComponent.Read<AntColonyMember>(genes);if(member==null||!member.Active||member.Role!=AntRole.Soldier)return false;
             // ★ 修复（防Bug回归）：尸体由死亡入口统一生成，士兵只更新巡逻状态，不能再生成第二具。
             if(killed)member.AfterKill();
             return true;

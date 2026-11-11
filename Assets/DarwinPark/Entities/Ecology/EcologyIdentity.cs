@@ -50,6 +50,8 @@ namespace DarwinPark.Entities.Ecology
             if(Planet==null)return point;
             Vector3 direction=Up(point);if(direction.sqrMagnitude<.5f)direction=Vector3.up;
             var col=Planet.GetComponent<MeshCollider>();float outside=Planet.radius+Planet.heightScale+100;
+            // ★ 修复（防Bug回归）：王后找出生点/放置地面等共用真实三角形快查，自定义碰撞网格仍走原射线。
+            if(SimulationOptimization.Current.directGroundQueries&&DarwinPark.Planet.RadialTerrainSurface.TrySample(Planet,col,Planet.transform.position+direction*outside,out var surface))return surface.point+direction;
             if(col!=null&&col.Raycast(new Ray(Planet.transform.position+direction*outside,-direction),out var hit,outside*2))return hit.point+direction;
             return Planet.transform.position+direction*(Planet.WaterRadius+1);
         }

@@ -48,11 +48,14 @@ namespace DarwinPark.Entities.Ecology
         public static float Consumption(EntityGeneController genes,float baseRate,float movementRate)
         {
             var settings=EcologyBalanceSettings.Current;float speed=0;
+            var tuning=GameplayTuning.Current;
+            // ★ 修复（防Bug回归）：零基础行动无法被乘法角色修饰变成正速度，静止实体不必逐小步读取刚体/时钟/光环。
+            if(movementRate<=0||tuning.movementMetabolismMultiplier<=0||genes.Evaluation==null||!genes.Evaluation.Attributes.TryGetValue(settings.movementAttribute,out float basic)||basic<=0)
+                return baseRate*settings.baseMetabolismScale*tuning.baseMetabolismMultiplier;
             var body=ActiveSimulationBatch.Read<Rigidbody>(genes);/* ★ 适配：与实际交付模拟时间一致。 */ float scale=ServiceLocator.TryGet<SimulationClock>(out var clock)?clock.MotionTimeScale:1;
             float movement=body!=null&&scale>0?genes.GetAttribute(settings.movementAttribute):0;
             if(movement>0)speed=Mathf.Min(movement,Vector3.ProjectOnPlane(body.linearVelocity,EcologyQueries.Up(genes.transform.position)).magnitude/scale);
             // ★ 适配：全局可编辑倍率在最终收支入口应用，AI、手动和不同模拟倍率共用同一计算。
-            var tuning=GameplayTuning.Current;
             return baseRate*settings.baseMetabolismScale*tuning.baseMetabolismMultiplier+movementRate*settings.movementMetabolismScale*speed*tuning.movementMetabolismMultiplier;
         }
     }

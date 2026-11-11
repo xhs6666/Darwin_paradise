@@ -1,6 +1,7 @@
 using System;
 using DarwinPark.Entities.Stats;
 using UnityEngine;
+// ★ 修复（防Bug回归）：可选组件允许正常缺失，使用即时TryGet，保留安装/销毁可见性并消除编辑器空查询分配。
 namespace DarwinPark.Entities.Ecology
 {
     // ★ 新增：真实攻击显式携带攻击者，饥饿/气候扣血不误触发领地驱逐；收益使用实际伤害。
@@ -13,10 +14,10 @@ namespace DarwinPark.Entities.Ecology
         {
             // ★ 适配：最终入口统一同群与角色限制，手动攻击和旧目标缓存不能绕过。
             if(!AntColonyCombat.CanAttack(attacker,GetComponent<DarwinEntity>()))return 0;
-            if(GetComponent<EntityGeneController>()!=null&&GetComponent<CombatIntent>()==null)gameObject.AddComponent<CombatIntent>();
+            if(GetComponent<EntityGeneController>()!=null&&DarwinPark.Core.OptionalComponent.Read<CombatIntent>(this)==null)gameObject.AddComponent<CombatIntent>();
             var stats=GetComponent<EntityStats>();if(damage<=0||!stats.TryGet("health",out float hp)||hp<=0)return 0;
-            float defense=GetComponent<TerritoryBehavior>()?.Defense??0;
-            if(GetComponent<EggIncubation>()?.Incubating==true)defense+=GetComponent<EntityGeneController>().GetAttribute("eggDefense");
+            float defense=DarwinPark.Core.OptionalComponent.Read<TerritoryBehavior>(this)?.Defense??0;
+            if(DarwinPark.Core.OptionalComponent.Read<EggIncubation>(this)?.Incubating==true)defense+=GetComponent<EntityGeneController>().GetAttribute("eggDefense");
             float actual=Mathf.Min(hp,damage/(1+Mathf.Max(0,defense)/100));
             stats.Modify("health",-actual);if(attacker!=null)Attacked?.Invoke(attacker,actual);
             // ★ 适配：致死攻击先统一消化/尸体结算，其他调用者不再复制击杀营养奖励。

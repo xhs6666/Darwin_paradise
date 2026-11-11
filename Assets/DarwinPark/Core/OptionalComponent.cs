@@ -6,5 +6,8 @@ namespace DarwinPark.Core
     {
         public static T Read<T>(Component owner)where T:Component
             =>owner!=null&&owner.TryGetComponent<T>(out var result)?result:null;
+        // ★ 新增：GameObject安装入口也用即时TryGet，避免正常缺失生成编辑器诊断字符串。
+        public static T Read<T>(GameObject owner)where T:Component
+            =>owner!=null&&owner.TryGetComponent<T>(out var result)?result:null;
     }
 }

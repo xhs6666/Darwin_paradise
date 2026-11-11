@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 
+// ★ 修复（防Bug回归）：可选组件允许正常缺失，使用即时TryGet，保留安装/销毁可见性并消除编辑器空查询分配。
 namespace DarwinPark.Entities.Ecology
 {
     [Serializable] public sealed class PatrolRhythmSave {public float rest,active;}
@@ -10,7 +11,7 @@ namespace DarwinPark.Entities.Ecology
         private float _rest,_active;
         private void Awake(){_rest=UnityEngine.Random.Range(AntColonySettings.Current.patrolRestMin,AntColonySettings.Current.patrolRestMax);}
         public bool Patrolling=>_active>0;
-        public static PatrolRhythm Ensure(GameObject obj)=>obj.GetComponent<PatrolRhythm>()??obj.AddComponent<PatrolRhythm>();
+        public static PatrolRhythm Ensure(GameObject obj)=>DarwinPark.Core.OptionalComponent.Read<PatrolRhythm>(obj)??obj.AddComponent<PatrolRhythm>();
         public void Advance(float dt)
         {
             if(dt<=0)return;
@@ -20,7 +21,7 @@ namespace DarwinPark.Entities.Ecology
         }
         public static bool Allows(EntityGeneController genes)=>Ensure(genes.gameObject).Patrolling;
         // ★ 修复（防Bug回归）：普通领地巡逻仅受击反击，附近捕猎倾向和饥饿状态不能自行授予攻击目标；群体仍执行自己的分工。
-        public static bool Defensive(EntityGeneController genes)=>AntColonySettings.Current.patrolRetaliationOnly&&genes.GetComponent<TerritoryBehavior>()?.Active==true&&genes.GetComponent<PopulationBehavior>()?.Active!=true;
+        public static bool Defensive(EntityGeneController genes)=>AntColonySettings.Current.patrolRetaliationOnly&&DarwinPark.Core.OptionalComponent.Read<TerritoryBehavior>(genes)?.Active==true&&DarwinPark.Core.OptionalComponent.Read<PopulationBehavior>(genes)?.Active!=true;
         public static bool Eligible(EntityGeneController genes,Genetics.EntityStateDefinition state)
         {
             if(state.Behavior==Genetics.EntityStateBehavior.Hunt&&Defensive(genes))return false;
@@ -28,7 +29,7 @@ namespace DarwinPark.Entities.Ecology
         }
         public static bool Resting(EntityGeneController genes)
         {
-            if(genes.GetComponent<TerritoryBehavior>()?.Active!=true||Allows(genes)||genes.GetComponent<EntityStateController>()?.Current.Behavior==Genetics.EntityStateBehavior.Hunt)return false;
+            if(DarwinPark.Core.OptionalComponent.Read<TerritoryBehavior>(genes)?.Active!=true||Allows(genes)||DarwinPark.Core.OptionalComponent.Read<EntityStateController>(genes)?.Current.Behavior==Genetics.EntityStateBehavior.Hunt)return false;
             var stats=genes.GetComponent<Stats.EntityStats>();return stats!=null&&!EcologyEnergyBudget.WantsFood(genes,stats,AntColonySettings.Current.memberFeedThreshold);
         }
         public PatrolRhythmSave Capture()=>new PatrolRhythmSave{rest=_rest,active=_active};

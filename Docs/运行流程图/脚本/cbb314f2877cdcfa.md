@@ -240,7 +240,7 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [EntityStats.Modify · L111](75aa86a368efdf24.md#m9c837be197158240)（方法）
+- [EntityStats.Modify · L114](75aa86a368efdf24.md#m375a3812ef990b45)（方法）
 
 <a id="meb77f0d53bc8b303"></a>
 
@@ -552,23 +552,23 @@ flowchart TD
 - [EntityStateDocument.Get · L32](440408d2db5c7d96.md#m52cb41ccf0c9d3c9)（方法）
 - [EntityStateRegression.Spawn · L44](cbb314f2877cdcfa.md#m99a222067f50298e)（方法）
 - [EntityStateRegression.Food · L50](cbb314f2877cdcfa.md#m6035e51d631cd66a)（方法）
-- [TerritoryBehavior.Advance · L23](19d504dcdc8bc624.md#me9363af362e5c02e)（方法）
-- [PatrolRhythm.Restore · L35](f55940fd5773d413.md#md5ed7e3a5cd3b705)（方法）
-- [PatrolRhythm.Ensure · L13](f55940fd5773d413.md#m47ee8c1a397958a4)（方法）
-- [EntityStateController.Advance · L42](0f8869eb7018091e.md#m91aba0abc40405b5)（方法）
-- [EcologyMotion.Directive · L11](6ed9d0eedb456d32.md#mee480e6cce94e387)（方法）
+- [TerritoryBehavior.Advance · L24](19d504dcdc8bc624.md#m08bf00c6d2c8c51a)（方法）
+- [PatrolRhythm.Restore · L36](f55940fd5773d413.md#m66eb6fa23f369cda)（方法）
+- [PatrolRhythm.Ensure · L14](f55940fd5773d413.md#mfe51a369852bf3eb)（方法）
+- [EntityStateController.Advance · L43](0f8869eb7018091e.md#mfaff58408788d0ab)（方法）
+- [EcologyMotion.Directive · L12](6ed9d0eedb456d32.md#m9d6872b8c4a43080)（方法）
 - [DarwinEntity.Genes.get · L14](70798dde169f2e8b.md#m622eb1adf401d431)（访问器）
-- [EntityStateController.DetectedTarget.get · L17](0f8869eb7018091e.md#mc110cb93673f7d66)（访问器）
-- [EntityGeneController.Evaluation.get · L18](7494d53178552f0e.md#mc0039c100a31b455)（访问器）
-- [NutritionTransfer.CanHuntForFood · L27](081d3b8ff683e442.md#m6302d01073c28891)（方法）
+- [EntityStateController.DetectedTarget.get · L18](0f8869eb7018091e.md#m6dbfcf4ac4cb049a)（访问器）
+- [EntityGeneController.Evaluation.get · L20](7494d53178552f0e.md#mf275f100ea21601a)（访问器）
+- [NutritionTransfer.CanHuntForFood · L28](081d3b8ff683e442.md#m2cbdf5db3ea5d5c3)（方法）
 - [NutritionEcologySettings.Current.get · L19](846a17351dbd6aa4.md#mb3eb930022e314f3)（访问器）
 - [GeneDatabase.Get · L136](ec0a03483435a863.md#me6a5fefe6c3492f9)（方法）
 - [GeneInstance.Create · L20](f82e1498d67f5afd.md#m72e94c278de3cf8b)（方法）
 - [Genome.Add · L19](a2ef23f865bc7ee8.md#md9cfdc94b8b8d40f)（方法）
-- [EntityGeneController.Recalculate · L118](7494d53178552f0e.md#m707d9a56b0c7c609)（方法）
-- [EntityStats.TryGet · L90](75aa86a368efdf24.md#m24ee1433e4a70d94)（方法）
-- [EntityGeneController.AdvanceSimulation · L73](7494d53178552f0e.md#m0056817ce3208fda)（方法）
-- [EntityStats.Modify · L111](75aa86a368efdf24.md#m9c837be197158240)（方法）
+- [EntityGeneController.Recalculate · L120](7494d53178552f0e.md#m7bf63f9a1482db3c)（方法）
+- [EntityStats.TryGet · L93](75aa86a368efdf24.md#m03cef847022eee28)（方法）
+- [EntityGeneController.AdvanceSimulation · L75](7494d53178552f0e.md#m6e94486f8bf79c01)（方法）
+- [EntityStats.Modify · L114](75aa86a368efdf24.md#m375a3812ef990b45)（方法）
 - [EntityStateRegistry.Parse · L57](440408d2db5c7d96.md#m4543a04396bcbc54)（方法）
 - [EntityStateRegistry.UseSnapshot · L52](440408d2db5c7d96.md#m6013e583cbf33e79)（方法）
 - [GeneValueForm.Load · L16](1a57b2a63a2f76d5.md#m3e1d8f0799dda5fd)（方法）
@@ -583,8 +583,8 @@ flowchart TD
 - [WorldSaveStore.Read · L74](d67a35e5e3814c15.md#mde52fadbe0185af1)（方法）
 - [EntitySaveState.Restore · L32](a1ec8fcd9d7d3ddb.md#md1cca8b8dd3628a4)（方法）
 - [GeneTreeStorage.SaveTo · L100](a885bad0d7dedee8.md#maa795acf9a4622f6)（方法）
-- [EntityStateController.Rebind · L23](0f8869eb7018091e.md#maeef551437ab5638)（方法）
-- [EntityStateController.Restore · L106](0f8869eb7018091e.md#m8839866cd3a90dc2)（方法）
+- [EntityStateController.Rebind · L24](0f8869eb7018091e.md#mc9a8aa9d76f7d46e)（方法）
+- [EntityStateController.Restore · L107](0f8869eb7018091e.md#m7a40a097ad98b909)（方法）
 - [EntityStateRegression.回调@86 · L86](cbb314f2877cdcfa.md#me85dbbc3187b5901)（回调/委托）
 - [EntityStateRegression.回调@87 · L87](cbb314f2877cdcfa.md#me6c6cc606b278c30)（回调/委托）
 - [EntityStateRegression.回调@93 · L93](cbb314f2877cdcfa.md#m1fe512af8d93a6a7)（回调/委托）

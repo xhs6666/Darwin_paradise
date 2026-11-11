@@ -20,7 +20,7 @@ namespace DarwinPark.Entities
         public static bool RemainsAsleep(Rigidbody body,EntityGeneController genes)
         {
             // ★ 修复（防Bug回归）：零基础速度且表达版本未变时不会被乘法修饰变成可移动，不必每个物理步重查全部角色。
-            if(EcologyPerformanceSettings.Current.stationarySleep&&IsResting(body)&&genes!=null&&(Contacts[body].zeroBaseSpeed||genes.GetAttribute("moveSpeed")<=0))return true;
+            if(EcologyPerformanceSettings.Current.stationarySleep&&IsResting(body)&&genes!=null&&(Contacts[body].zeroBaseSpeed||GroundMotionSnapshot.Speed(genes)<=0))return true;
             Contacts.Remove(body);if(body.IsSleeping())body.WakeUp();return false;
         }
         public static void TryRest(Rigidbody body,EntityGeneController genes,Collider collider,RaycastHit hit,Transform planet)

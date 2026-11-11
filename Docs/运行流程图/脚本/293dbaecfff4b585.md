@@ -2,7 +2,7 @@
 
 [返回总索引](../README.md) · `Runtime` · `Assets/DarwinPark/Entities/Ecology/ColonyResource.cs`
 
-[源文件](../../../Assets/DarwinPark/Entities/Ecology/ColonyResource.cs) · 源码校验：`947ecb069faa26a355e27c1ee350788199950c4f4b739c52008e8af43da6baf9`
+[源文件](../../../Assets/DarwinPark/Entities/Ecology/ColonyResource.cs) · 源码校验：`84bdff88e9deba3961aad153f58d1cf7e80c92cc435f419ecc8ec75f96cffff8`
 
 方法按源文件位置排列。事件/回调引用不表示立即执行；分支与异常说明见总索引。完整源码与可点击关系图请打开离线手册。
 
@@ -177,7 +177,7 @@ flowchart TD
   b1{"判断：ResourcesInWorld.Contains(this)"}
   b2["ResourcesInWorld.Add(this);"]
   b3{"判断：State!=null"}
-  b4["ById[State.id]=this;<br/>ColonyFoodSources.Register(this);<br/>ResourceCoordinates.Observe(this);"]
+  b4["ById[State.id]=this;<br/>ColonyFoodSources.Register(this);<br/>ResourceCoordinates.Observe(this);<br/>CorpseInstanceRenderer.Register(this);"]
   b5(["结束 / 返回"])
   b0 --> b1
   b1 -->|"否"| b2
@@ -193,9 +193,10 @@ flowchart TD
 
 - [ColonyResource.State.get · L24](293dbaecfff4b585.md#m41824f1a0e160aa5)（访问器）
 - [ColonyFoodSources.Register · L15](4c419a1a067d428c.md#mf32bc84088ad1316)（方法）
-- [ResourceCoordinates.Observe · L44](93d731ac01e3af48.md#m8772c0d40540a8d7)（方法）
+- [ResourceCoordinates.Observe · L55](93d731ac01e3af48.md#m78e074204b8da0a9)（方法）
+- [CorpseInstanceRenderer.Register · L52](29964f1f6c300ac9.md#m04d922e92b0f3129)（方法）
 
-<a id="mf7195ae393710e44"></a>
+<a id="mb7b0a334c5cda3ae"></a>
 
 ## OnDisable · L31
 
@@ -208,7 +209,7 @@ flowchart TD
 ```mermaid
 flowchart TD
   b0(["入口"])
-  b1{"ResourcesInWorld.Remove(this);<br/>ColonyFoodSources.Remove(this);<br/>ResourceCoordinates.Remove(this);<br/>判断：State!=null"}
+  b1{"CorpseInstanceRenderer.Remove(this);<br/>ResourcesInWorld.Remove(this);<br/>ColonyFoodSources.Remove(this);<br/>ResourceCoordinates.Remove(this);<br/>判断：State!=null"}
   b2["ById.Remove(State.id);"]
   b3(["结束 / 返回"])
   b0 --> b1
@@ -220,11 +221,12 @@ flowchart TD
 
 项目内调用/回调引用：
 
+- [CorpseInstanceRenderer.Remove · L88](29964f1f6c300ac9.md#m422070be924a293f)（方法）
 - [ColonyFoodSources.Remove · L17](4c419a1a067d428c.md#m650b2a625df8b634)（方法）
-- [ResourceCoordinates.Remove · L50](93d731ac01e3af48.md#m29ecd6e2a265fa8e)（方法）
+- [ResourceCoordinates.Remove · L61](93d731ac01e3af48.md#mf37d0cac8b27b09b)（方法）
 - [ColonyResource.State.get · L24](293dbaecfff4b585.md#m41824f1a0e160aa5)（访问器）
 
-<a id="ma2de8359d5dfdcff"></a>
+<a id="m1da0c1beeec7a84b"></a>
 
 ## Reset · L32
 
@@ -244,7 +246,7 @@ flowchart TD
 
 ```
 
-<a id="mb051b82e4f8bb35d"></a>
+<a id="mac6f0b77996f44ab"></a>
 
 ## Biomass · L33
 
@@ -267,9 +269,9 @@ flowchart TD
 项目内调用/回调引用：
 
 - [AntColonySettings.Current.get · L31](cb0a937e97c8fbb3.md#mcd121159f407ccdf)（访问器）
-- [EntityStats.TryGet · L90](75aa86a368efdf24.md#m24ee1433e4a70d94)（方法）
+- [EntityStats.TryGet · L93](75aa86a368efdf24.md#m03cef847022eee28)（方法）
 
-<a id="m3f450c44999b892d"></a>
+<a id="mfaa9011c226a6bcb"></a>
 
 ## LeaveCorpse · L38
 
@@ -293,13 +295,13 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [EntityStats.TryGet · L90](75aa86a368efdf24.md#m24ee1433e4a70d94)（方法）
-- [ColonyResource.Create · L45](293dbaecfff4b585.md#m7e8d2b0e06e1cad5)（方法）
+- [EntityStats.TryGet · L93](75aa86a368efdf24.md#m03cef847022eee28)（方法）
+- [ColonyResource.Create · L45](293dbaecfff4b585.md#m6768b4f531fe91dd)（方法）
 - [CorpseEntityRecord.Capture · L15](8a2345f1e54b1c75.md#m3785191a48d5dc8d)（方法）
 - [EcologyQueries.ToLocal · L40](bdf7ccc2c9c0452f.md#mfa1ace432c73012a)（方法）
-- [ColonyResource.Biomass · L33](293dbaecfff4b585.md#mb051b82e4f8bb35d)（方法）
+- [ColonyResource.Biomass · L33](293dbaecfff4b585.md#mac6f0b77996f44ab)（方法）
 
-<a id="m7e8d2b0e06e1cad5"></a>
+<a id="m6768b4f531fe91dd"></a>
 
 ## Create · L45
 
@@ -353,7 +355,7 @@ flowchart TD
   b38{"renderer.SetPropertyBlock(block);<br/>判断：data.kind!=ColonyResourceKind.Corpse"}
   b39["light=obj.AddComponent&lt;Light&gt;()<br/>light.type=LightType.Point;<br/>light.color=energy;<br/>light.intensity=AntColonySettings.Current.glowIntensity;<br/>light.range=AntColonySettings.Current.glowRange;<br/>light.shadows=LightShadows.None;"]
   b40{"resource=obj.AddComponent&lt;ColonyResource&gt;()<br/>resource.State=data;<br/>ById[data.id]=resource;<br/>ColonyFoodSources.Register(resource);<br/>ResourceCoordinates.Observe(resource);<br/>判断：data.kind==ColonyResourceKind.Corpse"}
-  b41["resource._presentation=obj.AddComponent&lt;ColonyResourcePresentation&gt;();<br/>resource._presentation.Build();"]
+  b41["resource._presentation=obj.AddComponent&lt;ColonyResourcePresentation&gt;();<br/>resource._presentation.Build();<br/>CorpseInstanceRenderer.Register(resource);"]
   b42["obj.AddComponent&lt;EnergyBlockGradeVisual&gt;().Refresh();"]
   b43["结果：resource"]
   b44(["结束 / 返回"])
@@ -421,14 +423,15 @@ flowchart TD
 - [CorpseEntityRecord.Normalize · L23](8a2345f1e54b1c75.md#m649806250b80642a)（方法）
 - [EcologyQueries.ToWorld · L41](bdf7ccc2c9c0452f.md#mc67423f4877c3534)（方法）
 - [AntColonySettings.Current.get · L31](cb0a937e97c8fbb3.md#mcd121159f407ccdf)（访问器）
-- [SimulationOptimization.Current.get · L25](11c9091e70893352.md#mde7abfdc18429e4a)（访问器）
+- [SimulationOptimization.Current.get · L30](11c9091e70893352.md#mcfa8eb2e650e57b1)（访问器）
 - [ColonyResource.State.set · L24](293dbaecfff4b585.md#m07fea10388841ca3)（访问器）
 - [ColonyFoodSources.Register · L15](4c419a1a067d428c.md#mf32bc84088ad1316)（方法）
-- [ResourceCoordinates.Observe · L44](93d731ac01e3af48.md#m8772c0d40540a8d7)（方法）
+- [ResourceCoordinates.Observe · L55](93d731ac01e3af48.md#m78e074204b8da0a9)（方法）
 - [ColonyResourcePresentation.Build · L22](274e66c9a1d98a08.md#madeb13553cf40472)（方法）
+- [CorpseInstanceRenderer.Register · L52](29964f1f6c300ac9.md#m04d922e92b0f3129)（方法）
 - [EnergyBlockGradeVisual.Refresh · L15](dd689a3df9b53e75.md#m8d946724e45820f9)（方法）
 
-<a id="mb3770aae779ba387"></a>
+<a id="m367d2436206a4618"></a>
 
 ## Claim · L73
 
@@ -468,9 +471,9 @@ flowchart TD
 
 - [ColonyCorpseAccess.Available · L6](f6ef68cc68f39eea.md#m8ffa84bc06beaed6)（方法）
 - [ColonyResource.State.get · L24](293dbaecfff4b585.md#m41824f1a0e160aa5)（访问器）
-- [ResourceCoordinates.Observe · L44](93d731ac01e3af48.md#m8772c0d40540a8d7)（方法）
+- [ResourceCoordinates.Observe · L55](93d731ac01e3af48.md#m78e074204b8da0a9)（方法）
 
-<a id="m0ffbea751466cdcb"></a>
+<a id="m8a7905808688a0a6"></a>
 
 ## Release · L84
 
@@ -497,7 +500,7 @@ flowchart TD
 
 - [ColonyResource.State.get · L24](293dbaecfff4b585.md#m41824f1a0e160aa5)（访问器）
 
-<a id="m0524c6be86580a92"></a>
+<a id="md7070757a728b6f5"></a>
 
 ## CarryTo · L85
 
@@ -529,9 +532,9 @@ flowchart TD
 - [ColonyResource.State.get · L24](293dbaecfff4b585.md#m41824f1a0e160aa5)（访问器）
 - [EcologyQueries.ToLocal · L40](bdf7ccc2c9c0452f.md#mfa1ace432c73012a)（方法）
 - [ColonyResourcePresentation.Align · L40](274e66c9a1d98a08.md#mcccba155ee793429)（方法）
-- [ResourceCoordinates.Observe · L44](93d731ac01e3af48.md#m8772c0d40540a8d7)（方法）
+- [ResourceCoordinates.Observe · L55](93d731ac01e3af48.md#m78e074204b8da0a9)（方法）
 
-<a id="m96f8abbbed49b7ed"></a>
+<a id="mf4a0916c3cd78e2e"></a>
 
 ## Convert · L86
 
@@ -592,15 +595,15 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [ResourceGroups.Read · L9](97a3c8522367343a.md#mffa234cc9b41040c)（方法）
+- [ResourceGroups.Read · L9](97a3c8522367343a.md#m155d5ab724041bf7)（方法）
 - [ColonyResource.State.get · L24](293dbaecfff4b585.md#m41824f1a0e160aa5)（访问器）
 - [EcologyQueries.Distance · L43](bdf7ccc2c9c0452f.md#m6e395dce655ebcac)（方法）
 - [AntColonySettings.Current.get · L31](cb0a937e97c8fbb3.md#mcd121159f407ccdf)（访问器）
-- [ColonyFoodQueryCache.AddedEnergy · L17](63cd90165719dbff.md#m3dc878ff8d967dd4)（方法）
-- [ColonyResource.Create · L45](293dbaecfff4b585.md#m7e8d2b0e06e1cad5)（方法）
+- [ColonyFoodQueryCache.AddedEnergy · L17](63cd90165719dbff.md#mbf6c1d71527a0c92)（方法）
+- [ColonyResource.Create · L45](293dbaecfff4b585.md#m6768b4f531fe91dd)（方法）
 - [EcologyQueries.ToLocal · L40](bdf7ccc2c9c0452f.md#mfa1ace432c73012a)（方法）
 
-<a id="md202fabfc503ca1f"></a>
+<a id="md183207c0c9fb737"></a>
 
 ## Feed · L94
 
@@ -636,15 +639,15 @@ flowchart TD
 
 - [ColonyFeeding.Find · L11](2cb56c08d08ff8ec.md#mfea041f7d0713775)（方法）
 - [AntColonySettings.Current.get · L31](cb0a937e97c8fbb3.md#mcd121159f407ccdf)（访问器）
-- [EntityStats.CapacityRemaining · L92](75aa86a368efdf24.md#m574f0a6509120d00)（方法）
+- [EntityStats.CapacityRemaining · L95](75aa86a368efdf24.md#mf5014bafb4b29341)（方法）
 - [ColonyFeeding.AvailableEnergy · L29](2cb56c08d08ff8ec.md#m39bf48fc3c592882)（方法）
 - [GameplayTuning.Current.get · L46](db546e5713b32d53.md#m4fa691bd8a3b9618)（访问器）
 - [ColonyResource.State.get · L24](293dbaecfff4b585.md#m41824f1a0e160aa5)（访问器）
-- [ResourceCoordinates.Observe · L44](93d731ac01e3af48.md#m8772c0d40540a8d7)（方法）
-- [EntityStats.Feed · L95](75aa86a368efdf24.md#mc025822ff1eb86a0)（方法）
-- [ColonyResource.Remove · L108](293dbaecfff4b585.md#me59455a847912120)（方法）
+- [ResourceCoordinates.Observe · L55](93d731ac01e3af48.md#m78e074204b8da0a9)（方法）
+- [EntityStats.Feed · L98](75aa86a368efdf24.md#me8ee3fa22434267a)（方法）
+- [ColonyResource.Remove · L108](293dbaecfff4b585.md#m42fd78441247c433)（方法）
 
-<a id="me59455a847912120"></a>
+<a id="m42fd78441247c433"></a>
 
 ## Remove · L108
 
@@ -664,7 +667,7 @@ flowchart TD
 
 ```
 
-<a id="mc969798f9562c061"></a>
+<a id="m0aae51a30765b159"></a>
 
 ## ClearWorld · L109
 
@@ -700,11 +703,11 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [ColonyResource.Remove · L108](293dbaecfff4b585.md#me59455a847912120)（方法）
+- [ColonyResource.Remove · L108](293dbaecfff4b585.md#m42fd78441247c433)（方法）
 - [ColonyFoodSources.Clear · L18](4c419a1a067d428c.md#m1ded72e671d91ff7)（方法）
-- [ResourceCoordinates.Clear · L74](93d731ac01e3af48.md#m747bfb1c7693a3c4)（方法）
+- [ResourceCoordinates.Clear · L92](93d731ac01e3af48.md#m1b44d83a47482abb)（方法）
 
-<a id="mc75f45db4e309026"></a>
+<a id="m9ca8100b999762fe"></a>
 
 ## Capture · L110
 

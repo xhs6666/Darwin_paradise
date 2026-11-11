@@ -6,6 +6,7 @@ using DarwinPark.Entities.Ecology;
 using DarwinPark.Genetics.Mutation;
 using UnityEngine;
 
+// ★ 修复（防Bug回归）：可选组件允许正常缺失，使用即时TryGet，保留安装/销毁可见性并消除编辑器空查询分配。
 namespace DarwinPark.Entities.Simulation
 {
     [Serializable]public sealed class MutationRoundSave
@@ -28,7 +29,7 @@ namespace DarwinPark.Entities.Simulation
         private void Awake(){if(_instance!=null&&_instance!=this){Destroy(this);return;}_instance=this;}
         private void OnDestroy(){if(_instance==this)_instance=null;}
         private void Update(){if(WorldRuntimeGate.Managed&&(!WorldRuntimeGate.Ready||WorldRuntimeGate.Loading))return;GlobalMutationManager.Advance(ServiceLocator.TryGet<SimulationClock>(out var clock)?clock.GameDeltaTime:Time.deltaTime);}
-        private static bool Eligible(DarwinEntity entity)=>EcologyQueries.Alive(entity)&&entity.Genes!=null&&entity.Genes.isActiveAndEnabled&&entity.Genes.Genome?.Genes.Count>0&&entity.GetComponent<AntColonyMember>()?.Frozen!=true&&entity.GetComponent<EggIncubation>()?.Incubating!=true;
+        private static bool Eligible(DarwinEntity entity)=>EcologyQueries.Alive(entity)&&entity.Genes!=null&&entity.Genes.isActiveAndEnabled&&entity.Genes.Genome?.Genes.Count>0&&DarwinPark.Core.OptionalComponent.Read<AntColonyMember>(entity)?.Frozen!=true&&DarwinPark.Core.OptionalComponent.Read<EggIncubation>(entity)?.Incubating!=true;
         public static void Advance(float dt)
         {
             if(dt<=0||WorldAuthority.IsReplica)return;var tuning=GameplayTuning.Current;if(!tuning.mutationRoundsEnabled||tuning.mutationMode!=0)return;

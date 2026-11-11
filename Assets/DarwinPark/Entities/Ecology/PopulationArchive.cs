@@ -6,6 +6,7 @@ using DarwinPark.Core;
 using DarwinPark.Genetics;
 using UnityEngine;
 
+// ★ 修复（防Bug回归）：可选组件允许正常缺失，使用即时TryGet，保留安装/销毁可见性并消除编辑器空查询分配。
 namespace DarwinPark.Entities.Ecology
 {
     [Serializable] public sealed class PopulationSample {public float time;public int members,infants,adults,elders;}
@@ -64,11 +65,11 @@ namespace DarwinPark.Entities.Ecology
             if(!string.IsNullOrEmpty(result.parentId))return;result.parentId=parent;result.originKnown=true;
             Event(source,reason+"："+result.name);Event(result,"由种群「"+source.name+"」衍生建立");Revision++;
         }
-        public static List<DarwinEntity> Members(string id)=>EntityRegistry.All.Where(EcologyQueries.Alive).Where(e=>e.GetComponent<PopulationBehavior>() is PopulationBehavior p&&p.Active&&p.GroupId==id).ToList();
+        public static List<DarwinEntity> Members(string id)=>EntityRegistry.All.Where(EcologyQueries.Alive).Where(e=>DarwinPark.Core.OptionalComponent.Read<PopulationBehavior>(e) is PopulationBehavior p&&p.Active&&p.GroupId==id).ToList();
         public static void Observe()
         {
             if(WorldAuthority.IsReplica||WorldRuntimeGate.Loading)return;
-            var groups=EntityRegistry.All.Where(EcologyQueries.Alive).Select(e=>e.GetComponent<PopulationBehavior>()).Where(p=>p!=null&&p.Active&&!string.IsNullOrEmpty(p.GroupId)).GroupBy(p=>p.GroupId).ToArray();var seen=new HashSet<string>();
+            var groups=EntityRegistry.All.Where(EcologyQueries.Alive).Select(e=>DarwinPark.Core.OptionalComponent.Read<PopulationBehavior>(e)).Where(p=>p!=null&&p.Active&&!string.IsNullOrEmpty(p.GroupId)).GroupBy(p=>p.GroupId).ToArray();var seen=new HashSet<string>();
             foreach(var group in groups)
             {
                 seen.Add(group.Key);var first=group.First();var entities=group.Select(p=>p.GetComponent<DarwinEntity>()).ToList();

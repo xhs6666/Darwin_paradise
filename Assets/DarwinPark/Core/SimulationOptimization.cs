@@ -12,7 +12,12 @@ namespace DarwinPark.Core
         // ★ 新增：自动补充只分摊搜索工作，不降低目标数量；局部失败后允许改搜全局陆地。
         public float spawnFrameBudgetMilliseconds=2;public int localPlacementFailureLimit=8;
         public bool weatherProxyMeshes=true;public int weatherProxySubdivisions=16;
+        // ★ 新增：独立尸体批次开关与实例上限，随外部配置热加载；保留旧显示回退。
+        public bool corpseBatchRendering=true;public int corpseBatchSize=256;
+        // ★ 新增：绘制空间格独立于食物索引，较大格减少小批次提交而不降低资源搜索精度。
+        public float corpseRenderCellSize=128;
         public bool taskQueue=true,expressionCache=true,localCompetition=true,singletonKernel=true,resourceInstancing=true;
+        public float foodSearchMoveTolerance=.1f;
         public float groundProbeMoveTolerance=.1f,groundProbeVerticalSpeed=.1f;
         // ★ 新增：接地直接查询可独立回退；角度和速度阈值仅跳过近乎相同的物理写入。
         public bool directGroundQueries=true;public float groundNormalAngleDegrees=.15f,groundVelocityEpsilon=.0001f;
@@ -29,7 +34,7 @@ namespace DarwinPark.Core
             if(value!=null&&(value.weatherProxySubdivisions<4||value.weatherProxySubdivisions>128))throw new InvalidDataException("天气代理细分必须为4～128");
             if(value!=null&&(value.groundNormalAngleDegrees>1||value.groundVelocityEpsilon>.01f))throw new InvalidDataException("接地写入阈值超出有效范围");
             if(value!=null&&(value.entitySkyDensityMultiplier<1||value.entitySkyDensityMultiplier>32))throw new InvalidDataException("实体视角天空散射倍率必须为1～32");
-            if(value==null||value.version!=1||value.localPlacementFailureLimit<1||value.localPlacementFailureLimit>1024||value.workerQueueLimit<1||value.workerQueueLimit>128||value.expressionCacheLimit<1||value.expressionCacheLimit>4096||value.maximumResourceCells<1||value.maximumResourceCells>1000000)throw new InvalidDataException("计算优化配置版本或数量无效");
+            if(value==null||value.version!=1||value.localPlacementFailureLimit<1||value.localPlacementFailureLimit>1024||value.workerQueueLimit<1||value.workerQueueLimit>128||value.expressionCacheLimit<1||value.expressionCacheLimit>4096||value.maximumResourceCells<1||value.maximumResourceCells>1000000||value.corpseBatchSize<1||value.corpseBatchSize>511)throw new InvalidDataException("计算优化配置版本或数量无效");
             foreach(var field in typeof(SimulationOptimization).GetFields())if(field.FieldType==typeof(float)){float n=(float)field.GetValue(value);if(!float.IsFinite(n)||n<=0)throw new InvalidDataException("计算优化参数必须为正有限数："+field.Name);}
             return value;
         }

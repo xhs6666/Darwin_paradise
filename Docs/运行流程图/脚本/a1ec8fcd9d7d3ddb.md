@@ -65,13 +65,13 @@ flowchart TD
 项目内调用/回调引用：
 
 - [DarwinEntity.Genes.get · L14](70798dde169f2e8b.md#m622eb1adf401d431)（访问器）
-- [EntityGeneController.CurrentAge.get · L37](7494d53178552f0e.md#md08823d8f9a2fa16)（访问器）
-- [EntityLifeCycle.Progress.get · L10](9f4138bfbae654b7.md#m178185fd5f5a0d74)（访问器）
-- [EntityGeneController.StageMutationChecks.get · L53](7494d53178552f0e.md#m06f5fa66a32f7c77)（访问器）
-- [EntityStats.CaptureValues · L86](75aa86a368efdf24.md#mbf54fc67f0d07a99)（方法）
-- [EntityGeneController.GetLogic · L240](7494d53178552f0e.md#m9be6a2566c76c275)（方法）
+- [EntityGeneController.CurrentAge.get · L39](7494d53178552f0e.md#m977f52932bb90600)（访问器）
+- [EntityLifeCycle.Progress.get · L12](9f4138bfbae654b7.md#md607c90b6934f95f)（访问器）
+- [EntityGeneController.StageMutationChecks.get · L55](7494d53178552f0e.md#m9446cee18889c5b7)（访问器）
+- [EntityStats.CaptureValues · L89](75aa86a368efdf24.md#m0e1a770efc316d9e)（方法）
+- [EntityGeneController.GetLogic · L242](7494d53178552f0e.md#m4620848081f43ecc)（方法）
 - [ReproductionGeneLogic.CaptureState · L37](ac319ea70bd8b723.md#m56d6ec1f1c8b2072)（方法）
-- [EcologySaveState.Capture · L31](dd1dde4b4c192659.md#me6dac00c4cc6315c)（方法）
+- [EcologySaveState.Capture · L32](dd1dde4b4c192659.md#m1f9170af35432684)（方法）
 
 <a id="md1cca8b8dd3628a4"></a>
 
@@ -127,13 +127,13 @@ flowchart TD
 项目内调用/回调引用：
 
 - [DarwinEntity.Genes.get · L14](70798dde169f2e8b.md#m622eb1adf401d431)（访问器）
-- [EntityGeneController.RestoreStageState · L56](7494d53178552f0e.md#m37c1dbfa64e7c2ce)（方法）
-- [EntityLifeCycle.RestoreProgress · L51](9f4138bfbae654b7.md#mec34c953ece464ab)（方法）
-- [EntityGeneController.Recalculate · L118](7494d53178552f0e.md#m707d9a56b0c7c609)（方法）
-- [EntityStats.RestoreValues · L88](75aa86a368efdf24.md#m774f994eaa3183ca)（方法）
+- [EntityGeneController.RestoreStageState · L58](7494d53178552f0e.md#m89a02f44ce209b2f)（方法）
+- [EntityLifeCycle.RestoreProgress · L53](9f4138bfbae654b7.md#m9ac5190ce2d7c425)（方法）
+- [EntityGeneController.Recalculate · L120](7494d53178552f0e.md#m7bf63f9a1482db3c)（方法）
+- [EntityStats.RestoreValues · L91](75aa86a368efdf24.md#m7bf34e1f5b2d085a)（方法）
 - [Genome.Find · L11](a2ef23f865bc7ee8.md#mfd5b2c58563def29)（方法）
-- [EntityGeneController.GetLogic · L240](7494d53178552f0e.md#m9be6a2566c76c275)（方法）
+- [EntityGeneController.GetLogic · L242](7494d53178552f0e.md#m4620848081f43ecc)（方法）
 - [ReproductionGeneLogic.RestoreState · L39](ac319ea70bd8b723.md#m024a77bf70fc78fe)（方法）
 - [DarwinEntity.EnableTrait · L34](70798dde169f2e8b.md#meef47c363e5995a8)（方法）
 - [DarwinEntity.AddEnergy · L38](70798dde169f2e8b.md#m6d61b27a87e2f477)（方法）
-- [EcologySaveState.Restore · L45](dd1dde4b4c192659.md#mb6d362e760204d6f)（方法）
+- [EcologySaveState.Restore · L46](dd1dde4b4c192659.md#m5746348e61d36c4a)（方法）

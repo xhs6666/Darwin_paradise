@@ -4,6 +4,7 @@ using DarwinPark.Entities.Stats;
 using DarwinPark.Genetics;
 using UnityEngine;
 
+// ★ 修复（防Bug回归）：可选组件允许正常缺失，使用即时TryGet，保留安装/销毁可见性并消除编辑器空查询分配。
 namespace DarwinPark.Entities.Ecology
 {
     // ★ 新增：实体状态是基因授予的独立能力；解释注册表的条件和迁移，不修改基因本身的状态。
@@ -23,7 +24,7 @@ namespace DarwinPark.Entities.Ecology
         public static void Rebind(EntityGeneController genes)
         {
             bool tagged=genes.Evaluation?.Genes.Any(e=>e.IsActive&&e.Definition.EntityStateTags.Count>0)==true;
-            var component=genes.GetComponent<EntityStateController>();
+            var component=DarwinPark.Core.OptionalComponent.Read<EntityStateController>(genes);
             if(component==null&&tagged)component=genes.gameObject.AddComponent<EntityStateController>();
             if(component==null)return;
             component.RebuildGrants(true);

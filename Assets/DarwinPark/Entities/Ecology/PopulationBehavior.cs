@@ -4,6 +4,8 @@ using System.Linq;
 using DarwinPark.Core;
 using DarwinPark.Entities.Stats;
 using UnityEngine;
+// ★ 修复（防Bug回归）：普通CPU层级确认空组件诊断字符串仍在生命/基因等高频入口分配；正常缺失改TryGet即时读取。
+// ★ 修复（防Bug回归）：可选组件允许正常缺失，使用即时TryGet，保留安装/销毁可见性并消除编辑器空查询分配。
 namespace DarwinPark.Entities.Ecology
 {
     public enum PopulationCommand {None,Hunt,Gather,Rally,Defend}
@@ -48,7 +50,7 @@ namespace DarwinPark.Entities.Ecology
         private bool Alive {get{if(_stats==null)_stats=GetComponent<EntityStats>();return _entity!=null&&_entity.isActiveAndEnabled&&_stats!=null&&_stats.TryGet("health",out float hp)&&hp>0;}}
         public bool Active=>PopulationGene!=null&&Alive&&
             (OptionalComponent.Read<EggIncubation>(this)?.Incubating!=true||
-             Mode==_settings.antState&&!string.IsNullOrEmpty(GroupId)&&GetComponent<AntColonyMember>()?.Role is AntRole role&&role!=AntRole.None);
+             Mode==_settings.antState&&!string.IsNullOrEmpty(GroupId)&&OptionalComponent.Read<AntColonyMember>(this)?.Role is AntRole role&&role!=AntRole.None);
         // ★ 适配：蚁群领袖由王后分工确定，狼群仍沿用原有决斗与加入顺序。
         public PopulationBehavior Leader=>PopulationGroupIndex.Leader(this);
         public bool IsLeader=>Active&&Leader==this;
@@ -81,10 +83,10 @@ namespace DarwinPark.Entities.Ecology
             using var performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.Population);
             // ★ 适配：副本保留读档的身份与分工，只由房主计算成员变化。
             if(WorldAuthority.IsReplica)return;
-            if(!Active){GetComponent<AntColonyMember>()?.Suspend();if(Members.Remove(this)||!string.IsNullOrEmpty(GroupId))PopulationGroupIndex.Invalidate();GroupId="";LeaderFlag=false;Command=PopulationCommand.None;return;}
+            if(!Active){OptionalComponent.Read<AntColonyMember>(this)?.Suspend();if(Members.Remove(this)||!string.IsNullOrEmpty(GroupId))PopulationGroupIndex.Invalidate();GroupId="";LeaderFlag=false;Command=PopulationCommand.None;return;}
             if(dt<=0)return;
             string previousGroup=_mode!=null&&_mode!=Mode?GroupId:null;
-            if(_mode!=null&&_mode!=Mode){GetComponent<AntColonyMember>()?.Suspend();Members.Remove(this);PopulationGroupIndex.Invalidate();GroupId="";LeaderFlag=false;Command=PopulationCommand.None;}
+            if(_mode!=null&&_mode!=Mode){OptionalComponent.Read<AntColonyMember>(this)?.Suspend();Members.Remove(this);PopulationGroupIndex.Invalidate();GroupId="";LeaderFlag=false;Command=PopulationCommand.None;}
             _mode=Mode;EnsureMembership();
             // ★ 适配：种群状态改变后独立成群也记录真实来源；加入既有种群不会改写其谱系。
             if(!string.IsNullOrEmpty(previousGroup)&&previousGroup!=GroupId&&LeaderFlag)PopulationArchive.RecordFounding(previousGroup,GroupId,Mode,_entity.DisplayName,"种群状态变化形成新种群");
@@ -122,7 +124,7 @@ namespace DarwinPark.Entities.Ecology
         // ★ 适配：出生继承和新王后建群通过此接口写入持久标识，不重新按距离随机入群。
         public void JoinColony(string group,bool queen)
         {PopulationGroupIndex.Invalidate();GroupId=group;JoinOrder=++_serial;LeaderFlag=queen;Command=PopulationCommand.None;Target=null;CommandRemaining=0;EnsureMembership();}
-        public bool SameGroup(DarwinEntity other)=>Active&&other!=null&&other.GetComponent<PopulationBehavior>() is PopulationBehavior pop&&pop.Active&&pop.Mode==Mode&&!string.IsNullOrEmpty(GroupId)&&pop.GroupId==GroupId;
+        public bool SameGroup(DarwinEntity other)=>Active&&other!=null&&DarwinPark.Core.OptionalComponent.Read<PopulationBehavior>(other) is PopulationBehavior pop&&pop.Active&&pop.Mode==Mode&&!string.IsNullOrEmpty(GroupId)&&pop.GroupId==GroupId;
         private float Score(){_entity.GetComponent<EntityStats>().TryGet("health",out var health);return _genes.GetAttribute("attack")+health*_settings.duelHealthWeight;}
         public bool ChallengeLeadership(out string message)
         {
@@ -160,7 +162,7 @@ namespace DarwinPark.Entities.Ecology
                 if(prey!=null){Issue(PopulationCommand.Hunt,prey,seen,false,out _);return;}
             }
             if(Mode==_settings.antState&&FindOre(out var ore)){Issue(PopulationCommand.Gather,null,ore,false,out _);return;}
-            var territory=GetComponent<TerritoryBehavior>();Issue(PopulationCommand.Rally,null,territory!=null?territory.Center:transform.position,false,out _);
+            var territory=DarwinPark.Core.OptionalComponent.Read<TerritoryBehavior>(this);Issue(PopulationCommand.Rally,null,territory!=null?territory.Center:transform.position,false,out _);
         }
         public bool FindOre(out Vector3 point)
         {

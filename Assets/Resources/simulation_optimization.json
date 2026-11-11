@@ -12,6 +12,8 @@
   "localPlacementFailureLimit": 8,
   // 单位均为模拟秒，接地/外观检测为真实秒。约2秒检测外部修改；实例化材质开关在新建资源材质时应用。
   "decisionSeconds": 0.25,
+  // 短周期食物搜索缓存允许的实体位移，单位为世界距离；资源变化/耗尽即时失效。
+  "foodSearchMoveTolerance": 0.1,
   "mateSearchSeconds": 0.5,
   "groundProbeSeconds": 0.2,
   // 生成星球直接定位真实三角形；不支持的碰撞网格回退射线。角度为度，速度差为世界单位/秒。
@@ -27,6 +29,11 @@
   "localCompetition": true,
   "singletonKernel": true,
   "resourceInstancing": true,
+  // 尸体只合并显示提交，保留身份/营养/点选；实例批次大小1～511。
+  "corpseBatchRendering": true,
+  "corpseBatchSize": 256,
+  // 尸体绘制空间格大小；与资源搜索格分开，较大值减少绘制提交。
+  "corpseRenderCellSize": 128,
   // 云/大气使用外接低模代理；细分4～128，重载世界时应用。海面和地形碰撞保持精度。
   "weatherProxyMeshes": true,
   // 控制/实体视角的无遮挡天空散射倍率，1～32；不增强实体与近地雾。

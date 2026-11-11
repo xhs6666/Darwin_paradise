@@ -266,10 +266,10 @@ flowchart TD
 项目内调用/回调引用：
 
 - [GameplayTuning.Current.get · L46](db546e5713b32d53.md#m4fa691bd8a3b9618)（访问器）
-- [PerformanceTimings.Measure · L24](a8403a4c7503726d.md#mb452516394f3ebae)（方法）
+- [PerformanceTimings.Measure · L24](a8403a4c7503726d.md#m592e16f2b6513efd)（方法）
 - [ColonyResource.State.get · L24](293dbaecfff4b585.md#m41824f1a0e160aa5)（访问器）
 - [ColonyResource.Find · L28](293dbaecfff4b585.md#m1324285ab40ac6f4)（方法）
-- [ColonyResource.Remove · L108](293dbaecfff4b585.md#me59455a847912120)（方法）
+- [ColonyResource.Remove · L108](293dbaecfff4b585.md#m42fd78441247c433)（方法）
 
 <a id="m62a8c47f3240774f"></a>
 

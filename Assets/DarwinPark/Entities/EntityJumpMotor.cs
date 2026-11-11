@@ -1,6 +1,7 @@
 using DarwinPark.Core;
 using UnityEngine;
 
+// ★ 修复（防Bug回归）：可选组件允许正常缺失，使用即时TryGet，保留安装/销毁可见性并消除编辑器空查询分配。
 namespace DarwinPark.Entities
 {
     /// <summary>★ 新增：只允许真实地形接地时跳跃，独立管理合法的向外速度，避免旧防飞天约束截断跳跃。</summary>
@@ -17,7 +18,7 @@ namespace DarwinPark.Entities
         private MeshCollider _ground;
         private EntityManualControl _manual;
         private EntityGroundProbe _probe;
-        private void Awake() { _body = GetComponent<Rigidbody>(); _collider = GetComponent<Collider>(); _manual = GetComponent<EntityManualControl>();_probe=GetComponent<PlanetGravity>()?.Grounding??new EntityGroundProbe(_body); }
+        private void Awake() { _body = GetComponent<Rigidbody>(); _collider = GetComponent<Collider>(); _manual = DarwinPark.Core.OptionalComponent.Read<EntityManualControl>(this);_probe=GetComponent<PlanetGravity>()?.Grounding??new EntityGroundProbe(_body); }
         public void Bind(Transform planet)
         { _planet = planet; _ground = planet != null ? planet.GetComponent<MeshCollider>() : null; IsJumping = false; }
         public bool TryJump(bool allowed)

@@ -27,8 +27,8 @@ namespace DarwinPark.Entities.Ecology
         public static IEnumerable<ColonyResource> All=>ResourcesInWorld.Where(r=>r!=null&&r.isActiveAndEnabled&&r.State.energy>0);
         public static ColonyResource Find(string id)=>!string.IsNullOrEmpty(id)&&ById.TryGetValue(id,out var resource)&&resource!=null&&resource.isActiveAndEnabled&&resource.State.energy>0?resource:null;
         // ★ 适配：出生、读档和启停同步维护能量块索引，资源尚未绑定State时由Create补登记。
-        private void OnEnable(){if(!ResourcesInWorld.Contains(this))ResourcesInWorld.Add(this);if(State!=null){ById[State.id]=this;ColonyFoodSources.Register(this);ResourceCoordinates.Observe(this);}}
-        private void OnDisable(){ResourcesInWorld.Remove(this);ColonyFoodSources.Remove(this);ResourceCoordinates.Remove(this);if(State!=null)ById.Remove(State.id);}
+        private void OnEnable(){if(!ResourcesInWorld.Contains(this))ResourcesInWorld.Add(this);if(State!=null){ById[State.id]=this;ColonyFoodSources.Register(this);ResourceCoordinates.Observe(this);CorpseInstanceRenderer.Register(this);}}
+        private void OnDisable(){CorpseInstanceRenderer.Remove(this);ResourcesInWorld.Remove(this);ColonyFoodSources.Remove(this);ResourceCoordinates.Remove(this);if(State!=null)ById.Remove(State.id);}
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)] private static void Reset(){ResourcesInWorld.Clear();ById.Clear();_material=null;}
         public static float Biomass(DarwinEntity entity)
         {
@@ -66,7 +66,7 @@ namespace DarwinPark.Entities.Ecology
             // ★ 适配：统一资源坐标索引在State绑定后登记。
             ColonyFoodSources.Register(resource);ResourceCoordinates.Observe(resource);
             // ★ 适配：尸体增加无碰撞的明确标记；右键几何拾取不增加物理负担。
-            if(data.kind==ColonyResourceKind.Corpse){resource._presentation=obj.AddComponent<ColonyResourcePresentation>();resource._presentation.Build();}
+            if(data.kind==ColonyResourceKind.Corpse){resource._presentation=obj.AddComponent<ColonyResourcePresentation>();resource._presentation.Build();CorpseInstanceRenderer.Register(resource);}
             // ★ 适配：仅能量块挂载等级外观，尸体保留原标记；按剩余能量恢复等级。
             else obj.AddComponent<EnergyBlockGradeVisual>().Refresh();return resource;
         }

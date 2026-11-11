@@ -1,6 +1,8 @@
 using DarwinPark.Entities.Stats;
 using UnityEngine;
 
+// ★ 修复（防Bug回归）：普通CPU层级确认空组件诊断字符串仍在生命/基因等高频入口分配；正常缺失改TryGet即时读取。
+// ★ 修复（防Bug回归）：可选组件允许正常缺失，使用即时TryGet，保留安装/销毁可见性并消除编辑器空查询分配。
 namespace DarwinPark.Entities
 {
     /// <summary>★ 新增：寿命进度独立于可被抑制/复制的生长基因逻辑，避免重挂基因重置年龄或永远不死。</summary>
@@ -19,7 +21,7 @@ namespace DarwinPark.Entities
             // ★ 修复（防Bug回归）：已经出生的个体不必在每个生命小步重复查询孵化组件。
             if(_born)return;
             // ★ 适配：卵未孵化时不消耗出生阶段抽签，也不提前衰老。
-            if(GetComponent<Ecology.EggIncubation>()?.Incubating==true)return;
+            if(DarwinPark.Core.OptionalComponent.Read<Ecology.EggIncubation>(this)?.Incubating==true)return;
             _born=true;
             _genes.CurrentAge=AgeState.Infant;
             _genes.TryStageMutation(AgeState.Infant);_genes.Recalculate();
@@ -42,7 +44,7 @@ namespace DarwinPark.Entities
             {
                 // ★ 修复（防Bug回归）：寿命终点直接结算死亡，不能靠缓慢扣血与修复互相抵消。
                 HasDied=true;_stats.TryGet("health",out hp);_stats.Modify("health",-Mathf.Max(0,hp),false);
-                GetComponent<EntityManualControl>()?.Release();
+                DarwinPark.Core.OptionalComponent.Read<EntityManualControl>(this)?.Release();
                 // ★ 适配：寿终也留下尚未被吸收的营养；清场仍走原有显式销毁路径。
                 Ecology.EntityDeathSettlement.Die(GetComponent<DarwinEntity>());
             }

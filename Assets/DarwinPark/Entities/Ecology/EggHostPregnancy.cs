@@ -5,6 +5,7 @@ using DarwinPark.Core;
 using DarwinPark.Genetics;
 using UnityEngine;
 
+// ★ 修复（防Bug回归）：可选组件允许正常缺失，使用即时TryGet，保留安装/销毁可见性并消除编辑器空查询分配。
 namespace DarwinPark.Entities.Ecology
 {
     [Serializable] public sealed class ForeignEggSave {public string parent;public Genome genome;public float remaining;}
@@ -20,7 +21,7 @@ namespace DarwinPark.Entities.Ecology
             var settings=NutritionEcologySettings.Current;DarwinEntity nearest=null;float best=settings.eggHostRadius*settings.eggHostRadius;
             foreach(var host in EntityRegistry.All)
             {
-                if(!EcologyQueries.Alive(host)||host.gameObject==parent.gameObject||host.GetComponent<EggIncubation>()?.Incubating==true||host.GetComponent<NutritionParasite>()?.Host!=null||parent.GetComponent<PopulationBehavior>()?.SameGroup(host)==true||(host.GetComponent<EggHostPregnancy>()?.Count??0)>=settings.maximumEggsPerHost)continue;
+                if(!EcologyQueries.Alive(host)||host.gameObject==parent.gameObject||DarwinPark.Core.OptionalComponent.Read<EggIncubation>(host)?.Incubating==true||DarwinPark.Core.OptionalComponent.Read<NutritionParasite>(host)?.Host!=null||DarwinPark.Core.OptionalComponent.Read<PopulationBehavior>(parent)?.SameGroup(host)==true||(host.GetComponent<EggHostPregnancy>()?.Count??0)>=settings.maximumEggsPerHost)continue;
                 float distance=(host.transform.position-parent.transform.position).sqrMagnitude;if(distance<best){best=distance;nearest=host;}
             }
             if(nearest==null)return false;
@@ -35,8 +36,8 @@ namespace DarwinPark.Entities.Ecology
             {
                 var egg=_eggs[i];egg.remaining=Mathf.Max(0,egg.remaining-dt);if(egg.remaining>0||!EntityPopulationLimit.CanSpawn||DarwinEntity.Spawner==null)continue;
                 if(!OffspringPlacement.TryGetPosition(transform.position,false,out var point))continue;
-                var before=new HashSet<DarwinEntity>(EntityRegistry.All);DarwinEntity.Spawner(JsonUtility.FromJson<Genome>(JsonUtility.ToJson(egg.genome)),point,"");
-                var child=EntityRegistry.All.FirstOrDefault(e=>!before.Contains(e));if(child==null)continue;
+                // ★ 适配：外来卵孵化也直接捕获生成身份，不构造全世界旧身份集合。
+                var child=EntitySpawnCapture.Create(JsonUtility.FromJson<Genome>(JsonUtility.ToJson(egg.genome)),point);if(child==null)continue;
                 var parent=EcologyIdentity.Find(egg.parent);if(parent!=null)AntColonyMember.OnBirth(parent.Genes,child);
                 _eggs.RemoveAt(i);
             }

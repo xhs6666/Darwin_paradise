@@ -272,7 +272,7 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [ColonyResource.ClearWorld · L109](293dbaecfff4b585.md#mc969798f9562c061)（方法）
+- [ColonyResource.ClearWorld · L109](293dbaecfff4b585.md#m0aae51a30765b159)（方法）
 
 <a id="m1ca4c25ebef6517c"></a>
 
@@ -329,11 +329,11 @@ flowchart TD
 
 - [RandomSpawnRecipe.CreateGenome · L25](923ccc4e86c4786c.md#m2612c79fe3848e08)（方法）
 - [EcologyDefaults.Template · L68](5b565b57de741d98.md#m98d16ffadd19320f)（方法）
-- [EntityLifeCycle.RestoreProgress · L51](9f4138bfbae654b7.md#mec34c953ece464ab)（方法）
+- [EntityLifeCycle.RestoreProgress · L53](9f4138bfbae654b7.md#m9ac5190ce2d7c425)（方法）
 - [LifeCycleSettings.Load · L16](ace76969fe8f61de.md#m6fe263852e5a8989)（方法）
-- [EntityGeneController.RestoreStageState · L56](7494d53178552f0e.md#m37c1dbfa64e7c2ce)（方法）
+- [EntityGeneController.RestoreStageState · L58](7494d53178552f0e.md#m89a02f44ce209b2f)（方法）
 - [DarwinEntity.Genes.get · L14](70798dde169f2e8b.md#m622eb1adf401d431)（访问器）
-- [EntityGeneController.Recalculate · L118](7494d53178552f0e.md#m707d9a56b0c7c609)（方法）
+- [EntityGeneController.Recalculate · L120](7494d53178552f0e.md#m7bf63f9a1482db3c)（方法）
 - [WorldEvolutionRegression.Capture · L33](a5c430d5c2fdb5ce.md#m5f6bfaaa22a1b288)（局部函数）
 
 <a id="m5f6bfaaa22a1b288"></a>
@@ -554,7 +554,7 @@ flowchart TD
 - [EarthClimateRules.Color · L24](6a91ff043f0ebb5f.md#mb76f2ac53689b29e)（方法）
 - [EarthClimateRules.Humidity · L17](6a91ff043f0ebb5f.md#m72e3546de2404a6f)（方法）
 - [LandformSaveCompatibility.Restore · L23](06c65833631e42f5.md#m3f9f2e62b741ebce)（方法）
-- [ColonyResource.Create · L45](293dbaecfff4b585.md#m7e8d2b0e06e1cad5)（方法）
+- [ColonyResource.Create · L45](293dbaecfff4b585.md#m6768b4f531fe91dd)（方法）
 - [EcologyQueries.ToLocal · L40](bdf7ccc2c9c0452f.md#mfa1ace432c73012a)（方法）
 - [ColonyResource.State.get · L24](293dbaecfff4b585.md#m41824f1a0e160aa5)（访问器）
 - [SimulationClock.GameTime.get · L23](a8f444aec9614b0a.md#m74adfa39a896652f)（访问器）
@@ -758,7 +758,7 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [EntityGeneController.GetAttribute · L286](7494d53178552f0e.md#m18bff2b38f95b556)（方法）
+- [EntityGeneController.GetAttribute · L288](7494d53178552f0e.md#m45127bcdd833aaf5)（方法）
 - [DarwinEntity.Genes.get · L14](70798dde169f2e8b.md#m622eb1adf401d431)（访问器）
 
 <a id="m97f921db2a4201fb"></a>
@@ -790,7 +790,7 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [EntityGeneController.CurrentAge.get · L37](7494d53178552f0e.md#md08823d8f9a2fa16)（访问器）
+- [EntityGeneController.CurrentAge.get · L39](7494d53178552f0e.md#m977f52932bb90600)（访问器）
 - [DarwinEntity.Genes.get · L14](70798dde169f2e8b.md#m622eb1adf401d431)（访问器）
 - [PlanetTerrainMeshBuilder.IsSubmerged · L107](415285cf043354a9.md#m77993fefee27a702)（方法）
 
@@ -1118,19 +1118,19 @@ flowchart TD
 项目内调用/回调引用：
 
 - [WorldEvolutionRegression.Spawn · L32](a5c430d5c2fdb5ce.md#m1ca4c25ebef6517c)（方法）
-- [AntColonyMember.Ensure · L60](baebd85c05598377.md#mafc587b9b93d32ac)（方法）
-- [AntColonyMember.Assign · L63](baebd85c05598377.md#mabf4d7fac1b1ac98)（方法）
-- [EntityStats.TryGet · L90](75aa86a368efdf24.md#m24ee1433e4a70d94)（方法）
-- [EntityStats.Modify · L111](75aa86a368efdf24.md#m9c837be197158240)（方法）
-- [ColonyResource.Create · L45](293dbaecfff4b585.md#m7e8d2b0e06e1cad5)（方法）
+- [AntColonyMember.Ensure · L61](baebd85c05598377.md#m4e1194d3f46affcd)（方法）
+- [AntColonyMember.Assign · L64](baebd85c05598377.md#m27a8ec4fadc8e70b)（方法）
+- [EntityStats.TryGet · L93](75aa86a368efdf24.md#m03cef847022eee28)（方法）
+- [EntityStats.Modify · L114](75aa86a368efdf24.md#m375a3812ef990b45)（方法）
+- [ColonyResource.Create · L45](293dbaecfff4b585.md#m6768b4f531fe91dd)（方法）
 - [EcologyQueries.ToLocal · L40](bdf7ccc2c9c0452f.md#mfa1ace432c73012a)（方法）
 - [ColonyFoodSources.Nearest · L30](4c419a1a067d428c.md#madb4912c0220704c)（方法）
 - [ColonyFoodSources.CandidateVisits.get · L14](4c419a1a067d428c.md#m1ba5574cdb12eab4)（访问器）
-- [ColonyFoodQueryCache.Hits.get · L16](63cd90165719dbff.md#m999de9122f5b14d2)（访问器）
+- [ColonyFoodQueryCache.Hits.get · L16](63cd90165719dbff.md#m871ae7a0cf96f22d)（访问器）
 - [WorldEvolutionRegression.Check · L28](a5c430d5c2fdb5ce.md#m083c6225b2d9bc03)（方法）
-- [ColonyResource.Remove · L108](293dbaecfff4b585.md#me59455a847912120)（方法）
+- [ColonyResource.Remove · L108](293dbaecfff4b585.md#m42fd78441247c433)（方法）
 - [GameplayTuning.Current.get · L46](db546e5713b32d53.md#m4fa691bd8a3b9618)（访问器）
-- [ColonyResource.CarryTo · L85](293dbaecfff4b585.md#m0524c6be86580a92)（方法）
+- [ColonyResource.CarryTo · L85](293dbaecfff4b585.md#md7070757a728b6f5)（方法）
 
 <a id="m434568e2446f84be"></a>
 
@@ -1251,17 +1251,17 @@ flowchart TD
 - [DarwinEntity.Genes.get · L14](70798dde169f2e8b.md#m622eb1adf401d431)（访问器）
 - [WorldEvolutionRegression.Check · L28](a5c430d5c2fdb5ce.md#m083c6225b2d9bc03)（方法）
 - [StationaryCohortKernel.LifeSpeed · L25](9d3f50e550ab5beb.md#mdb19e021772f12ab)（方法）
-- [EntityLifeCycle.AdvanceShared · L29](9f4138bfbae654b7.md#ma29bffd901102e78)（方法）
+- [EntityLifeCycle.AdvanceShared · L31](9f4138bfbae654b7.md#mb1df321a3be857d0)（方法）
 - [LifeCycleSettings.Load · L16](ace76969fe8f61de.md#m6fe263852e5a8989)（方法）
-- [EntityGeneController.CurrentAge.get · L37](7494d53178552f0e.md#md08823d8f9a2fa16)（访问器）
+- [EntityGeneController.CurrentAge.get · L39](7494d53178552f0e.md#m977f52932bb90600)（访问器）
 - [EcologyReproductionTiming.GestationSeconds · L11](f834876424538fa9.md#medb66b741c6f0fd2)（方法）
 - [EcologyReproductionTiming.CooldownSeconds · L22](f834876424538fa9.md#m4739e32bdedf6120)（方法）
-- [EntityGeneController.Recalculate · L118](7494d53178552f0e.md#m707d9a56b0c7c609)（方法）
+- [EntityGeneController.Recalculate · L120](7494d53178552f0e.md#m7bf63f9a1482db3c)（方法）
 - [ReproductionGeneLogic.RestoreState · L39](ac319ea70bd8b723.md#m024a77bf70fc78fe)（方法）
 - [ReproductionGeneLogic.OnUpdate · L40](ac319ea70bd8b723.md#m7cb6727410b8cffa)（方法）
 - [ReproductionGeneLogic.CaptureState · L37](ac319ea70bd8b723.md#m56d6ec1f1c8b2072)（方法）
 - [WorldEvolutionRegression.回调@92 · L92](a5c430d5c2fdb5ce.md#mac9c7cf5e655f8b7)（回调/委托）
-- [EntityGeneController.GetLogic · L240](7494d53178552f0e.md#m9be6a2566c76c275)（方法）
+- [EntityGeneController.GetLogic · L242](7494d53178552f0e.md#m4620848081f43ecc)（方法）
 
 <a id="mac9c7cf5e655f8b7"></a>
 

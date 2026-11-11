@@ -3,6 +3,7 @@ using DarwinPark.Core;
 using DarwinPark.Entities.Ecology;
 using DarwinPark.Entities.Logic;
 using UnityEngine;
+// ★ 修复（防Bug回归）：可选组件允许正常缺失，使用即时TryGet，保留安装/销毁可见性并消除编辑器空查询分配。
 namespace DarwinPark.Entities.Simulation
 {
     // ★ 新增：跳过孤立静止实体的空被动调用，生命/繁殖保持逐小步，环境/代谢保持原批次顺序。
@@ -14,7 +15,7 @@ namespace DarwinPark.Entities.Simulation
             public readonly List<IGeneLogic> logics=new(),useful=new();
             public void Refresh(EntityGeneController genes)
             {
-                if(revision==genes.LogicRevision)return;revision=genes.LogicRevision;supported=StationaryCohortKernel.Supported(genes);state=genes.GetComponent<EntityStateController>();
+                if(revision==genes.LogicRevision)return;revision=genes.LogicRevision;supported=StationaryCohortKernel.Supported(genes);state=DarwinPark.Core.OptionalComponent.Read<EntityStateController>(genes);
                 genes.CopySimulationLogics(logics);useful.Clear();foreach(var logic in logics)if(!supported||logic is NutritionGeneLogic||logic is ReproductionGeneLogic)useful.Add(logic);
             }
         }
@@ -23,7 +24,7 @@ namespace DarwinPark.Entities.Simulation
         {
             using var performance=PerformanceTimings.Measure(PerformanceTimings.Area.SingletonSettlement);
             if(!SimulationOptimization.Current.singletonKernel){genes.AdvanceSimulation(elapsed);if(genes!=null&&genes.isActiveAndEnabled)StationaryCohortKernel.AdvanceCore(genes,elapsed);return;}
-            if(!Contexts.TryGetValue(genes,out var context)){context=new Context{life=genes.GetComponent<EntityLifeCycle>(),combat=genes.GetComponent<CombatIntent>()};Contexts.Add(genes,context);}
+            if(!Contexts.TryGetValue(genes,out var context)){context=new Context{life=genes.GetComponent<EntityLifeCycle>(),combat=DarwinPark.Core.OptionalComponent.Read<CombatIntent>(genes)};Contexts.Add(genes,context);}
             context.Refresh(genes);int steps=SimulationSubsteps.Count(elapsed);
             for(int i=0;i<steps;i++)
             {

@@ -418,3 +418,15 @@
 | 2026-11-11 | AI向隔海猎物/尸体/食物直走并落水 | 只按距离选目标和直线移动，未建立陆地连通区 | LandNavigationGraph、LandPathScheduler、LandReachability、LocomotionGeneLogic | 水域/坡度限制、全局共享预算、候选可达性；验证绕湖与隔海拒绝，不用逐体大数组 |
 | 2026-11-11 | 新地貌可能静默改变旧档岸线或埋入资源 | 新增字段默认开启、重建只迁移实体 | LandformSaveCompatibility、WorldParameterUpdate、TerrainResourceRelocation | 缺字段旧档默认关闭；显式升级保留资源身份/能量并重新贴地，非法设置在清场前拒绝 |
 | 2026-11-11 | 自然人口增长过快，合并结算与个体年限可能分歧 | 旧秒级成长/冷却与多年目标不一致 | NaturalPopulationPace、EcologyReproductionTiming、StationaryCohortKernel、NaturalWorldSeeder | 统一推进函数，新孕育15～360游戏天，旧计时不重置；种源仅新世界一次，约50年仅理想标定 |
+
+
+## 2026-11-11 完整大存档热点修复
+
+| 日期 | 现象 | 根因/处理 | 文件 | 防复发要点 |
+| --- | --- | --- | --- | --- |
+| 2026-11-11 | 近千活体及六千多尸体仍严重卡顿 | 每胎整世界平方身份查找、大型地形射线、仅同物理步接地缓存、重复补给和可选组件诊断分配 | EntitySpawnCapture、OffspringPlacement、GroundSurfacePatch、GroundMotionSnapshot、ColonyFoodCandidates、ColonyFeedDecision、OptionalComponent | 完整同存档、同镜头8秒实测，不清尸/锁450/停繁殖换FPS；事件finally退订，属性变化和实际扣粮立即失效 |
+| 2026-11-11 | 资源索引遇到刚性姿态变化会全量重建 | 世界矩阵任意变化就清空资源桶；本现场场景没有挂载自转脚本，不能把自转宣称为现场主因 | ResourceCoordinates、ResourceGroups、ColonyFoodQueryCache | 刚性姿态和结构版本分离；纯自转不重建，缩放/形变重建；球面/三维局部和无穷范围逐对象对照，活动圆读最新世界坐标 |
+| 2026-11-11 | 尸体过多使绘制提交上万 | 身体和叉号逐Renderer、逐对象属性块阻止实际自动实例化 | CorpseInstanceRenderer、ColonyResource、simulation_optimization及RuntimeMaterials | 真实RenderMeshInstanced、独立色板、局部矩阵和空间格；移动单个对象只写自身/交换槽，不能重建全世界；对象/能量/点选/运输保留，热关闭恢复；实际像素对照及发布材质检查 |
+| 2026-11-11 | 报告普通代谢几乎0ms但CPU层级明显耗时 | Vitals仅共享入口被计时，普通Update漏报 | EntityVitals、RuntimePerformance、RuntimePerformanceCapture、NearViewPerformanceAudit | 计时放实际代谢入口；包含项不可相加；报告缓存命中、真实采样、索引重建和批次数，改善不等同稳定60FPS |
+
+本轮2053项原生断言通过；最终Windows非开发构建0错误/1条符号上传授权告警；可见发布版实际绘制100个尸体批次并加载同一近千活体世界采样8秒。编辑器同存档约349→105ms/帧，发布版仍约74ms，未彻底解决千实体卡顿，不能承诺60FPS；隐藏窗口不绘制的样本已排除。414脚本/4219方法/4222图、200252项结构与19项浏览检查通过。详见 `Docs/验证记录/完整存档卡顿热点修复验证-2026-11-11.md`。

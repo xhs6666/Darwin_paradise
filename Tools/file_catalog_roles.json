@@ -326,7 +326,7 @@
     "Assets/DarwinPark/UI/SimulationRulesPanel.cs": "底栏第一页260×164规则卡，调整全局变异开关、比例和周期，支持窄屏展开与执行入口权限检查。",
     "Assets/DarwinPark/Editor/ObservationMutationRegression.cs": "验证真实变异抽样与读档、坐标投递/追踪边界、空间候选数量、规则卡布局和文件保存权限。",
     "Assets/DarwinPark/Core/SimulationOptimization.cs": "读取外部带注释优化配置，校验并通过单一全局入口热加载查询、任务、缓存与外观参数。",
-    "Assets/DarwinPark/Entities/Ecology/ResourceCoordinates.cs": "统一尸体和能量块坐标，维护三维/球面投影分类格和出生、搬运、移除生命周期。",
+    "Assets/DarwinPark/Entities/Ecology/ResourceCoordinates.cs": "随星球旋转的资源分类/空间索引，自转仅更新世界坐标读出姿态，搬运/归属/缩放更新桶。",
     "Assets/DarwinPark/Entities/Ecology/WorkerTaskQueue.cs": "为工匠生成顺序采集交付计划，补给插队、完成接续、目标失效跳过并校验持久化任务。",
     "Assets/DarwinPark/Entities/Ecology/MemberTaskSequence.cs": "为士兵巡逻休息、捕猎和其他分工记录任务次序，补给不覆盖原计划。",
     "Assets/DarwinPark/Entities/Simulation/ActionDecisionCadence.cs": "分离意图决策节奏与连续物理动作，命令/受击/饥饿等立即打断，合并一批小步中的转向写入。",
@@ -383,7 +383,7 @@
     "Assets/DarwinPark/UI/PopulationRatioRulePage.cs": "种群比例调节独立规则页：默认关闭，启用后仅延缓超额繁殖，不直接生成，保留原卡尺寸。",
     "Assets/DarwinPark/Editor/PopulationRatioRuleChecks.cs": "真实规则卡、磁盘和世界回归：默认关闭、超额繁殖抑制、旧补员入口停用及游戏天换算。",
     "Assets/DarwinPark/Editor/WorldEvolutionRegression.cs": "真实场景回归：验证矿量合并上传、食物缓存、自然代际节奏、新世界种源、陆地绕行、水系和旧档地貌升级，并导出气候及河湖近景。",
-    "Assets/DarwinPark/Entities/Ecology/ColonyFoodQueryCache.cs": "缓存同帧蚁群补给选择；按资源增删、食物增加、角色和共享设置使旧结果失效。",
+    "Assets/DarwinPark/Entities/Ecology/ColonyFoodQueryCache.cs": "短周期复用能量块搜索，按资源变化、成员资格和相对星球位移即时失效。",
     "Assets/DarwinPark/Entities/Ecology/LandReachability.cs": "缓存实体与资源所在陆地连通区，排除隔海无法抵达的任务目标。",
     "Assets/DarwinPark/Entities/Ecology/NaturalPopulationPace.cs": "加载可外部调整的自然成长、寿命和孕育年限；统一个体与静止合并计算的生命推进速度。",
     "Assets/DarwinPark/Entities/Ecology/TerrainResourceRelocation.cs": "地形重建前后保留资源身份和能量并重新贴地，避免尸体和能量块埋入地形。",
@@ -397,7 +397,14 @@
     "Assets/DarwinPark/Planet/Terrain/PlanetHydrology.cs": "优先洪泛建立出流方向、汇水量和湖泊，再侵刻河床并提供局部水位与湿度。",
     "Assets/DarwinPark/Planet/Terrain/SurfaceMinHeap.cs": "为洪泛和寻路复用的稳定最小堆，按优先级和节点编号排序。",
     "Assets/DarwinPark/UI/LandformUpgradeControl.cs": "在地形参数页提供显式启用或关闭新地貌入口，并接入后台地形编辑链路。",
-    "Assets/DarwinPark/UI/NaturalWorldSeeder.cs": "仅新世界建立一次7成生产者、3成移动者的少量幼体种源，旧档及灭绝后不补员。"
+    "Assets/DarwinPark/UI/NaturalWorldSeeder.cs": "仅新世界建立一次7成生产者、3成移动者的少量幼体种源，旧档及灭绝后不补员。",
+    "Assets/DarwinPark/Entities/EntitySpawnCapture.cs": "同步实体生成的直接身份捕获，替代出生时整世界平方查找并成对释放事件订阅。",
+    "Assets/DarwinPark/Entities/GroundMotionSnapshot.cs": "按帧和表达版本复用真实移动资格，减少重力和静止休眠的角色解析。",
+    "Assets/DarwinPark/Entities/GroundSurfacePatch.cs": "缓存真实地形三角形平面和重心坐标，在同一三角形内重投影当前接地。",
+    "Assets/DarwinPark/Entities/Ecology/ColonyFoodCandidates.cs": "以同群、通用块和附近无主食物坐标生成候选，不扫描其他活群的专用粮。",
+    "Assets/DarwinPark/Entities/Ecology/ColonyFeedDecision.cs": "帧内按真实属性/表达/计划版本复用饥饿插队判定，实际进食立即失效。",
+    "Assets/DarwinPark/Entities/Ecology/CorpseInstanceRenderer.cs": "保留原尸体身份，以星球局部空间格和可见GPU批次绘制身体/叉号，支持原显示回退。",
+    "Assets/DarwinPark/Editor/StutterRepairRegression.cs": "完整玩家快照下验证接地缓存、出生身份、资源距离等价、营养守恒、尸体拾取和真实像素。"
   },
   "files": {
     "Assets/Scenes/SampleScene.unity": "主要运行场景：挂载星球、环境、时钟、UI和游戏启动组件。",
@@ -553,6 +560,10 @@
     "Docs/验证记录/重力接地优化验证-2026-11-09.md": "重力接地专项、受控同存档性能和现行操控/搬运/休眠发布兼容证据。",
     "Docs/验证记录/重力接地证据-2026-11-09/performance.json": "4eb5de1与本轮重力实现的固定输入、计时、回调和休眠/射线计数原始对照报告。",
     "Assets/Resources/Entities/natural_population.json": "内置自然代际节奏：一次性10种源、参考生命年限、15～360天孕育与产后间隔。",
-    "config/natural_population.json": "可外部调整并热加载的自然成长、寿命、孕育和新世界种源配置，支持中文注释。"
+    "config/natural_population.json": "可外部调整并热加载的自然成长、寿命、孕育和新世界种源配置，支持中文注释。",
+    "Docs/开发设计/完整存档卡顿热点修复-2026-11-11.md": "完整大存档CPU热点、出生接地/食物坐标/尸体实例批次的修复与正确性边界。",
+    "Docs/操作指南/尸体批次与性能回退.md": "外部尸体显示和食物/接地缓存配置、热回退及采样解释。",
+    "Docs/验证记录/完整存档卡顿热点修复验证-2026-11-11.md": "同一大存档的8秒性能前后对照、原生兼容回归和发布版证据。",
+    "Docs/验证记录/卡顿修复证据-2026-11-11/performance.json": "本轮固定输入哈希、原版本与最终完整生态8秒性能报告；含缓存/索引/批次证据及暂停对照。"
   }
 }

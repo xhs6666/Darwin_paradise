@@ -2,53 +2,13 @@
 
 [返回总索引](../README.md) · `Runtime` · `Assets/DarwinPark/Entities/Ecology/PopulationGroupIndex.cs`
 
-[源文件](../../../Assets/DarwinPark/Entities/Ecology/PopulationGroupIndex.cs) · 源码校验：`98a5c15c3dfc6fd1c4fad66b754d223ff219a77fd9e4884d28a8cf4dd32a71dc`
+[源文件](../../../Assets/DarwinPark/Entities/Ecology/PopulationGroupIndex.cs) · 源码校验：`b1a74698ba483ec65e67d5bf89c36fe9677012f5654ac7d452ee958943cb5957`
 
 方法按源文件位置排列。事件/回调引用不表示立即执行；分支与异常说明见总索引。完整源码与可点击关系图请打开离线手册。
 
-<a id="mbb4bfaa8b0e1b169"></a>
+<a id="m8c9707f063fcf56d"></a>
 
-## BuildCount.get · L17
-
-`get`
-
-
-
-### Editor / Player · 语法控制结构 / 声明（非CFG）
-
-```mermaid
-flowchart TD
-  n2(["入口"])
-  n1["声明 / 自动存储；没有显式方法体"]
-  n0(["结束 / 返回"])
-  n1 --> n0
-  n2 --> n1
-
-```
-
-<a id="m631c88183f8fb2a5"></a>
-
-## BuildCount.set · L17
-
-`private set`
-
-
-
-### Editor / Player · 语法控制结构 / 声明（非CFG）
-
-```mermaid
-flowchart TD
-  n2(["入口"])
-  n1["声明 / 自动存储；没有显式方法体"]
-  n0(["结束 / 返回"])
-  n1 --> n0
-  n2 --> n1
-
-```
-
-<a id="m42c682636166d39b"></a>
-
-## Revision.get · L19
+## BuildCount.get · L18
 
 `get`
 
@@ -66,9 +26,9 @@ flowchart TD
 
 ```
 
-<a id="m51047157d7761a13"></a>
+<a id="m137c40e2c41e15e3"></a>
 
-## Revision.set · L19
+## BuildCount.set · L18
 
 `private set`
 
@@ -86,9 +46,49 @@ flowchart TD
 
 ```
 
-<a id="m5e79b5692d858f7a"></a>
+<a id="m54a3b3992914501f"></a>
 
-## Invalidate · L20
+## Revision.get · L20
+
+`get`
+
+
+
+### Editor / Player · 语法控制结构 / 声明（非CFG）
+
+```mermaid
+flowchart TD
+  n2(["入口"])
+  n1["声明 / 自动存储；没有显式方法体"]
+  n0(["结束 / 返回"])
+  n1 --> n0
+  n2 --> n1
+
+```
+
+<a id="m0522f31acd2cfbc5"></a>
+
+## Revision.set · L20
+
+`private set`
+
+
+
+### Editor / Player · 语法控制结构 / 声明（非CFG）
+
+```mermaid
+flowchart TD
+  n2(["入口"])
+  n1["声明 / 自动存储；没有显式方法体"]
+  n0(["结束 / 返回"])
+  n1 --> n0
+  n2 --> n1
+
+```
+
+<a id="m6301560c15e5621a"></a>
+
+## Invalidate · L21
 
 `public static void Invalidate()`
 
@@ -108,12 +108,12 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [PopulationGroupIndex.Revision.set · L19](6bb343d8be5beae5.md#m51047157d7761a13)（访问器）
-- [PopulationGroupIndex.Revision.get · L19](6bb343d8be5beae5.md#m42c682636166d39b)（访问器）
+- [PopulationGroupIndex.Revision.set · L20](6bb343d8be5beae5.md#m0522f31acd2cfbc5)（访问器）
+- [PopulationGroupIndex.Revision.get · L20](6bb343d8be5beae5.md#m54a3b3992914501f)（访问器）
 
-<a id="m1eb0159362acd03a"></a>
+<a id="m6b4ef43fc5ce06d9"></a>
 
-## Reset · L21
+## Reset · L22
 
 `[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)] private static void Reset()`
 
@@ -133,12 +133,12 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [PopulationGroupIndex.BuildCount.set · L17](6bb343d8be5beae5.md#m631c88183f8fb2a5)（访问器）
-- [PopulationGroupIndex.Revision.set · L19](6bb343d8be5beae5.md#m51047157d7761a13)（访问器）
+- [PopulationGroupIndex.BuildCount.set · L18](6bb343d8be5beae5.md#m137c40e2c41e15e3)（访问器）
+- [PopulationGroupIndex.Revision.set · L20](6bb343d8be5beae5.md#m0522f31acd2cfbc5)（访问器）
 
-<a id="me1ad939202c72295"></a>
+<a id="mdfb4cef0515f3784"></a>
 
-## Earlier · L23
+## Earlier · L24
 
 `private static bool Earlier(PopulationBehavior a,PopulationBehavior b)`
 
@@ -173,12 +173,12 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [PopulationBehavior.JoinOrder.get · L21](21e4f62f75a9a80f.md#m83871a50fb1160fd)（访问器）
+- [PopulationBehavior.JoinOrder.get · L23](21e4f62f75a9a80f.md#m3a083590c84efb2c)（访问器）
 - [EcologyIdentity.Of · L22](bdf7ccc2c9c0452f.md#mb23020fe763aafd3)（方法）
 
-<a id="mc5dd4eb8610431ea"></a>
+<a id="me4ce6f84a62a2928"></a>
 
-## Get · L24
+## Get · L25
 
 `private static Group Get(PopulationBehavior owner)`
 
@@ -205,7 +205,7 @@ flowchart TD
   b14{"判断：member.LeaderFlag==group.leader.LeaderFlag"}
   b15{"判断：Earlier(member,group.leader)"}
   b16["group.leader=member;"]
-  b17{"ant=member.GetComponent&lt;AntColonyMember&gt;()<br/>判断：key.Item2==EcologySettings.Load().antState"}
+  b17{"ant=DarwinPark.Core.OptionalComponent.Read&lt;AntColonyMember&gt;(member)<br/>判断：key.Item2==EcologySettings.Load().antState"}
   b18{"判断：ant!=null"}
   b19{"判断：ant.Role==AntRole.Queen"}
   b20{"member<br/>判断：group.queen!=null"}
@@ -269,18 +269,19 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [PopulationBehavior.GroupId.get · L20](21e4f62f75a9a80f.md#m5145936fa914ba8c)（访问器）
-- [PopulationGroupIndex.BuildCount.set · L17](6bb343d8be5beae5.md#m631c88183f8fb2a5)（访问器）
-- [PopulationGroupIndex.BuildCount.get · L17](6bb343d8be5beae5.md#mbb4bfaa8b0e1b169)（访问器）
-- [PopulationBehavior.LeaderFlag.get · L22](21e4f62f75a9a80f.md#m381bf45ebdf091a9)（访问器）
-- [PopulationGroupIndex.Earlier · L23](6bb343d8be5beae5.md#me1ad939202c72295)（方法）
+- [PopulationBehavior.GroupId.get · L22](21e4f62f75a9a80f.md#me471d0106be463ca)（访问器）
+- [PopulationGroupIndex.BuildCount.set · L18](6bb343d8be5beae5.md#m137c40e2c41e15e3)（访问器）
+- [PopulationGroupIndex.BuildCount.get · L18](6bb343d8be5beae5.md#m8c9707f063fcf56d)（访问器）
+- [PopulationBehavior.LeaderFlag.get · L24](21e4f62f75a9a80f.md#m2972bf9eaa193643)（访问器）
+- [PopulationGroupIndex.Earlier · L24](6bb343d8be5beae5.md#mdfb4cef0515f3784)（方法）
+- [OptionalComponent.Read · L7](806c46b42ced4d36.md#m69622a4dee165c5a)（方法）
 - [EcologySettings.Load · L18](90428a275d065ef6.md#mb0575490373edaf2)（方法）
-- [AntColonyMember.Role.get · L39](baebd85c05598377.md#mbe541ad55a93b0dd)（访问器）
-- [AntColonyMember.Population.get · L36](baebd85c05598377.md#m3fa1d6d15c7c95ba)（访问器）
+- [AntColonyMember.Role.get · L40](baebd85c05598377.md#m382545c3d4092bf1)（访问器）
+- [AntColonyMember.Population.get · L37](baebd85c05598377.md#m8a87d3d378490df9)（访问器）
 
-<a id="m37d04d4079b6ece5"></a>
+<a id="m854fb2ce08b0f47f"></a>
 
-## Members · L39
+## Members · L40
 
 `public static IEnumerable<PopulationBehavior> Members(PopulationBehavior owner)`
 
@@ -305,13 +306,13 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [PopulationBehavior.GroupId.get · L20](21e4f62f75a9a80f.md#m5145936fa914ba8c)（访问器）
-- [PopulationGroupIndex.AliveMembers · L44](6bb343d8be5beae5.md#m787c400f7c4d5979)（方法）
-- [PopulationGroupIndex.Get · L24](6bb343d8be5beae5.md#mc5dd4eb8610431ea)（方法）
+- [PopulationBehavior.GroupId.get · L22](21e4f62f75a9a80f.md#me471d0106be463ca)（访问器）
+- [PopulationGroupIndex.AliveMembers · L45](6bb343d8be5beae5.md#m00ade2f83b10d43c)（方法）
+- [PopulationGroupIndex.Get · L25](6bb343d8be5beae5.md#me4ce6f84a62a2928)（方法）
 
-<a id="m787c400f7c4d5979"></a>
+<a id="m00ade2f83b10d43c"></a>
 
-## AliveMembers · L44
+## AliveMembers · L45
 
 `private static IEnumerable<PopulationBehavior> AliveMembers(List<PopulationBehavior> members,string id,string mode)`
 
@@ -350,11 +351,11 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [PopulationBehavior.GroupId.get · L20](21e4f62f75a9a80f.md#m5145936fa914ba8c)（访问器）
+- [PopulationBehavior.GroupId.get · L22](21e4f62f75a9a80f.md#me471d0106be463ca)（访问器）
 
-<a id="m083b5efa3064e08c"></a>
+<a id="m99736eb6e778e4db"></a>
 
-## Queen · L46
+## Queen · L47
 
 `public static AntColonyMember Queen(PopulationBehavior owner)`
 
@@ -393,15 +394,15 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [PopulationBehavior.GroupId.get · L20](21e4f62f75a9a80f.md#m5145936fa914ba8c)（访问器）
+- [PopulationBehavior.GroupId.get · L22](21e4f62f75a9a80f.md#me471d0106be463ca)（访问器）
 - [EcologySettings.Load · L18](90428a275d065ef6.md#mb0575490373edaf2)（方法）
-- [PopulationGroupIndex.Get · L24](6bb343d8be5beae5.md#mc5dd4eb8610431ea)（方法）
-- [AntColonyMember.Role.get · L39](baebd85c05598377.md#mbe541ad55a93b0dd)（访问器）
-- [PopulationGroupIndex.Invalidate · L20](6bb343d8be5beae5.md#m5e79b5692d858f7a)（方法）
+- [PopulationGroupIndex.Get · L25](6bb343d8be5beae5.md#me4ce6f84a62a2928)（方法）
+- [AntColonyMember.Role.get · L40](baebd85c05598377.md#m382545c3d4092bf1)（访问器）
+- [PopulationGroupIndex.Invalidate · L21](6bb343d8be5beae5.md#m6301560c15e5621a)（方法）
 
-<a id="m3d1818b92838ee52"></a>
+<a id="m5b7030bbfdbc610e"></a>
 
-## Leader · L53
+## Leader · L54
 
 `public static PopulationBehavior Leader(PopulationBehavior owner)`
 
@@ -447,8 +448,8 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [PopulationBehavior.GroupId.get · L20](21e4f62f75a9a80f.md#m5145936fa914ba8c)（访问器）
-- [PopulationGroupIndex.Get · L24](6bb343d8be5beae5.md#mc5dd4eb8610431ea)（方法）
-- [PopulationGroupIndex.Invalidate · L20](6bb343d8be5beae5.md#m5e79b5692d858f7a)（方法）
+- [PopulationBehavior.GroupId.get · L22](21e4f62f75a9a80f.md#me471d0106be463ca)（访问器）
+- [PopulationGroupIndex.Get · L25](6bb343d8be5beae5.md#me4ce6f84a62a2928)（方法）
+- [PopulationGroupIndex.Invalidate · L21](6bb343d8be5beae5.md#m6301560c15e5621a)（方法）
 - [EcologySettings.Load · L18](90428a275d065ef6.md#mb0575490373edaf2)（方法）
-- [AntColonyMember.Population.get · L36](baebd85c05598377.md#m3fa1d6d15c7c95ba)（访问器）
+- [AntColonyMember.Population.get · L37](baebd85c05598377.md#m8a87d3d378490df9)（访问器）

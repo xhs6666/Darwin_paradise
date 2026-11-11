@@ -6,6 +6,7 @@ using DarwinPark.Entities.Stats;
 using UnityEngine;
 
 // ★ 适配：降低获取速度时只扣实际转移量，避免营养凭空损失。
+// ★ 修复（防Bug回归）：可选组件允许正常缺失，使用即时TryGet，保留安装/销毁可见性并消除编辑器空查询分配。
 namespace DarwinPark.Entities.Ecology
 {
     // ★ 新增：普通实体的能量块吸收/吐出与蚁群运输分离，所有流转均从实际营养扣减，不再免费生成。
@@ -13,7 +14,7 @@ namespace DarwinPark.Entities.Ecology
     {
         private EntityGeneController _genes;private DarwinEntity _entity;
         private void Awake(){_genes=GetComponent<EntityGeneController>();_entity=GetComponent<DarwinEntity>();}
-        public static EnergyBlockMetabolism Ensure(GameObject host)=>host.GetComponent<EnergyBlockMetabolism>()??host.AddComponent<EnergyBlockMetabolism>();
+        public static EnergyBlockMetabolism Ensure(GameObject host)=>DarwinPark.Core.OptionalComponent.Read<EnergyBlockMetabolism>(host)??host.AddComponent<EnergyBlockMetabolism>();
         public bool Active=>EcologyQueries.Alive(_entity)&&EcologyQueries.Active(_genes,NutrientUtilizationSettings.Current.geneId)!=null&&!EcologyMotion.Immobilized(_genes);
         private ColonyResource Find(bool nearby)
         {
@@ -50,7 +51,7 @@ namespace DarwinPark.Entities.Ecology
             if(direction.sqrMagnitude<.1f)direction=Vector3.ProjectOnPlane(Vector3.forward,up).normalized;
             if(direction.sqrMagnitude<.1f)direction=Vector3.ProjectOnPlane(Vector3.right,up).normalized;
             var point=EcologyQueries.Surface(transform.position+direction*settings.releaseDistance);
-            var ant=GetComponent<AntColonyMember>();string group=ant!=null&&ant.Active?ant.GroupId:EcologyIdentity.Of(_entity);
+            var ant=DarwinPark.Core.OptionalComponent.Read<AntColonyMember>(this);string group=ant!=null&&ant.Active?ant.GroupId:EcologyIdentity.Of(_entity);
             // 资源创建成功后才扣账，出现在吸收半径之外，避免同帧又被自己自动吸回；其他实体可直接吸收。
             resource=ColonyResource.Create(new ColonyResourceSave{id=Guid.NewGuid().ToString("N"),group=group,kind=ColonyResourceKind.Energy,energy=amount,local=EcologyQueries.ToLocal(point),scale=Vector3.one});
             float fromReserve=Mathf.Min(Mathf.Max(0,reserve),amount);stats.Modify(settings.reserveAttribute,-fromReserve,false);stats.Modify(settings.nutrientAttribute,-(amount-fromReserve),false);return true;

@@ -2,7 +2,7 @@
 
 [返回总索引](../README.md) · `Runtime` · `Assets/DarwinPark/Entities/Ecology/EcologyIdentity.cs`
 
-[源文件](../../../Assets/DarwinPark/Entities/Ecology/EcologyIdentity.cs) · 源码校验：`2492d57e48e33997bcc8f02d27dc35240cfe3f8eefbbe70cacb4d850cb82251b`
+[源文件](../../../Assets/DarwinPark/Entities/Ecology/EcologyIdentity.cs) · 源码校验：`2cc514412f215bbf010244af1f9f8ed3424184b3f9ce3392c964ee396ddbd4cb`
 
 方法按源文件位置排列。事件/回调引用不表示立即执行；分支与异常说明见总索引。完整源码与可点击关系图请打开离线手册。
 
@@ -322,7 +322,7 @@ flowchart TD
 项目内调用/回调引用：
 
 - [OptionalComponent.Read · L7](806c46b42ced4d36.md#m69622a4dee165c5a)（方法）
-- [EntityGeneController.Evaluation.get · L18](7494d53178552f0e.md#mc0039c100a31b455)（访问器）
+- [EntityGeneController.Evaluation.get · L20](7494d53178552f0e.md#mf275f100ea21601a)（访问器）
 
 <a id="m8352bfacbe2996a8"></a>
 
@@ -362,7 +362,7 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [EntityStats.TryGet · L90](75aa86a368efdf24.md#m24ee1433e4a70d94)（方法）
+- [EntityStats.TryGet · L93](75aa86a368efdf24.md#m03cef847022eee28)（方法）
 
 <a id="mfa1ace432c73012a"></a>
 
@@ -492,15 +492,18 @@ flowchart TD
   b2["结果：point"]
   b3{"direction=Up(point)<br/>判断：direction.sqrMagnitude&lt;.5f"}
   b4["direction=Vector3.up;"]
-  b5{"col=Planet.GetComponent&lt;MeshCollider&gt;()<br/>outside=Planet.radius+Planet.heightScale+100<br/>判断：col!=null"}
-  b6{"判断：col.Raycast(new Ray(Planet.transform.position+direction*outside,-direction),out var hit,outside*2)"}
-  b7["结果：hit.point+direction"]
-  b8["结果：Planet.transform.position+direction*(Planet.WaterRadius+1)"]
-  b9(["结束 / 返回"])
+  b5{"col=Planet.GetComponent&lt;MeshCollider&gt;()<br/>outside=Planet.radius+Planet.heightScale+100<br/>判断：SimulationOptimization.Current.directGroundQueries"}
+  b6{"判断：DarwinPark.Planet.RadialTerrainSurface.TrySample(Planet,col,Planet.transform.position+direction*outside,out var surface)"}
+  b7["结果：surface.point+direction"]
+  b8{"判断：col!=null"}
+  b9{"判断：col.Raycast(new Ray(Planet.transform.position+direction*outside,-direction),out var hit,outside*2)"}
+  b10["结果：hit.point+direction"]
+  b11["结果：Planet.transform.position+direction*(Planet.WaterRadius+1)"]
+  b12(["结束 / 返回"])
   b0 --> b1
   b1 -->|"是"| b2
   b1 -->|"否"| b3
-  b2 -->|"返回"| b9
+  b2 -->|"返回"| b12
   b3 -->|"是"| b4
   b3 -->|"否"| b5
   b4 --> b5
@@ -508,12 +511,19 @@ flowchart TD
   b5 -->|"否"| b8
   b6 -->|"是"| b7
   b6 -->|"否"| b8
-  b7 -->|"返回"| b9
-  b8 -->|"返回"| b9
+  b7 -->|"返回"| b12
+  b8 -->|"是"| b9
+  b8 -->|"否"| b11
+  b9 -->|"是"| b10
+  b9 -->|"否"| b11
+  b10 -->|"返回"| b12
+  b11 -->|"返回"| b12
 
 ```
 
 项目内调用/回调引用：
 
 - [EcologyQueries.Up · L42](bdf7ccc2c9c0452f.md#ma73e6bbbc726282f)（方法）
+- [SimulationOptimization.Current.get · L30](11c9091e70893352.md#mcfa8eb2e650e57b1)（访问器）
+- [RadialTerrainSurface.TrySample · L12](4eb5c0c8143bed20.md#m994c30d4296dac34)（方法）
 - [PlanetTerrainMeshBuilder.WaterRadius.get · L99](415285cf043354a9.md#m76719c213b06ba56)（访问器）

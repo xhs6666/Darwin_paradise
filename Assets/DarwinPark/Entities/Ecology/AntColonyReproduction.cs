@@ -4,6 +4,7 @@ using DarwinPark.Entities.Stats;
 using DarwinPark.Genetics;
 using UnityEngine;
 
+// ★ 修复（防Bug回归）：可选组件允许正常缺失，使用即时TryGet，保留安装/销毁可见性并消除编辑器空查询分配。
 namespace DarwinPark.Entities.Ecology
 {
     // ★ 新增：王后独占繁殖流程，有性蚁群只维持一名不可自主繁殖的配偶，孕育进度随分工状态保存。
@@ -20,7 +21,8 @@ namespace DarwinPark.Entities.Ecology
         private static DarwinEntity Spawn(Genome genome,Vector3 point)
         {
             if(!EntityPopulationLimit.CanSpawn)return null;
-            var before=EntityRegistry.All.ToArray();DarwinEntity.Spawner?.Invoke(genome,point,"");return EntityRegistry.All.FirstOrDefault(e=>!before.Contains(e));
+            // ★ 适配：配偶同样通过注册事件取得身份，保留原生成委托。
+            return EntitySpawnCapture.Create(genome,point);
         }
         public static void Advance(AntColonyMember queen,float dt)
         {
@@ -39,10 +41,10 @@ namespace DarwinPark.Entities.Ecology
                 var mate=ColonyFormation.TryBirthPosition(queen,out var matePoint)?Spawn(Copy(genes.Genome),matePoint):null;
                 if(mate!=null)
                 {
-                    AntColonyMember.Ensure(mate.GetComponent<PopulationBehavior>()).Assign(AntRole.Mate,queen.GroupId);
+                    AntColonyMember.Ensure(DarwinPark.Core.OptionalComponent.Read<PopulationBehavior>(mate)).Assign(AntRole.Mate,queen.GroupId);
                     mate.GetComponent<EntityLifeCycle>().RestoreProgress(LifeCycleSettings.Load().adultProgress);
                     int mask=(1<<(int)AgeState.Infant)|(1<<(int)AgeState.Adult);mate.Genes.RestoreStageState(AgeState.Adult,mask,2);mate.Genes.Recalculate();
-                    stats.Modify("storedNutrient",-settings.mateCost);mates=new[]{mate.GetComponent<AntColonyMember>()};
+                    stats.Modify("storedNutrient",-settings.mateCost);mates=new[]{DarwinPark.Core.OptionalComponent.Read<AntColonyMember>(mate)};
                 }
             }
             if(genes.IsGestating)

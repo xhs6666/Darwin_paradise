@@ -5,6 +5,7 @@ using System.Linq;
 using DarwinPark.Genetics;
 using UnityEngine;
 
+// ★ 修复（防Bug回归）：可选组件允许正常缺失，使用即时TryGet，保留安装/销毁可见性并消除编辑器空查询分配。
 namespace DarwinPark.Entities.Ecology
 {
     [Serializable] public sealed class AntColonyMemberSave
@@ -41,7 +42,7 @@ namespace DarwinPark.Entities.Ecology
         public bool Young=>Genes.CurrentAge==AgeState.Infant||OptionalComponent.Read<EggIncubation>(this)?.Incubating==true;
         public string GroupId=>Population.GroupId;
         public string Id=>EcologyIdentity.Of(Entity);
-        public IEnumerable<AntColonyMember> Group=>Population.GroupMembers.Select(p=>p.GetComponent<AntColonyMember>()).Where(m=>m!=null&&m.Active);
+        public IEnumerable<AntColonyMember> Group=>Population.GroupMembers.Select(p=>DarwinPark.Core.OptionalComponent.Read<AntColonyMember>(p)).Where(m=>m!=null&&m.Active);
         public AntColonyMember Queen=>PopulationGroupIndex.Queen(Population);
         public Vector3 Center {get{var queen=Queen;return queen!=null?queen.transform.position:transform.position;}}
         public float Radius=>Mathf.Max(AntColonySettings.Current.minimumColonyRadius,Genes.GetAttribute("territory_radius"),AntColonySettings.Current.colonyRadius)*DarwinPark.Core.GameplayTuning.Current.colonyActivityRadiusMultiplier;
@@ -53,12 +54,12 @@ namespace DarwinPark.Entities.Ecology
         internal DarwinEntity HuntTarget;
         private readonly Dictionary<string,float> _suppression=new Dictionary<string,float>();
         private string _suppressionRole;
-        private void Awake(){Genes=GetComponent<EntityGeneController>();Entity=GetComponent<DarwinEntity>();Population=GetComponent<PopulationBehavior>();}
+        private void Awake(){Genes=GetComponent<EntityGeneController>();Entity=GetComponent<DarwinEntity>();Population=DarwinPark.Core.OptionalComponent.Read<PopulationBehavior>(this);}
         private void OnEnable(){if(!Members.Contains(this))Members.Add(this);}
         private void OnDisable(){AntColonyWorker.Release(this);Members.Remove(this);}
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)] private static void Reset()=>Members.Clear();
-        public static AntColonyMember Ensure(PopulationBehavior pop)=>pop.GetComponent<AntColonyMember>()??pop.gameObject.AddComponent<AntColonyMember>();
-        public static AntColonyMember QueenFor(PopulationBehavior pop)=>pop.GetComponent<AntColonyMember>()?.Queen;
+        public static AntColonyMember Ensure(PopulationBehavior pop)=>DarwinPark.Core.OptionalComponent.Read<AntColonyMember>(pop)??pop.gameObject.AddComponent<AntColonyMember>();
+        public static AntColonyMember QueenFor(PopulationBehavior pop)=>DarwinPark.Core.OptionalComponent.Read<AntColonyMember>(pop)?.Queen;
         public static bool IsManaged(EntityGeneController genes)=>genes!=null&&OptionalComponent.Read<AntColonyMember>(genes)?.Active==true;
         public void Assign(AntRole role,string group=null)
         {
@@ -71,8 +72,8 @@ namespace DarwinPark.Entities.Ecology
         }
         public static void OnBirth(EntityGeneController parent,DarwinEntity child)
         {
-            var source=parent.GetComponent<AntColonyMember>();if(source==null||!source.Active||child==null)return;
-            var pop=child.GetComponent<PopulationBehavior>();if(pop==null)return;
+            var source=DarwinPark.Core.OptionalComponent.Read<AntColonyMember>(parent);if(source==null||!source.Active||child==null)return;
+            var pop=DarwinPark.Core.OptionalComponent.Read<PopulationBehavior>(child);if(pop==null)return;
             var member=Ensure(pop);member.Assign(source.ChooseBirthRole(),source.GroupId);
         }
         public AntRole ChooseBirthRole()
@@ -104,7 +105,7 @@ namespace DarwinPark.Entities.Ecology
                 if(ColonyFeeding.Destination(this,out _))return;
                 Activity=ColonyActivity.Founding;
                 if(EcologyQueries.Distance(transform.position,EcologyQueries.ToWorld(State.foundingPoint))<=AntColonySettings.Current.arrivalDistance)
-                {State.founding=false;EnsureSupplyPoints();GetComponent<TerritoryBehavior>()?.Restore(EcologyQueries.ToLocal(transform.position),true,0,Vector3.zero);}
+                {State.founding=false;EnsureSupplyPoints();DarwinPark.Core.OptionalComponent.Read<TerritoryBehavior>(this)?.Restore(EcologyQueries.ToLocal(transform.position),true,0,Vector3.zero);}
                 return;
             }
             if(Role==AntRole.Queen){Activity=ColonyActivity.Reproduce;ColonyFoundingSupport.Advance(this,dt);AntColonyReproduction.Advance(this,dt);return;}

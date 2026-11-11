@@ -337,9 +337,9 @@ flowchart TD
 
 - [PopulationWorkbench.SelectedId.set · L16](6ca6fcae89e529ec.md#ma27d5bcc014992b5)（访问器）
 - [PopulationWorkbench.SelectedTab.set · L17](6ca6fcae89e529ec.md#m92d0005788d9d94a)（访问器）
-- [PopulationArchive.Find · L49](084e119b69cdd751.md#mf1aef4e3d3c3efca)（方法）
+- [PopulationArchive.Find · L50](084e119b69cdd751.md#m842230bd55f69711)（方法）
 - [ColonyAppearance.ColorFor · L9](e51c7c842d87a26d.md#m0ea090c43edf8334)（方法）
-- [PopulationArchive.OpacityFor · L107](084e119b69cdd751.md#m97824b788cf7f2ff)（方法）
+- [PopulationArchive.OpacityFor · L108](084e119b69cdd751.md#me67988b8c8d93cdf)（方法）
 - [PopulationWorkbench.RefreshNow · L53](6ca6fcae89e529ec.md#m68743b38d8bdd235)（方法）
 
 <a id="m68743b38d8bdd235"></a>
@@ -372,8 +372,8 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [PopulationArchive.Observe · L68](084e119b69cdd751.md#m6afd6ec6b661dad6)（方法）
-- [PopulationArchive.Members · L67](084e119b69cdd751.md#mdcf18c899b26b92b)（方法）
+- [PopulationArchive.Observe · L69](084e119b69cdd751.md#m39adee1a1db96b4e)（方法）
+- [PopulationArchive.Members · L68](084e119b69cdd751.md#m4bac9678050b2f8f)（方法）
 - [PopulationWorkbench.SelectedId.get · L16](6ca6fcae89e529ec.md#mef0f87781fb55d79)（访问器）
 - [PopulationDistributions.Genes · L15](eed554ca8394b767.md#m35a197f85f9669ee)（方法）
 - [PopulationDistributions.Ages · L26](eed554ca8394b767.md#m97f91f8b937c972c)（方法）
@@ -518,10 +518,10 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [PopulationArchive.SetDisplay · L102](084e119b69cdd751.md#mb232e2fc42b6a7ff)（方法）
+- [PopulationArchive.SetDisplay · L103](084e119b69cdd751.md#m8c0a339329201961)（方法）
 - [PopulationWorkbench.SelectedId.get · L16](6ca6fcae89e529ec.md#mef0f87781fb55d79)（访问器）
-- [PopulationArchive.Find · L49](084e119b69cdd751.md#mf1aef4e3d3c3efca)（方法）
-- [PopulationArchive.OpacityFor · L107](084e119b69cdd751.md#m97824b788cf7f2ff)（方法）
+- [PopulationArchive.Find · L50](084e119b69cdd751.md#m842230bd55f69711)（方法）
+- [PopulationArchive.OpacityFor · L108](084e119b69cdd751.md#me67988b8c8d93cdf)（方法）
 - [WorldSessionManager.SaveNow · L169](08741c7b7b9d9344.md#m43f61078d8513f73)（方法）
 
 <a id="m09bed70d853d69f9"></a>
@@ -1021,7 +1021,7 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [PopulationArchive.Find · L49](084e119b69cdd751.md#mf1aef4e3d3c3efca)（方法）
+- [PopulationArchive.Find · L50](084e119b69cdd751.md#m842230bd55f69711)（方法）
 - [PopulationWorkbench.SelectedId.get · L16](6ca6fcae89e529ec.md#mef0f87781fb55d79)（访问器）
 - [PopulationWorkbench.Mode · L117](6ca6fcae89e529ec.md#m0dda969479fe6eab)（方法）
 - [RuntimeMenuTheme.Title.get · L14](b9d8455882f2a532.md#m0b3a4a9f7e8e69ae)（访问器）
@@ -1120,7 +1120,7 @@ flowchart TD
 
 - [PopulationWorkbench.Day · L84](6ca6fcae89e529ec.md#mb41ce087d8855c42)（方法）
 - [RuntimeMenuTheme.Muted.get · L13](b9d8455882f2a532.md#meeaba271eb4ad2ed)（访问器）
-- [PopulationArchive.Find · L49](084e119b69cdd751.md#mf1aef4e3d3c3efca)（方法）
+- [PopulationArchive.Find · L50](084e119b69cdd751.md#m842230bd55f69711)（方法）
 - [PopulationWorkbench.Select · L48](6ca6fcae89e529ec.md#mc59a9aa8a225893b)（方法）
 - [RuntimeMenuTheme.Button · L90](b9d8455882f2a532.md#mc7e1580ab0f51b0b)（方法）
 - [PopulationWorkbench.LocateLeader · L147](6ca6fcae89e529ec.md#m9f7eb6eb02b64e22)（方法）
@@ -1201,7 +1201,7 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [PopulationArchive.Members · L67](084e119b69cdd751.md#mdcf18c899b26b92b)（方法）
+- [PopulationArchive.Members · L68](084e119b69cdd751.md#m4bac9678050b2f8f)（方法）
 - [PopulationWorkbench.Close · L68](6ca6fcae89e529ec.md#m09bed70d853d69f9)（方法）
 - [EntityViewController.Instance.get · L15](0ad0345f83229ef0.md#mb3b8144b56e80842)（访问器）
 - [EntityViewController.ExitView · L105](0ad0345f83229ef0.md#mca8619c7f27942c9)（方法）
@@ -1349,7 +1349,7 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [EntityLifeCycle.Progress.get · L10](9f4138bfbae654b7.md#m178185fd5f5a0d74)（访问器）
+- [EntityLifeCycle.Progress.get · L12](9f4138bfbae654b7.md#md607c90b6934f95f)（访问器）
 
 <a id="m242bd5cc5a512465"></a>
 
@@ -1520,7 +1520,7 @@ flowchart TD
 
 - [RuntimeMenuTheme.Muted.get · L13](b9d8455882f2a532.md#meeaba271eb4ad2ed)（访问器）
 - [PopulationCharts.Draw · L38](eed554ca8394b767.md#me8148828032e8615)（方法）
-- [PopulationArchiveSettings.Current.get · L33](084e119b69cdd751.md#m4f74ce7c65d8f1cf)（访问器）
+- [PopulationArchiveSettings.Current.get · L34](084e119b69cdd751.md#m023b385168536f50)（访问器）
 - [PopulationWorkbench.Day · L84](6ca6fcae89e529ec.md#mb41ce087d8855c42)（方法）
 - [PopulationWorkbench.回调@180 · L180](6ca6fcae89e529ec.md#m546102e0a49e199c)（回调/委托）
 
@@ -1638,7 +1638,7 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [PopulationArchive.Find · L49](084e119b69cdd751.md#mf1aef4e3d3c3efca)（方法）
+- [PopulationArchive.Find · L50](084e119b69cdd751.md#m842230bd55f69711)（方法）
 - [PopulationWorkbench.Select · L48](6ca6fcae89e529ec.md#mc59a9aa8a225893b)（方法）
 - [RuntimeMenuTheme.Muted.get · L13](b9d8455882f2a532.md#meeaba271eb4ad2ed)（访问器）
 - [PopulationWorkbench.回调@191 · L191](6ca6fcae89e529ec.md#m73f4e2809c6257f3)（回调/委托）
@@ -1746,7 +1746,7 @@ flowchart TD
 项目内调用/回调引用：
 
 - [RuntimeMenuTheme.Muted.get · L13](b9d8455882f2a532.md#meeaba271eb4ad2ed)（访问器）
-- [EntityGeneController.CurrentAge.get · L37](7494d53178552f0e.md#md08823d8f9a2fa16)（访问器）
+- [EntityGeneController.CurrentAge.get · L39](7494d53178552f0e.md#m977f52932bb90600)（访问器）
 - [DarwinEntity.Genes.get · L14](70798dde169f2e8b.md#m622eb1adf401d431)（访问器）
 - [PopulationWorkbench.Close · L68](6ca6fcae89e529ec.md#m09bed70d853d69f9)（方法）
 - [EntityViewController.Instance.get · L15](0ad0345f83229ef0.md#mb3b8144b56e80842)（访问器）

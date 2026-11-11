@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using DarwinPark.Core;
 using DarwinPark.Entities.Stats;
 using UnityEngine;
+// ★ 修复（防Bug回归）：可选组件允许正常缺失，使用即时TryGet，保留安装/销毁可见性并消除编辑器空查询分配。
 namespace DarwinPark.Entities.Ecology
 {
     // ★ 新增：寄生以独立物体跟随宿主并只忽略宿主碰撞；宿主销毁不会连带销毁寄生体。
@@ -63,7 +64,7 @@ namespace DarwinPark.Entities.Ecology
             _entity.GetComponent<EntityStats>().TryGet("size",out var own);entity.GetComponent<EntityStats>().TryGet("size",out var size);
             if(size<Mathf.Max(.01f,own)*_settings.minimumHostSizeRatio)return false;
             var seen=new HashSet<DarwinEntity>();var current=entity;
-            while(current!=null){if(current==_entity||!seen.Add(current))return false;current=current.GetComponent<ParasiteBehavior>()?.Host;}
+            while(current!=null){if(current==_entity||!seen.Add(current))return false;current=DarwinPark.Core.OptionalComponent.Read<ParasiteBehavior>(current)?.Host;}
             return true;
         }
         private static float HostRadius(DarwinEntity entity)=>entity.GetComponent<Collider>()?.bounds.extents.magnitude??0;

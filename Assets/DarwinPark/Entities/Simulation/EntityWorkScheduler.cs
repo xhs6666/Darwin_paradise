@@ -8,6 +8,7 @@ using DarwinPark.Entities.Stats;
 using DarwinPark.Entities.Vitals;
 using UnityEngine;
 
+// ★ 修复（防Bug回归）：可选组件允许正常缺失，使用即时TryGet，保留安装/销毁可见性并消除编辑器空查询分配。
 namespace DarwinPark.Entities.Simulation
 {
     // ★ 新增：由GameBootstrap运行时挂载。交互/受伤实体先算，静止近邻共享基础变化，个体身份和繁殖不合并。
@@ -125,7 +126,7 @@ namespace DarwinPark.Entities.Simulation
                 if(entry.revision!=genes.LogicRevision)
                 {
                     entry.revision=genes.LogicRevision;entry.supported=StationaryCohortKernel.Supported(genes);entry.quiet=0;entry.nextDue=double.NaN;
-                    entry.state=genes.GetComponent<EntityStateController>();entry.signature=0;_signaturesDirty=true;
+                    entry.state=DarwinPark.Core.OptionalComponent.Read<EntityStateController>(genes);entry.signature=0;_signaturesDirty=true;
                     if(entry.supported){string signature=Signature(genes);if(!_signatures.TryGetValue(signature,out entry.signature)){entry.signature=++_nextSignature;_signatures.Add(signature,entry.signature);}}
                 }
                 string currentState=entry.supported?entry.state?.Current?.id??"":"";

@@ -15,7 +15,7 @@ namespace DarwinPark.Entities
             if(owner.planet==null||StationaryBodyRest.RemainsAsleep(body,genes))return;
             var ground=probe.Read(owner.planet);var inward=-ground.up;
             // 基础表达为0时所有移动修饰仍为0，不必为静止实体遍历群体、角色和附着组件。
-            float moveSpeed=genes!=null&&genes.Evaluation!=null&&genes.Evaluation.Attributes.TryGetValue("moveSpeed",out float basic)&&basic>0?genes.GetAttribute("moveSpeed"):0;
+            float moveSpeed=GroundMotionSnapshot.Speed(genes);
             if(material!=null){var settings=LocomotionSettings.Load();bool moving=moveSpeed>0&&Vector3.ProjectOnPlane(body.linearVelocity,ground.up).sqrMagnitude>settings.frictionMotionThreshold*settings.frictionMotionThreshold;probe.Friction(material,moving?settings.movingFriction:settings.stationaryFriction);}
             float ratio=owner.planetRadius/Mathf.Max(ground.distance,owner.planetRadius);float multiplier=Mathf.Clamp(ratio*ratio,.45f,1),assist=!ground.underwater&&ground.distance>owner.planetRadius+60?Mathf.Min(20,(ground.distance-owner.planetRadius-60)*.25f):0;
             body.AddForce(inward*(owner.baseGravity*multiplier+assist),ForceMode.Acceleration);

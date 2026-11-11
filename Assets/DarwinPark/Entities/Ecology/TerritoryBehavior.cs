@@ -1,5 +1,6 @@
 using DarwinPark.Core;
 using UnityEngine;
+// ★ 修复（防Bug回归）：可选组件允许正常缺失，使用即时TryGet，保留安装/销毁可见性并消除编辑器空查询分配。
 namespace DarwinPark.Entities.Ecology
 {
     // ★ 新增：领地中心以星球本地坐标保存；遇袭脱离边界，安全期后在新位置定居，不再返回旧领地。
@@ -44,7 +45,7 @@ namespace DarwinPark.Entities.Ecology
         {
             // ★ 适配：种群成员共享活动区，普通领地仍使用自身领地圆。
             if(!Active||EvictionRemaining>0)return true;
-            var population=GetComponent<PopulationBehavior>();
+            var population=DarwinPark.Core.OptionalComponent.Read<PopulationBehavior>(this);
             return population!=null&&population.Active?ColonyActivityRange.Contains(population,position):EcologyQueries.Distance(Center,position)<=Radius;
         }
         public bool Destination(out Vector3 point,out float speed)
@@ -57,7 +58,7 @@ namespace DarwinPark.Entities.Ecology
                 if(away.sqrMagnitude<.01f)away=Vector3.Cross(EcologyQueries.Up(transform.position),Vector3.right);
                 point=EcologyQueries.Surface(transform.position+away.normalized*_settings.fleeDistance);speed=_settings.fleeSpeedMultiplier;return true;
             }
-            if(!AllowsTarget(transform.position)){var pop=GetComponent<PopulationBehavior>();point=pop!=null&&pop.Active?ColonyActivityRange.NearestCenter(pop,transform.position):Center;return true;}
+            if(!AllowsTarget(transform.position)){var pop=DarwinPark.Core.OptionalComponent.Read<PopulationBehavior>(this);point=pop!=null&&pop.Active?ColonyActivityRange.NearestCenter(pop,transform.position):Center;return true;}
             // ★ 修复（防Bug回归）：领地只约束边界与驱逐，不能永远返回巡逻意图并阻断饥饿捕猎。
             return false;
         }

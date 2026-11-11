@@ -34,7 +34,7 @@ namespace DarwinPark.Entities.Ecology
             Claims.Remove(id);return false;
         }
         // ★ 适配：体内隐藏的寄生幼体不是可搬运植株；不能把被宿主带到附近的幼体当作零速食物。
-        internal static bool Valid(DarwinEntity entity,AntColonyMember worker,IReadOnlyList<ActivityCircle> circles=null)=>EcologyQueries.Alive(entity)&&(circles!=null?ColonyActivityRange.Contains(circles,entity.transform.position):ColonyActivityRange.Contains(worker.Population,entity.transform.position))&&entity.GetComponent<NutritionParasite>()?.Host==null&&!worker.Population.SameGroup(entity)&&entity.Genes.GetAttribute("moveSpeed")<=0&&entity.GetComponent<EntityManualControl>()?.IsControlled!=true;
+        internal static bool Valid(DarwinEntity entity,AntColonyMember worker,IReadOnlyList<ActivityCircle> circles=null)=>EcologyQueries.Alive(entity)&&(circles!=null?ColonyActivityRange.Contains(circles,entity.transform.position):ColonyActivityRange.Contains(worker.Population,entity.transform.position))&&DarwinPark.Core.OptionalComponent.Read<NutritionParasite>(entity)?.Host==null&&!worker.Population.SameGroup(entity)&&entity.Genes.GetAttribute("moveSpeed")<=0&&DarwinPark.Core.OptionalComponent.Read<EntityManualControl>(entity)?.IsControlled!=true;
         public static void Advance(AntColonyMember worker,float dt)
         {
             var state=worker.State;var settings=AntColonySettings.Current;

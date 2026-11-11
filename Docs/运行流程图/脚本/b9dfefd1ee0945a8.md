@@ -261,9 +261,9 @@ flowchart TD
 - [GeneInstance.Create · L20](f82e1498d67f5afd.md#m72e94c278de3cf8b)（方法）
 - [DarwinEntity.Genes.get · L14](70798dde169f2e8b.md#m622eb1adf401d431)（访问器）
 - [LifeCycleSettings.Load · L16](ace76969fe8f61de.md#m6fe263852e5a8989)（方法）
-- [EntityLifeCycle.RestoreProgress · L51](9f4138bfbae654b7.md#mec34c953ece464ab)（方法）
-- [EntityGeneController.RestoreStageState · L56](7494d53178552f0e.md#m37c1dbfa64e7c2ce)（方法）
-- [EntityGeneController.Recalculate · L118](7494d53178552f0e.md#m707d9a56b0c7c609)（方法）
+- [EntityLifeCycle.RestoreProgress · L53](9f4138bfbae654b7.md#m9ac5190ce2d7c425)（方法）
+- [EntityGeneController.RestoreStageState · L58](7494d53178552f0e.md#m89a02f44ce209b2f)（方法）
+- [EntityGeneController.Recalculate · L120](7494d53178552f0e.md#m7bf63f9a1482db3c)（方法）
 - [GameplayHudRegression.回调@44 · L44](b9dfefd1ee0945a8.md#m7c105fb695ba3b55)（回调/委托）
 
 <a id="m7c105fb695ba3b55"></a>
@@ -589,9 +589,9 @@ flowchart TD
 - [MapEntityStatisticsUI.Carriers.get · L17](da03211264cb6014.md#m3360c926666cd49d)（访问器）
 - [MapEntityStatisticsUI.Expressed.get · L18](da03211264cb6014.md#m3a1b8654b32e9613)（访问器）
 - [GeneInspectorUI.ShowEntityInfo · L387](924e27c34e7b1f0a.md#mfbae827fa8eb1ff1)（方法）
-- [EntityStats.Modify · L111](75aa86a368efdf24.md#m9c837be197158240)（方法）
+- [EntityStats.Modify · L114](75aa86a368efdf24.md#m375a3812ef990b45)（方法）
 - [DarwinEntity.Genes.get · L14](70798dde169f2e8b.md#m622eb1adf401d431)（访问器）
-- [EntityGeneController.Recalculate · L118](7494d53178552f0e.md#m707d9a56b0c7c609)（方法）
+- [EntityGeneController.Recalculate · L120](7494d53178552f0e.md#m7bf63f9a1482db3c)（方法）
 - [UIRoot.MainCanvas.get · L14](9c1421378791f0e0.md#maa2cc9baf1248477)（访问器）
 - [LanSession.SetRtsMode · L113](9fb633eebffe669c.md#md00374cca68a1203)（方法）
 - [LanSession.Instance.get · L23](9fb633eebffe669c.md#mbf83306994878383)（访问器）

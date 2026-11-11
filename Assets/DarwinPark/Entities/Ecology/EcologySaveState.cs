@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+// ★ 修复（防Bug回归）：可选组件允许正常缺失，使用即时TryGet，保留安装/销毁可见性并消除编辑器空查询分配。
 namespace DarwinPark.Entities.Ecology
 {
     [Serializable] public sealed class EcologySaveState
@@ -30,17 +31,17 @@ namespace DarwinPark.Entities.Ecology
         // ★ 新增：先保存本体与稳定标识，再在所有实体创建后恢复群体目标和宿主引用，不依赖加载先后顺序。
         public static EcologySaveState Capture(DarwinEntity entity)
         {
-            var state=new EcologySaveState{id=EcologyIdentity.Of(entity)};var territory=entity.GetComponent<TerritoryBehavior>();
+            var state=new EcologySaveState{id=EcologyIdentity.Of(entity)};var territory=DarwinPark.Core.OptionalComponent.Read<TerritoryBehavior>(entity);
             if(territory!=null){state.hasCenter=territory.HasCenter;state.center=territory.CenterLocal;state.threat=territory.ThreatLocal;state.evictionRemaining=territory.EvictionRemaining;}
-            var pop=entity.GetComponent<PopulationBehavior>();
+            var pop=DarwinPark.Core.OptionalComponent.Read<PopulationBehavior>(entity);
             if(pop!=null){state.groupId=pop.GroupId;state.joinOrder=pop.JoinOrder;state.leader=pop.IsLeader;state.mode=pop.Mode;state.command=pop.Command;state.commandRemaining=pop.CommandRemaining;state.commandPoint=pop.CommandPointLocal;state.manualRemaining=pop.ManualRemaining;state.duelRemaining=pop.DuelRemaining;state.targetId=pop.Target!=null?EcologyIdentity.Of(pop.Target):null;}
-            var parasite=entity.GetComponent<ParasiteBehavior>();
+            var parasite=DarwinPark.Core.OptionalComponent.Read<ParasiteBehavior>(entity);
             if(parasite!=null&&parasite.Host!=null){state.hostId=EcologyIdentity.Of(parasite.Host);state.hostOffset=parasite.Offset;state.hostKinematic=parasite.OriginalKinematic;state.hostDetected=parasite.DetectedByHost;state.hostDetectionRemaining=parasite.DetectionRemaining;}
-            state.nutritionParasite=entity.GetComponent<NutritionParasite>()?.Capture();state.nutritionParasiteCount=NutritionParasite.CountOn(entity);state.foreignEggs=entity.GetComponent<EggHostPregnancy>()?.Capture();
-            state.entityStateId=entity.GetComponent<EntityStateController>()?.Current.id;
-            state.ant=entity.GetComponent<AntColonyMember>()?.Capture();state.patrol=entity.GetComponent<PatrolRhythm>()?.Capture();state.combat=entity.GetComponent<CombatIntent>()?.Capture();
+            state.nutritionParasite=DarwinPark.Core.OptionalComponent.Read<NutritionParasite>(entity)?.Capture();state.nutritionParasiteCount=NutritionParasite.CountOn(entity);state.foreignEggs=entity.GetComponent<EggHostPregnancy>()?.Capture();
+            state.entityStateId=DarwinPark.Core.OptionalComponent.Read<EntityStateController>(entity)?.Current.id;
+            state.ant=DarwinPark.Core.OptionalComponent.Read<AntColonyMember>(entity)?.Capture();state.patrol=DarwinPark.Core.OptionalComponent.Read<PatrolRhythm>(entity)?.Capture();state.combat=DarwinPark.Core.OptionalComponent.Read<CombatIntent>(entity)?.Capture();
             state.resourcePlan=EntityResourcePlan.Capture(entity.Genes);
-            state.rts=entity.GetComponent<RtsOrderController>()?.Capture();state.incubationRemaining=entity.GetComponent<EggIncubation>()?.Remaining??0;return state;
+            state.rts=DarwinPark.Core.OptionalComponent.Read<RtsOrderController>(entity)?.Capture();state.incubationRemaining=DarwinPark.Core.OptionalComponent.Read<EggIncubation>(entity)?.Remaining??0;return state;
         }
         public void Restore(DarwinEntity entity)
         {
@@ -49,21 +50,21 @@ namespace DarwinPark.Entities.Ecology
             if(foreignEggs?.Count>0)(entity.GetComponent<EggHostPregnancy>()??entity.gameObject.AddComponent<EggHostPregnancy>()).Restore(foreignEggs);
             // ★ 适配：RTS目标使用持久ID和本地坐标，与实体按任意顺序恢复兼容。
             if(rts?.active==true)RtsOrderController.Ensure(entity).Restore(rts);
-            entity.GetComponent<TerritoryBehavior>()?.Restore(center,hasCenter,evictionRemaining,threat);
-            entity.GetComponent<PopulationBehavior>()?.Restore(this);
+            DarwinPark.Core.OptionalComponent.Read<TerritoryBehavior>(entity)?.Restore(center,hasCenter,evictionRemaining,threat);
+            DarwinPark.Core.OptionalComponent.Read<PopulationBehavior>(entity)?.Restore(this);
             if(ant?.HasData==true)
-            {var population=entity.GetComponent<PopulationBehavior>()??entity.gameObject.AddComponent<PopulationBehavior>();population.Restore(this);AntColonyMember.Ensure(population).Restore(ant);}
+            {var population=DarwinPark.Core.OptionalComponent.Read<PopulationBehavior>(entity)??entity.gameObject.AddComponent<PopulationBehavior>();population.Restore(this);AntColonyMember.Ensure(population).Restore(ant);}
             if(patrol!=null)PatrolRhythm.Ensure(entity.gameObject).Restore(patrol);
-            if(incubationRemaining>0){(entity.GetComponent<EggIncubation>()??entity.gameObject.AddComponent<EggIncubation>()).Begin(incubationRemaining);entity.GetComponent<EntityLifeCycle>()?.WaitForHatch();}
-            entity.GetComponent<EntityStateController>()?.Restore(entityStateId);
+            if(incubationRemaining>0){(DarwinPark.Core.OptionalComponent.Read<EggIncubation>(entity)??entity.gameObject.AddComponent<EggIncubation>()).Begin(incubationRemaining);entity.GetComponent<EntityLifeCycle>()?.WaitForHatch();}
+            DarwinPark.Core.OptionalComponent.Read<EntityStateController>(entity)?.Restore(entityStateId);
         }
         public void Resolve(DarwinEntity entity,Dictionary<string,DarwinEntity> entities)
         {
-            entities.TryGetValue(targetId??"",out var target);entity.GetComponent<PopulationBehavior>()?.RestoreTarget(target);
-            if(combat!=null){entities.TryGetValue(combat.target??"",out var attacker);(entity.GetComponent<CombatIntent>()??entity.gameObject.AddComponent<CombatIntent>()).Restore(attacker,combat.remaining);}
+            entities.TryGetValue(targetId??"",out var target);DarwinPark.Core.OptionalComponent.Read<PopulationBehavior>(entity)?.RestoreTarget(target);
+            if(combat!=null){entities.TryGetValue(combat.target??"",out var attacker);(DarwinPark.Core.OptionalComponent.Read<CombatIntent>(entity)??entity.gameObject.AddComponent<CombatIntent>()).Restore(attacker,combat.remaining);}
             if(!string.IsNullOrEmpty(hostId)&&entities.TryGetValue(hostId,out var host))
-            {var parasite=entity.GetComponent<ParasiteBehavior>();if(parasite!=null&&parasite.TryAttach(host,true,hostOffset,hostKinematic))parasite.RestoreDetection(hostDetected,hostDetectionRemaining);}
-            if(!string.IsNullOrEmpty(nutritionParasite?.host)&&entities.TryGetValue(nutritionParasite.host,out var feedingHost))entity.GetComponent<NutritionParasite>()?.TryAttach(feedingHost,nutritionParasite);
+            {var parasite=DarwinPark.Core.OptionalComponent.Read<ParasiteBehavior>(entity);if(parasite!=null&&parasite.TryAttach(host,true,hostOffset,hostKinematic))parasite.RestoreDetection(hostDetected,hostDetectionRemaining);}
+            if(!string.IsNullOrEmpty(nutritionParasite?.host)&&entities.TryGetValue(nutritionParasite.host,out var feedingHost))DarwinPark.Core.OptionalComponent.Read<NutritionParasite>(entity)?.TryAttach(feedingHost,nutritionParasite);
         }
     }
 }

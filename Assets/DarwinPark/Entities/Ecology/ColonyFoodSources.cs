@@ -35,7 +35,7 @@ namespace DarwinPark.Entities.Ecology
             var preferred=member.Role==AntRole.Queen||member.Young?ColonyResourceKind.Nursery:ColonyResourceKind.Supply;bool share=GameplayTuning.Current.colonyShareBackupFood;float protectedEnergy=0;
             var queen=member.Role==AntRole.Queen?null:member.Queen;if(queen!=null){var stats=queen.GetComponent<EntityStats>();stats.TryGet("nutrient",out float food);stats.TryGet("storedNutrient",out float reserve);protectedEnergy=Mathf.Max(0,AntColonySettings.Current.queenFeedThreshold-food-reserve);}
             // ★ 适配：近食范围走坐标格，远食只读全局食物分类坐标，不接触尸体桶。
-            if(nearbyOnly)ResourceCoordinates.Query(point,AntColonySettings.Current.feedRadius,true,false,Candidates);else ResourceCoordinates.Food(Candidates);
+            ColonyFoodCandidates.Fill(member,nearbyOnly,Candidates);
             foreach(var coordinate in Candidates)
             {
                 var resource=coordinate.resource;

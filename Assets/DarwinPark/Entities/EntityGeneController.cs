@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+// ★ 修复（防Bug回归）：普通CPU层级确认空组件诊断字符串仍在生命/基因等高频入口分配；正常缺失改TryGet即时读取。
+// ★ 修复（防Bug回归）：可选组件允许正常缺失，使用即时TryGet，保留安装/销毁可见性并消除编辑器空查询分配。
 namespace DarwinPark.Entities
 {
     // ★ 核心修复：新增实体自带生命阶段枚举
@@ -79,11 +81,11 @@ namespace DarwinPark.Entities
             // ★ 适配：物理/搬运改变位置后更新已存在的邻居快照，不在每个小步重建索引。
             Ecology.EntityNeighborhood.ObservePosition(this);
             // ★ 适配：卵孵化前不登记出生阶段或执行普通基因行为，孵化后从幼年开始。
-            var egg=GetComponent<Ecology.EggIncubation>();if(egg!=null&&egg.Incubating){egg.Advance(dt);return;}
+            var egg=DarwinPark.Core.OptionalComponent.Read<Ecology.EggIncubation>(this);if(egg!=null&&egg.Incubating){egg.Advance(dt);return;}
             if (_isRecalculating) return;
             // ★ 修复（防Bug回归）：生命与反击组件在实体生命周期内复用，不能每个模拟子步重复GetComponent。
             if(_life==null){_life=GetComponent<EntityLifeCycle>();if(_life==null&&GetComponent<EntityStats>()!=null)_life=gameObject.AddComponent<EntityLifeCycle>();}
-            if(_combat==null)_combat=GetComponent<Ecology.CombatIntent>()??gameObject.AddComponent<Ecology.CombatIntent>();
+            if(_combat==null)_combat=DarwinPark.Core.OptionalComponent.Read<Ecology.CombatIntent>(this)??gameObject.AddComponent<Ecology.CombatIntent>();
             // ★ 修复（防Bug回归）：按整数步数结算，避免0.5反复减0.1留下浮点残差、额外跑第六轮全部行为。
             int steps=DarwinPark.Core.SimulationSubsteps.Count(dt);
             // ★ 适配：行为计时仍逐小步，物理转向只在本批最后一步执行。
@@ -124,7 +126,7 @@ namespace DarwinPark.Entities
             Simulation.ActiveSimulationBatch.Invalidate(this);
             Simulation.EntityWorkScheduler.Wake(this);
             // ★ 适配：固定分工先还原出生遗传快照，编辑和全局变异不能改写士兵/工匠基因。
-            GetComponent<Ecology.AntColonyMember>()?.EnforceGenome();
+            DarwinPark.Core.OptionalComponent.Read<Ecology.AntColonyMember>(this)?.EnforceGenome();
             _isRecalculating = true;
 
             try
@@ -202,7 +204,7 @@ namespace DarwinPark.Entities
             }
             // ★ 适配：标签新增/移除、出错换基因或受抑后同步更新实体状态授权。
             Simulation.ActiveSimulationBatch.Invalidate(this);Ecology.EntityStateController.Rebind(this);
-            _state=GetComponent<Ecology.EntityStateController>();LogicRevision++;
+            _state=DarwinPark.Core.OptionalComponent.Read<Ecology.EntityStateController>(this);LogicRevision++;
             // ★ 适配：必须在新逻辑挂载和状态授权完成后刷新生产者分类，避免使用旧表达。
             Ecology.EntityNeighborhood.Changed(this);
         }

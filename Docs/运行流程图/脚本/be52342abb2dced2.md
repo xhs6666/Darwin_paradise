@@ -64,7 +64,7 @@ flowchart TD
 项目内调用/回调引用：
 
 - [UIFactory.NewButton · L73](dd1096a6995423db.md#m5896f1b097c8bdde)（方法）
-- [PopulationBehavior.CommandLabel · L212](21e4f62f75a9a80f.md#m21d493608d942ef8)（方法）
+- [PopulationBehavior.CommandLabel · L214](21e4f62f75a9a80f.md#mcafdcc62475a87c3)（方法）
 - [PopulationCommandPanel.回调@26 · L26](be52342abb2dced2.md#m98b77f482fa7ee22)（回调/委托）
 
 <a id="m98b77f482fa7ee22"></a>
@@ -244,8 +244,8 @@ flowchart TD
 - [GameInputGate.Blocked.get · L8](52955daae7e592ab.md#m765763b665829633)（访问器）
 - [ColonyStatusPresentation.Summary · L18](37a7c5ffa1a1a8c2.md#m2e20a4d682fb38ba)（方法）
 - [EcologySettings.Load · L18](90428a275d065ef6.md#mb0575490373edaf2)（方法）
-- [PopulationBehavior.CommandLabel · L212](21e4f62f75a9a80f.md#m21d493608d942ef8)（方法）
-- [PopulationBehavior.Command.get · L23](21e4f62f75a9a80f.md#md6a4209cecb72885)（访问器）
+- [PopulationBehavior.CommandLabel · L214](21e4f62f75a9a80f.md#mcafdcc62475a87c3)（方法）
+- [PopulationBehavior.Command.get · L25](21e4f62f75a9a80f.md#m9d9e3eebbb011253)（访问器）
 
 <a id="mcb24fd9c823c3aa4"></a>
 
@@ -269,7 +269,7 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [PopulationBehavior.ChallengeLeadership · L127](21e4f62f75a9a80f.md#ma3bc0f2205d563d8)（方法）
+- [PopulationBehavior.ChallengeLeadership · L129](21e4f62f75a9a80f.md#m83e7d4438bcdb891)（方法）
 
 <a id="m7176948fd6361d25"></a>
 
@@ -322,8 +322,8 @@ flowchart TD
 
 - [GameInputGate.Blocked.get · L8](52955daae7e592ab.md#m765763b665829633)（访问器）
 - [EcologySettings.Load · L18](90428a275d065ef6.md#mb0575490373edaf2)（方法）
-- [PopulationBehavior.FindOre · L165](21e4f62f75a9a80f.md#m283c2e46e537f1f4)（方法）
-- [PopulationBehavior.Issue · L140](21e4f62f75a9a80f.md#m46473230e497554a)（方法）
+- [PopulationBehavior.FindOre · L167](21e4f62f75a9a80f.md#mab3a4d2871f5e76c)（方法）
+- [PopulationBehavior.Issue · L142](21e4f62f75a9a80f.md#m075615992050fac0)（方法）
 - [PopulationCommandPanel.回调@50 · L50](be52342abb2dced2.md#m82cf527d322d4573)（回调/委托）
 - [PopulationCommandPanel.回调@51 · L51](be52342abb2dced2.md#m1c1286172d8c1be4)（回调/委托）
 
@@ -363,7 +363,7 @@ flowchart TD
 项目内调用/回调引用：
 
 - [EcologyQueries.Alive · L39](bdf7ccc2c9c0452f.md#m8352bfacbe2996a8)（方法）
-- [PopulationBehavior.SameGroup · L125](21e4f62f75a9a80f.md#mffa8d285ffdbf12c)（方法）
+- [PopulationBehavior.SameGroup · L127](21e4f62f75a9a80f.md#m4af6332162bb0355)（方法）
 - [EcologyQueries.Distance · L43](bdf7ccc2c9c0452f.md#m6e395dce655ebcac)（方法）
 
 <a id="m1c1286172d8c1be4"></a>

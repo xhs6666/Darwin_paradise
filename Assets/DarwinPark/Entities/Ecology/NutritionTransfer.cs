@@ -5,6 +5,7 @@ using DarwinPark.Genetics;
 using UnityEngine;
 
 // ★ 适配：降低获取速度时只扣实际转移量，避免营养凭空损失。
+// ★ 修复（防Bug回归）：可选组件允许正常缺失，使用即时TryGet，保留安装/销毁可见性并消除编辑器空查询分配。
 namespace DarwinPark.Entities.Ecology
 {
     // ★ 新增：吸收只扣实际增加的营养，满仓、部分消化及群体分配不能凭空吞掉剩余尸体。
@@ -26,7 +27,7 @@ namespace DarwinPark.Entities.Ecology
         }
         public static bool CanHuntForFood(EntityGeneController genes)
         {
-            var ant=genes.GetComponent<AntColonyMember>();return ant!=null&&ant.Active&&ant.Role==AntRole.Soldier||CanDigest(genes);
+            var ant=DarwinPark.Core.OptionalComponent.Read<AntColonyMember>(genes);return ant!=null&&ant.Active&&ant.Role==AntRole.Soldier||CanDigest(genes);
         }
         // ★ 适配：行动的食草倾向只挑静止实体，捕猎倾向可挑移动实体；两者都必须有消化食性才能自主猎食。
         public static bool FoodTargetAllowed(EntityGeneController genes,DarwinEntity target)
@@ -38,9 +39,9 @@ namespace DarwinPark.Entities.Ecology
         public static float Digest(DarwinEntity attacker,float available)
         {
             if(!EcologyQueries.Alive(attacker)||!CanDigest(attacker.Genes))return 0;
-            var soldier=attacker.GetComponent<AntColonyMember>();if(soldier!=null&&soldier.Active&&soldier.Role==AntRole.Soldier)return 0;
+            var soldier=DarwinPark.Core.OptionalComponent.Read<AntColonyMember>(attacker);if(soldier!=null&&soldier.Active&&soldier.Role==AntRole.Soldier)return 0;
             float budget=available*Mathf.Min(1,DarwinPark.Core.GameplayTuning.Current.nutritionGainMultiplier*Mathf.Clamp01(attacker.Genes.GetAttribute(NutritionEcologySettings.Current.digestionAttribute)));
-            var population=attacker.GetComponent<PopulationBehavior>();float absorbed=0;
+            var population=DarwinPark.Core.OptionalComponent.Read<PopulationBehavior>(attacker);float absorbed=0;
             if(population!=null&&population.Active)
             {
                 var recipients=population.GroupMembers.Where(m=>m!=population&&EcologyQueries.Distance(attacker.transform.position,m.transform.position)<=population.Aura).ToArray();

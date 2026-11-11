@@ -13,6 +13,8 @@ namespace DarwinPark.UI
         public static RuntimePerformanceCapture Instance{get;private set;}public float sampleSeconds=8;
         public string Status{get;private set;}="";public string ReportPath{get;private set;}
         private GameMainMenu _menu;private PerformanceSampleSession _session;private bool _armed;private float _began;
+        // ★ 新增：报告记录真实缓存命中和批次数，不能仅由总耗时猜测优化是否生效。
+        private long _foodHits,_foodSearches,_groundDirect,_groundReused,_resourceRebuilds,_instanceWrites;
         private PerformanceCaptureNotice _notice;
         private void Awake(){Instance=this;_menu=GetComponent<GameMainMenu>();_notice=GetComponent<PerformanceCaptureNotice>()??gameObject.AddComponent<PerformanceCaptureNotice>();}
         public static void Ensure(GameMainMenu owner){if(owner.GetComponent<RuntimePerformanceCapture>()==null)owner.gameObject.AddComponent<RuntimePerformanceCapture>();}
@@ -20,11 +22,12 @@ namespace DarwinPark.UI
         private void LateUpdate()
         {
             if(_armed&&WorldRuntimeGate.Ready&&!WorldRuntimeGate.Loading&&(_menu==null||!_menu.Visible))
-            {_armed=false;try{_session=new PerformanceSampleSession();_began=Time.unscaledTime;Status="正在采样，请正常操作游戏…";}catch(Exception ex){Status="采样无法启动："+ex.Message;_notice.Show(Status);}}
+            {_armed=false;try{_session=new PerformanceSampleSession();_foodHits=ColonyFoodQueryCache.Hits;_foodSearches=ColonyFoodQueryCache.Searches;_groundDirect=EntityGroundProbe.DirectSamples;_groundReused=EntityGroundProbe.CrossStepReused;_resourceRebuilds=ResourceCoordinates.Rebuilds;_instanceWrites=CorpseInstanceRenderer.InstanceWrites;_began=Time.unscaledTime;Status="正在采样，请正常操作游戏…";}catch(Exception ex){Status="采样无法启动："+ex.Message;_notice.Show(Status);}}
             if(_session==null)return;_session.RecordFrame(Time.unscaledDeltaTime*1000d);if(Time.unscaledTime-_began<sampleSeconds)return;
             try
             {
                 var report=_session.Finish("entities="+EntityRegistry.All.Count+" resources="+ColonyResource.All.Count()+" resolution="+Screen.width+"x"+Screen.height+" graphics="+SystemInfo.graphicsDeviceType+" limit="+FramePacingSettings.Limit);
+                report.context+=" foodCacheHits="+(ColonyFoodQueryCache.Hits-_foodHits)+" foodSearches="+(ColonyFoodQueryCache.Searches-_foodSearches)+" groundDirect="+(EntityGroundProbe.DirectSamples-_groundDirect)+" groundCrossReuse="+(EntityGroundProbe.CrossStepReused-_groundReused)+" resourceIndexRebuilds="+(ResourceCoordinates.Rebuilds-_resourceRebuilds)+" corpseSlotWrites="+(CorpseInstanceRenderer.InstanceWrites-_instanceWrites)+" corpseInstances="+CorpseInstanceRenderer.LastInstances+" corpseBatches="+CorpseInstanceRenderer.LastBatches;
                 string root=Path.Combine(string.IsNullOrEmpty(RuntimeFileLog.DirectoryPath)?Application.persistentDataPath:RuntimeFileLog.DirectoryPath,"performance");Directory.CreateDirectory(root);ReportPath=Path.Combine(root,"performance-"+DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff")+".json");File.WriteAllText(ReportPath,JsonUtility.ToJson(report,true));
                 foreach(var old in new DirectoryInfo(root).GetFiles("performance-*.json").OrderByDescending(f=>f.LastWriteTimeUtc).Skip(5))old.Delete();
                 Status="采样完成："+ReportPath;_notice.Show("游戏性能采样完成\n报告已保存：\n"+ReportPath);Debug.Log("[性能采样] "+Status);

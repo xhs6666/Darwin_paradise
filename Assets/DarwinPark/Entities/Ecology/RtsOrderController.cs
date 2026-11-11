@@ -3,6 +3,7 @@ using System.Linq;
 using DarwinPark.Core;
 using UnityEngine;
 
+// ★ 修复（防Bug回归）：可选组件允许正常缺失，使用即时TryGet，保留安装/销毁可见性并消除编辑器空查询分配。
 namespace DarwinPark.Entities.Ecology
 {
     public enum RtsOrderKind { Move,Attack,Collect,Guard,Stop }
@@ -15,14 +16,14 @@ namespace DarwinPark.Entities.Ecology
         public RtsOrderSave State {get;private set;}=new RtsOrderSave();
         private EntityGeneController _genes;
         private void Awake(){_genes=GetComponent<EntityGeneController>();Simulation.ActiveSimulationBatch.Invalidate(_genes);}
-        public static RtsOrderController Ensure(DarwinEntity entity)=>entity.GetComponent<RtsOrderController>()??entity.gameObject.AddComponent<RtsOrderController>();
+        public static RtsOrderController Ensure(DarwinEntity entity)=>DarwinPark.Core.OptionalComponent.Read<RtsOrderController>(entity)??entity.gameObject.AddComponent<RtsOrderController>();
         public static bool Supports(DarwinEntity entity,RtsOrderKind kind)
         {
             if(!EcologyQueries.Alive(entity)||EcologyMotion.Immobilized(entity.Genes))return false;
             if(kind==RtsOrderKind.Stop)return true;
             if(entity.Genes.GetAttribute("moveSpeed")<=0)return false;
             if(kind==RtsOrderKind.Attack)return entity.Genes.GetAttribute("attack")>0;
-            if(kind==RtsOrderKind.Collect)return entity.GetComponent<AntColonyMember>() is AntColonyMember ant&&ant.Active&&!ant.Young&&ant.Role==AntRole.Worker;
+            if(kind==RtsOrderKind.Collect)return DarwinPark.Core.OptionalComponent.Read<AntColonyMember>(entity) is AntColonyMember ant&&ant.Active&&!ant.Young&&ant.Role==AntRole.Worker;
             return true;
         }
         public bool Issue(RtsOrderKind kind,Vector3 worldPoint,DarwinEntity target=null,ColonyResource resource=null)
@@ -31,7 +32,7 @@ namespace DarwinPark.Entities.Ecology
             if(kind==RtsOrderKind.Attack&&(!EcologyQueries.Alive(target)||!EcologyMotion.CanHunt(_genes,target)))return false;
             if(kind==RtsOrderKind.Collect)
             {
-                var worker=GetComponent<AntColonyMember>();
+                var worker=DarwinPark.Core.OptionalComponent.Read<AntColonyMember>(this);
                 // ★ 适配：RTS与工匠自主领取使用同一尸体资格，允许收集自然死亡尸体。
                 if(resource!=null&&ColonyCorpseAccess.Available(resource,worker))
                 {AntColonyWorker.Release(worker);worker.State.resourceTarget=resource.State.id;worker.State.scan=1;}
@@ -47,7 +48,7 @@ namespace DarwinPark.Entities.Ecology
             if(State.kind==RtsOrderKind.Stop)return true;
             if(!Supports(GetComponent<DarwinEntity>(),State.kind)){State.active=false;return false;}
             if(State.kind==RtsOrderKind.Collect)
-            {var worker=GetComponent<AntColonyMember>();if(ColonyResource.Find(State.target)==null&&EcologyIdentity.Find(State.target)==null&&string.IsNullOrEmpty(worker.State.carriedResource)&&string.IsNullOrEmpty(worker.State.carriedLiving))State.active=false;return false;}
+            {var worker=DarwinPark.Core.OptionalComponent.Read<AntColonyMember>(this);if(ColonyResource.Find(State.target)==null&&EcologyIdentity.Find(State.target)==null&&string.IsNullOrEmpty(worker.State.carriedResource)&&string.IsNullOrEmpty(worker.State.carriedLiving))State.active=false;return false;}
             point=EcologyQueries.ToWorld(State.point);
             if(State.kind==RtsOrderKind.Attack)
             {target=EcologyIdentity.Find(State.target);if(!EcologyQueries.Alive(target)||!EcologyMotion.CanHunt(_genes,target)){State.active=false;target=null;return false;}point=target.transform.position;return true;}

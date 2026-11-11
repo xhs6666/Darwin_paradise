@@ -2,6 +2,7 @@ using System;
 using DarwinPark.Core;
 using UnityEngine;
 
+// ★ 修复（防Bug回归）：可选组件允许正常缺失，使用即时TryGet，保留安装/销毁可见性并消除编辑器空查询分配。
 namespace DarwinPark.Entities.Ecology
 {
     [Serializable] public sealed class CombatIntentSave {public string target;public float remaining;}
@@ -19,7 +20,7 @@ namespace DarwinPark.Entities.Ecology
         public void Advance(float dt){Remaining=Mathf.Max(0,Remaining-dt);if(Remaining<=0)Target=null;}
         public static bool Destination(EntityGeneController genes,out Vector3 point,out DarwinEntity target)
         {
-            point=genes.transform.position;target=null;var intent=genes.GetComponent<CombatIntent>();
+            point=genes.transform.position;target=null;var intent=DarwinPark.Core.OptionalComponent.Read<CombatIntent>(genes);
             if(intent==null||intent.Remaining<=0)return false;
             if(!CanRetaliate(genes,intent.Target)||!EntityPerceptionHub.TryLocate(genes,intent.Target,out point)){intent.Target=null;return false;}
             target=intent.Target;return true;
@@ -27,6 +28,6 @@ namespace DarwinPark.Entities.Ecology
         public CombatIntentSave Capture()=>new CombatIntentSave{target=Target!=null?EcologyIdentity.Of(Target):null,remaining=Remaining};
         public void Restore(DarwinEntity target,float remaining){Target=target;Remaining=remaining;}
         public static void AdvanceFor(EntityGeneController genes,float dt)
-        {(genes.GetComponent<CombatIntent>()??genes.gameObject.AddComponent<CombatIntent>()).Advance(dt);}
+        {(DarwinPark.Core.OptionalComponent.Read<CombatIntent>(genes)??genes.gameObject.AddComponent<CombatIntent>()).Advance(dt);}
     }
 }
