@@ -269,7 +269,7 @@ flowchart TD
 - [PerformanceTimings.Measure · L24](a8403a4c7503726d.md#mb452516394f3ebae)（方法）
 - [ColonyResource.State.get · L24](293dbaecfff4b585.md#m41824f1a0e160aa5)（访问器）
 - [ColonyResource.Find · L28](293dbaecfff4b585.md#m1324285ab40ac6f4)（方法）
-- [ColonyResource.Remove · L108](293dbaecfff4b585.md#mb9333347c7434224)（方法）
+- [ColonyResource.Remove · L108](293dbaecfff4b585.md#me59455a847912120)（方法）
 
 <a id="m62a8c47f3240774f"></a>
 

@@ -1,0 +1,29 @@
+{
+  // 参考基因、无环境死亡的10实体自然繁衍约50年到1000；非强制人口目标。
+  "version": 1,
+  // 启用自然年限；关闭后使用旧生命周期速度。只影响新建立的孕育长度，不重置旧孕育剩余时间。
+  "enabled": true,
+  // 仅新建世界投放一次；不对读档、灭绝或比例不足自动补员。
+  "initialPopulation": 10,
+  // 以下三个年限为参考基因的游戏年；365游戏天为1年，默认1天=10模拟秒。
+  "maturityYears": 5,
+  "elderYears": 35,
+  "lifespanYears": 45,
+  // 实际有效成长/衰老属性相对此基准缩放，个体与合并结算采用同一速度。
+  "referenceGrowthSpeed": 1.8,
+  "referenceAgingSpeed": 1.8,
+  // 以下孕育值为游戏天；最小/最大值限制新孕育，15到360天。
+  "minimumGestationDays": 15,
+  "maximumGestationDays": 360,
+  "producerGestationDays": 180,
+  "consumerGestationDays": 270,
+  "queenGestationDays": 90,
+  // 孕育15～360游戏天，产后间隔以游戏年计；不凭空补充实体。
+  "postpartumYears": 9,
+  // 王后产后间隔和工匠成年时间使用游戏天，普通实体产后间隔使用游戏年。
+  "queenCooldownDays": 180,
+  "workerMaturityDays": 30,
+  // 种源模板ID，来自生态模板库；移动先驱也能自养，避免初始没有猎物时断粮。
+  "producerTemplate": "producer",
+  "mobileTemplate": "pioneer_mobile"
+}

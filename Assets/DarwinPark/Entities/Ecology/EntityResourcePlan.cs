@@ -21,16 +21,16 @@ namespace DarwinPark.Entities.Ecology
         private static bool Energy(ColonyResource resource)=>resource!=null&&resource.State.kind!=ColonyResourceKind.Corpse&&(resource.State.kind==ColonyResourceKind.Energy||!WorldRuntimeGate.Loading&&!ColonyResourceOwnership.HasOwner(resource.State.group));
         private static bool Corpse(ColonyResource resource)=>resource!=null&&resource.State.kind==ColonyResourceKind.Corpse&&!resource.HasLiveClaim;
         private static bool Valid(ColonyResource resource,Vector3 point,float radius,bool corpse)=>resource!=null&&(corpse?Corpse(resource)&&(resource.transform.position-point).sqrMagnitude<=radius*radius:Energy(resource)&&EcologyQueries.Distance(point,resource.transform.position)<=radius);
-        private static ColonyResource Head(List<string> queue,Vector3 point,float radius,bool corpse)
+        private static ColonyResource Head(List<string> queue,EntityGeneController genes,Vector3 point,float radius,bool corpse)
         {
-            while(queue.Count>0){var resource=ColonyResource.Find(queue[0]);if(Valid(resource,point,radius,corpse))return resource;queue.RemoveAt(0);}return null;
+            while(queue.Count>0){var resource=ColonyResource.Find(queue[0]);if(Valid(resource,point,radius,corpse)&&(EcologyQueries.Distance(point,resource.transform.position)<=NutrientUtilizationSettings.Current.feedRadius||LandReachability.CanReach(genes,resource)))return resource;queue.RemoveAt(0);}return null;
         }
         public static ColonyResource FindEnergy(EntityGeneController genes,float radius,bool nearby)
         {
             var context=Get(genes);var state=context.state;var point=genes.transform.position;long revision=ResourceCoordinates.FoodRevision;
             if(context.food!=revision){context.food=revision;state.energyScan=0;}
             // 附近可吃块可以临时插队，远处原任务顺延；实际吸收端仍核对真实距离。
-            var current=Head(state.energy,point,nearby?float.PositiveInfinity:radius,false);
+            var current=Head(state.energy,genes,point,nearby?float.PositiveInfinity:radius,false);
             if(current!=null&&Valid(current,point,radius,false))return current;
             if(!nearby&&state.energyScan>0)return null;
             ResourceCoordinates.Query(point,radius,true,false,context.candidates);
@@ -40,12 +40,12 @@ namespace DarwinPark.Entities.Ecology
                 foreach(var candidate in context.candidates)if(Energy(candidate.resource)){string id=candidate.resource.State.id;state.energy.Remove(id);state.energy.Insert(0,id);Trim(state.energy);context.candidates.Clear();return candidate.resource;}
                 context.candidates.Clear();return null;
             }
-            state.energyScan=SimulationOptimization.Current.decisionSeconds;Fill(state.energy,context.candidates,false);context.candidates.Clear();return Head(state.energy,point,radius,false);
+            state.energyScan=SimulationOptimization.Current.decisionSeconds;context.candidates.RemoveAll(c=>!LandReachability.CanReach(genes,c.resource));Fill(state.energy,context.candidates,false);context.candidates.Clear();return Head(state.energy,genes,point,radius,false);
         }
         public static ColonyResource FindCorpse(EntityGeneController genes,float radius,float interval)
         {
-            var context=Get(genes);var state=context.state;var point=genes.transform.position;var current=Head(state.corpses,point,radius,true);if(current!=null)return current;
-            if(state.corpseScan>0)return null;state.corpseScan=interval;ResourceCoordinates.Query(point,radius,false,true,context.candidates);context.candidates.Sort((a,b)=>(a.position-point).sqrMagnitude.CompareTo((b.position-point).sqrMagnitude));Fill(state.corpses,context.candidates,true);context.candidates.Clear();return Head(state.corpses,point,radius,true);
+            var context=Get(genes);var state=context.state;var point=genes.transform.position;var current=Head(state.corpses,genes,point,radius,true);if(current!=null)return current;
+            if(state.corpseScan>0)return null;state.corpseScan=interval;ResourceCoordinates.Query(point,radius,false,true,context.candidates);context.candidates.Sort((a,b)=>(a.position-point).sqrMagnitude.CompareTo((b.position-point).sqrMagnitude));context.candidates.RemoveAll(c=>!LandReachability.CanReach(genes,c.resource));Fill(state.corpses,context.candidates,true);context.candidates.Clear();return Head(state.corpses,genes,point,radius,true);
         }
         private static void Fill(List<string> queue,List<ResourceCoordinate> candidates,bool corpse)
         {

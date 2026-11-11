@@ -2,7 +2,7 @@
 
 [返回总索引](../README.md) · `Runtime` · `Assets/DarwinPark/Entities/Simulation/EntityWorkScheduler.cs`
 
-[源文件](../../../Assets/DarwinPark/Entities/Simulation/EntityWorkScheduler.cs) · 源码校验：`fe01a5022f733507b0114a437ce19e72068a420c89592c8e3abc27428efa3f9b`
+[源文件](../../../Assets/DarwinPark/Entities/Simulation/EntityWorkScheduler.cs) · 源码校验：`8f0f8888a04073f2e53d7777341b93384212e01951a82209db45876f1b881ada`
 
 方法按源文件位置排列。事件/回调引用不表示立即执行；分支与异常说明见总索引。完整源码与可点击关系图请打开离线手册。
 
@@ -581,7 +581,7 @@ flowchart TD
 
 - [GameplayTuning.Current.get · L46](db546e5713b32d53.md#m4fa691bd8a3b9618)（访问器）
 - [EntityGeneController.AdvanceSimulation · L73](7494d53178552f0e.md#m0056817ce3208fda)（方法）
-- [StationaryCohortKernel.AdvanceCore · L43](9d3f50e550ab5beb.md#mcdd84fc49043442b)（方法）
+- [StationaryCohortKernel.AdvanceCore · L42](9d3f50e550ab5beb.md#m76f7042c519d444c)（方法）
 
 <a id="mcc852d9054db2d86"></a>
 
@@ -639,42 +639,45 @@ flowchart TD
 
 ```
 
-<a id="m0f3d4ce373d341cb"></a>
+<a id="m709b074087a77696"></a>
 
-## Update · L90
+## Update · L91
 
 `private void Update()`
 
-
+★ 适配：全局每帧一次检查自然数值的热加载，不在每个实体的生命小步访问磁盘。
 
 ### Editor / Player · Roslyn编译器控制流
 
 ```mermaid
 flowchart TD
   b0(["入口"])
-  b1{"Advance<br/>判断：ServiceLocator.TryGet&lt;SimulationClock&gt;(out var clock)"}
-  b2["clock.GameDeltaTime"]
-  b3["Time.deltaTime"]
-  b4["Advance(ServiceLocator.TryGet&lt;SimulationClock&gt;(out var clock)?clock.GameDeltaTime:Time.deltaTime)"]
-  b5(["结束 / 返回"])
+  b1["DarwinPark.Entities.Ecology.NaturalPopulationPace.Poll();"]
+  b2{"Advance<br/>判断：ServiceLocator.TryGet&lt;SimulationClock&gt;(out var clock)"}
+  b3["clock.GameDeltaTime"]
+  b4["Time.deltaTime"]
+  b5["Advance(ServiceLocator.TryGet&lt;SimulationClock&gt;(out var clock)?clock.GameDeltaTime:Time.deltaTime);"]
+  b6(["结束 / 返回"])
   b0 --> b1
-  b1 -->|"是"| b2
-  b1 -->|"否"| b3
-  b2 --> b4
-  b3 --> b4
+  b1 --> b2
+  b2 -->|"是"| b3
+  b2 -->|"否"| b4
+  b3 --> b5
   b4 --> b5
+  b5 --> b6
 
 ```
 
 项目内调用/回调引用：
 
-- [EntityWorkScheduler.Advance · L91](465ccdbb260bcac2.md#m3c6be95c9f3f99a5)（方法）
+- [NaturalPopulationPace.Poll · L27](bb501fbca2e1b01f.md#m7b5c779b973102c9)（方法）
+- [EntityWorkScheduler.Advance · L92](465ccdbb260bcac2.md#m6be625a139f75e8f)（方法）
 - [ServiceLocator.TryGet · L26](f2fdbe9f9ccd93cb.md#m143b24e6d58471b0)（方法）
 - [SimulationClock.GameDeltaTime.get · L26](a8f444aec9614b0a.md#me7f11abae18a4f2d)（访问器）
 
-<a id="m3c6be95c9f3f99a5"></a>
+<a id="m6be625a139f75e8f"></a>
 
-## Advance · L91
+## Advance · L92
 
 `public void Advance(float dt)`
 
@@ -1072,40 +1075,40 @@ flowchart TD
 - [EntityWorkScheduler.DormantMembers.set · L64](465ccdbb260bcac2.md#m6a6594139c13a5ea)（访问器）
 - [GameplayTuning.Current.get · L46](db546e5713b32d53.md#m4fa691bd8a3b9618)（访问器）
 - [OptionalComponent.Read · L7](806c46b42ced4d36.md#m69622a4dee165c5a)（方法）
-- [EntityWorkScheduler.QueueActive · L206](465ccdbb260bcac2.md#m81708dbab6fd4c7a)（方法）
+- [EntityWorkScheduler.QueueActive · L207](465ccdbb260bcac2.md#m330a7f7b3bb781d6)（方法）
 - [EntityGeneController.LogicRevision.get · L19](7494d53178552f0e.md#me69facc1c0f1e164)（访问器）
 - [StationaryCohortKernel.Supported · L12](9d3f50e550ab5beb.md#mc9ba7d3589415ea3)（方法）
-- [EntityWorkScheduler.Signature · L257](465ccdbb260bcac2.md#m2607707df172e323)（方法）
-- [EntityWorkScheduler.Eligible · L229](465ccdbb260bcac2.md#m0e8baae2eeaa4717)（方法）
+- [EntityWorkScheduler.Signature · L258](465ccdbb260bcac2.md#m42756fd9f8437755)（方法）
+- [EntityWorkScheduler.Eligible · L230](465ccdbb260bcac2.md#med8b16ef63ee9b76)（方法）
 - [EntityWorkScheduler.DormantMembers.get · L64](465ccdbb260bcac2.md#mf38e594d3d450fdf)（访问器）
 - [EntityWorkScheduler.Entry.pending.set · L22](465ccdbb260bcac2.md#m05caefbe3ec968d5)（访问器）
 - [EntityWorkScheduler.Entry.pending.get · L22](465ccdbb260bcac2.md#m2277186a9d64d8a1)（访问器）
 - [CohortDeadline.Next · L9](7dc9f0a2697792f4.md#m9e1d17c91ceb218b)（方法）
-- [EntityWorkScheduler.AddGroup · L238](465ccdbb260bcac2.md#mc69fd9f6dc6d9869)（方法）
-- [EntityWorkScheduler.TrimSignatures · L199](465ccdbb260bcac2.md#m670ae50e4da12d78)（方法）
-- [EntityWorkScheduler.AdvanceActive · L212](465ccdbb260bcac2.md#m6388d3fd207c0299)（方法）
+- [EntityWorkScheduler.AddGroup · L239](465ccdbb260bcac2.md#mb0ed1925c793e41c)（方法）
+- [EntityWorkScheduler.TrimSignatures · L200](465ccdbb260bcac2.md#medf36da9d846f0b3)（方法）
+- [EntityWorkScheduler.AdvanceActive · L213](465ccdbb260bcac2.md#mf11e70fbe62f4960)（方法）
 - [SingletonSettlement.Advance · L22](aa60fc9f4553ae15.md#m354a8ce1a94cb2a0)（方法）
 - [SimulationSubsteps.Count · L10](44755274b83df7ba.md#m9b3c9def7f9642d1)（方法）
 - [SimulationSubsteps.Slice · L11](44755274b83df7ba.md#ma075f8159da64c99)（方法）
-- [EntityWorkScheduler.CanShare · L223](465ccdbb260bcac2.md#m4d55d11465b72a14)（方法）
+- [EntityWorkScheduler.CanShare · L224](465ccdbb260bcac2.md#m3c2004bb05d927d4)（方法）
 - [StationaryCohortKernel.LifeSpeed · L25](9d3f50e550ab5beb.md#mdb19e021772f12ab)（方法）
-- [StationaryCohortKernel.Sample · L33](9d3f50e550ab5beb.md#mf4245e22058e4dde)（方法）
+- [StationaryCohortKernel.Sample · L32](9d3f50e550ab5beb.md#m9913bf22ce1a212a)（方法）
 - [EntityWorkScheduler.RepresentativeSteps.set · L62](465ccdbb260bcac2.md#mdd3172e7ffeba215)（访问器）
 - [EntityWorkScheduler.RepresentativeSteps.get · L62](465ccdbb260bcac2.md#mc1634e98de0b9148)（访问器）
-- [StationaryCohortKernel.Apply · L52](9d3f50e550ab5beb.md#mff43eda308e9aa23)（方法）
+- [StationaryCohortKernel.Apply · L51](9d3f50e550ab5beb.md#mc4463da67a5f848f)（方法）
 - [EntityWorkScheduler.SharedMemberSteps.set · L63](465ccdbb260bcac2.md#mbf38ee84f3a0ece7)（访问器）
 - [EntityWorkScheduler.SharedMemberSteps.get · L63](465ccdbb260bcac2.md#ma2ea17be21511192)（访问器）
 - [EntityLifeCycle.AdvanceShared · L29](9f4138bfbae654b7.md#ma29bffd901102e78)（方法）
 - [EntityLifeCycle.HasDied.get · L11](9f4138bfbae654b7.md#mf2406e6830e0007e)（访问器）
-- [StationaryCohortKernel.PrimaryReproduction · L59](9d3f50e550ab5beb.md#mcf6814b936ea6fab)（方法）
+- [StationaryCohortKernel.PrimaryReproduction · L58](9d3f50e550ab5beb.md#m2928462f795dd568)（方法）
 - [ReproductionGeneLogic.OnUpdate · L40](ac319ea70bd8b723.md#m7cb6727410b8cffa)（方法）
 - [EntityGeneController.AdvanceSimulation · L73](7494d53178552f0e.md#m0056817ce3208fda)（方法）
-- [StationaryCohortKernel.AdvanceCore · L43](9d3f50e550ab5beb.md#mcdd84fc49043442b)（方法）
-- [EntityWorkScheduler.回调@152 · L152](465ccdbb260bcac2.md#m241439d28590efc6)（回调/委托）
+- [StationaryCohortKernel.AdvanceCore · L42](9d3f50e550ab5beb.md#m76f7042c519d444c)（方法）
+- [EntityWorkScheduler.回调@153 · L153](465ccdbb260bcac2.md#m1cd40df0e27f28d7)（回调/委托）
 
-<a id="m241439d28590efc6"></a>
+<a id="m1cd40df0e27f28d7"></a>
 
-## 回调@152 · L152
+## 回调@153 · L153
 
 `( … => 回调`
 
@@ -1123,9 +1126,9 @@ flowchart TD
 
 ```
 
-<a id="m670ae50e4da12d78"></a>
+<a id="medf36da9d846f0b3"></a>
 
-## TrimSignatures · L199
+## TrimSignatures · L200
 
 `private void TrimSignatures()`
 
@@ -1180,9 +1183,9 @@ flowchart TD
 
 ```
 
-<a id="m81708dbab6fd4c7a"></a>
+<a id="m330a7f7b3bb781d6"></a>
 
-## QueueActive · L206
+## QueueActive · L207
 
 `private void QueueActive(Entry entry)`
 
@@ -1225,9 +1228,9 @@ flowchart TD
 - [EntityManualControl.IsControlled.get · L12](a6969896da35e1f0.md#m125d8f7da7ab33bf)（访问器）
 - [EntityStats.CapacityRemaining · L92](75aa86a368efdf24.md#m574f0a6509120d00)（方法）
 
-<a id="m6388d3fd207c0299"></a>
+<a id="mf11e70fbe62f4960"></a>
 
-## AdvanceActive · L212
+## AdvanceActive · L213
 
 `private static void AdvanceActive(List<Entry> entries,float dt,GameplayTuning tuning)`
 
@@ -1274,11 +1277,11 @@ flowchart TD
 - [EntityWorkScheduler.Entry.pending.get · L22](465ccdbb260bcac2.md#m2277186a9d64d8a1)（访问器）
 - [EntityWorkScheduler.Entry.pending.set · L22](465ccdbb260bcac2.md#m05caefbe3ec968d5)（访问器）
 - [EntityGeneController.AdvanceSimulation · L73](7494d53178552f0e.md#m0056817ce3208fda)（方法）
-- [StationaryCohortKernel.AdvanceCore · L43](9d3f50e550ab5beb.md#mcdd84fc49043442b)（方法）
+- [StationaryCohortKernel.AdvanceCore · L42](9d3f50e550ab5beb.md#m76f7042c519d444c)（方法）
 
-<a id="m4d55d11465b72a14"></a>
+<a id="m3c2004bb05d927d4"></a>
 
-## CanShare · L223
+## CanShare · L224
 
 `private static bool CanShare(Cohort group,Entry first)`
 
@@ -1326,12 +1329,12 @@ flowchart TD
 项目内调用/回调引用：
 
 - [EntityGeneController.LogicRevision.get · L19](7494d53178552f0e.md#me69facc1c0f1e164)（访问器）
-- [EntityWorkScheduler.Eligible · L229](465ccdbb260bcac2.md#m0e8baae2eeaa4717)（方法）
+- [EntityWorkScheduler.Eligible · L230](465ccdbb260bcac2.md#med8b16ef63ee9b76)（方法）
 - [EntityGeneController.CurrentAge.get · L37](7494d53178552f0e.md#md08823d8f9a2fa16)（访问器）
 
-<a id="m0e8baae2eeaa4717"></a>
+<a id="med8b16ef63ee9b76"></a>
 
-## Eligible · L229
+## Eligible · L230
 
 `private static bool Eligible(Entry entry)`
 
@@ -1470,9 +1473,9 @@ flowchart TD
 - [EntityGeneController.Evaluation.get · L18](7494d53178552f0e.md#mc0039c100a31b455)（访问器）
 - [EntityGeneController.GetAttribute · L286](7494d53178552f0e.md#m18bff2b38f95b556)（方法）
 
-<a id="mc69fd9f6dc6d9869"></a>
+<a id="mb0ed1925c793e41c"></a>
 
-## AddGroup · L238
+## AddGroup · L239
 
 `private void AddGroup(Entry entry,GameplayTuning tuning)`
 
@@ -1555,9 +1558,9 @@ flowchart TD
 - [EntityWorkScheduler.SharedState.SharedState.ctor · L33](465ccdbb260bcac2.md#m42f9e4d3d4ec77b4)（构造函数）
 - [EntityWorkScheduler.Entry.pending.get · L22](465ccdbb260bcac2.md#m2277186a9d64d8a1)（访问器）
 
-<a id="m2607707df172e323"></a>
+<a id="m42756fd9f8437755"></a>
 
-## Signature · L257
+## Signature · L258
 
 `private static string Signature(EntityGeneController genes)`
 
@@ -1623,9 +1626,9 @@ flowchart TD
 
 - [PerformanceTimings.Measure · L24](a8403a4c7503726d.md#mb452516394f3ebae)（方法）
 
-<a id="mc143fc56211bbfab"></a>
+<a id="m5ed45c0c53f5b24f"></a>
 
-## Reset · L269
+## Reset · L270
 
 `[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)] private static void Reset()`
 

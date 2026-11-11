@@ -522,7 +522,7 @@ flowchart TD
 - [PopulationWorkbench.SelectedId.get · L16](6ca6fcae89e529ec.md#mef0f87781fb55d79)（访问器）
 - [PopulationArchive.Find · L49](084e119b69cdd751.md#mf1aef4e3d3c3efca)（方法）
 - [PopulationArchive.OpacityFor · L107](084e119b69cdd751.md#m97824b788cf7f2ff)（方法）
-- [WorldSessionManager.SaveNow · L169](08741c7b7b9d9344.md#mcf18d8aac368dda6)（方法）
+- [WorldSessionManager.SaveNow · L169](08741c7b7b9d9344.md#m43f61078d8513f73)（方法）
 
 <a id="m09bed70d853d69f9"></a>
 
@@ -1310,7 +1310,7 @@ flowchart TD
 - [PopulationWorkbench.ChartMode · L151](6ca6fcae89e529ec.md#mb29b44848dbf7f08)（方法）
 - [RuntimeMenuTheme.Muted.get · L13](b9d8455882f2a532.md#meeaba271eb4ad2ed)（访问器）
 - [PopulationWorkbench.DrawDistribution · L166](6ca6fcae89e529ec.md#m242bd5cc5a512465)（方法）
-- [LifeCycleSettings.Load · L16](ace76969fe8f61de.md#mbd2925785484f343)（方法）
+- [LifeCycleSettings.Load · L16](ace76969fe8f61de.md#m6fe263852e5a8989)（方法）
 - [PopulationWorkbench.回调@164 · L164](6ca6fcae89e529ec.md#m3bb1ee5eaa3900c5)（回调/委托）
 
 <a id="m3bb1ee5eaa3900c5"></a>

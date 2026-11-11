@@ -67,6 +67,8 @@ namespace DarwinPark.UI
             _status = UIFactory.NewText("Status", transform, "修改后按 Shift 应用", 12);
             var srt = _status.rectTransform; srt.anchorMin = srt.anchorMax = Vector2.zero;
             srt.pivot = Vector2.zero; srt.anchoredPosition = new Vector2(12,7); srt.sizeDelta = new Vector2(255,25);
+            // ★ 适配：独立地貌升级控件，仅地形参数页显示。
+            if(terrain)gameObject.AddComponent<LandformUpgradeControl>().Bind(_builder);
         }
         private void Update()
         {

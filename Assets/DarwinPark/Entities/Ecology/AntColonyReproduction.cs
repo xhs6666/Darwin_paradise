@@ -52,7 +52,7 @@ namespace DarwinPark.Entities.Ecology
                 if(state.reproductionTimer>0||DarwinEntity.Spawner==null)return;
                 // ★ 适配：共享多胎交付策略，每个已出生子代立即扣减待出生数，读档不重复。
                 if(!MultipleBirthPolicy.Deliver(ref state.litter,()=>QueenBirthDelivery.TrySpawn(queen)))return;
-                state.litter=null;genes.IsGestating=false;state.partnerGenome=null;state.parthenogenetic=false;state.reproductionCooldown=settings.queenCooldownSeconds;genes.Recalculate();return;
+                state.litter=null;genes.IsGestating=false;state.partnerGenome=null;state.parthenogenetic=false;state.reproductionCooldown=NaturalPopulationPace.Current.enabled?NaturalPopulationPace.Current.queenCooldownDays*LifeCycleSettings.Load().secondsPerDay:settings.queenCooldownSeconds;genes.Recalculate();return;
             }
             if(state.reproductionCooldown>0){state.mateWait=0;return;}
             var eligibleMate=mates.FirstOrDefault(m=>EcologyQueries.Distance(queen.transform.position,m.transform.position)<=settings.feedRadius);
@@ -63,7 +63,7 @@ namespace DarwinPark.Entities.Ecology
             // ★ 适配：建群缺工匠时优先建立补给链，不能再被全局移动者超量的繁殖等待卡住；仍照常支付食物和孕育时间。
             if(!ColonyFoundingSupport.NeedsWorker(queen)&&!PopulationMaintenance.BreedingReady(genes,ref state.maintenanceWait,dt))return;state.maintenanceWait=0;
             // ★ 适配：受孕时固定总胎数和对应预算，不让后续变异/调参改变已经付款的这一胎。
-            state.litter=MultipleBirthPolicy.Begin(genes);stats.Modify("storedNutrient",-settings.queenBirthCost*state.litter.planned);state.partnerGenome=sexual&&!parthenogenetic?Copy(eligibleMate.Genes.Genome):null;state.parthenogenetic=parthenogenetic;state.mateWait=0;state.reproductionTimer=settings.queenGestationSeconds;genes.IsGestating=true;genes.Recalculate();
+            state.litter=MultipleBirthPolicy.Begin(genes);stats.Modify("storedNutrient",-settings.queenBirthCost*state.litter.planned);state.partnerGenome=sexual&&!parthenogenetic?Copy(eligibleMate.Genes.Genome):null;state.parthenogenetic=parthenogenetic;state.mateWait=0;state.reproductionTimer=NaturalPopulationPace.Current.enabled?Mathf.Clamp(NaturalPopulationPace.Current.queenGestationDays*EcologyBalanceSettings.Current.referenceReproductionSpeed/Mathf.Max(EcologyBalanceSettings.Current.minimumReproductionSpeed,genes.GetAttribute(EcologyBalanceSettings.Current.reproductionSpeedAttribute)),NaturalPopulationPace.Current.minimumGestationDays,NaturalPopulationPace.Current.maximumGestationDays)*LifeCycleSettings.Load().secondsPerDay:settings.queenGestationSeconds;genes.IsGestating=true;genes.Recalculate();
         }
     }
 }

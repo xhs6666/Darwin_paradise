@@ -161,10 +161,10 @@ namespace DarwinPark.Planet
                     result.WindFetch[i] = fetch;
 
                     // ---------- 温度：太阳辐射是基准，但不是唯一条件 ----------
-                    float oceanTemperature = Mathf.Lerp(regionalBase, Mathf.Lerp(_cfg.oceanPoleTemp, _cfg.oceanEquatorTemp, solar), _cfg.solarTemperatureWeight)
+                    float oceanTemperature = Mathf.Lerp(regionalBase, Mathf.Lerp(_cfg.oceanPoleTemp, _cfg.oceanEquatorTemp, solar), EarthClimateRules.SolarWeight(_cfg))
                         + currentNoise.Sample(dir) * _cfg.oceanCurrentAmplitude + tempOffset;
 
-                    float temperature = Mathf.Lerp(regionalBase, Mathf.Lerp(_cfg.poleTemp, _cfg.equatorTemp, solar), _cfg.solarTemperatureWeight)
+                    float temperature = Mathf.Lerp(regionalBase, Mathf.Lerp(_cfg.poleTemp, _cfg.equatorTemp, solar), EarthClimateRules.SolarWeight(_cfg))
                         + tempOffset
                         - altitudeNorm * _cfg.altitudeTempDrop
                         + temperatureNoise.Sample(dir) * _cfg.temperatureNoiseAmplitude
@@ -195,7 +195,7 @@ namespace DarwinPark.Planet
                         result.Relief[i] = relief;
                         temperature -= coldPool * _cfg.basinColdPoolDrop;
                         float fetchMoisture = Mathf.Exp(-fetch / Mathf.Max(0.05f, _cfg.windFetchScale));
-                        ComputeWindExposure(dir, height, windDir, out windLift, out float rainShadow01);
+                        ComputeWindExposure(dir, height, EarthClimateRules.Wind(dir,_cfg), out windLift, out float rainShadow01);
                         // windwardMoistureBonus / leewardDryness 继续作为迎风/背风的调参倍率，
                         // 与 orographic/rainShadow 的绝对幅度配合使用。
                         float orographic = windLift * _cfg.orographicMoistureBonus
@@ -220,6 +220,8 @@ namespace DarwinPark.Planet
                                 _cfg.coastProximityThreshold + 0.25f, coastProximity));
                         float coastTarget = _cfg.minCoastHumidity + humidityOffset * 0.5f;
                         humidity = Mathf.Lerp(humidity, Mathf.Max(humidity, coastTarget), coastWeight * 0.85f);
+                        // ★ 适配：赤道辐合/副热带下沉及真实河湖补湿，沿海下限不能覆盖下沉干燥。
+                        humidity+=EarthClimateRules.Humidity(dir,_cfg)+(_data.Hydrology?.Moisture(dir)??0);
                     }
 
                     float precipitation = isOcean
@@ -401,7 +403,7 @@ namespace DarwinPark.Planet
                     for (int step = 1; step <= steps; step++)
                     {
                         // 沿球面逆风走：把风向量投影到切平面，再向反方向旋转。
-                        Vector3 tangent = Vector3.ProjectOnPlane(windDir, p);
+                        Vector3 tangent = Vector3.ProjectOnPlane(EarthClimateRules.Wind(p,_cfg), p);
                         if (tangent.sqrMagnitude < 1e-8f) break;
                         tangent.Normalize();
                         p = (p * Mathf.Cos(stepAngle) - tangent * Mathf.Sin(stepAngle)).normalized;
@@ -546,6 +548,7 @@ namespace DarwinPark.Planet
             color = Color.Lerp(color, _cfg.tundra, cold);
             color = Color.Lerp(color, _cfg.polarIce, ice);
 
+            if(_cfg.earth?.enabled==true)color=EarthClimateRules.Color(temperature,humidity,_cfg);
             // 高山岩石与雪线：只影响真正的高海拔区域，避免整片大陆变白。
             float rock = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.35f, 0.75f, altitudeNorm))
                 * Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.1f, 0.5f, relief));

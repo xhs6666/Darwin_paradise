@@ -92,7 +92,7 @@ namespace DarwinPark.UI
             GeneDatabase.Reload();GeneDatabase.EnsureLoaded();
             // ★ 适配：新旧世界的维持来源与任务分开恢复，不能把上一个世界的自动生成带到当前存档。
             PopulationMaintenance.Restore(data.maintenance);RandomPlanetSpawner.Ensure(ServiceLocator.Get<SimulationClock>().gameObject).ResetWorld();
-            var material=_builder.TerrainMaterial;JsonUtility.FromJsonOverwrite(data.terrainParameters,_builder);_builder.TerrainMaterial=material;
+            var material=_builder.TerrainMaterial;JsonUtility.FromJsonOverwrite(data.terrainParameters,_builder);LandformSaveCompatibility.Restore(_builder,data.terrainParameters);_builder.TerrainMaterial=material;
             var environment=ServiceLocator.Get<EnvironmentSystem>();JsonUtility.FromJsonOverwrite(data.environmentParameters,environment);
             ClimateDataHub.BaseTemperature=environment.BaseTemperature;ClimateDataHub.BaseHumidity=environment.BaseHumidity;
             var config=_builder.CaptureConfiguration();float sea=_builder.seaLevelRatio,land=_builder.continentRatio;
@@ -140,7 +140,7 @@ namespace DarwinPark.UI
             WorldHudInputLifecycle.PrepareWorldControls();
             Current=data;Progress=.98f;Status="完成画面与界面准备";yield return null;yield return new WaitForEndOfFrame();
             if(isNew)SaveNow();Progress=1;Status="加载完成";yield return null;
-            Busy=false;WorldRuntimeGate.Loading=false;WorldRuntimeGate.Ready=true;_autoSave=0;Debug.Log("[世界] 加载完成 id="+data.id+"，实体="+EntityRegistry.All.Count);Loaded?.Invoke();
+            Busy=false;WorldRuntimeGate.Loading=false;WorldRuntimeGate.Ready=true;_autoSave=0;Debug.Log("[世界] 加载完成 id="+data.id+"，实体="+EntityRegistry.All.Count);Loaded?.Invoke();if(isNew)NaturalWorldSeeder.Begin(this);
         }
         // ★ 新增：返回主界面先完成保存；失败直接抛回菜单，禁止先清场再丢失玩家进度。
         public void ReturnToMenu(bool running)

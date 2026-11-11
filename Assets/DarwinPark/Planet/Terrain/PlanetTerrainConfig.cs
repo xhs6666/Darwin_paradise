@@ -45,6 +45,9 @@ namespace DarwinPark.Planet
     [Serializable]
     public class PlanetTerrainConfig
     {
+        // ★ 适配：地貌与汇流参数以独立配置传入后台生成。
+        public LandformSettings landforms=new();
+        public LandNavigationSettings navigation=new();
         public string id;
         public int subdivisions = 24;
         public float radius = 100f;

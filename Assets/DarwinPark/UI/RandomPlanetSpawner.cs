@@ -67,7 +67,8 @@ namespace DarwinPark.UI
                 attempted++;slice++;PlacementAttempts++;
                 var direction=Random.onUnitSphere;float outside=surface.bounds.extents.magnitude+spawnHeight;
                 if(surface.Raycast(new Ray(planet.transform.position+direction*outside,-direction),out var hit,outside*2)&&
-                    (!landOnly||(hit.point-planet.transform.position).magnitude>planet.WaterRadius+landClearance)&&
+                    // ★ 适配：仅陆地投放也排除新水系的河湖水位。
+                    (!landOnly||(hit.point-planet.transform.position).magnitude>planet.LocalWaterRadius(hit.point)+landClearance)&&
                     Spawn(source.CreateGenome(),hit.point+direction*spawnHeight)){Spawned++;}
                 Status="已生成 "+Spawned+" / "+Requested;
                 }

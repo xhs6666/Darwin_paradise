@@ -23,5 +23,8 @@ namespace DarwinPark.Planet
         public Color[] Colors;
         public Bounds Bounds;
         public float SeaLevel;
+        // ★ 适配：水系与最终地形一起生成，玩法与显示共用。
+        public PlanetHydrology Hydrology;
+        public LandNavigationGraph Navigation;
     }
 }

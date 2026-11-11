@@ -11,15 +11,16 @@ namespace DarwinPark.Entities.Ecology
         public static float GestationSeconds(EntityGeneController genes,float size)
         {
             var settings=EcologyBalanceSettings.Current;var life=LifeCycleSettings.Load();
-            float days=EcologyEnergyBudget.IsProducer(genes)?settings.producerGestationDays:settings.consumerGestationDays;
+            var pace=NaturalPopulationPace.Current;
+            float days=pace.enabled?(EcologyEnergyBudget.IsProducer(genes)?pace.producerGestationDays:pace.consumerGestationDays):(EcologyEnergyBudget.IsProducer(genes)?settings.producerGestationDays:settings.consumerGestationDays);
             float speed=Mathf.Max(settings.minimumReproductionSpeed,genes.GetAttribute(settings.reproductionSpeedAttribute));
             days*=settings.referenceReproductionSpeed/speed*size;
             if(!EcologyEnergyBudget.IsProducer(genes))days*=FoodPressure(genes);
             float efficiency=genes.GetAttribute(settings.gestationEfficiencyAttribute);if(efficiency>0)days/=efficiency;
-            return Mathf.Clamp(days,life.minimumGestationDays,life.maximumGestationDays)*life.secondsPerDay;
+            return Mathf.Clamp(days,pace.enabled?pace.minimumGestationDays:life.minimumGestationDays,pace.enabled?pace.maximumGestationDays:life.maximumGestationDays)*life.secondsPerDay;
         }
         public static float CooldownSeconds(EntityGeneController genes)
-        {var settings=EcologyBalanceSettings.Current;return (EcologyEnergyBudget.IsProducer(genes)?settings.producerCooldownDays:settings.consumerCooldownDays)*LifeCycleSettings.Load().secondsPerDay;}
+        {var settings=EcologyBalanceSettings.Current;if(NaturalPopulationPace.Current.enabled)return NaturalPopulationPace.Current.postpartumYears*365*LifeCycleSettings.Load().secondsPerDay;return (EcologyEnergyBudget.IsProducer(genes)?settings.producerCooldownDays:settings.consumerCooldownDays)*LifeCycleSettings.Load().secondsPerDay;}
         // ★ 新增：附近可食生产者不足时减慢孕育，避免已有储粮在食物衰退期间继续造成数量过冲；不直接增删实体。
         public static float FoodPressure(EntityGeneController genes)
         {

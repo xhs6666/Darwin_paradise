@@ -88,7 +88,7 @@ namespace DarwinPark.Entities.Ecology
             var kind=nursery?ColonyResourceKind.Nursery:ColonyResourceKind.Supply;
             // ★ 适配：转换查种群能量块坐标，不再遍历尸体。
             ColonyResource existing=null;foreach(var item in ResourceGroups.Read(group))if(item.resource.State.kind==kind&&item.resource.State.energy>0&&EcologyQueries.Distance(item.position,point)<=AntColonySettings.Current.arrivalDistance){existing=item.resource;break;}
-            if(existing!=null){existing.State.energy+=energy;return existing;}
+            if(existing!=null){existing.State.energy+=energy;ColonyFoodQueryCache.AddedEnergy();return existing;}
             return Create(new ColonyResourceSave{id=Guid.NewGuid().ToString("N"),group=group,kind=kind,energy=energy,local=EcologyQueries.ToLocal(point),scale=Vector3.one});
         }
         public static void Feed(AntColonyMember member,float dt)

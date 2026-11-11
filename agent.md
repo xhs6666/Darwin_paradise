@@ -413,3 +413,8 @@
 本次216项原生断言、Windows非开发构建及12秒启动通过；离线编译0错误/0警告。Windows构建1条原有云端符号上传警告。维护图391脚本/4007方法/4010图，188768项结构及19项浏览检查通过。详见 `Docs/验证记录/种群比例规则与时间单位-2026-11-10.md`。
 
 此前未验证的自然节奏及矿脉上传草案暂存在 `Artifacts/PendingWorldEvolution`（补丁、原GUID及恢复说明）；地形/气候/陆地寻路仍待继续，不得把本次规则交付描述为这些功能已完成。
+
+| 2026-11-11 | 近千实体吸收矿物导致营养结算占用约253ms | 每次吸收整张上传矿物图；补给循环重复查询与空组件诊断分配 | OreTextureUploadBatch、PlanetOreSystem、ColonyFoodQueryCache、ColonyFoodSources、EntityTaskPlan | CPU营养即时结算，帧末一次上传；恢复取消旧队列，同帧缓存必须检查版本与可消费能量 |
+| 2026-11-11 | AI向隔海猎物/尸体/食物直走并落水 | 只按距离选目标和直线移动，未建立陆地连通区 | LandNavigationGraph、LandPathScheduler、LandReachability、LocomotionGeneLogic | 水域/坡度限制、全局共享预算、候选可达性；验证绕湖与隔海拒绝，不用逐体大数组 |
+| 2026-11-11 | 新地貌可能静默改变旧档岸线或埋入资源 | 新增字段默认开启、重建只迁移实体 | LandformSaveCompatibility、WorldParameterUpdate、TerrainResourceRelocation | 缺字段旧档默认关闭；显式升级保留资源身份/能量并重新贴地，非法设置在清场前拒绝 |
+| 2026-11-11 | 自然人口增长过快，合并结算与个体年限可能分歧 | 旧秒级成长/冷却与多年目标不一致 | NaturalPopulationPace、EcologyReproductionTiming、StationaryCohortKernel、NaturalWorldSeeder | 统一推进函数，新孕育15～360游戏天，旧计时不重置；种源仅新世界一次，约50年仅理想标定 |

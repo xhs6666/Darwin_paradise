@@ -11,7 +11,8 @@ namespace DarwinPark.Planet
         Grassland,      // 草原
         Forest,         // 温带森林
         Tundra,         // 苔原
-        PolarIce        // 极地冰盖
+        PolarIce,       // 极地冰盖；以下编号追加，保留旧枚举
+        Savanna,Steppe,ColdDesert,Taiga
     }
 
     public struct ClimateData
@@ -113,7 +114,7 @@ namespace DarwinPark.Planet
 
 
             // ★ 适配：初始化回退也必须遵循辐射权重，避免前后出现完全不同的纬度气候带。
-            float temp = Mathf.Lerp(cfg.regionalTemperature, Mathf.Lerp(cfg.poleTemp, cfg.equatorTemp, latCurve), cfg.solarTemperatureWeight);
+            float temp = Mathf.Lerp(cfg.regionalTemperature, Mathf.Lerp(cfg.poleTemp, cfg.equatorTemp, latCurve), EarthClimateRules.SolarWeight(cfg));
             temp += ClimateDataHub.BaseTemperature - cfg.baseTemperatureReference;
             temp -= altitudeNorm * cfg.altitudeTempDrop;
 
@@ -124,7 +125,7 @@ namespace DarwinPark.Planet
 
             if (isOcean)
             {
-                float oceanTarget = Mathf.Lerp(cfg.regionalTemperature, Mathf.Lerp(cfg.oceanPoleTemp, cfg.oceanEquatorTemp, latCurve), cfg.solarTemperatureWeight);
+                float oceanTarget = Mathf.Lerp(cfg.regionalTemperature, Mathf.Lerp(cfg.oceanPoleTemp, cfg.oceanEquatorTemp, latCurve), EarthClimateRules.SolarWeight(cfg));
                 temp = Mathf.Lerp(temp, oceanTarget, cfg.oceanTempModeration);
                 humidity = 100f;
             }

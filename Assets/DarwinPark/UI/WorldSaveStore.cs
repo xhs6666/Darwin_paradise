@@ -89,6 +89,8 @@ namespace DarwinPark.UI
             // ★ 适配：删除名单与剩余时间必须在清场前校验。
             DarwinPark.Entities.Simulation.CorpseCleanupController.Validate(data.corpseCleanup);
             // ★ 修复（防Bug回归）：在清理当前世界之前校验参数和基因 JSON，损坏存档不会先破坏现场。
+            // ★ 适配：有界验证在清场前执行，旧档缺地貌字段仍可加载。
+            DarwinPark.Planet.LandformSaveCompatibility.Validate(data.terrainParameters);
             var terrain=JsonUtility.FromJson<TerrainSaveValidation>(data.terrainParameters);
             if(terrain==null||terrain.subdivisions<2||terrain.subdivisions>1024||!Finite(terrain.radius)||terrain.radius<=0||!Finite(terrain.heightScale)||!Finite(terrain.continentRatio)||terrain.continentRatio<=0||terrain.continentRatio>=1)throw new InvalidDataException("地形参数无效");
             var environment=JsonUtility.FromJson<EnvironmentSaveValidation>(data.environmentParameters);

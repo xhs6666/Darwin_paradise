@@ -381,7 +381,23 @@
     "Assets/DarwinPark/UI/SimulationTimeHelp.cs": "规则周期的游戏天换算、单位校验和悬浮解释，内部仍保留模拟秒存储。",
     "Assets/DarwinPark/Core/PopulationRatioRuleEdits.cs": "只保存种群比例调节开关，校验配置并保留外部注释及其他数值。",
     "Assets/DarwinPark/UI/PopulationRatioRulePage.cs": "种群比例调节独立规则页：默认关闭，启用后仅延缓超额繁殖，不直接生成，保留原卡尺寸。",
-    "Assets/DarwinPark/Editor/PopulationRatioRuleChecks.cs": "真实规则卡、磁盘和世界回归：默认关闭、超额繁殖抑制、旧补员入口停用及游戏天换算。"
+    "Assets/DarwinPark/Editor/PopulationRatioRuleChecks.cs": "真实规则卡、磁盘和世界回归：默认关闭、超额繁殖抑制、旧补员入口停用及游戏天换算。",
+    "Assets/DarwinPark/Editor/WorldEvolutionRegression.cs": "真实场景回归：验证矿量合并上传、食物缓存、自然代际节奏、新世界种源、陆地绕行、水系和旧档地貌升级，并导出气候及河湖近景。",
+    "Assets/DarwinPark/Entities/Ecology/ColonyFoodQueryCache.cs": "缓存同帧蚁群补给选择；按资源增删、食物增加、角色和共享设置使旧结果失效。",
+    "Assets/DarwinPark/Entities/Ecology/LandReachability.cs": "缓存实体与资源所在陆地连通区，排除隔海无法抵达的任务目标。",
+    "Assets/DarwinPark/Entities/Ecology/NaturalPopulationPace.cs": "加载可外部调整的自然成长、寿命和孕育年限；统一个体与静止合并计算的生命推进速度。",
+    "Assets/DarwinPark/Entities/Ecology/TerrainResourceRelocation.cs": "地形重建前后保留资源身份和能量并重新贴地，避免尸体和能量块埋入地形。",
+    "Assets/DarwinPark/Planet/EarthClimateRules.cs": "用大气环流带近似湿度并区分雨林、草原、针叶林和荒漠颜色与分类。",
+    "Assets/DarwinPark/Planet/OreTextureUploadBatch.cs": "即时保留CPU矿量扣除，将同帧矿物纹理更新合并为一次上传。",
+    "Assets/DarwinPark/Planet/Terrain/LandNavigationGraph.cs": "地形生成时建立可步行节点、陆地连通区及水域和坡度约束。",
+    "Assets/DarwinPark/Planet/Terrain/LandPathScheduler.cs": "全局共享A*工作数组和每帧预算，缓存路线；实体仅保存路径游标并验证岸边速度。",
+    "Assets/DarwinPark/Planet/Terrain/LandformSaveCompatibility.cs": "校验并迁移地貌及寻路设置；旧档缺少新字段时保留原地形。",
+    "Assets/DarwinPark/Planet/Terrain/LandformSettings.cs": "高原、盆地、汇流河网和湖泊的可调生成参数。",
+    "Assets/DarwinPark/Planet/Terrain/PlanetFreshWaterMesh.cs": "把内陆河湖合并成一个独立静态水面网格，避免逐河流更新和碰撞体。",
+    "Assets/DarwinPark/Planet/Terrain/PlanetHydrology.cs": "优先洪泛建立出流方向、汇水量和湖泊，再侵刻河床并提供局部水位与湿度。",
+    "Assets/DarwinPark/Planet/Terrain/SurfaceMinHeap.cs": "为洪泛和寻路复用的稳定最小堆，按优先级和节点编号排序。",
+    "Assets/DarwinPark/UI/LandformUpgradeControl.cs": "在地形参数页提供显式启用或关闭新地貌入口，并接入后台地形编辑链路。",
+    "Assets/DarwinPark/UI/NaturalWorldSeeder.cs": "仅新世界建立一次7成生产者、3成移动者的少量幼体种源，旧档及灭绝后不补员。"
   },
   "files": {
     "Assets/Scenes/SampleScene.unity": "主要运行场景：挂载星球、环境、时钟、UI和游戏启动组件。",
@@ -499,7 +515,7 @@
     "Assets/DarwinPark/Planet/Terrain/PopulationRangeOverlay.hlsl": "同群活动圆先求并集，再绘制半透明填色或外沿，支持各群不透明度。",
     "Docs/开发设计/项目精简与优化.md": "精简范围、兼容保留、缓存失效规则与后续维护约束。",
     "Docs/验证记录/项目精简优化验证-2026-11-06.md": "本次精简的引用审计、等价对照、耗时/分配和回归结果。",
-    "Assets/Resources/Entities/ecology_defaults.json": "内置生态默认值：生产者70%、移动实体30%、100个体保底、基础繁衍模板和有限建群保障。",
+    "Assets/Resources/Entities/ecology_defaults.json": "内置生态比例目标70/30、基础繁衍与自养行动种源模板、有限建群保障；不触发持续补员。",
     "config/ecology_defaults.json": "可在游戏外编辑的生态默认配置，支持中文注释；新世界及显式应用默认项时使用。",
     "Docs/操作指南/生态默认与建群保障.md": "说明默认比例、基础模板、建群储粮与工匠交接、旧世界应用和外部调参。",
     "Docs/验证记录/生态默认与种群延续验证-2026-11-07.md": "本次70/30生态、建群补给、持久化、长期模拟和兼容回归的验证记录。",
@@ -535,6 +551,8 @@
     "Docs/验证记录/规则清尸渲染证据-2026-11-09/far-after.png": "本轮原生Unity截图，供规则卡布局或天气外观复核。",
     "Docs/开发设计/重力接地共享查询优化.md": "真实三角形接地共享、物理写入去重、斜坡休眠和热载入参数设计。",
     "Docs/验证记录/重力接地优化验证-2026-11-09.md": "重力接地专项、受控同存档性能和现行操控/搬运/休眠发布兼容证据。",
-    "Docs/验证记录/重力接地证据-2026-11-09/performance.json": "4eb5de1与本轮重力实现的固定输入、计时、回调和休眠/射线计数原始对照报告。"
+    "Docs/验证记录/重力接地证据-2026-11-09/performance.json": "4eb5de1与本轮重力实现的固定输入、计时、回调和休眠/射线计数原始对照报告。",
+    "Assets/Resources/Entities/natural_population.json": "内置自然代际节奏：一次性10种源、参考生命年限、15～360天孕育与产后间隔。",
+    "config/natural_population.json": "可外部调整并热加载的自然成长、寿命、孕育和新世界种源配置，支持中文注释。"
   }
 }

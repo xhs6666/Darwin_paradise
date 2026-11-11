@@ -37,6 +37,7 @@ namespace DarwinPark.Planet
 
             // ★ 适配：由独立造山带模型提供连续山系。
             var mountains = new PlanetMountainField(cfg);
+            var landforms=new PlanetLandformField(cfg.landforms??new LandformSettings{enabled=false},cfg.seed);
 
             var basinCfg = new FBMConfig
             {
@@ -132,6 +133,8 @@ namespace DarwinPark.Planet
                             baseHeight += detailNoise.Sample(dir) * cfg.detailStrength
                                 * (0.4f + land * 0.8f);
 
+                            // ★ 适配：独立高原/盆地场在造山前塑形。
+                            baseHeight=landforms.Shape(baseHeight,dir,seaLevelThreshold);
                             // ★ 适配：山系只占连续造山带，低地不再被大量等值线山脊淹没。
                             float mountainMask = Mathf.SmoothStep(0f, 1f,
                                 Mathf.InverseLerp(cfg.mountainStart, cfg.mountainFull, land));
@@ -169,6 +172,9 @@ namespace DarwinPark.Planet
             PlanetSeamContinuity.Smooth(data,cfg.erosion);
             MergeSeamVertices(data.FaceHeights,sub);
 
+            // ★ 适配：优先洪泛得到真实下游连通，再下切河床；不在运行帧计算。
+            if(cfg.landforms?.enabled==true){data.Hydrology=PlanetHydrology.Build(data,cfg.landforms);data.Hydrology.Carve(data);MergeSeamVertices(data.FaceHeights,sub);}
+            data.Navigation=new LandNavigationGraph(data,cfg.navigation??new LandNavigationSettings());
             BuildMesh(data);
             // ★ 适配：焊接接缝共享索引，消除裂缝与两套法线。
             PlanetMeshTopology.Weld(data);

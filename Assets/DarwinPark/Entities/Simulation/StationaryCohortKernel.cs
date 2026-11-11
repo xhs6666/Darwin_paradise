@@ -24,8 +24,7 @@ namespace DarwinPark.Entities.Simulation
         }
         public static float LifeSpeed(EntityGeneController genes)
         {
-            var settings=LifeCycleSettings.Load();
-            return genes.CurrentAge==AgeState.Elder?Mathf.Max(settings.minimumAgingSpeed,genes.GetAttribute("agingSpeed"))*settings.agingProgressScale:Mathf.Max(0,genes.GetAttribute("growthSpeed"))*settings.growthProgressScale;
+            return NaturalPopulationPace.LifeSpeed(genes);
         }
         public static Vector3 Sample(EntityGeneController genes,float dt)
             =>Sample(genes,genes.GetComponent<EntityStats>(),genes.GetComponent<EntityEnvironmentHazard>(),genes.GetComponent<EntityVitals>(),dt);

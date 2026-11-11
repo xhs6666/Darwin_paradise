@@ -2,7 +2,7 @@
 
 [返回总索引](../README.md) · `Runtime` · `Assets/DarwinPark/Entities/Ecology/ColonyResource.cs`
 
-[源文件](../../../Assets/DarwinPark/Entities/Ecology/ColonyResource.cs) · 源码校验：`051523f75be14e2fc4bbfb117d97768b3576352b6e4af4140e9cee8d0d4c976f`
+[源文件](../../../Assets/DarwinPark/Entities/Ecology/ColonyResource.cs) · 源码校验：`947ecb069faa26a355e27c1ee350788199950c4f4b739c52008e8af43da6baf9`
 
 方法按源文件位置排列。事件/回调引用不表示立即执行；分支与异常说明见总索引。完整源码与可点击关系图请打开离线手册。
 
@@ -559,7 +559,7 @@ flowchart TD
   b13["ResourceGroups.Read(group)"]
   b14["连接 / 离开区域"]
   b15{"判断：existing!=null"}
-  b16["existing.State.energy+=energy;<br/>结果：existing"]
+  b16["existing.State.energy+=energy;<br/>ColonyFoodQueryCache.AddedEnergy();<br/>结果：existing"]
   b17["new ColonyResourceSave{id=Guid.NewGuid().ToString(&quot;N&quot;),group=group,kind=kind,energy=energy,local=EcologyQueries.ToLocal(point),scale=Vector3.one}<br/>id=Guid.NewGuid().ToString(&quot;N&quot;)<br/>group=group<br/>kind=kind<br/>energy=energy<br/>local=EcologyQueries.To…"]
   b18(["结束 / 返回"])
   b0 --> b1
@@ -596,10 +596,11 @@ flowchart TD
 - [ColonyResource.State.get · L24](293dbaecfff4b585.md#m41824f1a0e160aa5)（访问器）
 - [EcologyQueries.Distance · L43](bdf7ccc2c9c0452f.md#m6e395dce655ebcac)（方法）
 - [AntColonySettings.Current.get · L31](cb0a937e97c8fbb3.md#mcd121159f407ccdf)（访问器）
+- [ColonyFoodQueryCache.AddedEnergy · L17](63cd90165719dbff.md#m3dc878ff8d967dd4)（方法）
 - [ColonyResource.Create · L45](293dbaecfff4b585.md#m7e8d2b0e06e1cad5)（方法）
 - [EcologyQueries.ToLocal · L40](bdf7ccc2c9c0452f.md#mfa1ace432c73012a)（方法）
 
-<a id="m173f86b0990bddd7"></a>
+<a id="md202fabfc503ca1f"></a>
 
 ## Feed · L94
 
@@ -641,9 +642,9 @@ flowchart TD
 - [ColonyResource.State.get · L24](293dbaecfff4b585.md#m41824f1a0e160aa5)（访问器）
 - [ResourceCoordinates.Observe · L44](93d731ac01e3af48.md#m8772c0d40540a8d7)（方法）
 - [EntityStats.Feed · L95](75aa86a368efdf24.md#mc025822ff1eb86a0)（方法）
-- [ColonyResource.Remove · L108](293dbaecfff4b585.md#mb9333347c7434224)（方法）
+- [ColonyResource.Remove · L108](293dbaecfff4b585.md#me59455a847912120)（方法）
 
-<a id="mb9333347c7434224"></a>
+<a id="me59455a847912120"></a>
 
 ## Remove · L108
 
@@ -663,7 +664,7 @@ flowchart TD
 
 ```
 
-<a id="m4a3572d1077d33bd"></a>
+<a id="mc969798f9562c061"></a>
 
 ## ClearWorld · L109
 
@@ -699,11 +700,11 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [ColonyResource.Remove · L108](293dbaecfff4b585.md#mb9333347c7434224)（方法）
+- [ColonyResource.Remove · L108](293dbaecfff4b585.md#me59455a847912120)（方法）
 - [ColonyFoodSources.Clear · L18](4c419a1a067d428c.md#m1ded72e671d91ff7)（方法）
 - [ResourceCoordinates.Clear · L74](93d731ac01e3af48.md#m747bfb1c7693a3c4)（方法）
 
-<a id="m4b17768e02a667b9"></a>
+<a id="mc75f45db4e309026"></a>
 
 ## Capture · L110
 

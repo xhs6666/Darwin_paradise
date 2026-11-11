@@ -33,9 +33,8 @@ namespace DarwinPark.Entities
             if(_stats.TryGet("health",out float hp) && hp<=0)return;
             var settings=LifeCycleSettings.Load();
             // 孕育仍可抑制幼年成长；老化不能因为基因失效而无限暂停。
-            float speed=sharedSpeed??(_genes.CurrentAge==AgeState.Elder
-                ?Mathf.Max(settings.minimumAgingSpeed,_genes.GetAttribute("agingSpeed"))*settings.agingProgressScale
-                :Mathf.Max(0,_genes.GetAttribute("growthSpeed"))*settings.growthProgressScale);
+            // ★ 适配：个体和共享结算使用同一自然年限，已保存的生命进度不重置。
+            float speed=sharedSpeed??Ecology.NaturalPopulationPace.LifeSpeed(_genes);
             Progress=Mathf.Min(settings.deathProgress,Progress+speed*dt);
             if(Progress>=settings.adultProgress && _genes.CurrentAge==AgeState.Infant)EnterStage(AgeState.Adult);
             if(Progress>=settings.elderProgress && _genes.CurrentAge==AgeState.Adult)EnterStage(AgeState.Elder);

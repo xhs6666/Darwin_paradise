@@ -9,7 +9,7 @@ namespace DarwinPark.Entities
     {
         public float adultProgress=30,elderProgress=80,deathProgress=100;
         public float growthProgressScale=.2f,agingProgressScale=.1f,minimumAgingSpeed=1;
-        public float secondsPerDay=10,minimumGestationDays=7,maximumGestationDays=30,baseGestationDays=30,cooldownDays=15;
+        public float secondsPerDay=10,minimumGestationDays=15,maximumGestationDays=360,baseGestationDays=30,cooldownDays=15;
         public float nutrientCost=20,mateSearchRadius=20,gestationNutrientDrain=3;
         public float stationaryBirthMinRadius=2,stationaryBirthMaxRadius=8,movingBirthRadius=2,birthHeight=1;
         private static LifeCycleSettings _cached;

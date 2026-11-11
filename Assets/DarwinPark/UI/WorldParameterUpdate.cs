@@ -30,7 +30,7 @@ namespace DarwinPark.UI
             message="";var world=Object.FindFirstObjectByType<WorldSessionManager>();var builder=Object.FindFirstObjectByType<PlanetTerrainMeshBuilder>();
             if(Busy||WorldRuntimeGate.Loading||world?.Busy==true){message="正在更新，请稍候";return false;}
             if(!WorldAuthority.CanEdit||WorldAuthority.IsReplica||!WorldRuntimeGate.Ready||builder?.Data==null){message="当前世界不可修改";return false;}
-            string kind=id!=null&&id.Contains("seed")?"seed":id!=null&&id.Contains("terrain")?"terrain":id!=null&&id.Contains("temp")?"temp":id!=null&&id.Contains("hum")?"hum":null;
+            string kind=WorldLandformEdits.Kind(id)??(id!=null&&id.Contains("seed")?"seed":id!=null&&id.Contains("terrain")?"terrain":id!=null&&id.Contains("temp")?"temp":id!=null&&id.Contains("hum")?"hum":null);
             if(kind==null){message="未知参数";return false;}
             int seed=builder.seed;float value;
             if(kind=="seed")
@@ -38,8 +38,9 @@ namespace DarwinPark.UI
             else if(!float.TryParse(raw,NumberStyles.Float,CultureInfo.InvariantCulture,out value)||!float.IsFinite(value)){message="请输入有效数字";return false;}
             var environment=ServiceLocator.Get<EnvironmentSystem>();
             var range=kind=="temp"?temperatureRange:kind=="hum"?humidityRange:landPercentRange;
-            if(kind!="seed"&&(value<range.x||value>range.y)){message="数值超出允许范围";return false;}
-            bool unchanged=kind=="seed"?seed==builder.seed:kind=="terrain"?Mathf.Approximately(value/100,builder.continentRatio):kind=="temp"?Mathf.Approximately(value,environment.BaseTemperature):Mathf.Approximately(value,environment.BaseHumidity);
+            if(kind=="landforms"&&value!=0&&value!=1){message="地貌开关只接受0或1";return false;}
+            if(kind!="seed"&&kind!="landforms"&&(value<range.x||value>range.y)){message="数值超出允许范围";return false;}
+            bool unchanged=kind=="landforms"?builder.landforms.enabled==(value>0):kind=="seed"?seed==builder.seed:kind=="terrain"?Mathf.Approximately(value/100,builder.continentRatio):kind=="temp"?Mathf.Approximately(value,environment.BaseTemperature):Mathf.Approximately(value,environment.BaseHumidity);
             if(unchanged){message="参数未变化";LastStatus=message;return true;}
             WorldGameSettingsPanel.Instance?.Close();
             BeginCapture();Busy=true;Progress=0;Status="准备更新参数";LastStatus="正在更新";
@@ -72,7 +73,8 @@ namespace DarwinPark.UI
         {
             // ★ 修复（防Bug回归）：先让加载界面真正画出来，再启动重计算，不在应用按钮回调里同步Build造成假死。
             yield return null;yield return new WaitForEndOfFrame();
-            var config=builder.CaptureConfiguration();var oldData=builder.Data;bool terrain=kind=="seed"||kind=="terrain";
+            var config=builder.CaptureConfiguration();var oldData=builder.Data;bool terrain=kind=="seed"||kind=="terrain"||kind=="landforms";
+            WorldLandformEdits.Apply(config,kind,value);TerrainResourceRelocation resources=terrain?new TerrainResourceRelocation(builder,minimumSurfaceOffset,maximumPreservedAltitude):null;
             config.seed=kind=="seed"?seed:builder.seed;float land=kind=="terrain"?value/100:builder.continentRatio;
             float temp=kind=="temp"?value:environment.BaseTemperature,humidity=kind=="hum"?value:environment.BaseHumidity;
             var data=oldData;
@@ -95,7 +97,7 @@ namespace DarwinPark.UI
             var climateTask=Task.Run(()=>new PlanetClimateModel(climateData,climateConfig,climateSeed).Generate(resolution,temp-climateConfig.baseTemperatureReference,humidity-climateConfig.baseHumidityReference));
             while(!climateTask.IsCompleted)yield return null;if(climateTask.IsFaulted)throw climateTask.Exception;
             Progress=.85f;Status="更新画面与地表碰撞";yield return null;
-            if(terrain){builder.seed=config.seed;builder.continentRatio=land;builder.ApplyGeneratedData(data);StationaryBodyRest.Clear();}
+            if(terrain){builder.seed=config.seed;builder.continentRatio=land;builder.landforms=config.landforms;builder.ApplyGeneratedData(data);StationaryBodyRest.Clear();}
             environment.BaseTemperature=temp;environment.BaseHumidity=humidity;ClimateDataHub.BaseTemperature=temp;ClimateDataHub.BaseHumidity=humidity;climate.ApplyGeneratedClimate(climateTask.Result);
             foreach(var body in _bodies)if(body.entity!=null)
             {
@@ -103,6 +105,7 @@ namespace DarwinPark.UI
                 if(terrain&&body.relocate){float radius=builder.radius+PlanetTerrainSampler.SampleHeight(data,builder.transform.InverseTransformDirection(body.direction))*builder.heightScale;position=builder.transform.position+body.direction*(radius+body.altitude);}
                 body.entity.transform.position=position;if(body.body!=null)body.body.position=position;EntityNeighborhood.ObservePosition(body.entity.Genes);
             }
+            resources?.Restore(builder);
             Physics.SyncTransforms();Progress=.96f;Status="保存参数并恢复原世界";yield return null;
             if(world?.Current!=null)world.SaveNow(_running);
             Progress=1;Status="更新完成";yield return new WaitForEndOfFrame();

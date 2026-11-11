@@ -174,7 +174,7 @@ namespace DarwinPark.Entities.Vitals
             }
 
             float distanceToCenter = (transform.position - _planetBuilder.transform.position).magnitude;
-            float waterRadius = _planetBuilder.WaterRadius;
+            float waterRadius = _planetBuilder.LocalWaterRadius(transform.position);
             float depth = waterRadius - distanceToCenter;
 
             IsDrowning = depth > _config.drowningDepthThreshold;

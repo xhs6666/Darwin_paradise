@@ -13,6 +13,8 @@ namespace DarwinPark.Planet
     [Serializable]
     public class PlanetClimateConfig
     {
+        // ★ 适配：独立年平均环流/生态色板，参数随配置序列化。
+        public EarthClimateSettings earth=new();
         [Header("温度条件（太阳辐射 + 海拔 + 海洋 + 大陆性）")]
         [Tooltip("赤道海平面年均温（摄氏度）")]
         public float equatorTemp = 31f;
@@ -129,6 +131,7 @@ namespace DarwinPark.Planet
         public ClimateType Classify(float temperature, float humidity, bool isOcean)
         {
             if (isOcean) return ClimateType.Ocean;
+            if(earth?.enabled==true)return EarthClimateRules.Classify(temperature,humidity,this);
             if (temperature <= polarIceTemp) return ClimateType.PolarIce;
             if (temperature <= tundraTemp) return ClimateType.Tundra;
             if (temperature >= desertTemp && humidity <= desertHumidity) return ClimateType.Desert;

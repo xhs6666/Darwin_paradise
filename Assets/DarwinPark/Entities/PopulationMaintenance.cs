@@ -132,6 +132,8 @@ namespace DarwinPark.Entities
         {
             float scale=BreedingScale(genes);if(scale>=1){waited=0;return true;}if(scale<=0){waited=0;return false;}
             float interval=PopulationMaintenanceSettings.Current.extraBreedingDelaySeconds;
+            // ★ 适配：自然年限下按代际间隔抑制超额类别，不能让几模拟秒的等待失去实际作用。
+            if(NaturalPopulationPace.Current.enabled)interval=Mathf.Max(interval,NaturalPopulationPace.Current.postpartumYears*365*LifeCycleSettings.Load().secondsPerDay);
             float delay=interval*(1/scale-1);waited=Mathf.Min(delay,waited+Mathf.Max(0,dt));return waited>=delay;
         }
         public static bool Set(PopulationMaintenanceRule rule)

@@ -87,7 +87,8 @@ namespace DarwinPark.Entities.Simulation
             entry=new Entry{genes=genes,entity=genes.GetComponent<DarwinEntity>(),stats=genes.GetComponent<EntityStats>(),life=genes.GetComponent<EntityLifeCycle>(),vitals=genes.GetComponent<EntityVitals>(),environment=genes.GetComponent<EntityEnvironmentHazard>(),position=genes.transform.position};
             _entries.Add(genes,entry);return entry;
         }
-        private void Update()=>Advance(ServiceLocator.TryGet<SimulationClock>(out var clock)?clock.GameDeltaTime:Time.deltaTime);
+        // ★ 适配：全局每帧一次检查自然数值的热加载，不在每个实体的生命小步访问磁盘。
+        private void Update(){DarwinPark.Entities.Ecology.NaturalPopulationPace.Poll();Advance(ServiceLocator.TryGet<SimulationClock>(out var clock)?clock.GameDeltaTime:Time.deltaTime);}
         public void Advance(float dt)
         {
             // ★ 适配：只在主动性能采样期间计时，定位完整场景的实际消耗。

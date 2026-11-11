@@ -17,7 +17,8 @@ namespace DarwinPark.Planet
         public Texture2D OreMapTexture { get; private set; }
 
         private Color[] _oreMapPixels;
-        private float _regenTimer;
+        private float _regenTimer;private OreTextureUploadBatch _uploads;
+        private void QueueUpload(){if(_uploads==null)_uploads=GetComponent<OreTextureUploadBatch>()??gameObject.AddComponent<OreTextureUploadBatch>();_uploads.Mark(OreMapTexture,_oreMapPixels);}
 
         private void Awake()
         {
@@ -39,6 +40,7 @@ namespace DarwinPark.Planet
 
         private void GenerateOreMap()
         {
+            _uploads?.Cancel();
             OreMapTexture = new Texture2D(mapResolution, mapResolution, TextureFormat.RGBA32, false, true);
             // ★ 修复（防Bug回归）：矿量属于线性数据；经度环绕，纬度不能从北极跨到南极。
             OreMapTexture.wrapModeU = TextureWrapMode.Repeat;
@@ -100,8 +102,8 @@ namespace DarwinPark.Planet
                         _oreMapPixels[i] = new Color(Mathf.Min(1f, r), 0, 0, 1);
                     }
                 }
-                OreMapTexture.SetPixels(_oreMapPixels);
-                OreMapTexture.Apply();
+                // ★ 适配：CPU矿量已更新，多个实体/子步共享本帧唯一GPU上传。
+                QueueUpload();
             }
         }
 
@@ -111,6 +113,7 @@ namespace DarwinPark.Planet
         public void RestoreAmounts(float[] values,int resolution)
         {
             if(values==null||values.Length!=resolution*resolution)throw new System.IO.InvalidDataException("矿脉存档尺寸无效");
+            _uploads?.Cancel();
             if(OreMapTexture!=null)Destroy(OreMapTexture);mapResolution=resolution;
             OreMapTexture=new Texture2D(resolution,resolution,TextureFormat.RGBA32,false,true){wrapModeU=TextureWrapMode.Repeat,wrapModeV=TextureWrapMode.Clamp,filterMode=FilterMode.Bilinear};
             _oreMapPixels=new Color[values.Length];for(int i=0;i<values.Length;i++)_oreMapPixels[i]=new Color(values[i],0,0,1);
@@ -152,8 +155,8 @@ namespace DarwinPark.Planet
             {
                 float newValue = (current - actualConsume) / maxOreAmount;
                 _oreMapPixels[index] = new Color(newValue, 0, 0, 1);
-                OreMapTexture.SetPixels(_oreMapPixels);
-                OreMapTexture.Apply();
+                // ★ 适配：CPU矿量已更新，多个实体/子步共享本帧唯一GPU上传。
+                QueueUpload();
             }
             return actualConsume;
         }

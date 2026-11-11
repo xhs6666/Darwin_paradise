@@ -40,7 +40,7 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [LifeCycleSettings.Load · L16](ace76969fe8f61de.md#mbd2925785484f343)（方法）
+- [LifeCycleSettings.Load · L16](ace76969fe8f61de.md#m6fe263852e5a8989)（方法）
 
 <a id="m30230b4a61c84d87"></a>
 
@@ -141,4 +141,4 @@ flowchart TD
 项目内调用/回调引用：
 
 - [RuntimeMenuTheme.Apply · L39](b9d8455882f2a532.md#m587a63eff5a85605)（方法）
-- [LifeCycleSettings.Load · L16](ace76969fe8f61de.md#mbd2925785484f343)（方法）
+- [LifeCycleSettings.Load · L16](ace76969fe8f61de.md#m6fe263852e5a8989)（方法）

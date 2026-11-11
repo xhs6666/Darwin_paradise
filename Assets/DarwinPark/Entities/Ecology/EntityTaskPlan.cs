@@ -19,7 +19,8 @@ namespace DarwinPark.Entities.Ecology
         public static int Priority(ColonyActivity activity)=>activity==ColonyActivity.Feed?120:activity==ColonyActivity.Founding?110:activity==ColonyActivity.Transport?70:activity==ColonyActivity.Reproduce?60:activity==ColonyActivity.Collect?50:activity==ColonyActivity.Hunt?40:activity==ColonyActivity.Patrol?20:10;
         public static bool Feeding(AntColonyMember member)
         {
-            if(member==null||!member.Active||member.GetComponent<EggIncubation>()?.Incubating==true)return false;
+            // ★ 修复（防Bug回归）：无孵化组件是正常情况，TryGet避免编辑器为高频空GetComponent生成诊断字符串。
+            if(member==null||!member.Active||OptionalComponent.Read<EggIncubation>(member)?.Incubating==true)return false;
             var plan=member.State.plan??(member.State.plan=new EntityTaskPlanSave());
             var stats=member.GetComponent<EntityStats>();if(stats==null||!stats.TryGet("nutrient",out var food))return false;
             stats.TryGet("storedNutrient",out var reserve);

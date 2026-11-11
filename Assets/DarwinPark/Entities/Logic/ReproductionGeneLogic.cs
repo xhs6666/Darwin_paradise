@@ -154,7 +154,7 @@ namespace DarwinPark.Entities.Logic
             _controller.Recalculate();
         }
 
-        // ★ 修复（防Bug回归）：体型/生长影响仍保留，但总孕育时长必须处于 7～30 个游戏日。
+        // ★ 修复（防Bug回归）：体型/生长影响仍保留，但总孕育时长必须处于配置的15～360个游戏日。
         public float CalculateGestationTime(float size)
         {
             // ★ 修复（防Bug回归）：原计时读取遗传原值，基因抑制对繁殖周期没有效果。

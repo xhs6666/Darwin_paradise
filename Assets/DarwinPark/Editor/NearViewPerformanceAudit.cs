@@ -22,11 +22,14 @@ namespace DarwinPark.EditorTools
     {
         private const string Key="DarwinPark.NearViewPerformanceAudit";private static bool _started,_protected;private static string Folder=>Path.GetFullPath("Artifacts/NearViewReview");
         static NearViewPerformanceAudit(){EditorApplication.update+=()=>{if(!_started&&Application.isPlaying&&SessionState.GetBool(Key,false)&&LanSession.Instance!=null){_started=true;LanSession.Instance.StartCoroutine(Guard());}};}
-        public static void RunBatch(){Application.runInBackground=true;SessionState.SetBool(Key,true);EditorSceneManager.OpenScene("Assets/Scenes/SampleScene.unity");var view=EditorWindow.GetWindow(typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.GameView"));if(Array.IndexOf(System.Environment.GetCommandLineArgs(),"-auditMatchView")>=0)MatchView(view);EditorApplication.EnterPlaymode();}
+        // ★ 新增：正常Hub启动的独立回归也能复现指定报告，不读取或复用授权启动参数。
+        private static string[] Arguments=>System.Environment.GetCommandLineArgs().Concat(SessionState.GetString(Key+".args","").Split(' ',StringSplitOptions.RemoveEmptyEntries)).ToArray();
+        public static void RunLatestBatch(){SessionState.SetString(Key+".args","-userReportOnly -auditMatchView -noHierarchy");RunBatch();}
+        public static void RunBatch(){Application.runInBackground=true;SessionState.SetBool(Key,true);EditorSceneManager.OpenScene("Assets/Scenes/SampleScene.unity");var view=EditorWindow.GetWindow(typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.GameView"));if(Array.IndexOf(Arguments,"-auditMatchView")>=0)MatchView(view);EditorApplication.EnterPlaymode();}
         // ★ 新增：用已记录的用户Game视口尺寸对照DX12，不能把不同视野/渲染量混为同一帧数。
         private static void MatchView(EditorWindow view)
         {
-            var assembly=typeof(UnityEditor.Editor).Assembly;var sizesType=assembly.GetType("UnityEditor.GameViewSizes");var sizes=sizesType.GetProperty("instance",BindingFlags.Public|BindingFlags.Static|BindingFlags.FlattenHierarchy).GetValue(null);var get=sizesType.GetMethod("GetGroup");var group=get.Invoke(sizes,new[]{Enum.Parse(get.GetParameters()[0].ParameterType,"Standalone")});var sizeType=assembly.GetType("UnityEditor.GameViewSize");var mode=assembly.GetType("UnityEditor.GameViewSizeType");var size=Activator.CreateInstance(sizeType,BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance,null,new[]{Enum.Parse(mode,"FixedResolution"),(object)(File.Exists(Path.Combine(Folder,"user-report.json"))?2560:1237),(File.Exists(Path.Combine(Folder,"user-report.json"))?1385:1382),"PerformanceAudit"},null);group.GetType().GetMethod("AddCustomSize").Invoke(group,new[]{size});int count=(int)group.GetType().GetMethod("GetTotalCount").Invoke(group,null);view.GetType().GetProperty("selectedSizeIndex",BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance).SetValue(view,count-1);
+            var report=JsonUtility.FromJson<PerformanceReport>(File.ReadAllText(Path.Combine(Folder,"user-report.json")));var viewport=report.viewWorst??report.viewStart;var assembly=typeof(UnityEditor.Editor).Assembly;var sizesType=assembly.GetType("UnityEditor.GameViewSizes");var sizes=sizesType.GetProperty("instance",BindingFlags.Public|BindingFlags.Static|BindingFlags.FlattenHierarchy).GetValue(null);var get=sizesType.GetMethod("GetGroup");var group=get.Invoke(sizes,new[]{Enum.Parse(get.GetParameters()[0].ParameterType,"Standalone")});var sizeType=assembly.GetType("UnityEditor.GameViewSize");var mode=assembly.GetType("UnityEditor.GameViewSizeType");var size=Activator.CreateInstance(sizeType,BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance,null,new[]{Enum.Parse(mode,"FixedResolution"),(object)viewport.width,viewport.height,"PerformanceAudit"},null);group.GetType().GetMethod("AddCustomSize").Invoke(group,new[]{size});int count=(int)group.GetType().GetMethod("GetTotalCount").Invoke(group,null);view.GetType().GetProperty("selectedSizeIndex",BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance).SetValue(view,count-1);
         }
         private static IEnumerator Guard()
         {
@@ -46,13 +49,13 @@ namespace DarwinPark.EditorTools
         {
             var world=WorldSaveStore.Read(Path.Combine(Folder,"input/world.json"));
             // ★ 新增：数量阈值审计保留王后优先的嵌套子集，停用自动投放与自然繁殖仅用于独立测试，不写回原存档。
-            var args=System.Environment.GetCommandLineArgs();int countArg=Array.IndexOf(args,"-populationCount");if(countArg>=0){int keep=int.Parse(args[countArg+1]);world.entities=world.entities.OrderByDescending(e=>e.ecology?.ant?.role=="Queen").Take(keep).ToList();world.running=false;}
+            var args=Arguments;int countArg=Array.IndexOf(args,"-populationCount");if(countArg>=0){int keep=int.Parse(args[countArg+1]);world.entities=world.entities.OrderByDescending(e=>e.ecology?.ant?.role=="Queen").Take(keep).ToList();world.running=false;}
             var session=Object.FindFirstObjectByType<WorldSessionManager>();session.autoSaveInterval=36000;session.Open(world);while(session.Busy)yield return null;
             var clock=ServiceLocator.Get<SimulationClock>();clock.Pause();FramePacingSettings.SetLimit(0);var camera=Camera.main;var orbit=camera.GetComponent<OrbitCamera>();orbit.enabled=false;var planet=EcologyQueries.Planet;var weather=planet.GetComponent<PlanetWeatherVisuals>();weather.cloudSpeed=0;PopulationRangeLayer.SetVisible(false);
             // ★ 新增：用户现场报告复查使用原镜头与实际视口，保留完整生态，不用先前413实体世界替代新495实体现场。
-            if(Array.IndexOf(System.Environment.GetCommandLineArgs(),"-userReportOnly")>=0)
+            if(Array.IndexOf(Arguments,"-userReportOnly")>=0)
             {
-                var saved=JsonUtility.FromJson<PerformanceReport>(File.ReadAllText(Path.Combine(Folder,"user-report.json")));var capturedView=saved.viewWorst??saved.viewStart;camera.transform.SetPositionAndRotation(capturedView.position,capturedView.rotation);clock.SetTimeScale(1);
+                var saved=JsonUtility.FromJson<PerformanceReport>(File.ReadAllText(Path.Combine(Folder,"user-report.json")));var capturedView=saved.viewWorst??saved.viewStart;camera.transform.SetPositionAndRotation(capturedView.position,capturedView.rotation);camera.fieldOfView=capturedView.fieldOfView;camera.nearClipPlane=capturedView.nearClip;camera.farClipPlane=capturedView.farClip;clock.SetTimeScale(1);
                 File.WriteAllText(Path.Combine(Folder,"profiler-state.txt"),"enabled="+UnityEngine.Profiling.Profiler.enabled+" deep="+UnityEditorInternal.ProfilerDriver.deepProfiling);
                 // ★ 新增：阈值本身不保证该三秒窗口有投放，显式保留12个生产者缺口的压力对照，所有变更仅存在测试副本内存。
                 if(Array.IndexOf(args,"-forceDeficit")>=0)
@@ -69,11 +72,11 @@ namespace DarwinPark.EditorTools
                         var member=actor.GetComponent<AntColonyMember>();if(member!=null){member.State.reproductionTimer=100000;member.State.reproductionCooldown=100000;}
                     }
                 }
-                bool trace=Array.IndexOf(System.Environment.GetCommandLineArgs(),"-noHierarchy")<0;if(trace)UserFrameHierarchyAudit.Start();clock.Play();yield return Sample("user-running",Array.IndexOf(args,"-forceDeficit")<0);if(trace)UserFrameHierarchyAudit.Finish(Folder);clock.Pause();yield return Sample("user-paused");yield break;
+                bool trace=Array.IndexOf(Arguments,"-noHierarchy")<0;if(trace)UserFrameHierarchyAudit.Start();clock.Play();yield return Sample("user-running",Array.IndexOf(args,"-forceDeficit")<0);if(trace)UserFrameHierarchyAudit.Finish(Folder);clock.Pause();yield return Sample("user-paused");yield break;
             }
             var target=EntityRegistry.All.Where(e=>EcologyQueries.Alive(e)&&e.Genes.GetAttribute("moveSpeed")>0&&!planet.IsSubmerged(e.transform.position)).OrderBy(e=>(e.transform.position-camera.transform.position).sqrMagnitude).First();Vector3 point=target.transform.position,center=planet.transform.position,up=(point-center).normalized;var rotation=Quaternion.LookRotation(-up,Mathf.Abs(up.y)>.99f?Vector3.right:Vector3.up);
             // ★ 新增：在切换动作前启动计时，测首次镜头切换，不能用预热后的稳态掩盖进入控制的尖峰。
-            if(Array.IndexOf(System.Environment.GetCommandLineArgs(),"-coldOnly")>=0)
+            if(Array.IndexOf(Arguments,"-coldOnly")>=0)
             {
                 _protected=true;target.GetComponent<EntityLifeCycle>().RestoreProgress(40);var health=target.GetComponent<DarwinPark.Entities.Stats.EntityStats>();health.SetMax("health",1000000);health.Modify("health",1000000,false);clock.SetTimeScale(1);camera.transform.SetPositionAndRotation(center+up*800,rotation);clock.Play();yield return Sample("first-far-running");
                 yield return Sample("first-near-transition",false,()=>camera.transform.SetPositionAndRotation(point+up*10,rotation));var control=Object.FindFirstObjectByType<EntityViewController>();yield return Sample("first-control-transition",false,()=>{if(!control.EnterView(target))throw new InvalidOperationException("first control rejected");});clock.Pause();control.ExitView();yield break;
@@ -82,7 +85,7 @@ namespace DarwinPark.EditorTools
             // ★ 新增：输入压力样本只保护被控的一个实体，防止自然死亡切镜头污染控制结果；其余实体仍正常生态。
             _protected=true;target.GetComponent<EntityLifeCycle>().RestoreProgress(40);var protectedStats=target.GetComponent<DarwinPark.Entities.Stats.EntityStats>();protectedStats.SetMax("health",1000000);protectedStats.Modify("health",1000000,false);
             // ★ 新增：仅Editor原型对比补算预算的交互/吞吐权衡，绝不默认改变正式游戏倍率或丢弃欠账。
-            if(Array.IndexOf(System.Environment.GetCommandLineArgs(),"-budgetOnly")>=0)
+            if(Array.IndexOf(Arguments,"-budgetOnly")>=0)
             {
                 camera.transform.SetPositionAndRotation(point+up*10,rotation);clock.SetTimeScale(16);clock.Play();yield return Sample("budget-05");clock.Pause();clock.maximumGameDelta=.1f;clock.Play();yield return Sample("budget-01");clock.Pause();yield break;
             }

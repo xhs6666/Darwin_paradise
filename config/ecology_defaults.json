@@ -1,8 +1,8 @@
 {
-  "_说明": "新世界启用70%实际生产者、30%实际移动者；不足直接补充，超量减少繁殖。外部文件支持中文注释；应用后随世界存档保存。",
+  "_说明": "新世界启用70%实际生产者、30%实际移动者；种源仅新世界一次建立，此后自然繁殖；可选比例调节只抑制超额新孕育。外部文件支持中文注释；应用后随世界存档保存。",
   "version": 1,
   "enableNewWorldRules": true,
-  "minimumPopulation": 100,
+  "minimumPopulation": 10,
   "producerRatio": 0.7,
   "mobileRatio": 0.3,
   "producerTemplate": "producer",
@@ -186,6 +186,47 @@
           "id": "gene_nutrient_utilization",
           "value": 50,
           "tier": 1
+        }
+      ]
+    },
+    {
+      "id": "pioneer_mobile",
+      "name": "初始移动先驱 · 自养繁衍",
+      "genes": [
+        {
+          "id": "gene_growth",
+          "value": 20,
+          "tier": 0
+        },
+        {
+          "id": "gene_reproduction",
+          "value": 45,
+          "tier": 0
+        },
+        {
+          "id": "gene_environment",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_storage",
+          "value": 70,
+          "tier": 0
+        },
+        {
+          "id": "gene_repair",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_nutrition",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_locomotion",
+          "value": 75,
+          "tier": 0
         }
       ]
     }

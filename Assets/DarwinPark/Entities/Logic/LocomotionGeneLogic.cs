@@ -17,6 +17,8 @@ namespace DarwinPark.Entities.Logic
         private LocomotionSettings _settings;
         private float _actionCooldown, _wanderTimer;
         private Vector3 _wanderDir;
+        // ★ 适配：自主追逐经全局陆地路线，不改变玩家手动输入。
+        private readonly DarwinPark.Planet.LandRoutePlan _landRoute=new();
         private DarwinEntity _target;
         private Vector3 _observedTarget;
         private readonly Simulation.ActionDecisionCadence _decision=new();
@@ -132,6 +134,7 @@ namespace DarwinPark.Entities.Logic
         {
             // ★ 适配：同一物理位置不重复写刚体或执行邻居避让，累计步长保持转向平滑度。
             if(!Simulation.ActionMotionBatch.Consume(_controller,ref dt))return;
+            if(_controller.GetAttribute("swimSpeed")<=0&&!_landRoute.Resolve(_planet,_controller.transform.position,position,out position)){_rb.linearVelocity=Vector3.zero;return;}
             Vector3 radial = (_controller.transform.position-_planet.transform.position).normalized;
             Vector3 toward = Vector3.ProjectOnPlane(position-_controller.transform.position, radial);
             // ★ 适配：行动使用时钟实际交付倍率，过载补算限速不造成物理时间分离。
@@ -144,6 +147,8 @@ namespace DarwinPark.Entities.Logic
             Vector3 velocity = _rb.linearVelocity;
             float inward = Mathf.Min(0,Vector3.Dot(velocity,radial));
             Vector3 tangent = Vector3.Lerp(Vector3.ProjectOnPlane(velocity,radial),desired,1-Mathf.Exp(-_settings.steering*dt));
+            // ★ 修复（防Bug回归）：群体避让和惯性也不能绕过岸边检查。
+            if(_controller.GetAttribute("swimSpeed")<=0)tangent=DarwinPark.Planet.LandRoutePlan.SafeVelocity(_planet,_controller.transform.position,tangent);
             _rb.linearVelocity = Vector3.ClampMagnitude(tangent,_settings.maximumMoveSpeed*scale) + radial * inward;
         }
         public virtual string GetTooltipInfo() => _target != null ? "正在追击：" + _target.DisplayName : "提供移动与攻击；消化食性寻找活体，幼年寄生寻找宿主，食腐寻找尸体。食草倾向仅选择静止活体。";

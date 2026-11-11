@@ -65,6 +65,9 @@ namespace DarwinPark.Planet
 
         [Header("侵蚀（数据驱动）")]
         public ErosionConfig erosion = new ErosionConfig();
+        // ★ 适配：新世界的高原、盆地、河网随地形参数保存。
+        public LandformSettings landforms=new();
+        public LandNavigationSettings navigation=new();
 
         [Header("渲染")]
         public Material TerrainMaterial;
@@ -103,8 +106,11 @@ namespace DarwinPark.Planet
         /// <summary>★ 适配：判断世界坐标是否位于海平面以下。</summary>
         public bool IsSubmerged(Vector3 worldPosition, float depthMargin = 0f)
         {
-            return (worldPosition - transform.position).magnitude < WaterRadius - Mathf.Max(0f, depthMargin);
+            return (worldPosition - transform.position).magnitude < LocalWaterRadius(worldPosition) - Mathf.Max(0f, depthMargin);
         }
+
+        // ★ 适配：海洋、湖泊和河流共用真实局部水面，避免看得见河水却按无水陆地寻路。
+        public float LocalWaterRadius(Vector3 position)=>Data?.Hydrology==null?WaterRadius:radius+Data.Hydrology.Water(PlanetTerrainSampler.WorldToLocalDirection(transform,position))*heightScale;
 
         // ★ 适配：纯参数快照供后台计算；网格上传留在主线程。
         public PlanetTerrainConfig CaptureConfiguration()
@@ -113,6 +119,8 @@ namespace DarwinPark.Planet
             var cfg = new PlanetTerrainConfig
             {
                 id = "dynamic",
+                navigation=JsonUtility.FromJson<LandNavigationSettings>(JsonUtility.ToJson(navigation??new LandNavigationSettings())),
+                landforms=JsonUtility.FromJson<LandformSettings>(JsonUtility.ToJson(landforms??new LandformSettings{enabled=false})),
                 subdivisions = this.subdivisions,
                 radius = this.radius,
                 heightScale = this.heightScale,
@@ -215,6 +223,7 @@ namespace DarwinPark.Planet
 
             // ★ 适配：独立海面/云层复用本次生成的焊接网格，重建地形时同步刷新。
             GetComponent<PlanetWeatherVisuals>()?.Rebuild();
+            PlanetFreshWaterMesh.Rebuild(this);LandPathScheduler.Configure(this);
 
             // 6. 完成日志（同时输出高度范围，便于确认山脉/盆地是否真的生成）
             float minHeight = float.MaxValue;
