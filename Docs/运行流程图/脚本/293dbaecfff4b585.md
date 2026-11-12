@@ -194,7 +194,7 @@ flowchart TD
 - [ColonyResource.State.get · L24](293dbaecfff4b585.md#m41824f1a0e160aa5)（访问器）
 - [ColonyFoodSources.Register · L15](4c419a1a067d428c.md#mf32bc84088ad1316)（方法）
 - [ResourceCoordinates.Observe · L55](93d731ac01e3af48.md#m78e074204b8da0a9)（方法）
-- [CorpseInstanceRenderer.Register · L52](29964f1f6c300ac9.md#m04d922e92b0f3129)（方法）
+- [CorpseInstanceRenderer.Register · L54](29964f1f6c300ac9.md#m858b61cccc0d77aa)（方法）
 
 <a id="mb7b0a334c5cda3ae"></a>
 
@@ -221,7 +221,7 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [CorpseInstanceRenderer.Remove · L88](29964f1f6c300ac9.md#m422070be924a293f)（方法）
+- [CorpseInstanceRenderer.Remove · L90](29964f1f6c300ac9.md#m164fbcb515f58591)（方法）
 - [ColonyFoodSources.Remove · L17](4c419a1a067d428c.md#m650b2a625df8b634)（方法）
 - [ResourceCoordinates.Remove · L61](93d731ac01e3af48.md#mf37d0cac8b27b09b)（方法）
 - [ColonyResource.State.get · L24](293dbaecfff4b585.md#m41824f1a0e160aa5)（访问器）
@@ -428,7 +428,7 @@ flowchart TD
 - [ColonyFoodSources.Register · L15](4c419a1a067d428c.md#mf32bc84088ad1316)（方法）
 - [ResourceCoordinates.Observe · L55](93d731ac01e3af48.md#m78e074204b8da0a9)（方法）
 - [ColonyResourcePresentation.Build · L22](274e66c9a1d98a08.md#madeb13553cf40472)（方法）
-- [CorpseInstanceRenderer.Register · L52](29964f1f6c300ac9.md#m04d922e92b0f3129)（方法）
+- [CorpseInstanceRenderer.Register · L54](29964f1f6c300ac9.md#m858b61cccc0d77aa)（方法）
 - [EnergyBlockGradeVisual.Refresh · L15](dd689a3df9b53e75.md#m8d946724e45820f9)（方法）
 
 <a id="m367d2436206a4618"></a>

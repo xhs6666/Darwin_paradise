@@ -4,7 +4,7 @@
 
 [12条业务主流程](主流程.md) · [生成工具与维护说明](../../Tools/FlowDocs/README.md)
 
-覆盖 **404 个C#脚本、10 个Shader/HLSL文件、4219 个方法/构造/访问器/局部函数/回调/GPU函数**。没有显式方法的数据脚本也在索引中。未扫描Unity Packages/Library生成文件；Tools为离线生成器，不进入游戏运行图。
+覆盖 **406 个C#脚本、10 个Shader/HLSL文件、4262 个方法/构造/访问器/局部函数/回调/GPU函数**。没有显式方法的数据脚本也在索引中。未扫描Unity Packages/Library生成文件；Tools为离线生成器，不进入游戏运行图。
 
 
 ## 阅读与维护
@@ -57,7 +57,8 @@
 |Core|[Assets/DarwinPark/Core/OrbitCamera.cs](脚本/42eb429559b42bcb.md)|Runtime|9|
 |Core|[Assets/DarwinPark/Core/PopulationRatioRuleEdits.cs](脚本/9580649cce6b5f38.md)|Runtime|1|
 |Core|[Assets/DarwinPark/Core/RuleSelectionEdits.cs](脚本/f1d4e0eb3e10983c.md)|Runtime|4|
-|Core|[Assets/DarwinPark/Core/RuntimePerformance.cs](脚本/a8403a4c7503726d.md)|Runtime|16|
+|Core|[Assets/DarwinPark/Core/RuntimeCostBreakdown.cs](脚本/98eb455b20a05753.md)|Runtime|15|
+|Core|[Assets/DarwinPark/Core/RuntimePerformance.cs](脚本/a8403a4c7503726d.md)|Runtime|17|
 |Core|[Assets/DarwinPark/Core/Services/ServiceLocator.cs](脚本/f2fdbe9f9ccd93cb.md)|Runtime|5|
 |Core|[Assets/DarwinPark/Core/SimulationOptimization.cs](脚本/11c9091e70893352.md)|Runtime|6|
 |Core|[Assets/DarwinPark/Core/SimulationSubsteps.cs](脚本/44755274b83df7ba.md)|Runtime|2|
@@ -96,7 +97,7 @@
 |Editor|[Assets/DarwinPark/Editor/GeneTreeWorkbenchRegression.cs](脚本/b594bef24a5dce2b.md)|Editor|3|
 |Editor|[Assets/DarwinPark/Editor/GroundPhysicsBenchmark.cs](脚本/047e34d05752f3cb.md)|Editor|14|
 |Editor|[Assets/DarwinPark/Editor/GroundPhysicsRegression.cs](脚本/a1c4cb548c26ab52.md)|Editor|16|
-|Editor|[Assets/DarwinPark/Editor/HudInputRegression.cs](脚本/795f355c3f14dbd5.md)|Editor|26|
+|Editor|[Assets/DarwinPark/Editor/HudInputRegression.cs](脚本/795f355c3f14dbd5.md)|Editor|27|
 |Editor|[Assets/DarwinPark/Editor/InteractionUXRegression.cs](脚本/7bb23131e3b3865d.md)|Editor|14|
 |Editor|[Assets/DarwinPark/Editor/LanMultiplayerRegression.cs](脚本/140d316a72ec89d5.md)|Editor|64|
 |Editor|[Assets/DarwinPark/Editor/LayersSettingsRegression.cs](脚本/74c9e2e7a7587584.md)|Editor|15|
@@ -135,7 +136,7 @@
 |Editor|[Assets/DarwinPark/Editor/UserFrameHierarchyAudit.cs](脚本/778dd6bf439321fc.md)|Editor|4|
 |Editor|[Assets/DarwinPark/Editor/WaterAndExitRegression.cs](脚本/3fa9502d023c4aca.md)|Editor|6|
 |Editor|[Assets/DarwinPark/Editor/WorldControlsRegression.cs](脚本/df3cc9cf0a2f6e97.md)|Editor|15|
-|Editor|[Assets/DarwinPark/Editor/WorldEvolutionRegression.cs](脚本/a5c430d5c2fdb5ce.md)|Editor|31|
+|Editor|[Assets/DarwinPark/Editor/WorldEvolutionRegression.cs](脚本/a5c430d5c2fdb5ce.md)|Editor|36|
 |Editor|[Assets/DarwinPark/Editor/WorldFlowRegression.cs](脚本/27d8b89659be5bc3.md)|Editor|6|
 |Entities|[Assets/DarwinPark/Entities/DarwinEntity.cs](脚本/70798dde169f2e8b.md)|Runtime|13|
 |Entities|[Assets/DarwinPark/Entities/Ecology/AntColonyCombat.cs](脚本/aa858de55ec8e51a.md)|Runtime|2|
@@ -162,7 +163,7 @@
 |Entities|[Assets/DarwinPark/Entities/Ecology/CombatIntent.cs](脚本/34193b994b2c0894.md)|Runtime|13|
 |Entities|[Assets/DarwinPark/Entities/Ecology/CorpseEntityRecord.cs](脚本/8a2345f1e54b1c75.md)|Runtime|5|
 |Entities|[Assets/DarwinPark/Entities/Ecology/CorpseFeeding.cs](脚本/0494eed2004cafc6.md)|Runtime|6|
-|Entities|[Assets/DarwinPark/Entities/Ecology/CorpseInstanceRenderer.cs](脚本/29964f1f6c300ac9.md)|Runtime|24|
+|Entities|[Assets/DarwinPark/Entities/Ecology/CorpseInstanceRenderer.cs](脚本/29964f1f6c300ac9.md)|Runtime|26|
 |Entities|[Assets/DarwinPark/Entities/Ecology/EcologyBalanceSettings.cs](脚本/5a37bc79f15f6238.md)|Runtime|7|
 |Entities|[Assets/DarwinPark/Entities/Ecology/EcologyDefaults.cs](脚本/5b565b57de741d98.md)|Runtime|19|
 |Entities|[Assets/DarwinPark/Entities/Ecology/EcologyDiagnostics.cs](脚本/fc141d865eda1284.md)|Runtime|2|
@@ -333,12 +334,12 @@
 |Planet|[Assets/DarwinPark/Planet/PlanetVisuals.cs](脚本/d17f79d136e52f84.md)|Runtime|2|
 |Planet|[Assets/DarwinPark/Planet/PlanetWeatherVisuals.cs](脚本/2d18e9bc2efd11b8.md)|Runtime|5|
 |Planet|[Assets/DarwinPark/Planet/SunSystem.cs](脚本/15af8ca97f781b7f.md)|Runtime|5|
-|Planet|[Assets/DarwinPark/Planet/Terrain/LandNavigationGraph.cs](脚本/6f2590f045ea5d3f.md)|Runtime|8|
+|Planet|[Assets/DarwinPark/Planet/Terrain/LandNavigationGraph.cs](脚本/6f2590f045ea5d3f.md)|Runtime|9|
 |Planet|[Assets/DarwinPark/Planet/Terrain/LandPathScheduler.cs](脚本/d357e13967229560.md)|Runtime|12|
 |Planet|[Assets/DarwinPark/Planet/Terrain/LandformSaveCompatibility.cs](脚本/06c65833631e42f5.md)|Runtime|2|
 |Planet|[Assets/DarwinPark/Planet/Terrain/LandformSettings.cs](脚本/06e95093a95bb60f.md)|Runtime|0|
-|Planet|[Assets/DarwinPark/Planet/Terrain/PlanetFreshWaterMesh.cs](脚本/01b7a8db72030731.md)|Runtime|4|
-|Planet|[Assets/DarwinPark/Planet/Terrain/PlanetHydrology.cs](脚本/282937bf06cb5f2a.md)|Runtime|14|
+|Planet|[Assets/DarwinPark/Planet/Terrain/PlanetFreshWaterMesh.cs](脚本/01b7a8db72030731.md)|Runtime|7|
+|Planet|[Assets/DarwinPark/Planet/Terrain/PlanetHydrology.cs](脚本/282937bf06cb5f2a.md)|Runtime|15|
 |Planet|[Assets/DarwinPark/Planet/Terrain/PlanetMeshTopology.cs](脚本/a561079dc7786744.md)|Runtime|1|
 |Planet|[Assets/DarwinPark/Planet/Terrain/PlanetMountainField.cs](脚本/c498fd5cb2934213.md)|Runtime|2|
 |Planet|[Assets/DarwinPark/Planet/Terrain/PlanetSeamContinuity.cs](脚本/b45fffad7e3300e3.md)|Runtime|3|
@@ -347,7 +348,7 @@
 |Planet|[Assets/DarwinPark/Planet/Terrain/PlanetTerrainGenerator.cs](脚本/cde9e7b164fab46e.md)|Runtime|6|
 |Planet|[Assets/DarwinPark/Planet/Terrain/PlanetTerrainMeshBuilder.cs](脚本/415285cf043354a9.md)|Runtime|11|
 |Planet|[Assets/DarwinPark/Planet/Terrain/PlanetTerrainSampler.cs](脚本/fd5c1d83b88a7c8b.md)|Runtime|4|
-|Planet|[Assets/DarwinPark/Planet/Terrain/RadialTerrainSurface.cs](脚本/4eb5c0c8143bed20.md)|Runtime|3|
+|Planet|[Assets/DarwinPark/Planet/Terrain/RadialTerrainSurface.cs](脚本/4eb5c0c8143bed20.md)|Runtime|4|
 |Planet|[Assets/DarwinPark/Planet/Terrain/SurfaceMinHeap.cs](脚本/958cbffd86775bce.md)|Runtime|6|
 |Planet|[Assets/DarwinPark/Planet/Terrain/WeatherShellGeometry.cs](脚本/df19ec02d4bd3618.md)|Runtime|1|
 |UI|[Assets/DarwinPark/UI/ColonyStatusPresentation.cs](脚本/37a7c5ffa1a1a8c2.md)|Runtime|5|
@@ -419,7 +420,8 @@
 |UI|[Assets/DarwinPark/UI/RuntimeDropdownDismissal.cs](脚本/bab72c915cc299c5.md)|Runtime|13|
 |UI|[Assets/DarwinPark/UI/RuntimeDropdownSkin.cs](脚本/4e9d66f8395f54ec.md)|Runtime|1|
 |UI|[Assets/DarwinPark/UI/RuntimeMenuTheme.cs](脚本/b9d8455882f2a532.md)|Runtime|24|
-|UI|[Assets/DarwinPark/UI/RuntimePerformanceCapture.cs](脚本/8709e073518085cd.md)|Runtime|14|
+|UI|[Assets/DarwinPark/UI/RuntimePerformanceCapture.cs](脚本/8709e073518085cd.md)|Runtime|17|
+|UI|[Assets/DarwinPark/UI/RuntimePerformanceDetails.cs](脚本/64a9a186be88560e.md)|Runtime|8|
 |UI|[Assets/DarwinPark/UI/SimulationControlPanel.cs](脚本/76bc7add9187fd1f.md)|Runtime|37|
 |UI|[Assets/DarwinPark/UI/SimulationRuleList.cs](脚本/8e0c9b70cd52abbf.md)|Runtime|7|
 |UI|[Assets/DarwinPark/UI/SimulationRulesPanel.cs](脚本/dd1021765f4bd253.md)|Runtime|16|
@@ -429,7 +431,7 @@
 |UI|[Assets/DarwinPark/UI/WorldHudInputLifecycle.cs](脚本/f3fd2d972c3899f1.md)|Runtime|9|
 |UI|[Assets/DarwinPark/UI/WorldInspectablePicker.cs](脚本/b30f6db5375f9436.md)|Runtime|3|
 |UI|[Assets/DarwinPark/UI/WorldLoadingView.cs](脚本/4db2e9fa805980b7.md)|Runtime|1|
-|UI|[Assets/DarwinPark/UI/WorldParameterUpdate.cs](脚本/4087d9be2a65e96f.md)|Runtime|22|
+|UI|[Assets/DarwinPark/UI/WorldParameterUpdate.cs](脚本/4087d9be2a65e96f.md)|Runtime|24|
 |UI|[Assets/DarwinPark/UI/WorldResourceInspector.cs](脚本/044d7e948b6de8b7.md)|Runtime|15|
 |UI|[Assets/DarwinPark/UI/WorldSaveStore.cs](脚本/d67a35e5e3814c15.md)|Runtime|20|
 |UI|[Assets/DarwinPark/UI/WorldSessionManager.cs](脚本/08741c7b7b9d9344.md)|Runtime|30|

@@ -67,7 +67,11 @@ namespace DarwinPark.EditorTools
             string input=Path.Combine(Folder,"input/world.json");
             if(File.Exists(input)){var world=WorldSaveStore.Read(input);JsonUtility.FromJsonOverwrite(world.terrainParameters,planet);planet.subdivisions=24;world.terrainParameters=JsonUtility.ToJson(planet);world.running=false;session.Open(world);}
             else {planet.subdivisions=24;typeof(WorldSessionManager).GetField("_initialTerrain",Private).SetValue(session,JsonUtility.ToJson(planet));session.Create("界面点击回归",27291,.5f,20,44);}
-            yield return Wait(()=>!session.Busy);yield return null;yield return null;
+            yield return Wait(()=>!session.Busy);
+            // ★ 新增：不额外等待初始化帧；第一就绪帧通过原生输入模块点筛选并检查真实显隐。
+            var firstFilter=ServiceLocator.Get<UIRoot>().MainCanvas.GetComponentInChildren<MapEntityGeneFilterUI>();var firstLaunch=firstFilter.GetComponentsInChildren<Button>(true).Single(b=>b.name=="OpenEntityFilter");
+            Check(!firstFilter.Card.gameObject.activeSelf,"进入世界筛选默认收起");ModuleClick(firstLaunch);Check(firstFilter.Card.gameObject.activeSelf,"加载就绪第一帧首次原生点击立即打开筛选");yield return null;
+            ModuleClick(firstLaunch);Check(!firstFilter.Card.gameObject.activeSelf,"第一轮再次原生点击立即收起筛选");yield return null;
             var loadedClock=ServiceLocator.Get<SimulationClock>();var loadedPanel=Object.FindFirstObjectByType<SimulationControlPanel>();
             if(File.Exists(input))
             {
@@ -93,10 +97,13 @@ namespace DarwinPark.EditorTools
             yield return null;yield return null;
             // ★ 新增：分别覆盖宽屏与窄屏入口，布局调整只属于测试，最后恢复，不用窗口碰巧足够宽作为隐含前提。
             var filter=root.MainCanvas.GetComponentInChildren<MapEntityGeneFilterUI>();var launch=filter.GetComponentsInChildren<Button>(true).Single(b=>b.name=="OpenEntityFilter");var statistics=filter.GetComponent<MapEntityStatisticsUI>();float originalLeft=statistics.leftOffset,originalMinimum=filter.minimumWidth;
-            statistics.leftOffset=12;yield return null;yield return null;Check(filter.WideLayout,"夹具实际进入宽屏停靠布局");
+            statistics.leftOffset=12;yield return null;yield return null;Check(!filter.WideLayout,"宽屏筛选也使用统计上方浮卡");
+            var statisticsRect=(RectTransform)statistics.transform;Check(filter.Card.offsetMin.y>=statisticsRect.offsetMax.y+filter.gap-.1f,"筛选底边位于实体统计上边以上");
+            var rules=root.MainCanvas.GetComponentInChildren<SimulationRulesPanel>();Check(rules.Card.rect.size==new Vector2(260,164)&&Mathf.Abs(rules.Card.offsetMin.x-statisticsRect.offsetMax.x-10)<.1f,"规则卡保持原尺寸并填到统计卡右侧空位");
             bool wasVisible=filter.Card.gameObject.activeSelf;ModuleClick(launch);yield return null;Check(filter.Card.gameObject.activeSelf!=wasVisible,"宽屏筛选标题按钮实际改变卡片可见状态");ModuleClick(launch);yield return null;Check(filter.Card.gameObject.activeSelf==wasVisible,"再次点击宽屏筛选恢复原状态");
             statistics.leftOffset=originalLeft;filter.minimumWidth=100000;yield return null;yield return null;Check(!filter.WideLayout,"夹具实际进入窄屏浮卡布局");wasVisible=filter.Card.gameObject.activeSelf;ModuleClick(launch);yield return null;Check(filter.Card.gameObject.activeSelf!=wasVisible,"窄屏筛选标题按钮实际改变卡片可见状态");
             filter.minimumWidth=originalMinimum;yield return null;yield return null;
+            yield return new WaitForEndOfFrame();var shot=ScreenCapture.CaptureScreenshotAsTexture();File.WriteAllBytes(Path.Combine(Folder,"filter-above-statistics.png"),shot.EncodeToPNG());Object.Destroy(shot);
             var dropdown=root.MainCanvas.GetComponentsInChildren<Dropdown>().First(d=>d.name=="IncludeGenes");
             Canvas.ForceUpdateCanvases();var pointer=new PointerEventData(EventSystem.current){button=PointerEventData.InputButton.Left,position=Center(dropdown.GetComponent<RectTransform>())};ExecuteEvents.Execute(dropdown.gameObject,pointer,ExecuteEvents.pointerClickHandler);yield return null;yield return null;
             Check(dropdown.transform.Find("Dropdown List")!=null,"存档加载后筛选下拉可以展开");RuntimeDropdownDismissal.CloseOpenPopups();yield return new WaitForSecondsRealtime(.3f);Dump("dropdown closed");

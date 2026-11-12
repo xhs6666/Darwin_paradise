@@ -404,7 +404,9 @@
     "Assets/DarwinPark/Entities/Ecology/ColonyFoodCandidates.cs": "以同群、通用块和附近无主食物坐标生成候选，不扫描其他活群的专用粮。",
     "Assets/DarwinPark/Entities/Ecology/ColonyFeedDecision.cs": "帧内按真实属性/表达/计划版本复用饥饿插队判定，实际进食立即失效。",
     "Assets/DarwinPark/Entities/Ecology/CorpseInstanceRenderer.cs": "保留原尸体身份，以星球局部空间格和可见GPU批次绘制身体/叉号，支持原显示回退。",
-    "Assets/DarwinPark/Editor/StutterRepairRegression.cs": "完整玩家快照下验证接地缓存、出生身份、资源距离等价、营养守恒、尸体拾取和真实像素。"
+    "Assets/DarwinPark/Editor/StutterRepairRegression.cs": "完整玩家快照下验证接地缓存、出生身份、资源距离等价、营养守恒、尸体拾取和真实像素。",
+    "Assets/DarwinPark/Core/RuntimeCostBreakdown.cs": "主动性能采样的嵌套计时归属：按源脚本、方法和算法记录自身/包含耗时、P95、最大帧与调用数。",
+    "Assets/DarwinPark/UI/RuntimePerformanceDetails.cs": "同一性能报告的中文Markdown导出及设置页脚本/方法/引擎排行显示。"
   },
   "files": {
     "Assets/Scenes/SampleScene.unity": "主要运行场景：挂载星球、环境、时钟、UI和游戏启动组件。",
@@ -564,6 +566,15 @@
     "Docs/开发设计/完整存档卡顿热点修复-2026-11-11.md": "完整大存档CPU热点、出生接地/食物坐标/尸体实例批次的修复与正确性边界。",
     "Docs/操作指南/尸体批次与性能回退.md": "外部尸体显示和食物/接地缓存配置、热回退及采样解释。",
     "Docs/验证记录/完整存档卡顿热点修复验证-2026-11-11.md": "同一大存档的8秒性能前后对照、原生兼容回归和发布版证据。",
-    "Docs/验证记录/卡顿修复证据-2026-11-11/performance.json": "本轮固定输入哈希、原版本与最终完整生态8秒性能报告；含缓存/索引/批次证据及暂停对照。"
+    "Docs/验证记录/卡顿修复证据-2026-11-11/performance.json": "本轮固定输入哈希、原版本与最终完整生态8秒性能报告；含缓存/索引/批次证据及暂停对照。",
+    "Docs/开发设计/地形升级与性能归属.md": "地貌版本兼容、备份升级、实际网格避海和脚本自身耗时统计设计。",
+    "Docs/操作指南/地形升级与性能排行.md": "一键升级旧地形、查看脚本/方法排行及理解自身/包含耗时的操作说明。",
+    "Docs/验证记录/地形界面与性能归属-2026-11-12.md": "筛选首帧点击、规则布局、地貌备份/兼容、陆地导航、性能明细与Windows构建验证。",
+    "Docs/验证记录/地形与性能证据-2026-11-12/checks.json": "本轮原生回归/可见发布版性能采样与界面、地形验证证据。",
+    "Docs/验证记录/地形与性能证据-2026-11-12/lake-close.png": "本轮原生回归/可见发布版性能采样与界面、地形验证证据。",
+    "Docs/验证记录/地形与性能证据-2026-11-12/performance.json": "本轮原生回归/可见发布版性能采样与界面、地形验证证据。",
+    "Docs/验证记录/地形与性能证据-2026-11-12/performance.md": "本轮原生回归/可见发布版性能采样与界面、地形验证证据。",
+    "Docs/验证记录/地形与性能证据-2026-11-12/ranking.png": "本轮原生回归/可见发布版性能采样与界面、地形验证证据。",
+    "Docs/验证记录/地形与性能证据-2026-11-12/world.png": "本轮原生回归/可见发布版性能采样与界面、地形验证证据。"
   }
 }

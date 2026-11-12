@@ -174,10 +174,11 @@ namespace DarwinPark.Planet
 
             // ★ 适配：优先洪泛得到真实下游连通，再下切河床；不在运行帧计算。
             if(cfg.landforms?.enabled==true){data.Hydrology=PlanetHydrology.Build(data,cfg.landforms);data.Hydrology.Carve(data);MergeSeamVertices(data.FaceHeights,sub);}
-            data.Navigation=new LandNavigationGraph(data,cfg.navigation??new LandNavigationSettings());
             BuildMesh(data);
             // ★ 适配：焊接接缝共享索引，消除裂缝与两套法线。
             PlanetMeshTopology.Weld(data);
+            // ★ 修复（防Bug回归）：避海图在最终网格完成后建立，不能使用与碰撞岸线不同的近似地形。
+            data.Navigation=new LandNavigationGraph(data,cfg.navigation??new LandNavigationSettings());
             return data;
         }
 

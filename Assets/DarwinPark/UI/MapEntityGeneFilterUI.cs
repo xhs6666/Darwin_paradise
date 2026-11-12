@@ -9,7 +9,7 @@ using UnityEngine.UI;
 
 namespace DarwinPark.UI
 {
-    // ★ 新增：独立筛选卡放在统计右侧，窄屏由统计标题中的“筛选”按钮展开，不继续拉长原统计面板。
+    // ★ 新增：筛选卡统一浮在实体统计正上方；同一显示状态不再由宽/窄布局分支互相覆盖。
     [DefaultExecutionOrder(50)] public sealed class MapEntityGeneFilterUI:MonoBehaviour
     {
         public float preferredWidth=260,minimumWidth=230,cardHeight=164,gap=10,refreshInterval=.5f;
@@ -27,14 +27,15 @@ namespace DarwinPark.UI
         private MapEntityStatisticsUI _stats;private RectTransform _card;
         private Dropdown _include,_exclude;private Text _count,_hint;private Button _show;
         private EntityFilterResultsUI _results;private string _catalog;private float _next;
-        private bool _floating,_wideHidden;
+        private bool _floating;
         private readonly List<GeneDefinition> _genes=new List<GeneDefinition>();
         private readonly List<DarwinEntity> _matches=new List<DarwinEntity>();
         public static void Attach(MapEntityStatisticsUI stats){if(stats.GetComponent<MapEntityGeneFilterUI>()==null)stats.gameObject.AddComponent<MapEntityGeneFilterUI>();}
-        private void Start()
+        // ★ 修复（防Bug回归）：附加到统计卡时同步建好按钮，加载就绪后第一下点击即可使用。
+        private void Awake()
         {
             _stats=GetComponent<MapEntityStatisticsUI>();
-            var launch=UIFactory.NewButton("OpenEntityFilter",transform,"筛选",ToggleCriteria,new Vector2(46,22));
+            var launch=UIFactory.NewButton("OpenEntityFilter",transform,"筛选",ToggleCriteria,new Vector2(58,26));
             var buttonRect=launch.GetComponent<RectTransform>();buttonRect.anchorMin=buttonRect.anchorMax=Vector2.one;buttonRect.pivot=Vector2.one;buttonRect.anchoredPosition=new Vector2(-39,-3);launch.GetComponentInChildren<Text>().fontSize=12;
             _card=UIFactory.NewRect("EntityGeneFilter",transform.parent,typeof(Image)).GetComponent<RectTransform>();UIVisualTheme.Paint(_card.GetComponent<Image>());
             Label("Title","实体筛选",4,18,13).color=UIVisualTheme.Muted;
@@ -44,7 +45,7 @@ namespace DarwinPark.UI
             _show=UIFactory.NewButton("ShowMatches",_card,"查看实体列表",OpenResults,new Vector2(160,26));Place(_show.GetComponent<RectTransform>(),129,26,0,.64f);
             var reset=UIFactory.NewButton("ResetFilter",_card,"重置",ResetFilter,new Vector2(80,26));Place(reset.GetComponent<RectTransform>(),129,26,.65f,1);
             foreach(var b in new[]{_show,reset})b.GetComponentInChildren<Text>().fontSize=12;
-            RefreshNow();
+            _card.gameObject.SetActive(false);RefreshNow();
         }
         private Text Label(string name,string text,float y,float height,int size)
         {var label=UIFactory.NewText(name,_card,text,size);Place(label.rectTransform,y,height);return label;}
@@ -103,17 +104,16 @@ namespace DarwinPark.UI
         {
             if(_card==null)return;
             var parent=(RectTransform)_card.parent;var stats=(RectTransform)_stats.transform;
-            float x=stats.offsetMax.x+gap,available=parent.rect.width-x-12;
-            WideLayout=available>=minimumWidth;float width=WideLayout?Mathf.Min(preferredWidth,available):Mathf.Min(preferredWidth,parent.rect.width-24);
-            _card.gameObject.SetActive(WideLayout?!_wideHidden:_floating);
+            WideLayout=false;float width=Mathf.Min(preferredWidth,Mathf.Max(0,parent.rect.width-24));
+            _card.gameObject.SetActive(_floating);
             var anchor=new Vector2(0,1);if(_card.anchorMin!=anchor||_card.anchorMax!=anchor||_card.pivot!=anchor){_card.anchorMin=_card.anchorMax=anchor;_card.pivot=anchor;}
-            var position=WideLayout?new Vector2(x,0):new Vector2(Mathf.Clamp(stats.offsetMin.x,12,Mathf.Max(12,parent.rect.width-width-12)),cardHeight+gap);
+            var position=new Vector2(Mathf.Clamp(stats.offsetMin.x,12,Mathf.Max(12,parent.rect.width-width-12)),stats.offsetMax.y+cardHeight+gap);
             var size=new Vector2(width,cardHeight);
             if(_card.anchoredPosition!=position)_card.anchoredPosition=position;if(_card.sizeDelta!=size)_card.sizeDelta=size;
             if(Time.unscaledTime>=_next)RefreshNow();
         }
-        // ★ 修复（防Bug回归）：宽屏的卡片本来已显示，旧按钮只改窄屏标记造成视觉无响应；两种布局各自切换真实可见状态。
-        public void ToggleCriteria(){_results?.Hide();RuntimeDropdownDismissal.CloseOpenPopups();if(WideLayout)_wideHidden=!_wideHidden;else _floating=!_floating;if(_card!=null){_card.gameObject.SetActive(WideLayout?!_wideHidden:_floating);_card.SetAsLastSibling();}RefreshNow();}
+        // ★ 修复（防Bug回归）：无论屏幕多宽都只切换一个显隐标记；不再让首帧布局重写点击结果。
+        public void ToggleCriteria(){_results?.Hide();RuntimeDropdownDismissal.CloseOpenPopups();_floating=!_floating;if(_card!=null){_card.gameObject.SetActive(_floating);_card.SetAsLastSibling();}RefreshNow();}
         public void OpenResults()
         {
             RefreshNow();if(!WorldRuntimeGate.Ready)return;

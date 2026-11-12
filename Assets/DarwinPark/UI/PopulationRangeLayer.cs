@@ -31,6 +31,8 @@ namespace DarwinPark.UI
         }
         public void RefreshNow()
         {
+            // ★ 新增：种群范围数据生成与GPU提交单列采样。
+            using var measured=PerformanceTimings.Measure(PerformanceTimings.Area.PopulationOverlay);
             _next=Time.unscaledTime+AntColonySettings.Current.scanInterval;
             var planet=EcologyQueries.Planet;if(!_visible||!WorldRuntimeGate.Ready||planet==null){Apply(false);return;}
             var pixels=new List<Color>();int index=0;float radius=Mathf.Max(planet.radius,planet.WaterRadius);

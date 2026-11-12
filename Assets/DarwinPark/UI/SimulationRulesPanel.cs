@@ -6,10 +6,11 @@ using UnityEngine.UI;
 namespace DarwinPark.UI
 {
     // ★ 新增：第一页独立规则卡与统计/筛选同为260×164，窄屏用“规则”展开同尺寸卡，不挤压旧控件。
-    public sealed class SimulationRulesPanel:MonoBehaviour
+    [DefaultExecutionOrder(60)] public sealed class SimulationRulesPanel:MonoBehaviour
     {
-        public float cardWidth=260,cardHeight=164,leftOffset=1380;
+        public float cardWidth=260,cardHeight=164,leftOffset=1110;
         private RectTransform _card;private Button _toggle,_apply,_reload,_launch;private InputField _fraction,_seconds;private Text _status;
+        private MapEntityStatisticsUI _statistics;
         private bool _dirty,_floating;private GameplayTuning _seen;private float _next;
         public RectTransform Card=>_card;
         // ★ 适配：分页规则在独立脚本维护，保留原卡尺寸和输入控件路径。
@@ -50,9 +51,12 @@ namespace DarwinPark.UI
         private void LateUpdate()
         {
             if(_card==null||_status==null)return;var parent=(RectTransform)transform.parent;
-            bool wide=parent.rect.width>=leftOffset+cardWidth+12;_launch.gameObject.SetActive(!wide);var launch=(RectTransform)_launch.transform;launch.anchorMin=launch.anchorMax=launch.pivot=new Vector2(1,1);launch.anchoredPosition=new Vector2(-8,31);
+            // ★ 修复（防Bug回归）：筛选浮到上方后，规则紧接统计卡填补空位，不能保留原先筛选卡的横向占位。
+            if(_statistics==null)_statistics=transform.parent.GetComponentInChildren<MapEntityStatisticsUI>();
+            float left=_statistics!=null?((RectTransform)_statistics.transform).offsetMax.x+10:leftOffset;
+            bool wide=parent.rect.width>=left+cardWidth+12;_launch.gameObject.SetActive(!wide);var launch=(RectTransform)_launch.transform;launch.anchorMin=launch.anchorMax=launch.pivot=new Vector2(1,1);launch.anchoredPosition=new Vector2(-8,31);
             // ★ 修复（防Bug回归）：窄屏规则浮卡在筛选浮卡上方，两个入口同时打开也不重叠。
-            _card.gameObject.SetActive(wide||_floating);Place(_card,wide?leftOffset:Mathf.Max(12,parent.rect.width-cardWidth-12),wide?0:-2*cardHeight-18,cardWidth,cardHeight);
+            _card.gameObject.SetActive(wide||_floating);Place(_card,wide?left:Mathf.Max(12,parent.rect.width-cardWidth-12),wide?0:-2*cardHeight-18,cardWidth,cardHeight);
             bool editable=WorldAuthority.CanEdit&&!WorldAuthority.IsReplica&&WorldRuntimeGate.Ready&&!WorldRuntimeGate.Loading;_toggle.interactable=_apply.interactable=_fraction.interactable=_seconds.interactable=editable;
             _seconds.interactable=editable&&_extensions.SecondsEditable;_extensions.SetEditable(editable);
             if(_floating&&UnityEngine.Input.GetKeyDown(KeyCode.Escape)){GameInputGate.ConsumeEscape();_floating=false;}

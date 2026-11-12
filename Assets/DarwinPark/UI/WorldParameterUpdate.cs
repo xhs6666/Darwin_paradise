@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Threading.Tasks;
 using DarwinPark.Core;
 using DarwinPark.Entities;
@@ -18,6 +19,7 @@ namespace DarwinPark.UI
     {
         public static WorldParameterUpdate Instance {get;private set;}
         public bool Busy {get;private set;}public float Progress {get;private set;}public string Status {get;private set;}="";
+        public string LastBackupPath {get;private set;}
         public string LastStatus {get;private set;}="";public Vector2 temperatureRange=new Vector2(-30,60),humidityRange=new Vector2(0,100),landPercentRange=new Vector2(20,80);
         public float minimumSurfaceOffset=.5f,maximumPreservedAltitude=12;
         private bool _blocked,_running,_canvasEnabled,_worldCanvasEnabled,_loading,_cursorVisible;private CursorLockMode _cursorLock;private UIRoot _root;
@@ -40,10 +42,10 @@ namespace DarwinPark.UI
             var range=kind=="temp"?temperatureRange:kind=="hum"?humidityRange:landPercentRange;
             if(kind=="landforms"&&value!=0&&value!=1){message="地貌开关只接受0或1";return false;}
             if(kind!="seed"&&kind!="landforms"&&(value<range.x||value>range.y)){message="数值超出允许范围";return false;}
-            bool unchanged=kind=="landforms"?builder.landforms.enabled==(value>0):kind=="seed"?seed==builder.seed:kind=="terrain"?Mathf.Approximately(value/100,builder.continentRatio):kind=="temp"?Mathf.Approximately(value,environment.BaseTemperature):Mathf.Approximately(value,environment.BaseHumidity);
+            bool unchanged=kind=="landforms"?builder.landforms.enabled==(value>0)&&(value<=0||builder.landforms.version==LandformSettings.CurrentVersion):kind=="seed"?seed==builder.seed:kind=="terrain"?Mathf.Approximately(value/100,builder.continentRatio):kind=="temp"?Mathf.Approximately(value,environment.BaseTemperature):Mathf.Approximately(value,environment.BaseHumidity);
             if(unchanged){message="参数未变化";LastStatus=message;return true;}
             WorldGameSettingsPanel.Instance?.Close();
-            BeginCapture();Busy=true;Progress=0;Status="准备更新参数";LastStatus="正在更新";
+            LastBackupPath=null;BeginCapture();Busy=true;Progress=0;Status="准备更新参数";LastStatus="正在更新";
             StartCoroutine(Guard(UpdateWorld(builder,environment,world,kind,seed,value)));message="正在更新";return true;
         }
         private void BeginCapture()
@@ -67,13 +69,16 @@ namespace DarwinPark.UI
                 bool next=false;object current=null;try{next=operation.MoveNext();if(next)current=operation.Current;}catch(Exception ex){error=ex.Message;Debug.LogException(ex);}
                 if(error!=null||!next)break;yield return current;
             }
-            LastStatus=error==null?"已应用":"更新失败："+error;Finish();
+            LastStatus=error==null?"已应用"+(string.IsNullOrEmpty(LastBackupPath)?"":"；旧世界备份："+LastBackupPath):"更新失败："+error;Finish();
         }
         private IEnumerator UpdateWorld(PlanetTerrainMeshBuilder builder,EnvironmentSystem environment,WorldSessionManager world,string kind,int seed,float value)
         {
             // ★ 修复（防Bug回归）：先让加载界面真正画出来，再启动重计算，不在应用按钮回调里同步Build造成假死。
             yield return null;yield return new WaitForEndOfFrame();
             var config=builder.CaptureConfiguration();var oldData=builder.Data;bool terrain=kind=="seed"||kind=="terrain"||kind=="landforms";
+            // ★ 新增：显式升级先保存完整旧世界到独立备份目录，不覆盖原地形的唯一副本；失败则停止重建。
+            if(kind=="landforms"&&world?.Current!=null)
+            {world.SaveNow(_running);string original=WorldSaveStore.FileFor(world.Current.id);string folder=Path.Combine(Path.GetDirectoryName(original),"backups");Directory.CreateDirectory(folder);LastBackupPath=Path.Combine(folder,"terrain-"+DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff")+"-"+Guid.NewGuid().ToString("N")+".json");File.Copy(original,LastBackupPath);}
             WorldLandformEdits.Apply(config,kind,value);TerrainResourceRelocation resources=terrain?new TerrainResourceRelocation(builder,minimumSurfaceOffset,maximumPreservedAltitude):null;
             config.seed=kind=="seed"?seed:builder.seed;float land=kind=="terrain"?value/100:builder.continentRatio;
             float temp=kind=="temp"?value:environment.BaseTemperature,humidity=kind=="hum"?value:environment.BaseHumidity;

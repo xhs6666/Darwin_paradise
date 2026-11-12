@@ -16,16 +16,22 @@ namespace DarwinPark.Planet
             var transform=builder.transform;var scale=transform.lossyScale;
             // 非均匀/负缩放交回真实碰撞体，不能用错误的法线变换影响斜坡支撑。
             if(scale.x<=0||Mathf.Abs(scale.x-scale.y)>.00001f||Mathf.Abs(scale.x-scale.z)>.00001f)return false;
-            var local=transform.InverseTransformPoint(point);float ax=Mathf.Abs(local.x),ay=Mathf.Abs(local.y),az=Mathf.Abs(local.z),largest;int face;float u,v;
+            if(!TrySampleLocal(data,transform.InverseTransformPoint(point),out var localHit))return false;
+            hit=new RadialSurfaceHit(transform.TransformPoint(localHit.point),transform.TransformDirection(localHit.normal).normalized,localHit.triangle);return true;
+        }
+        // ★ 新增：后台建导航图也查询最终三角形，与实际接地共用几何；双线性高度在陡岸可能把水下判为陆地。
+        public static bool TrySampleLocal(PlanetTerrainData data,Vector3 local,out RadialSurfaceHit hit)
+        {
+            hit=default;if(data?.Triangles==null||data.Vertices==null||data.Subdivisions<2||data.Triangles.Length!=36*data.Subdivisions*data.Subdivisions)return false;
+            float ax=Mathf.Abs(local.x),ay=Mathf.Abs(local.y),az=Mathf.Abs(local.z),largest;int face;float u,v;
             if(ax>=ay&&ax>=az){largest=ax;face=local.x>=0?0:1;u=local.z;v=local.y;}
             else if(ay>=az){largest=ay;face=local.y>=0?2:3;u=local.x;v=local.z;}
             else{largest=az;face=local.z>=0?4:5;u=local.x;v=local.y;}
             if(largest<.00001f)return false;
             int n=data.Subdivisions,x=Mathf.Clamp(Mathf.FloorToInt((u/largest+1)*.5f*n),0,n-1),y=Mathf.Clamp(Mathf.FloorToInt((v/largest+1)*.5f*n),0,n-1),index=(face*n*n+y*n+x)*6;
             var direction=local.normalized;
-            // 使用焊接后的实际顶点/索引，而非双线性高度近似；接缝和陡坡仍命中与碰撞体相同的平面。
             for(int i=0;i<2;i++)if(Triangle(data,index+i*3,direction,out var surface,out var normal))
-            {hit=new RadialSurfaceHit(transform.TransformPoint(surface),transform.TransformDirection(normal).normalized,index/3+i);return true;}
+            {hit=new RadialSurfaceHit(surface,normal,index/3+i);return true;}
             return false;
         }
         private static bool Triangle(PlanetTerrainData data,int index,Vector3 direction,out Vector3 point,out Vector3 normal)

@@ -17,6 +17,7 @@ namespace DarwinPark.Entities.Ecology
         private readonly Dictionary<Renderer,bool> _renderers=new Dictionary<Renderer,bool>();
         private readonly Dictionary<Collider,bool> _colliders=new Dictionary<Collider,bool>();
         private EntityGeneController _genes;private DarwinEntity _entity,_candidate;private EntityStats _stats;
+        private readonly List<EntityCoordinate> _coordinates=new();
         private Rigidbody _body;private bool _attached,_kinematic,_detect;private float _scan;
         public DarwinEntity Host {get;private set;}
         // ★ 适配：已孵化的幼体才可营养寄生，食腐出错分支优先接管食性，避免复制基因同时执行两套吸收。
@@ -46,7 +47,9 @@ namespace DarwinPark.Entities.Ecology
             _scan-=dt;if(_scan<=0)
             {
                 _scan=settings.scanInterval;_candidate=null;float best=settings.searchRadius*settings.searchRadius;
-                foreach(var entity in EntityRegistry.All){if(!CanHost(entity))continue;float distance=(entity.transform.position-transform.position).sqrMagnitude;if(distance<best){best=distance;_candidate=entity;}}
+                // ★ 修复（防Bug回归）：营养寄生也通过全局坐标投递并排除隔海宿主，不能继续全表扫描和锁定不可达目标。
+                using var measured=PerformanceTimings.Measure(PerformanceTimings.Area.ParasiteHostSearch);EntityCoordinateGrid.Query(transform.position,settings.searchRadius,_coordinates);
+                foreach(var coordinate in _coordinates){var entity=coordinate.entity;if(!CanHost(entity)||!LandReachability.CanReach(_genes,entity))continue;float distance=(coordinate.position-transform.position).sqrMagnitude;if(distance<best){best=distance;_candidate=entity;}}
             }
             if(CanHost(_candidate)&&EcologyQueries.Distance(transform.position,_candidate.transform.position)<=settings.attachReach+(_candidate.GetComponent<Collider>()?.bounds.extents.magnitude??0))TryAttach(_candidate);
         }

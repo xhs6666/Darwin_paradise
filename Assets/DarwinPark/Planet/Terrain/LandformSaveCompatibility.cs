@@ -16,9 +16,9 @@ namespace DarwinPark.Planet
                 if(nav.maximumSlopeDegrees>85||nav.segmentStep<=0||nav.pathMilliseconds<=0||nav.pathMilliseconds>10||nav.waypointArrival<=0)throw new InvalidDataException("寻路精度/时间预算无效");
             }
             if(!json.Contains("\"landforms\""))return;var value=JsonUtility.FromJson<Envelope>(json)?.landforms;if(value==null)throw new InvalidDataException("地貌配置为空");
-            if(value.version!=1||value.longitudeCells<32||value.longitudeCells>512||value.latitudeCells<16||value.latitudeCells>256)throw new InvalidDataException("地貌版本或水系分辨率无效");
+            if((value.version<1||value.version>LandformSettings.CurrentVersion)||value.longitudeCells<32||value.longitudeCells>512||value.latitudeCells<16||value.latitudeCells>256)throw new InvalidDataException("地貌版本或水系分辨率无效");
             foreach(var field in typeof(LandformSettings).GetFields())if(field.FieldType==typeof(float)){float n=(float)field.GetValue(value);if(!float.IsFinite(n)||n<0)throw new InvalidDataException("地貌参数须为非负有限数："+field.Name);}
-            if(value.riverCatchment<=0||value.riverHalfWidth<=0||value.riverBedDepth<=0||value.bankWidth<value.riverHalfWidth||value.plateauStrength>1||value.plateauThreshold>=1||value.plateauTransition<=0)throw new InvalidDataException("河道或高原配置无效");
+            if(value.riverCatchment<=0||value.riverHalfWidth<=0||value.riverBedDepth<=0||value.bankWidth<value.riverHalfWidth||value.plateauStrength>1||value.plateauThreshold>=1||value.plateauTransition<=0||value.version>=2&&(value.basinThreshold>1||value.basinTransition<=0||value.lakeMeshSubdivisions<1||value.lakeMeshSubdivisions>8))throw new InvalidDataException("河道或高原配置无效");
         }
         public static void Restore(PlanetTerrainMeshBuilder builder,string json)
         {if(!json.Contains("\"landforms\""))builder.landforms=new LandformSettings{enabled=false};if(!json.Contains("\"navigation\""))builder.navigation=new LandNavigationSettings();}

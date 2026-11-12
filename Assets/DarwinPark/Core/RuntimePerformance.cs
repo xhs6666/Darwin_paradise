@@ -12,16 +12,17 @@ namespace DarwinPark.Core
     public static class PerformanceTimings
     {
         // ★ 适配：把活体大项继续细分，避免把行动、邻域重建和补给开销都误归因为合并算法。
-        public enum Area { Scheduler,Genes,StatePerception,Vitals,Environment,Population,ColonyTasks,GroundAnchor,Gravity,BottomUI,ResourceVisuals,GeneSignature,GeneRecalculation,Nutrition,Reproduction,Locomotion,Neighborhood,Feeding,Formation,Perception,MutationRounds,ResourceSearch,SingletonSettlement,CorpseCleanup,BirthFactory,BirthIdentity,BirthPlacement,BreedingMaintenance,MateSearch,CoordinateGrid,ManualAim,CameraGround,AutomaticSpawn,ProducerPlacement,GroundQuery,FoodCandidates,FeedDecision,CorpseBatches,Count }
+        public enum Area { Scheduler,Genes,StatePerception,Vitals,Environment,Population,ColonyTasks,GroundAnchor,Gravity,BottomUI,ResourceVisuals,GeneSignature,GeneRecalculation,Nutrition,Reproduction,Locomotion,Neighborhood,Feeding,Formation,Perception,MutationRounds,ResourceSearch,SingletonSettlement,CorpseCleanup,BirthFactory,BirthIdentity,BirthPlacement,BreedingMaintenance,MateSearch,CoordinateGrid,ManualAim,CameraGround,AutomaticSpawn,ProducerPlacement,GroundQuery,FoodCandidates,FeedDecision,CorpseBatches,LandPathSearch,LandRouteFollow,ShoreGuard,ParasiteHostSearch,PopulationArchive,PopulationOverlay,WorldSave,Count }
         private static readonly long[] Ticks=new long[(int)Area.Count],Calls=new long[(int)Area.Count];
         public static bool Capturing {get;private set;}
         public readonly struct Scope:IDisposable
         {
-            private readonly long _start;private readonly Area _area;
-            internal Scope(Area area){_area=area;_start=Capturing?Stopwatch.GetTimestamp():0;}
-            public void Dispose(){if(_start!=0&&Capturing){Ticks[(int)_area]+=Stopwatch.GetTimestamp()-_start;Calls[(int)_area]++;}}
+            private readonly long _start;private readonly Area _area;private readonly int _detail;
+            internal Scope(Area area,string file,string method){_area=area;_detail=Capturing?RuntimeCostBreakdown.Enter(area,file,method):-1;_start=Capturing?Stopwatch.GetTimestamp():0;}
+            public void Dispose(){if(_start!=0&&Capturing){long elapsed=Stopwatch.GetTimestamp()-_start;Ticks[(int)_area]+=elapsed;Calls[(int)_area]++;RuntimeCostBreakdown.Leave(_detail,elapsed);}}
         }
-        public static Scope Measure(Area area)=>new Scope(area);
+        // ★ 适配：调用位置由编译器注入常量；空闲时不创建字典/调用栈或访问文件系统。
+        public static Scope Measure(Area area,[System.Runtime.CompilerServices.CallerFilePath]string file="",[System.Runtime.CompilerServices.CallerMemberName]string method="")=>new Scope(area,file,method);
         internal static void Begin(){if(Capturing)throw new InvalidOperationException("已有性能采样正在执行");Array.Clear(Ticks,0,Ticks.Length);Array.Clear(Calls,0,Calls.Length);Capturing=true;}
         internal static void End(){Capturing=false;}
         internal static double Take(int area,out long calls){long ticks=Ticks[area];calls=Calls[area];Ticks[area]=Calls[area]=0;return ticks*1000d/Stopwatch.Frequency;}
@@ -30,7 +31,7 @@ namespace DarwinPark.Core
     [Serializable]public sealed class PerformanceMetric
     {public string name,unit,source;public bool available;public int samples;public long calls;public double mean,p95,maximum;}
     [Serializable]public sealed class PerformanceReport
-    {public int version=1,frames;public string context;public bool truncated;public PerformanceViewState viewStart,viewEnd,viewWorst;public bool gpuTimingEnabled;public List<PerformanceMetric> metrics=new List<PerformanceMetric>();}
+    {public int version=2,frames,droppedDetailScopes;public string coverageNote;public List<PerformanceHotspot> hotspots=new();public List<PerformanceScriptCost> scripts=new();public string context;public bool truncated;public PerformanceViewState viewStart,viewEnd,viewWorst;public bool gpuTimingEnabled;public List<PerformanceMetric> metrics=new List<PerformanceMetric>();}
     // ★ 新增：采样期间只写预分配缓冲，结束后才排序/序列化；引擎计数不可用时明确缺省，不把0伪装成零成本。
     public sealed class PerformanceSampleSession:IDisposable
     {
@@ -43,12 +44,12 @@ namespace DarwinPark.Core
         {
             _gpu=new GpuPerformanceSample(capacity);_viewStart=PerformanceViewState.Capture();
             _frames=new double[capacity];int count=(int)PerformanceTimings.Area.Count;_areas=new double[count][];_calls=new long[count];for(int i=0;i<count;i++)_areas[i]=new double[capacity];
-            PerformanceTimings.Begin();
+            PerformanceTimings.Begin();RuntimeCostBreakdown.Begin(capacity);
             try{var available=new List<ProfilerRecorderHandle>();ProfilerRecorderHandle.GetAvailable(available);var names=new HashSet<string>(EngineNames);foreach(var handle in available){var description=ProfilerRecorderHandle.GetDescription(handle);if(names.Remove(description.Name))_engine.Add((description.Name,ProfilerRecorder.StartNew(description.Category,description.Name,capacity,ProfilerRecorderOptions.Default)));}}
             catch{Dispose();throw;}
         }
         public void RecordFrame(double milliseconds)
-        {if(_closed)return;_gpu.Record();if(milliseconds>_worst){_worst=milliseconds;_viewWorst=PerformanceViewState.Capture();}for(int i=0;i<_areas.Length;i++){double value=PerformanceTimings.Take(i,out long calls);_calls[i]+=calls;if(_count<_frames.Length)_areas[i][_count]=value;}if(_count<_frames.Length)_frames[_count]=milliseconds;_count++;}
+        {if(_closed)return;_gpu.Record();if(milliseconds>_worst){_worst=milliseconds;_viewWorst=PerformanceViewState.Capture();}for(int i=0;i<_areas.Length;i++){double value=PerformanceTimings.Take(i,out long calls);_calls[i]+=calls;if(_count<_frames.Length)_areas[i][_count]=value;}if(_count<_frames.Length)_frames[_count]=milliseconds;RuntimeCostBreakdown.RecordFrame();_count++;}
         private static PerformanceMetric Metric(string name,string unit,string source,double[] values,int frames,long calls=0)
         {Array.Sort(values);return new PerformanceMetric{name=name,unit=unit,source=source,available=true,samples=values.Length,calls=calls,mean=values.Sum()/Math.Max(1,frames),p95=values.Length>0?values[Math.Min(values.Length-1,(int)(values.Length*.95))]:0,maximum=values.Length>0?values[values.Length-1]:0};}
         public PerformanceReport Finish(string context)
@@ -60,8 +61,8 @@ namespace DarwinPark.Core
             for(int i=0;i<_areas.Length;i++)report.metrics.Add(Metric(((PerformanceTimings.Area)i).ToString(),"ms","game inclusive",_areas[i].Take(used).ToArray(),used,_calls[i]));
             foreach(var entry in _engine){var recorder=entry.recorder;recorder.Stop();bool time=recorder.UnitType==ProfilerMarkerDataUnit.TimeNanoseconds;var samples=recorder.ToArray();var values=samples.Select(s=>s.Value*(time?1e-6:1)).ToArray();var metric=Metric(entry.name,time?"ms":recorder.UnitType.ToString(),"engine",values,Math.Max(1,values.Length));metric.available=recorder.Valid&&values.Length>0;report.metrics.Add(metric);if(recorder.WrappedAround)report.truncated=true;}
             foreach(var name in EngineNames)if(!report.metrics.Exists(m=>m.name==name))report.metrics.Add(new PerformanceMetric{name=name,source="engine",available=false});
-            Dispose();return report;
+            RuntimeCostBreakdown.Finish(report,report.metrics.First(m=>m.name=="Frame elapsed").mean);Dispose();return report;
         }
-        public void Dispose(){if(_closed)return;_closed=true;foreach(var entry in _engine)entry.recorder.Dispose();PerformanceTimings.End();}
+        public void Dispose(){if(_closed)return;_closed=true;foreach(var entry in _engine)entry.recorder.Dispose();PerformanceTimings.End();RuntimeCostBreakdown.Clear();}
     }
 }

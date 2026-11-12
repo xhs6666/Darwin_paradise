@@ -339,7 +339,7 @@ flowchart TD
 - [PopulationWorkbench.SelectedTab.set · L17](6ca6fcae89e529ec.md#m92d0005788d9d94a)（访问器）
 - [PopulationArchive.Find · L50](084e119b69cdd751.md#m842230bd55f69711)（方法）
 - [ColonyAppearance.ColorFor · L9](e51c7c842d87a26d.md#m0ea090c43edf8334)（方法）
-- [PopulationArchive.OpacityFor · L108](084e119b69cdd751.md#me67988b8c8d93cdf)（方法）
+- [PopulationArchive.OpacityFor · L110](084e119b69cdd751.md#m4ca8d2c41b966b30)（方法）
 - [PopulationWorkbench.RefreshNow · L53](6ca6fcae89e529ec.md#m68743b38d8bdd235)（方法）
 
 <a id="m68743b38d8bdd235"></a>
@@ -518,10 +518,10 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [PopulationArchive.SetDisplay · L103](084e119b69cdd751.md#m8c0a339329201961)（方法）
+- [PopulationArchive.SetDisplay · L105](084e119b69cdd751.md#m468798c589a19a18)（方法）
 - [PopulationWorkbench.SelectedId.get · L16](6ca6fcae89e529ec.md#mef0f87781fb55d79)（访问器）
 - [PopulationArchive.Find · L50](084e119b69cdd751.md#m842230bd55f69711)（方法）
-- [PopulationArchive.OpacityFor · L108](084e119b69cdd751.md#me67988b8c8d93cdf)（方法）
+- [PopulationArchive.OpacityFor · L110](084e119b69cdd751.md#m4ca8d2c41b966b30)（方法）
 - [WorldSessionManager.SaveNow · L169](08741c7b7b9d9344.md#m43f61078d8513f73)（方法）
 
 <a id="m09bed70d853d69f9"></a>

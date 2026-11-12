@@ -48,6 +48,8 @@ namespace DarwinPark.Entities.Ecology
         public static int RegisteredParts => _instance != null ? _instance._parts.Count : 0;
         public static int LastBatches { get; private set; }
         public static int LastInstances { get; private set; }
+        // ★ 修复（防Bug回归）：采样在LateUpdate而实际提交在镜头回调，保留上一完成帧，不能把本帧清零误写成没有绘制。
+        public static int PreviousFrameBatches {get;private set;}
 
         public static void Register(ColonyResource resource)
         {
@@ -101,7 +103,7 @@ namespace DarwinPark.Entities.Ecology
         private void LateUpdate()
         {
             using var timing=PerformanceTimings.Measure(PerformanceTimings.Area.CorpseBatches);
-            LastBatches = LastInstances = 0;
+            PreviousFrameBatches=LastBatches;LastBatches = LastInstances = 0;
             var settings = SimulationOptimization.Current;
             if (_failed || !settings.corpseBatchRendering || !settings.resourceInstancing || !SystemInfo.supportsInstancing) { Restore(); return; }
             float size = settings.corpseRenderCellSize; int limit = settings.corpseBatchSize;
@@ -184,10 +186,10 @@ namespace DarwinPark.Entities.Ecology
             var e=local.extents;var x=world.MultiplyVector(new Vector3(e.x,0,0));var y=world.MultiplyVector(new Vector3(0,e.y,0));var z=world.MultiplyVector(new Vector3(0,0,e.z));
             return new Bounds(world.MultiplyPoint3x4(local.center),new Vector3(Mathf.Abs(x.x)+Mathf.Abs(y.x)+Mathf.Abs(z.x),Mathf.Abs(x.y)+Mathf.Abs(y.y)+Mathf.Abs(z.y),Mathf.Abs(x.z)+Mathf.Abs(y.z)+Mathf.Abs(z.z))*2);
         }
-        private void OnDisable(){RenderPipelineManager.beginCameraRendering-=Draw;Camera.onPreCull-=DrawBuiltIn;Restore();}
+        private void OnDisable(){RenderPipelineManager.beginCameraRendering-=Draw;Camera.onPreCull-=DrawBuiltIn;Restore();if(_instance==this)PreviousFrameBatches=LastBatches=LastInstances=0;}
         private void OnDestroy()
         { Restore(); foreach (var item in _appearances.Values) if (item.material != null) Destroy(item.material); if (_instance == this) _instance = null; }
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void Reset() { _instance = null; LastBatches = LastInstances = 0;InstanceWrites=0; }
+        private static void Reset() { _instance = null; PreviousFrameBatches=LastBatches = LastInstances = 0;InstanceWrites=0; }
     }
 }

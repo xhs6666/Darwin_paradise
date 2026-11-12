@@ -1,0 +1,40 @@
+{
+  "world": {
+    "result": "PASS",
+    "checks": 1359,
+    "sha256": "64d448b72d0a894d67804d4af2f9156201add033e5dfd94210e487e61b5720c6"
+  },
+  "hud": {
+    "result": "PASS",
+    "checks": 37,
+    "sha256": "c856a1bc2e1353e84930662cc25d68c65dd2bb012f5e4a3eaef827d7080fdc88"
+  },
+  "ground": {
+    "result": "PASS",
+    "checks": 532,
+    "sha256": "4e9a2a7eb21abbf53d091452fbad735b2e1294beffe5841b14a75cb3da35db9f"
+  },
+  "windowsBuild": {
+    "result": "PASS",
+    "checks": 17,
+    "sha256": "6d208131a5e1f2bc1ef864e4e7352c5462a26c337c39ac4d30e1b1cad73ae5ee"
+  },
+  "visiblePlayer": {
+    "result": "PASS checks=9",
+    "checks": 9,
+    "context": "api=Direct3D12 development=False entities=998 batches=100 size=2560x1385 running=True speed=1"
+  },
+  "sourceHash": "6ee05f17e2cedc233892b8cc0153c65711773f35f33239856dad81a2da80b037",
+  "sourceParity": {
+    "csharpFiles": 406,
+    "mismatches": 0
+  },
+  "inputSha256": "a01dc2dd5852f28ca66ef427278e6d1d4ca0d1bfb15f8d1dc7889d6059f98851",
+  "flowDocs": {
+    "scripts": 416,
+    "methods": 4262,
+    "graphs": 4265,
+    "structuralChecks": 202868,
+    "browserChecks": 19
+  }
+}

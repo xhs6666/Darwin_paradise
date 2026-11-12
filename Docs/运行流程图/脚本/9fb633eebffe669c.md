@@ -2726,7 +2726,7 @@ flowchart TD
 - [WorldSessionManager.Current.get · L21](08741c7b7b9d9344.md#m5d26a5eb846a8504)（访问器）
 - [EntityPopulationLimit.Capture · L29](44f717c5df79d270.md#m9d42f19642677139)（方法）
 - [EcologyDefaults.UseSnapshot · L67](5b565b57de741d98.md#m5bc9f872fc491c57)（方法）
-- [PopulationArchive.Restore · L124](084e119b69cdd751.md#me005cc381d84b12d)（方法）
+- [PopulationArchive.Restore · L126](084e119b69cdd751.md#m7b637fee38d306f2)（方法）
 - [SimulationClock.ApplyRemoteState · L76](a8f444aec9614b0a.md#m2a1c12e8c6ba769d)（方法）
 - [ServiceLocator.Get · L33](f2fdbe9f9ccd93cb.md#m2ae625299520c56d)（方法）
 - [SunSystem.OrbitAngle.set · L27](15af8ca97f781b7f.md#mdfb5515951cbcd65)（访问器）

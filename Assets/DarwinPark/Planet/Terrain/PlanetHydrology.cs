@@ -28,15 +28,24 @@ namespace DarwinPark.Planet
             for(int i=0;i<seen.Length;i++){result.Lake[i]=result.Bed[i]>data.SeaLevel&&result.Spill[i]-result.Bed[i]>=settings.lakeMinimumDepth/result._scale;
                 result.River[i]=result.Bed[i]>data.SeaLevel&&result.Downstream[i]>=0&&result.Accumulation[i]>=settings.riverCatchment;
                 if(result.Lake[i])result.LakeCells++;if(result.River[i])result.RiverCells++;}
+            // ★ 新增：新版将有深水核心的同水位洼地扩展到浅岸，不把湖泊最浅一圈裁成水文网格方块。
+            if(settings.version>=2){var fringe=new Queue<int>();for(int i=0;i<seen.Length;i++)if(result.Lake[i])fringe.Enqueue(i);while(fringe.Count>0){int cell=fringe.Dequeue(),x=cell%result.Width,y=cell/result.Width;for(int dy=-1;dy<=1;dy++)for(int dx=-1;dx<=1;dx++){if(y+dy<0||y+dy>=result.Height)continue;int next=(y+dy)*result.Width+(x+dx+result.Width)%result.Width;if(result.Lake[next]||result.Bed[next]<=data.SeaLevel||result.Spill[next]<=result.Bed[next]||Mathf.Abs(result.Spill[cell]-result.Spill[next])>1e-5f)continue;result.Lake[next]=true;result.LakeCells++;fringe.Enqueue(next);}}}
             return result;
         }
         public int Cell(Vector3 dir){var uv=PlanetTerrainSampler.DirectionToUV(dir);return Mathf.Min(Height-1,(int)(uv.y*Height))*Width+Mathf.Min(Width-1,(int)(uv.x*Width));}
         public float Water(Vector3 dir)
         {
-            int cell=Cell(dir);float water=Lake[cell]?Spill[cell]:_sea;
+            int cell=Cell(dir);float water=LakeWater(dir);
             int x=cell%Width,y=cell/Width;for(int dy=-1;dy<=1;dy++)for(int dx=-1;dx<=1;dx++)
             {if(y+dy<0||y+dy>=Height)continue;int i=(y+dy)*Width+(x+dx+Width)%Width;if(!River[i])continue;float t;float distance=SegmentDistance(dir,i,out t);if(distance<=Settings.riverHalfWidth)water=Mathf.Max(water,Mathf.Lerp(Spill[i],Spill[Downstream[i]],t)-Settings.riverSurfaceInset/_scale);}
             return water;
+        }
+        // ★ 新增：显示和玩法共用湖水位；新版从相邻格中心延展到真实山坡，边缘由地形裁切而非格子边裁切。
+        public float LakeWater(Vector3 dir)
+        {
+            int cell=Cell(dir);if(Settings.version<2)return Lake[cell]?Spill[cell]:_sea;
+            var uv=PlanetTerrainSampler.DirectionToUV(dir);float x=uv.x*Width-.5f,y=uv.y*Height-.5f;int ix=Mathf.FloorToInt(x),iy=Mathf.FloorToInt(y);float best=float.PositiveInfinity,water=_sea;
+            for(int dy=0;dy<=1;dy++)for(int dx=0;dx<=1;dx++){int row=Mathf.Clamp(iy+dy,0,Height-1),column=(ix+dx+Width)%Width,i=row*Width+column;if(!Lake[i])continue;float distance=(ix+dx-x)*(ix+dx-x)+(iy+dy-y)*(iy+dy-y);if(distance>=best)continue;best=distance;water=Spill[i];}return water;
         }
         public float SegmentDistance(Vector3 direction,int river,out float t)
         {var a=Directions[river];var b=Directions[Downstream[river]];var delta=b-a;t=Mathf.Clamp01(Vector3.Dot(direction-a,delta)/Mathf.Max(1e-10f,delta.sqrMagnitude));return Vector3.Distance(direction,Vector3.Lerp(a,b,t).normalized)*_radius;}
@@ -63,6 +72,8 @@ namespace DarwinPark.Planet
         private readonly LandformSettings _settings;private readonly FBMNoise _plateau,_basin;
         public PlanetLandformField(LandformSettings settings,int seed){_settings=settings;var cfg=new FBMConfig{frequency=settings.plateauFrequency,octaves=3,warpStrength=.2f};_plateau=new FBMNoise(cfg,seed+6397);_basin=new FBMNoise(cfg,seed+9413);}
         public float Shape(float height,Vector3 dir,float sea)
-        {if(!_settings.enabled)return height;float a=(_plateau.Sample(dir)+1)*.5f,b=(_basin.Sample(dir)+1)*.5f;float mask=Mathf.SmoothStep(0,1,Mathf.InverseLerp(_settings.plateauThreshold,_settings.plateauThreshold+_settings.plateauTransition,a));float land=Mathf.SmoothStep(0,1,Mathf.InverseLerp(sea,sea+.1f,height));return Mathf.Lerp(height,sea+_settings.plateauHeight,mask*_settings.plateauStrength*land)-_settings.basinStrength*Mathf.Pow(Mathf.Clamp01((.5f-b)*2),2)*land;}
+        {if(!_settings.enabled)return height;float a=(_plateau.Sample(dir)+1)*.5f,b=(_basin.Sample(dir)+1)*.5f;float mask=Mathf.SmoothStep(0,1,Mathf.InverseLerp(_settings.plateauThreshold,_settings.plateauThreshold+_settings.plateauTransition,a));float land=Mathf.SmoothStep(0,1,Mathf.InverseLerp(sea,sea+.1f,height));// ★ 修复（防Bug回归）：旧盆地把小噪声偏差再次平方，实际下切近乎为零；新版改为可配置宽碗遮罩。
+            float bowl=_settings.version<2?Mathf.Pow(Mathf.Clamp01((.5f-b)*2),2):1-Mathf.SmoothStep(0,1,Mathf.InverseLerp(_settings.basinThreshold-_settings.basinTransition,_settings.basinThreshold,b));
+            return Mathf.Lerp(height,sea+_settings.plateauHeight,mask*_settings.plateauStrength*land)-_settings.basinStrength*bowl*land;}
     }
 }

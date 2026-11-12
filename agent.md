@@ -430,3 +430,19 @@
 | 2026-11-11 | 报告普通代谢几乎0ms但CPU层级明显耗时 | Vitals仅共享入口被计时，普通Update漏报 | EntityVitals、RuntimePerformance、RuntimePerformanceCapture、NearViewPerformanceAudit | 计时放实际代谢入口；包含项不可相加；报告缓存命中、真实采样、索引重建和批次数，改善不等同稳定60FPS |
 
 本轮2053项原生断言通过；最终Windows非开发构建0错误/1条符号上传授权告警；可见发布版实际绘制100个尸体批次并加载同一近千活体世界采样8秒。编辑器同存档约349→105ms/帧，发布版仍约74ms，未彻底解决千实体卡顿，不能承诺60FPS；隐藏窗口不绘制的样本已排除。414脚本/4219方法/4222图、200252项结构与19项浏览检查通过。详见 `Docs/验证记录/完整存档卡顿热点修复验证-2026-11-11.md`。
+
+
+## 2026-11-12 筛选布局、地貌升级与性能归属
+
+| 日期 | 现象 | 根因/处理 | 文件 | 防复发要点 |
+| --- | --- | --- | --- | --- |
+| 2026-11-12 | 筛选首击迟钝、卡片横占位，规则栏留空 | 筛选另一个Start才建入口且宽窄两套显隐状态；改Awake同步、单状态上浮，规则跟随统计右边 | MapEntityGeneFilterUI、SimulationRulesPanel | 加载第一就绪帧通过StandaloneInputModule实际点击，不用onClick.Invoke代替；宽窄布局及260×164卡片间距 |
+| 2026-11-12 | 新地貌不能静默应用旧世界，湖面呈方格 | 地貌版本、备份升级与岸线显示不完整；v1原算法保留，v2宽盆地及湖岸裁切，显式升级先完整备份 | LandformSettings、LandformSaveCompatibility、PlanetHydrology、PlanetFreshWaterMesh、LandformUpgradeControl、WorldParameterUpdate | 普通读档不升级；旧字段缺省仍兼容；备份成功后才重建、资源身份和日期读写验证；实际河湖近景检查 |
+| 2026-11-12 | AI沿旧路跨湖或旧寄生直接入海 | 双线性岸线与真实网格不一致、位移后路径未验证、旧寄生绕过导航 | RadialTerrainSurface、LandNavigationGraph、LandPathScheduler、ParasiteBehavior、NutritionParasite、LocomotionGeneLogic | 最终网格后建图；全球坐标候选和陆地连通；路点/惯性/身体侧面检查；绕湖/隔海及320细分PhysX对照 |
+| 2026-11-12 | 采样不能指出脚本，父子计时重复，批次误报0 | Area只有包含范围；采样时机在渲染前清零后 | RuntimeCostBreakdown、RuntimePerformance、RuntimePerformanceDetails、RuntimePerformanceCapture、CorpseInstanceRenderer | 只主动采样建栈、扣子计自身；旧metrics保留；JSON/Markdown/设置排行来自同模型；批次用上一完成帧；未覆盖代码和不可用引擎计数明确说明 |
+
+高空救援回归定位到实际已回到1米且速度已清零，只有径向投影的浮点尾差令严格<=0断言失败；验证采用与已有跳跃检查相同的0.0001速度容限，不改游戏救援行为。地形升级测试新增备份前保存，暴露了原测试能量块缺少合法group标识，已修正测试夹具并要求成功写盘状态，不能略过验证以制造通过。
+
+详见 `Docs/验证记录/地形界面与性能归属-2026-11-12.md`。本轮是界面、地形/导航补齐与可归属性能采样，不得宣称已经彻底解决近千活体卡顿；真实采样只覆盖已安装计时范围，不冒充全函数Deep Profile。
+
+本轮最终1954项原生断言通过；真实游戏入口在可见Windows非开发版记录34脚本/40方法范围，998活体、100尸体批次，约71.9ms/帧仍卡顿。406份源码与测试副本一致；416脚本/4262方法/4265图、202868项结构和19项浏览检查通过。

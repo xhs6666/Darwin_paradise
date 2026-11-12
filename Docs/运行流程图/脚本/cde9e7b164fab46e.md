@@ -2,7 +2,7 @@
 
 [返回总索引](../README.md) · `Runtime` · `Assets/DarwinPark/Planet/Terrain/PlanetTerrainGenerator.cs`
 
-[源文件](../../../Assets/DarwinPark/Planet/Terrain/PlanetTerrainGenerator.cs) · 源码校验：`506999fb72c0e9351a349ab21b86695af887f66e6c475d5f01b92d03bc1d8380`
+[源文件](../../../Assets/DarwinPark/Planet/Terrain/PlanetTerrainGenerator.cs) · 源码校验：`68d38cc7a60a9b1a38a5c9de063497134804add5639513b62f6491d4b7d0c966`
 
 方法按源文件位置排列。事件/回调引用不表示立即执行；分支与异常说明见总索引。完整源码与可点击关系图请打开离线手册。
 
@@ -70,17 +70,18 @@ flowchart TD
   b49["cfg.landforms"]
   b50{"判断：cfg.landforms?.enabled==true"}
   b51["data.Hydrology=PlanetHydrology.Build(data,cfg.landforms);<br/>data.Hydrology.Carve(data);<br/>MergeSeamVertices(data.FaceHeights,sub);"]
-  b52["data.Navigation<br/>data"]
-  b53{"cfg.navigation<br/>判断：cfg.navigation"}
-  b54["cfg.navigation"]
-  b55["new LandNavigationSettings()"]
-  b56["data.Navigation=new LandNavigationGraph(data,cfg.navigation??new LandNavigationSettings());"]
-  b57["BuildMesh(data);<br/>PlanetMeshTopology.Weld(data);<br/>结果：data"]
-  b58(["结束 / 返回"])
+  b52["BuildMesh(data);<br/>PlanetMeshTopology.Weld(data);"]
+  b53["data.Navigation<br/>data"]
+  b54{"cfg.navigation<br/>判断：cfg.navigation"}
+  b55["cfg.navigation"]
+  b56["new LandNavigationSettings()"]
+  b57["data.Navigation=new LandNavigationGraph(data,cfg.navigation??new LandNavigationSettings());"]
+  b58["结果：data"]
+  b59(["结束 / 返回"])
   b0 --> b1
   b1 -->|"是"| b2
   b1 -->|"否"| b3
-  b2 -->|"返回"| b58
+  b2 -->|"返回"| b59
   b3 --> b4
   b4 --> b5
   b5 --> b6
@@ -142,12 +143,13 @@ flowchart TD
   b50 -->|"否"| b52
   b51 --> b52
   b52 --> b53
-  b53 -->|"否"| b54
-  b53 -->|"是"| b55
-  b54 --> b56
-  b55 --> b56
+  b53 --> b54
+  b54 -->|"否"| b55
+  b54 -->|"是"| b56
+  b55 --> b57
   b56 --> b57
-  b57 -->|"返回"| b58
+  b57 --> b58
+  b58 -->|"返回"| b59
 
 ```
 
@@ -155,24 +157,24 @@ flowchart TD
 
 - [FBMNoise.FBMNoise.ctor · L12](8e4c1118f3935129.md#m008bcd375f95dd84)（构造函数）
 - [PlanetMountainField.PlanetMountainField.ctor · L11](c498fd5cb2934213.md#m01b09f6e87580131)（构造函数）
-- [PlanetLandformField.PlanetLandformField.ctor · L64](282937bf06cb5f2a.md#m6a196da49a548c7a)（构造函数）
-- [PlanetTerrainGenerator.FacePoint · L335](cde9e7b164fab46e.md#m57dcea09f5e7a6e9)（方法）
-- [PlanetTerrainGenerator.Noise01 · L184](cde9e7b164fab46e.md#mce41aa72ac709c86)（方法）
+- [PlanetLandformField.PlanetLandformField.ctor · L73](282937bf06cb5f2a.md#m4519328e460b4907)（构造函数）
+- [PlanetTerrainGenerator.FacePoint · L336](cde9e7b164fab46e.md#mfe86a4a87bf91862)（方法）
+- [PlanetTerrainGenerator.Noise01 · L185](cde9e7b164fab46e.md#m960131033c9d0fea)（方法）
 - [FBMNoise.Sample · L24](8e4c1118f3935129.md#m3997a25fbe63e25e)（方法）
-- [PlanetLandformField.Shape · L65](282937bf06cb5f2a.md#mdc8b162f6f5d14b1)（方法）
+- [PlanetLandformField.Shape · L74](282937bf06cb5f2a.md#m85f86151c8cdf293)（方法）
 - [PlanetMountainField.Sample · L19](c498fd5cb2934213.md#m75c89d630c47707c)（方法）
-- [PlanetTerrainGenerator.ApplyErosion · L189](cde9e7b164fab46e.md#m46ef26641a740f70)（方法）
-- [PlanetTerrainGenerator.MergeSeamVertices · L240](cde9e7b164fab46e.md#m4396229e68c8c7be)（方法）
+- [PlanetTerrainGenerator.ApplyErosion · L190](cde9e7b164fab46e.md#m0dbe1eafcc76c5bf)（方法）
+- [PlanetTerrainGenerator.MergeSeamVertices · L241](cde9e7b164fab46e.md#ma9f3aeb1ced1b0cd)（方法）
 - [PlanetSeamContinuity.Smooth · L9](b45fffad7e3300e3.md#m8e8308fbbdc4322e)（方法）
 - [PlanetHydrology.Build · L19](282937bf06cb5f2a.md#m89a4629b61694b3d)（方法）
-- [PlanetHydrology.Carve · L54](282937bf06cb5f2a.md#m47af78b0eaac589a)（方法）
-- [LandNavigationGraph.LandNavigationGraph.ctor · L16](6f2590f045ea5d3f.md#m734eccceddc6424c)（构造函数）
-- [PlanetTerrainGenerator.BuildMesh · L282](cde9e7b164fab46e.md#m4cad5aa37186bf01)（方法）
+- [PlanetHydrology.Carve · L63](282937bf06cb5f2a.md#m33922055e07c89f3)（方法）
+- [PlanetTerrainGenerator.BuildMesh · L283](cde9e7b164fab46e.md#m12cee070473d98c6)（方法）
 - [PlanetMeshTopology.Weld · L9](a561079dc7786744.md#md9a5bdc8ae62f315)（方法）
+- [LandNavigationGraph.LandNavigationGraph.ctor · L16](6f2590f045ea5d3f.md#m734eccceddc6424c)（构造函数）
 
-<a id="mce41aa72ac709c86"></a>
+<a id="m960131033c9d0fea"></a>
 
-## Noise01 · L184
+## Noise01 · L185
 
 `private static float Noise01(FBMNoise noise, Vector3 dir)`
 
@@ -194,9 +196,9 @@ flowchart TD
 
 - [FBMNoise.Sample · L24](8e4c1118f3935129.md#m3997a25fbe63e25e)（方法）
 
-<a id="m46ef26641a740f70"></a>
+<a id="m0dbe1eafcc76c5bf"></a>
 
-## ApplyErosion · L189
+## ApplyErosion · L190
 
 `private static void ApplyErosion(PlanetTerrainConfig cfg, float[][] faceHeights, int sub)`
 
@@ -284,9 +286,9 @@ flowchart TD
 - [HydraulicErosion.Apply · L12](8ec387cb4eb3fa28.md#m45b3f13be397f937)（方法）
 - [ThermalErosion.Apply · L11](6648fb3132139fb8.md#m2992e195e77e1a49)（方法）
 
-<a id="m4396229e68c8c7be"></a>
+<a id="ma9f3aeb1ced1b0cd"></a>
 
-## MergeSeamVertices · L240
+## MergeSeamVertices · L241
 
 `private static void MergeSeamVertices(float[][] faceHeights, int sub)`
 
@@ -347,11 +349,11 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [PlanetTerrainGenerator.FacePoint · L335](cde9e7b164fab46e.md#m57dcea09f5e7a6e9)（方法）
+- [PlanetTerrainGenerator.FacePoint · L336](cde9e7b164fab46e.md#mfe86a4a87bf91862)（方法）
 
-<a id="m4cad5aa37186bf01"></a>
+<a id="m12cee070473d98c6"></a>
 
-## BuildMesh · L282
+## BuildMesh · L283
 
 `private static void BuildMesh(PlanetTerrainData data)`
 
@@ -421,11 +423,11 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [PlanetTerrainGenerator.FacePoint · L335](cde9e7b164fab46e.md#m57dcea09f5e7a6e9)（方法）
+- [PlanetTerrainGenerator.FacePoint · L336](cde9e7b164fab46e.md#mfe86a4a87bf91862)（方法）
 
-<a id="m57dcea09f5e7a6e9"></a>
+<a id="mfe86a4a87bf91862"></a>
 
-## FacePoint · L335
+## FacePoint · L336
 
 `private static Vector3 FacePoint(Vector3 n, float u, float v)`
 

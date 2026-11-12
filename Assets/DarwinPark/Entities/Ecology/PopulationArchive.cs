@@ -68,6 +68,8 @@ namespace DarwinPark.Entities.Ecology
         public static List<DarwinEntity> Members(string id)=>EntityRegistry.All.Where(EcologyQueries.Alive).Where(e=>DarwinPark.Core.OptionalComponent.Read<PopulationBehavior>(e) is PopulationBehavior p&&p.Active&&p.GroupId==id).ToList();
         public static void Observe()
         {
+            // ★ 新增：全局档案聚合单列采样，避免归入调用它的UI或存档自身开销。
+            using var measured=PerformanceTimings.Measure(PerformanceTimings.Area.PopulationArchive);
             if(WorldAuthority.IsReplica||WorldRuntimeGate.Loading)return;
             var groups=EntityRegistry.All.Where(EcologyQueries.Alive).Select(e=>DarwinPark.Core.OptionalComponent.Read<PopulationBehavior>(e)).Where(p=>p!=null&&p.Active&&!string.IsNullOrEmpty(p.GroupId)).GroupBy(p=>p.GroupId).ToArray();var seen=new HashSet<string>();
             foreach(var group in groups)

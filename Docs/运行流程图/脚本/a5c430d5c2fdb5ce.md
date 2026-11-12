@@ -2,7 +2,7 @@
 
 [返回总索引](../README.md) · `Editor` · `Assets/DarwinPark/Editor/WorldEvolutionRegression.cs`
 
-[源文件](../../../Assets/DarwinPark/Editor/WorldEvolutionRegression.cs) · 源码校验：`c46a275931ee74c0a2eb7b48a277e70da483f3e16ccabbdd05810db60a0c6166`
+[源文件](../../../Assets/DarwinPark/Editor/WorldEvolutionRegression.cs) · 源码校验：`6ae4066cd69692d1a65dfe397ba0c224963ef8bff1abd68125402506734be1eb`
 
 方法按源文件位置排列。事件/回调引用不表示立即执行；分支与异常说明见总索引。完整源码与可点击关系图请打开离线手册。
 
@@ -369,7 +369,7 @@ flowchart TD
 ```mermaid
 flowchart TD
   b0(["入口"])
-  b1["NaturalPopulationPace.Current.enabled=false;<br/>GameplayTuning.Current.mutationRoundsEnabled=false;<br/>GameplayTuning.Current.populationRatioControlEnabled=false;<br/>session=Object.FindFirstObjectByType&lt;WorldSessionManager&gt;()<br/>session.autoSaveInte…"]
+  b1["PerformanceDetailChecks();<br/>NaturalPopulationPace.Current.enabled=false;<br/>GameplayTuning.Current.mutationRoundsEnabled=false;<br/>GameplayTuning.Current.populationRatioControlEnabled=false;<br/>session=Object.FindFirstObjectByType&lt;WorldSessionMana…"]
   b2["i=0"]
   b3{"判断：i&lt;512"}
   b4{"d=PlanetTerrainSampler.DirectionFromUV(i*.61803398875f%1,.25f+(i%64)/128f)<br/>p=EcologyQueries.Surface(planet.transform.position+d*(planet.radius+planet.heightScale))<br/>判断：(p-planet.transform.position).magnitude&gt;planet.LocalWaterRadius(p)+3"}
@@ -403,41 +403,51 @@ flowchart TD
   b31["cfg.Classify(5,70,false)==ClimateType.Taiga"]
   b32["Check(cfg.Classify(5,70,false)==ClimateType.Taiga&amp;&amp;cfg.Classify(10,20,false)==ClimateType.ColdDesert,&quot;寒带森林及寒冷荒漠可分类&quot;);"]
   b33["Check(Vector3.Distance((Vector4)EarthClimateRules.Color(28,90,cfg),(Vector4)EarthClimateRules.Color(28,55,cfg))&gt;.2f,&quot;雨林深青绿与热带草原金黄有明显色差&quot;);<br/>Check(EarthClimateRules.Humidity(Vector3.forward,cfg)&gt;EarthClimateRules.Humidity(PlanetTerrainSampl…"]
-  b34["new ColonyResourceSave{id=Guid.NewGuid().ToString(&quot;N&quot;),kind=ColonyResourceKind.Energy,energy=17,local=EcologyQueries.ToLocal(home),scale=Vector3.one}<br/>id=Guid.NewGuid().ToString(&quot;N&quot;)<br/>kind=ColonyResourceKind.Energy<br/>energy=17<br/>local=EcologyQ…"]
+  b34["new ColonyResourceSave{id=Guid.NewGuid().ToString(&quot;N&quot;),group=Guid.NewGuid().ToString(&quot;N&quot;),kind=ColonyResourceKind.Energy,energy=17,local=EcologyQueries.ToLocal(home),scale=Vector3.one}<br/>id=Guid.NewGuid().ToString(&quot;N&quot;)<br/>group=Guid.NewGuid()…"]
   b35["resourceId=testResource.State.id<br/>alive=EntityRegistry.All.Count<br/>gameTime=clock.GameTime<br/>update=WorldParameterUpdate.Ensure()<br/>Check(update.Request(&quot;landforms&quot;,&quot;0&quot;,out _),&quot;可请求关闭地貌并后台重建&quot;);<br/>yield return Wait(()=&gt;!update.Busy,&quot;关闭地貌更新&quot;);"]
   b36{"判断：planet.Data.Hydrology==null"}
-  b37["!planet.landforms.enabled"]
-  b38["planet.Data.Hydrology==null"]
-  b39["Check(planet.Data.Hydrology==null&amp;&amp;!planet.landforms.enabled,&quot;关闭后恢复原地形生成路径&quot;);"]
-  b40{"ColonyResource.Find(resourceId)<br/>判断：ColonyResource.Find(resourceId)"}
-  b41[".State.energy"]
-  b42["ColonyResource.Find(resourceId)"]
-  b43{"判断：ColonyResource.Find(resourceId)?.State.energy==17"}
-  b44{"判断：EntityRegistry.All.Count==alive"}
-  b45["clock.GameTime==gameTime"]
-  b46["ColonyResource.Find(resourceId)?.State.energy==17&amp;&amp;EntityRegistry.All.Count==alive&amp;&amp;clock.GameTime==gameTime"]
-  b47["Check(ColonyResource.Find(resourceId)?.State.energy==17&amp;&amp;EntityRegistry.All.Count==alive&amp;&amp;clock.GameTime==gameTime,&quot;重建保留真实资源营养、实体数和日期&quot;);"]
-  b48["Check(update.Request(&quot;landforms&quot;,&quot;1&quot;,out _),&quot;旧世界可显式启用新地貌&quot;);<br/>yield return Wait(()=&gt;!update.Busy,&quot;启用地貌更新&quot;);"]
-  b49{"判断：planet.Data.Hydrology!=null"}
-  b50["planet.landforms.enabled"]
-  b51["planet.Data.Hydrology!=null"]
-  b52["Check(planet.Data.Hydrology!=null&amp;&amp;planet.landforms.enabled,&quot;显式启用后生成新水系并保存开关&quot;);"]
-  b53["Check(JsonUtility.FromJson&lt;PlanetTerrainConfig&gt;(WorldSaveStore.Read(WorldSaveStore.FileFor(session.Current.id)).terrainParameters).landforms.enabled,&quot;地貌开关实际写入存档&quot;);<br/>Clear();<br/>session.Create(&quot;少量自然种源&quot;,742091,.5f,20,44);<br/>yield return Wait(()=…"]
-  b54{"判断：EntityRegistry.All.Count==10"}
-  b55{"判断：EntityRegistry.All.Count(e=&gt;EcologyEnergyBudget.IsProducer(e.Genes))==7"}
-  b56["EntityRegistry.All.Count(e=&gt;e.Genes.GetAttribute(&quot;moveSpeed&quot;)&gt;0)==3"]
-  b57["EntityRegistry.All.Count==10&amp;&amp;EntityRegistry.All.Count(e=&gt;EcologyEnergyBudget.IsProducer(e.Genes))==7&amp;&amp;EntityRegistry.All.Count(e=&gt;e.Genes.GetAttribute(&quot;moveSpeed&quot;)&gt;0)==3"]
-  b58["Check(EntityRegistry.All.Count==10&amp;&amp;EntityRegistry.All.Count(e=&gt;EcologyEnergyBudget.IsProducer(e.Genes))==7&amp;&amp;EntityRegistry.All.Count(e=&gt;e.Genes.GetAttribute(&quot;moveSpeed&quot;)&gt;0)==3,&quot;新世界一次建立7生产者和3移动种源&quot;);"]
-  b59["Check(EntityRegistry.All.All(e=&gt;e.Genes.CurrentAge==AgeState.Infant&amp;&amp;!planet.IsSubmerged(e.transform.position)),&quot;种源均为陆地幼体&quot;);<br/>Check(session.GetComponents&lt;NaturalWorldSeeder&gt;().Length==1,&quot;连续创建复用唯一种源组件&quot;);<br/>session.SaveNow(false);<br/>disk=WorldS…"]
-  b60["i=0"]
-  b61{"判断：i&lt;15"}
-  b62["yield return null;<br/>i++"]
-  b63["Check(EntityRegistry.All.Count==10,&quot;旧档重载不重复领取初始种源&quot;);<br/>Clear();"]
-  b64["i=0"]
-  b65{"判断：i&lt;15"}
-  b66["yield return null;<br/>i++"]
-  b67["Check(EntityRegistry.All.Count==0,&quot;种群灭绝或清场后不自动补员&quot;);<br/>yield return Visuals(planet);"]
-  b68(["结束 / 返回"])
+  b37{"判断：planet.landforms.enabled"}
+  b38["update.LastStatus.StartsWith(&quot;已应用&quot;)"]
+  b39["planet.Data.Hydrology==null&amp;&amp;!planet.landforms.enabled&amp;&amp;update.LastStatus.StartsWith(&quot;已应用&quot;)"]
+  b40["Check(planet.Data.Hydrology==null&amp;&amp;!planet.landforms.enabled&amp;&amp;update.LastStatus.StartsWith(&quot;已应用&quot;),&quot;关闭后恢复原地形生成路径并成功保存：&quot;+update.LastStatus);"]
+  b41{"ColonyResource.Find(resourceId)<br/>判断：ColonyResource.Find(resourceId)"}
+  b42[".State.energy"]
+  b43["ColonyResource.Find(resourceId)"]
+  b44{"判断：ColonyResource.Find(resourceId)?.State.energy==17"}
+  b45{"判断：EntityRegistry.All.Count==alive"}
+  b46["clock.GameTime==gameTime"]
+  b47["ColonyResource.Find(resourceId)?.State.energy==17&amp;&amp;EntityRegistry.All.Count==alive&amp;&amp;clock.GameTime==gameTime"]
+  b48["Check(ColonyResource.Find(resourceId)?.State.energy==17&amp;&amp;EntityRegistry.All.Count==alive&amp;&amp;clock.GameTime==gameTime,&quot;重建保留真实资源营养、实体数和日期&quot;);"]
+  b49["Check(update.Request(&quot;landforms&quot;,&quot;1&quot;,out _),&quot;旧世界可显式启用新地貌&quot;);<br/>yield return Wait(()=&gt;!update.Busy,&quot;启用地貌更新&quot;);"]
+  b50{"判断：planet.Data.Hydrology!=null"}
+  b51["planet.landforms.enabled"]
+  b52["planet.Data.Hydrology!=null"]
+  b53["Check(planet.Data.Hydrology!=null&amp;&amp;planet.landforms.enabled,&quot;显式启用后生成新水系并保存开关&quot;);"]
+  b54["prior=WorldSaveStore.Read(update.LastBackupPath)"]
+  b55{"判断：File.Exists(update.LastBackupPath)"}
+  b56["!JsonUtility.FromJson&lt;PlanetTerrainConfig&gt;(prior.terrainParameters).landforms.enabled"]
+  b57["File.Exists(update.LastBackupPath)"]
+  b58["Check(File.Exists(update.LastBackupPath)&amp;&amp;!JsonUtility.FromJson&lt;PlanetTerrainConfig&gt;(prior.terrainParameters).landforms.enabled,&quot;一键升级前完整备份仍保存旧地形开关&quot;);"]
+  b59{"判断：prior.entities.Count==alive"}
+  b60["Mathf.Abs(prior.gameTime-gameTime)&lt;.001f"]
+  b61["prior.entities.Count==alive"]
+  b62["Check(prior.entities.Count==alive&amp;&amp;Mathf.Abs(prior.gameTime-gameTime)&lt;.001f,&quot;地形升级备份保留全部身份与游戏日期&quot;);"]
+  b63["Check(planet.landforms.version==LandformSettings.CurrentVersion,&quot;显式升级保存新地貌算法版本&quot;);<br/>Check(JsonUtility.FromJson&lt;PlanetTerrainConfig&gt;(WorldSaveStore.Read(WorldSaveStore.FileFor(session.Current.id)).terrainParameters).landforms.enabled,&quot;地貌开关实…"]
+  b64{"判断：EntityRegistry.All.Count==10"}
+  b65{"判断：EntityRegistry.All.Count(e=&gt;EcologyEnergyBudget.IsProducer(e.Genes))==7"}
+  b66["EntityRegistry.All.Count(e=&gt;e.Genes.GetAttribute(&quot;moveSpeed&quot;)&gt;0)==3"]
+  b67["EntityRegistry.All.Count==10&amp;&amp;EntityRegistry.All.Count(e=&gt;EcologyEnergyBudget.IsProducer(e.Genes))==7&amp;&amp;EntityRegistry.All.Count(e=&gt;e.Genes.GetAttribute(&quot;moveSpeed&quot;)&gt;0)==3"]
+  b68["Check(EntityRegistry.All.Count==10&amp;&amp;EntityRegistry.All.Count(e=&gt;EcologyEnergyBudget.IsProducer(e.Genes))==7&amp;&amp;EntityRegistry.All.Count(e=&gt;e.Genes.GetAttribute(&quot;moveSpeed&quot;)&gt;0)==3,&quot;新世界一次建立7生产者和3移动种源&quot;);"]
+  b69["Check(EntityRegistry.All.All(e=&gt;e.Genes.CurrentAge==AgeState.Infant&amp;&amp;!planet.IsSubmerged(e.transform.position)),&quot;种源均为陆地幼体&quot;);<br/>Check(session.GetComponents&lt;NaturalWorldSeeder&gt;().Length==1,&quot;连续创建复用唯一种源组件&quot;);<br/>session.SaveNow(false);<br/>disk=WorldS…"]
+  b70["i=0"]
+  b71{"判断：i&lt;15"}
+  b72["yield return null;<br/>i++"]
+  b73["Check(EntityRegistry.All.Count==10,&quot;旧档重载不重复领取初始种源&quot;);<br/>Clear();"]
+  b74["i=0"]
+  b75{"判断：i&lt;15"}
+  b76["yield return null;<br/>i++"]
+  b77["Check(EntityRegistry.All.Count==0,&quot;种群灭绝或清场后不自动补员&quot;);<br/>yield return Visuals(planet);"]
+  b78(["结束 / 返回"])
   b0 --> b1
   b1 --> b2
   b2 --> b3
@@ -484,51 +494,65 @@ flowchart TD
   b34 --> b35
   b35 --> b36
   b36 -->|"是"| b37
-  b36 -->|"否"| b38
-  b37 --> b39
-  b38 --> b39
+  b36 -->|"否"| b39
+  b37 -->|"否"| b38
+  b37 -->|"是"| b39
+  b38 --> b40
   b39 --> b40
-  b40 -->|"否"| b41
-  b40 -->|"是"| b42
-  b41 --> b43
-  b42 --> b43
-  b43 -->|"是"| b44
-  b43 -->|"否"| b46
+  b40 --> b41
+  b41 -->|"否"| b42
+  b41 -->|"是"| b43
+  b42 --> b44
+  b43 --> b44
   b44 -->|"是"| b45
-  b44 -->|"否"| b46
-  b45 --> b47
-  b46 --> b47
+  b44 -->|"否"| b47
+  b45 -->|"是"| b46
+  b45 -->|"否"| b47
+  b46 --> b48
   b47 --> b48
   b48 --> b49
-  b49 -->|"是"| b50
-  b49 -->|"否"| b51
-  b50 --> b52
-  b51 --> b52
+  b49 --> b50
+  b50 -->|"是"| b51
+  b50 -->|"否"| b52
+  b51 --> b53
   b52 --> b53
   b53 --> b54
-  b54 -->|"是"| b55
-  b54 -->|"否"| b57
+  b54 --> b55
   b55 -->|"是"| b56
   b55 -->|"否"| b57
   b56 --> b58
   b57 --> b58
   b58 --> b59
-  b59 --> b60
-  b60 --> b61
-  b61 -->|"是"| b62
-  b61 -->|"否"| b63
-  b62 --> b61
+  b59 -->|"是"| b60
+  b59 -->|"否"| b61
+  b60 --> b62
+  b61 --> b62
+  b62 --> b63
   b63 --> b64
-  b64 --> b65
+  b64 -->|"是"| b65
+  b64 -->|"否"| b67
   b65 -->|"是"| b66
   b65 -->|"否"| b67
-  b66 --> b65
+  b66 --> b68
   b67 --> b68
+  b68 --> b69
+  b69 --> b70
+  b70 --> b71
+  b71 -->|"是"| b72
+  b71 -->|"否"| b73
+  b72 --> b71
+  b73 --> b74
+  b74 --> b75
+  b75 -->|"是"| b76
+  b75 -->|"否"| b77
+  b76 --> b75
+  b77 --> b78
 
 ```
 
 项目内调用/回调引用：
 
+- [WorldEvolutionRegression.PerformanceDetailChecks · L76](a5c430d5c2fdb5ce.md#m219bcee5a8c3c9c3)（方法）
 - [NaturalPopulationPace.Current.get · L19](bb501fbca2e1b01f.md#m902ff80ab222d2ce)（访问器）
 - [GameplayTuning.Current.get · L46](db546e5713b32d53.md#m4fa691bd8a3b9618)（访问器）
 - [PlanetClimateMap.Instance.get · L16](b4e9726c1bcf4c37.md#m3add54a419aeef9f)（访问器）
@@ -541,10 +565,10 @@ flowchart TD
 - [PlanetTerrainSampler.DirectionFromUV · L13](fd5c1d83b88a7c8b.md#mbb90aecec23f2a42)（方法）
 - [EcologyQueries.Surface · L48](bdf7ccc2c9c0452f.md#m40ee3e975d7f5137)（方法）
 - [PlanetTerrainMeshBuilder.LocalWaterRadius · L113](415285cf043354a9.md#m5d141fd984c0caf8)（方法）
-- [WorldEvolutionRegression.Ore · L73](a5c430d5c2fdb5ce.md#m9497f9ce4c44b75e)（方法）
-- [WorldEvolutionRegression.Food · L79](a5c430d5c2fdb5ce.md#mb7a9d634158bfe8b)（方法）
-- [WorldEvolutionRegression.Pace · L86](a5c430d5c2fdb5ce.md#m434568e2446f84be)（方法）
-- [WorldEvolutionRegression.Navigation · L96](a5c430d5c2fdb5ce.md#mcf6777219184e5f0)（方法）
+- [WorldEvolutionRegression.Ore · L91](a5c430d5c2fdb5ce.md#m8d946dd8d941058d)（方法）
+- [WorldEvolutionRegression.Food · L97](a5c430d5c2fdb5ce.md#mb39e41fd2fcdd9a3)（方法）
+- [WorldEvolutionRegression.Pace · L104](a5c430d5c2fdb5ce.md#me63ce0f8fa752903)（方法）
+- [WorldEvolutionRegression.Navigation · L114](a5c430d5c2fdb5ce.md#m6279a0b9927f5ef3)（方法）
 - [WorldEvolutionRegression.Check · L28](a5c430d5c2fdb5ce.md#m083c6225b2d9bc03)（方法）
 - [PlanetTerrainMeshBuilder.Data.get · L81](415285cf043354a9.md#m1a65abfe0f34c5d8)（访问器）
 - [PlanetHydrology.RiverCells.get · L12](282937bf06cb5f2a.md#m4f00628f0d856b73)（访问器）
@@ -553,33 +577,35 @@ flowchart TD
 - [PlanetClimateConfig.Classify · L131](caa5d97c52b00485.md#m2ea247704d158dca)（方法）
 - [EarthClimateRules.Color · L24](6a91ff043f0ebb5f.md#mb76f2ac53689b29e)（方法）
 - [EarthClimateRules.Humidity · L17](6a91ff043f0ebb5f.md#m72e3546de2404a6f)（方法）
-- [LandformSaveCompatibility.Restore · L23](06c65833631e42f5.md#m3f9f2e62b741ebce)（方法）
+- [LandformSaveCompatibility.Restore · L23](06c65833631e42f5.md#m37423418aee42245)（方法）
 - [ColonyResource.Create · L45](293dbaecfff4b585.md#m6768b4f531fe91dd)（方法）
 - [EcologyQueries.ToLocal · L40](bdf7ccc2c9c0452f.md#mfa1ace432c73012a)（方法）
 - [ColonyResource.State.get · L24](293dbaecfff4b585.md#m41824f1a0e160aa5)（访问器）
 - [SimulationClock.GameTime.get · L23](a8f444aec9614b0a.md#m74adfa39a896652f)（访问器）
-- [WorldParameterUpdate.Ensure · L27](4087d9be2a65e96f.md#mcefc896cc38899a6)（方法）
-- [WorldParameterUpdate.Request · L28](4087d9be2a65e96f.md#m942de54d110fe265)（方法）
+- [WorldParameterUpdate.Ensure · L29](4087d9be2a65e96f.md#m486ce2b8f9ba798f)（方法）
+- [WorldParameterUpdate.Request · L30](4087d9be2a65e96f.md#m9f7325c90aa4ee6e)（方法）
+- [WorldParameterUpdate.LastStatus.get · L23](4087d9be2a65e96f.md#m18e52034bf4bc4eb)（访问器）
 - [ColonyResource.Find · L28](293dbaecfff4b585.md#m1324285ab40ac6f4)（方法）
 - [WorldSaveStore.Read · L74](d67a35e5e3814c15.md#mde52fadbe0185af1)（方法）
+- [WorldParameterUpdate.LastBackupPath.get · L22](4087d9be2a65e96f.md#m4e13f82419a1fec2)（访问器）
 - [WorldSaveStore.FileFor · L50](d67a35e5e3814c15.md#mce4509883be2e47e)（方法）
 - [WorldSessionManager.Current.get · L21](08741c7b7b9d9344.md#m5d26a5eb846a8504)（访问器）
 - [WorldSessionManager.SaveNow · L169](08741c7b7b9d9344.md#m43f61078d8513f73)（方法）
 - [WorldSessionManager.Open · L60](08741c7b7b9d9344.md#m7bd56ef45131b4e5)（方法）
-- [WorldEvolutionRegression.Visuals · L56](a5c430d5c2fdb5ce.md#me1c57c58c6938553)（方法）
-- [WorldEvolutionRegression.回调@38 · L38](a5c430d5c2fdb5ce.md#m91369b2aa067076d)（回调/委托）
-- [WorldEvolutionRegression.回调@43 · L43](a5c430d5c2fdb5ce.md#m5cebd6041decce87)（回调/委托）
-- [WorldEvolutionRegression.回调@48 · L48](a5c430d5c2fdb5ce.md#m25264815f6d34ec2)（回调/委托）
-- [WorldEvolutionRegression.回调@49 · L49](a5c430d5c2fdb5ce.md#m295993c45b8ca3cf)（回调/委托）
-- [WorldEvolutionRegression.回调@50 · L50](a5c430d5c2fdb5ce.md#m09425f369587457d)（回调/委托）
-- [WorldEvolutionRegression.回调@51 · L51](a5c430d5c2fdb5ce.md#m35103dc247171c04)（回调/委托）
-- [WorldEvolutionRegression.回调@51 · L51](a5c430d5c2fdb5ce.md#m5e780e225103dd54)（回调/委托）
-- [WorldEvolutionRegression.回调@51 · L51](a5c430d5c2fdb5ce.md#m97f921db2a4201fb)（回调/委托）
-- [WorldEvolutionRegression.回调@52 · L52](a5c430d5c2fdb5ce.md#mcd7459732c291fb8)（回调/委托）
+- [WorldEvolutionRegression.Visuals · L58](a5c430d5c2fdb5ce.md#m92f71529f1ca99a8)（方法）
+- [WorldEvolutionRegression.回调@39 · L39](a5c430d5c2fdb5ce.md#m97788487b48dd7e8)（回调/委托）
+- [WorldEvolutionRegression.回调@44 · L44](a5c430d5c2fdb5ce.md#m61ca019c3bc15acb)（回调/委托）
+- [WorldEvolutionRegression.回调@49 · L49](a5c430d5c2fdb5ce.md#m3ca7a3a57bbfbe82)（回调/委托）
+- [WorldEvolutionRegression.回调@50 · L50](a5c430d5c2fdb5ce.md#m761efed7d1df2977)（回调/委托）
+- [WorldEvolutionRegression.回调@52 · L52](a5c430d5c2fdb5ce.md#m137fac082f25513f)（回调/委托）
+- [WorldEvolutionRegression.回调@53 · L53](a5c430d5c2fdb5ce.md#m6debec4fb65afea3)（回调/委托）
+- [WorldEvolutionRegression.回调@53 · L53](a5c430d5c2fdb5ce.md#m4fc2113278169ebe)（回调/委托）
+- [WorldEvolutionRegression.回调@53 · L53](a5c430d5c2fdb5ce.md#mfcacd64fbe67baf3)（回调/委托）
+- [WorldEvolutionRegression.回调@54 · L54](a5c430d5c2fdb5ce.md#m6b85a0cb8c9fd278)（回调/委托）
 
-<a id="m91369b2aa067076d"></a>
+<a id="m97788487b48dd7e8"></a>
 
-## 回调@38 · L38
+## 回调@39 · L39
 
 `( … => 回调`
 
@@ -601,9 +627,9 @@ flowchart TD
 
 - [WorldSessionManager.Busy.get · L24](08741c7b7b9d9344.md#m4483e2e4f28f7c85)（访问器）
 
-<a id="m5cebd6041decce87"></a>
+<a id="m61ca019c3bc15acb"></a>
 
-## 回调@43 · L43
+## 回调@44 · L44
 
 `v … => 回调`
 
@@ -631,31 +657,7 @@ flowchart TD
 
 ```
 
-<a id="m25264815f6d34ec2"></a>
-
-## 回调@48 · L48
-
-`( … => 回调`
-
-
-
-### Editor · Roslyn编译器控制流
-
-```mermaid
-flowchart TD
-  b0(["入口"])
-  b1["结果：!update.Busy"]
-  b2(["结束 / 返回"])
-  b0 --> b1
-  b1 -->|"返回"| b2
-
-```
-
-项目内调用/回调引用：
-
-- [WorldParameterUpdate.Busy.get · L20](4087d9be2a65e96f.md#mec2ac85b8ff3f127)（访问器）
-
-<a id="m295993c45b8ca3cf"></a>
+<a id="m3ca7a3a57bbfbe82"></a>
 
 ## 回调@49 · L49
 
@@ -677,11 +679,35 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [WorldParameterUpdate.Busy.get · L20](4087d9be2a65e96f.md#mec2ac85b8ff3f127)（访问器）
+- [WorldParameterUpdate.Busy.get · L21](4087d9be2a65e96f.md#m5597f9f51df8166b)（访问器）
 
-<a id="m09425f369587457d"></a>
+<a id="m761efed7d1df2977"></a>
 
 ## 回调@50 · L50
+
+`( … => 回调`
+
+
+
+### Editor · Roslyn编译器控制流
+
+```mermaid
+flowchart TD
+  b0(["入口"])
+  b1["结果：!update.Busy"]
+  b2(["结束 / 返回"])
+  b0 --> b1
+  b1 -->|"返回"| b2
+
+```
+
+项目内调用/回调引用：
+
+- [WorldParameterUpdate.Busy.get · L21](4087d9be2a65e96f.md#m5597f9f51df8166b)（访问器）
+
+<a id="m137fac082f25513f"></a>
+
+## 回调@52 · L52
 
 `( … => 回调`
 
@@ -711,9 +737,9 @@ flowchart TD
 - [WorldSessionManager.Busy.get · L24](08741c7b7b9d9344.md#m4483e2e4f28f7c85)（访问器）
 - [NaturalPopulationPace.Current.get · L19](bb501fbca2e1b01f.md#m902ff80ab222d2ce)（访问器）
 
-<a id="m35103dc247171c04"></a>
+<a id="m6debec4fb65afea3"></a>
 
-## 回调@51 · L51
+## 回调@53 · L53
 
 `e … => 回调`
 
@@ -736,9 +762,9 @@ flowchart TD
 - [EcologyEnergyBudget.IsProducer · L27](06a91c8201f26593.md#mdf11c493dfe1c754)（方法）
 - [DarwinEntity.Genes.get · L14](70798dde169f2e8b.md#m622eb1adf401d431)（访问器）
 
-<a id="m5e780e225103dd54"></a>
+<a id="m4fc2113278169ebe"></a>
 
-## 回调@51 · L51
+## 回调@53 · L53
 
 `e … => 回调`
 
@@ -761,9 +787,9 @@ flowchart TD
 - [EntityGeneController.GetAttribute · L288](7494d53178552f0e.md#m45127bcdd833aaf5)（方法）
 - [DarwinEntity.Genes.get · L14](70798dde169f2e8b.md#m622eb1adf401d431)（访问器）
 
-<a id="m97f921db2a4201fb"></a>
+<a id="mfcacd64fbe67baf3"></a>
 
-## 回调@51 · L51
+## 回调@53 · L53
 
 `e … => 回调`
 
@@ -794,9 +820,9 @@ flowchart TD
 - [DarwinEntity.Genes.get · L14](70798dde169f2e8b.md#m622eb1adf401d431)（访问器）
 - [PlanetTerrainMeshBuilder.IsSubmerged · L107](415285cf043354a9.md#m77993fefee27a702)（方法）
 
-<a id="mcd7459732c291fb8"></a>
+<a id="m6b85a0cb8c9fd278"></a>
 
-## 回调@52 · L52
+## 回调@54 · L54
 
 `( … => 回调`
 
@@ -818,9 +844,9 @@ flowchart TD
 
 - [WorldSessionManager.Busy.get · L24](08741c7b7b9d9344.md#m4483e2e4f28f7c85)（访问器）
 
-<a id="me1c57c58c6938553"></a>
+<a id="m92f71529f1ca99a8"></a>
 
-## Visuals · L56
+## Visuals · L58
 
 `private static IEnumerator Visuals(PlanetTerrainMeshBuilder planet)`
 
@@ -958,9 +984,251 @@ flowchart TD
 - [WorldEvolutionRegression.Check · L28](a5c430d5c2fdb5ce.md#m083c6225b2d9bc03)（方法）
 - [PlanetTerrainSampler.SampleHeight · L32](fd5c1d83b88a7c8b.md#m759508f0c5a04b21)（方法）
 
-<a id="m9497f9ce4c44b75e"></a>
+<a id="m219bcee5a8c3c9c3"></a>
 
-## Ore · L73
+## PerformanceDetailChecks · L76
+
+`private static void PerformanceDetailChecks()`
+
+★ 新增：嵌套计时按自身耗时归属脚本，避免排行把全局调度与子算法重复相加。
+
+### Editor · Roslyn编译器控制流
+
+```mermaid
+flowchart TD
+  b0(["入口"])
+  b1["sample=new PerformanceSampleSession(8)"]
+  b2["i=0"]
+  b3{"判断：i&lt;3"}
+  b4["PerformanceTimings.Measure(PerformanceTimings.Area.Scheduler,&quot;Assets/Parent.cs&quot;,&quot;Parent&quot;)"]
+  b5["Burn();"]
+  b6["PerformanceTimings.Measure(PerformanceTimings.Area.Feeding,&quot;Assets/Child.cs&quot;,&quot;Child&quot;)"]
+  b7["Burn();"]
+  b8["PerformanceTimings.Measure(PerformanceTimings.Area.Feeding,&quot;Assets/Child.cs&quot;,&quot;Child&quot;)"]
+  b9["PerformanceTimings.Measure(PerformanceTimings.Area.Scheduler,&quot;Assets/Parent.cs&quot;,&quot;Parent&quot;)"]
+  b10["sample.RecordFrame(10);<br/>i++"]
+  b11["report=sample.Finish(&quot;nested timing regression&quot;)"]
+  b12{"判断：report.version==2"}
+  b13{"判断：report.hotspots.Count==2"}
+  b14["report.scripts.Count==2"]
+  b15["report.version==2&amp;&amp;report.hotspots.Count==2&amp;&amp;report.scripts.Count==2"]
+  b16["Check(report.version==2&amp;&amp;report.hotspots.Count==2&amp;&amp;report.scripts.Count==2,&quot;性能报告具有版本、脚本和方法列表&quot;);"]
+  b17["parent=report.hotspots.Single(h=&gt;h.method==&quot;Parent&quot;)<br/>child=report.hotspots.Single(h=&gt;h.method==&quot;Child&quot;)"]
+  b18{"判断：parent.calls==3"}
+  b19{"判断：child.calls==3"}
+  b20{"判断：parent.inclusivePerFrame&gt;parent.selfPerFrame"}
+  b21["child.selfPerFrame&gt;0"]
+  b22["parent.calls==3&amp;&amp;child.calls==3&amp;&amp;parent.inclusivePerFrame&gt;parent.selfPerFrame&amp;&amp;child.selfPerFrame&gt;0"]
+  b23["Check(parent.calls==3&amp;&amp;child.calls==3&amp;&amp;parent.inclusivePerFrame&gt;parent.selfPerFrame&amp;&amp;child.selfPerFrame&gt;0,&quot;真实嵌套调用次数及包含/自身耗时有效&quot;);"]
+  b24["Check(Math.Abs(parent.selfPerFrame+child.selfPerFrame-parent.inclusivePerFrame)&lt;.00001,&quot;父子自身时间相加等于父包含时间，不重复计费&quot;);"]
+  b25{"判断：report.droppedDetailScopes==0"}
+  b26["report.scripts.All(t=&gt;t.path.StartsWith(&quot;Assets/&quot;)&amp;&amp;t.p95Self&gt;=0&amp;&amp;t.maximumSelfFrame&gt;=t.selfPerFrame)"]
+  b27["report.droppedDetailScopes==0"]
+  b28["Check(report.droppedDetailScopes==0&amp;&amp;report.scripts.All(t=&gt;t.path.StartsWith(&quot;Assets/&quot;)&amp;&amp;t.p95Self&gt;=0&amp;&amp;t.maximumSelfFrame&gt;=t.selfPerFrame),&quot;脚本路径和P95/最大帧均有效且无丢失范围&quot;);"]
+  b29["json=JsonUtility.ToJson(report)<br/>loaded=JsonUtility.FromJson&lt;PerformanceReport&gt;(json)"]
+  b30{"判断：loaded.scripts.Count==2"}
+  b31["RuntimePerformanceDetails.Markdown(loaded).Contains(&quot;Assets/Child.cs::Child&quot;)"]
+  b32["loaded.scripts.Count==2"]
+  b33["Check(loaded.scripts.Count==2&amp;&amp;RuntimePerformanceDetails.Markdown(loaded).Contains(&quot;Assets/Child.cs::Child&quot;),&quot;JSON往返及中文方法排行可读报告一致&quot;);"]
+  b34["File.WriteAllText(Path.Combine(Folder,&quot;nested-performance.json&quot;),json);<br/>File.WriteAllText(Path.Combine(Folder,&quot;nested-performance.md&quot;),RuntimePerformanceDetails.Markdown(report));"]
+  b35{"判断：sample=new PerformanceSampleSession(8)"}
+  b36["sample=new PerformanceSampleSession(8)"]
+  b37["连接 / 离开区域"]
+  b38["Check(!PerformanceTimings.Capturing,&quot;结束后关闭主动计时&quot;);"]
+  b39["second=new PerformanceSampleSession(8)"]
+  b40["second.RecordFrame(1);<br/>Check(second.Finish(&quot;empty&quot;).hotspots.Count==0,&quot;新采样不会混入上一次方法记录&quot;);"]
+  b41{"判断：second=new PerformanceSampleSession(8)"}
+  b42["second=new PerformanceSampleSession(8)"]
+  b43["连接 / 离开区域"]
+  b44["new LandformSettings{version=1}<br/>version=1<br/>legacy=new LandformSettings{version=1}"]
+  b45["changed=JsonUtility.FromJson&lt;LandformSettings&gt;(JsonUtility.ToJson(legacy))<br/>changed.basinThreshold=.99f;<br/>changed.basinTransition=.8f;<br/>oldA=new PlanetLandformField(legacy,742091)<br/>oldB=new PlanetLandformField(changed,742091)<br/>newer=JsonUtili…"]
+  b46["i=0"]
+  b47{"判断：i&lt;128"}
+  b48{"dir=PlanetTerrainSampler.DirectionFromUV((i*.618034f)%1,(i+.5f)/128)<br/>a=oldA.Shape(.8f,dir,.5f)<br/>b=oldB.Shape(.8f,dir,.5f)<br/>Check(a==b,&quot;旧地貌版本忽略新盆地参数，保持原形&quot;);<br/>判断：Mathf.Abs(a-modern.Shape(.8f,dir,.5f))&gt;.001f"}
+  b49["different++;"]
+  b50["i++"]
+  b51["Check(different&gt;0,&quot;新版本宽盆地确实改变下切量&quot;);"]
+  b52(["结束 / 返回"])
+  b0 --> b1
+  b1 --> b2
+  b2 --> b3
+  b3 -->|"是"| b4
+  b3 -->|"否"| b11
+  b4 --> b5
+  b5 --> b6
+  b6 --> b7
+  b7 -->|"经过finally 8,9"| b10
+  b10 --> b3
+  b11 --> b12
+  b12 -->|"是"| b13
+  b12 -->|"否"| b15
+  b13 -->|"是"| b14
+  b13 -->|"否"| b15
+  b14 --> b16
+  b15 --> b16
+  b16 --> b17
+  b17 --> b18
+  b18 -->|"是"| b19
+  b18 -->|"否"| b22
+  b19 -->|"是"| b20
+  b19 -->|"否"| b22
+  b20 -->|"是"| b21
+  b20 -->|"否"| b22
+  b21 --> b23
+  b22 --> b23
+  b23 --> b24
+  b24 --> b25
+  b25 -->|"是"| b26
+  b25 -->|"否"| b27
+  b26 --> b28
+  b27 --> b28
+  b28 --> b29
+  b29 --> b30
+  b30 -->|"是"| b31
+  b30 -->|"否"| b32
+  b31 --> b33
+  b32 --> b33
+  b33 --> b34
+  b34 -->|"经过finally 35"| b38
+  b35 -->|"否"| b36
+  b35 -->|"是"| b37
+  b36 --> b37
+  b38 --> b39
+  b39 --> b40
+  b40 -->|"经过finally 41"| b44
+  b41 -->|"否"| b42
+  b41 -->|"是"| b43
+  b42 --> b43
+  b44 --> b45
+  b45 --> b46
+  b46 --> b47
+  b47 -->|"是"| b48
+  b47 -->|"否"| b51
+  b48 -->|"是"| b49
+  b48 -->|"否"| b50
+  b49 --> b50
+  b50 --> b47
+  b51 --> b52
+  b7 -. "退出保护区时 finally（示意）" .-> b8
+  b5 -. "退出保护区时 finally（示意）" .-> b9
+  b2 -. "退出保护区时 finally（示意）" .-> b35
+  b40 -. "退出保护区时 finally（示意）" .-> b41
+
+```
+
+项目内调用/回调引用：
+
+- [PerformanceSampleSession.PerformanceSampleSession.ctor · L43](a8403a4c7503726d.md#me5d389942b484c2b)（构造函数）
+- [PerformanceTimings.Measure · L25](a8403a4c7503726d.md#m36fde3c234084192)（方法）
+- [WorldEvolutionRegression.Burn · L90](a5c430d5c2fdb5ce.md#m43fa7ce597b0248a)（方法）
+- [PerformanceSampleSession.RecordFrame · L51](a8403a4c7503726d.md#me7cce52503c9c701)（方法）
+- [PerformanceSampleSession.Finish · L55](a8403a4c7503726d.md#m9dc62c92dc25c06a)（方法）
+- [WorldEvolutionRegression.Check · L28](a5c430d5c2fdb5ce.md#m083c6225b2d9bc03)（方法）
+- [RuntimePerformanceDetails.Markdown · L16](64a9a186be88560e.md#m8636abf39bbd1838)（方法）
+- [PerformanceTimings.Capturing.get · L17](a8403a4c7503726d.md#mffd3c86fa4f83f30)（访问器）
+- [PlanetLandformField.PlanetLandformField.ctor · L73](282937bf06cb5f2a.md#m4519328e460b4907)（构造函数）
+- [PlanetTerrainSampler.DirectionFromUV · L13](fd5c1d83b88a7c8b.md#mbb90aecec23f2a42)（方法）
+- [PlanetLandformField.Shape · L74](282937bf06cb5f2a.md#m85f86151c8cdf293)（方法）
+- [WorldEvolutionRegression.回调@81 · L81](a5c430d5c2fdb5ce.md#m47880dc1540ce3b0)（回调/委托）
+- [WorldEvolutionRegression.回调@81 · L81](a5c430d5c2fdb5ce.md#m758727f59fecb0b8)（回调/委托）
+- [WorldEvolutionRegression.回调@82 · L82](a5c430d5c2fdb5ce.md#maca71a7c4ea5bdab)（回调/委托）
+
+<a id="m47880dc1540ce3b0"></a>
+
+## 回调@81 · L81
+
+`h … => 回调`
+
+
+
+### Editor · Roslyn编译器控制流
+
+```mermaid
+flowchart TD
+  b0(["入口"])
+  b1["结果：h.method==&quot;Parent&quot;"]
+  b2(["结束 / 返回"])
+  b0 --> b1
+  b1 -->|"返回"| b2
+
+```
+
+<a id="m758727f59fecb0b8"></a>
+
+## 回调@81 · L81
+
+`h … => 回调`
+
+
+
+### Editor · Roslyn编译器控制流
+
+```mermaid
+flowchart TD
+  b0(["入口"])
+  b1["结果：h.method==&quot;Child&quot;"]
+  b2(["结束 / 返回"])
+  b0 --> b1
+  b1 -->|"返回"| b2
+
+```
+
+<a id="maca71a7c4ea5bdab"></a>
+
+## 回调@82 · L82
+
+`t … => 回调`
+
+
+
+### Editor · Roslyn编译器控制流
+
+```mermaid
+flowchart TD
+  b0(["入口"])
+  b1{"判断：t.path.StartsWith(&quot;Assets/&quot;)"}
+  b2{"判断：t.p95Self&gt;=0"}
+  b3["t.maximumSelfFrame&gt;=t.selfPerFrame"]
+  b4["t.path.StartsWith(&quot;Assets/&quot;)&amp;&amp;t.p95Self&gt;=0&amp;&amp;t.maximumSelfFrame&gt;=t.selfPerFrame"]
+  b5["结果：t.path.StartsWith(&quot;Assets/&quot;)&amp;&amp;t.p95Self&gt;=0&amp;&amp;t.maximumSelfFrame&gt;=t.selfPerFrame"]
+  b6(["结束 / 返回"])
+  b0 --> b1
+  b1 -->|"是"| b2
+  b1 -->|"否"| b4
+  b2 -->|"是"| b3
+  b2 -->|"否"| b4
+  b3 --> b5
+  b4 --> b5
+  b5 -->|"返回"| b6
+
+```
+
+<a id="m43fa7ce597b0248a"></a>
+
+## Burn · L90
+
+`private static void Burn()`
+
+
+
+### Editor · Roslyn编译器控制流
+
+```mermaid
+flowchart TD
+  b0(["入口"])
+  b1["until=System.Diagnostics.Stopwatch.GetTimestamp()+System.Diagnostics.Stopwatch.Frequency/1000"]
+  b2{"判断：System.Diagnostics.Stopwatch.GetTimestamp()&lt;until"}
+  b3(["结束 / 返回"])
+  b0 --> b1
+  b1 --> b2
+  b2 -->|"是"| b2
+  b2 -->|"否"| b3
+
+```
+
+<a id="m8d946dd8d941058d"></a>
+
+## Ore · L91
 
 `private static IEnumerator Ore(PlanetTerrainMeshBuilder planet,Vector3 point)`
 
@@ -1026,12 +1294,12 @@ flowchart TD
 - [WorldEvolutionRegression.Check · L28](a5c430d5c2fdb5ce.md#m083c6225b2d9bc03)（方法）
 - [OreTextureUploadBatch.Changes.get · L8](0ecb91fe75dc1609.md#m5f3fa4bf63001ec0)（访问器）
 - [PlanetOreSystem.OreMapTexture.get · L17](86b3fbb4d9436121.md#ma477eb055a23d504)（访问器）
-- [WorldEvolutionRegression.回调@76 · L76](a5c430d5c2fdb5ce.md#mc7d50b0c8effa43b)（回调/委托）
-- [WorldEvolutionRegression.回调@76 · L76](a5c430d5c2fdb5ce.md#m53131d6c0e672d40)（回调/委托）
+- [WorldEvolutionRegression.回调@94 · L94](a5c430d5c2fdb5ce.md#m5a5ac308ea30fb88)（回调/委托）
+- [WorldEvolutionRegression.回调@94 · L94](a5c430d5c2fdb5ce.md#ma196a2fc98328306)（回调/委托）
 
-<a id="mc7d50b0c8effa43b"></a>
+<a id="m5a5ac308ea30fb88"></a>
 
-## 回调@76 · L76
+## 回调@94 · L94
 
 `p … => 回调`
 
@@ -1049,9 +1317,9 @@ flowchart TD
 
 ```
 
-<a id="m53131d6c0e672d40"></a>
+<a id="ma196a2fc98328306"></a>
 
-## 回调@76 · L76
+## 回调@94 · L94
 
 `p … => 回调`
 
@@ -1069,9 +1337,9 @@ flowchart TD
 
 ```
 
-<a id="mb7a9d634158bfe8b"></a>
+<a id="mb39e41fd2fcdd9a3"></a>
 
-## Food · L79
+## Food · L97
 
 `private static IEnumerator Food(Vector3 point)`
 
@@ -1132,9 +1400,9 @@ flowchart TD
 - [GameplayTuning.Current.get · L46](db546e5713b32d53.md#m4fa691bd8a3b9618)（访问器）
 - [ColonyResource.CarryTo · L85](293dbaecfff4b585.md#md7070757a728b6f5)（方法）
 
-<a id="m434568e2446f84be"></a>
+<a id="me63ce0f8fa752903"></a>
 
-## Pace · L86
+## Pace · L104
 
 `private static void Pace(Vector3 point)`
 
@@ -1260,12 +1528,12 @@ flowchart TD
 - [ReproductionGeneLogic.RestoreState · L39](ac319ea70bd8b723.md#m024a77bf70fc78fe)（方法）
 - [ReproductionGeneLogic.OnUpdate · L40](ac319ea70bd8b723.md#m7cb6727410b8cffa)（方法）
 - [ReproductionGeneLogic.CaptureState · L37](ac319ea70bd8b723.md#m56d6ec1f1c8b2072)（方法）
-- [WorldEvolutionRegression.回调@92 · L92](a5c430d5c2fdb5ce.md#mac9c7cf5e655f8b7)（回调/委托）
+- [WorldEvolutionRegression.回调@110 · L110](a5c430d5c2fdb5ce.md#m9fcdd76ed60007f8)（回调/委托）
 - [EntityGeneController.GetLogic · L242](7494d53178552f0e.md#m4620848081f43ecc)（方法）
 
-<a id="mac9c7cf5e655f8b7"></a>
+<a id="m9fcdd76ed60007f8"></a>
 
-## 回调@92 · L92
+## 回调@110 · L110
 
 `x … => 回调`
 
@@ -1283,9 +1551,9 @@ flowchart TD
 
 ```
 
-<a id="mf394d20a7ae00fba"></a>
+<a id="mc247e9eeda151bbe"></a>
 
-## Synthetic · L94
+## Synthetic · L112
 
 `private static PlanetTerrainData Synthetic(Func<Vector3,float> sample)`
 
@@ -1369,9 +1637,9 @@ flowchart TD
 
 ```
 
-<a id="mcf6777219184e5f0"></a>
+<a id="m6279a0b9927f5ef3"></a>
 
-## Navigation · L96
+## Navigation · L114
 
 `private static IEnumerator Navigation(PlanetTerrainMeshBuilder planet)`
 
@@ -1394,8 +1662,13 @@ flowchart TD
   b10{"判断：route.Resolve(planet,current,target,out var waypoint)"}
   b11["local=PlanetTerrainSampler.WorldToLocalDirection(planet.transform,current)<br/>next=PlanetTerrainSampler.WorldToLocalDirection(planet.transform,waypoint)<br/>moved=Vector3.RotateTowards(local,next,.02f,0).normalized<br/>Check(graph.Dry(moved),&quot;绕湖路径每…"]
   b12["yield return null;"]
-  b13["Check(Vector3.Distance(current,target)&lt;=3,&quot;全局预算A*真实绕湖抵达目标&quot;);<br/>islands=Synthetic(d=&gt;Mathf.Abs(d.y)&lt;.2f?.3f:.7f)<br/>separated=new LandNavigationGraph(islands,settings)<br/>Check(!separated.Connected(Vector3.up,Vector3.down),&quot;无游泳能力不能跨越海洋连接两块陆地&quot;);<br/>t…"]
-  b14(["结束 / 返回"])
+  b13["Check(Vector3.Distance(current,target)&lt;=3,&quot;全局预算A*真实绕湖抵达目标&quot;);<br/>blocked=planet.transform.TransformPoint(Vector3.forward*(data.Radius+.35f*data.HeightScale))<br/>Check(LandRoutePlan.SafeVelocity(planet,blocked,Vector3.right*2)==Vector3.zero,&quot;水下出…"]
+  b14{"判断：resolved"}
+  b15["graph.Segment(a,PlanetTerrainSampler.WorldToLocalDirection(planet.transform,nextWaypoint))"]
+  b16["!resolved"]
+  b17["Check(!resolved&#124;&#124;graph.Segment(a,PlanetTerrainSampler.WorldToLocalDirection(planet.transform,nextWaypoint)),&quot;旧路径受位移后不返回跨湖直线&quot;);"]
+  b18["islands=Synthetic(d=&gt;Mathf.Abs(d.y)&lt;.2f?.3f:.7f)<br/>separated=new LandNavigationGraph(islands,settings)<br/>Check(!separated.Connected(Vector3.up,Vector3.down),&quot;无游泳能力不能跨越海洋连接两块陆地&quot;);<br/>typeof(PlanetTerrainMeshBuilder).GetProperty(&quot;Data&quot;).SetValue(…"]
+  b19(["结束 / 返回"])
   b0 --> b1
   b1 --> b2
   b2 --> b3
@@ -1414,27 +1687,34 @@ flowchart TD
   b11 --> b12
   b12 --> b8
   b13 --> b14
+  b14 -->|"是"| b15
+  b14 -->|"否"| b16
+  b15 --> b17
+  b16 --> b17
+  b17 --> b18
+  b18 --> b19
 
 ```
 
 项目内调用/回调引用：
 
-- [WorldEvolutionRegression.Synthetic · L94](a5c430d5c2fdb5ce.md#mf394d20a7ae00fba)（方法）
+- [WorldEvolutionRegression.Synthetic · L112](a5c430d5c2fdb5ce.md#mc247e9eeda151bbe)（方法）
 - [LandNavigationGraph.LandNavigationGraph.ctor · L16](6f2590f045ea5d3f.md#m734eccceddc6424c)（构造函数）
 - [WorldEvolutionRegression.Check · L28](a5c430d5c2fdb5ce.md#m083c6225b2d9bc03)（方法）
-- [LandNavigationGraph.Segment · L25](6f2590f045ea5d3f.md#m1357eb7f0ace9eab)（方法）
-- [LandNavigationGraph.Connected · L33](6f2590f045ea5d3f.md#m89fb6b0d5a24f0b5)（方法）
+- [LandNavigationGraph.Segment · L27](6f2590f045ea5d3f.md#mf23f90effbf98ae0)（方法）
+- [LandNavigationGraph.Connected · L35](6f2590f045ea5d3f.md#m8d251ecda8a80ec1)（方法）
 - [PlanetTerrainMeshBuilder.Data.get · L81](415285cf043354a9.md#m1a65abfe0f34c5d8)（访问器）
 - [LandPathScheduler.Configure · L12](d357e13967229560.md#mf10aa173bb801c91)（方法）
-- [LandRoutePlan.Resolve · L40](d357e13967229560.md#m0fb20ef787b661f4)（方法）
+- [LandRoutePlan.Resolve · L42](d357e13967229560.md#md0b0a64ddf86d978)（方法）
 - [PlanetTerrainSampler.WorldToLocalDirection · L76](fd5c1d83b88a7c8b.md#m463193acae2d5044)（方法）
-- [LandNavigationGraph.Dry · L23](6f2590f045ea5d3f.md#m9d85cc02f7d54e38)（方法）
-- [WorldEvolutionRegression.回调@98 · L98](a5c430d5c2fdb5ce.md#mbf6b5acd81ece80a)（回调/委托）
-- [WorldEvolutionRegression.回调@100 · L100](a5c430d5c2fdb5ce.md#m8dfc879a110a462c)（回调/委托）
+- [LandNavigationGraph.Dry · L25](6f2590f045ea5d3f.md#md73a4c89ded78b5c)（方法）
+- [LandRoutePlan.SafeVelocity · L54](d357e13967229560.md#mdb046d6a448848cc)（方法）
+- [WorldEvolutionRegression.回调@116 · L116](a5c430d5c2fdb5ce.md#m45ebfa76cf319d4f)（回调/委托）
+- [WorldEvolutionRegression.回调@121 · L121](a5c430d5c2fdb5ce.md#m6acb7fc44d90072a)（回调/委托）
 
-<a id="mbf6b5acd81ece80a"></a>
+<a id="m45ebfa76cf319d4f"></a>
 
-## 回调@98 · L98
+## 回调@116 · L116
 
 `d … => 回调`
 
@@ -1465,9 +1745,9 @@ flowchart TD
 
 ```
 
-<a id="m8dfc879a110a462c"></a>
+<a id="m6acb7fc44d90072a"></a>
 
-## 回调@100 · L100
+## 回调@121 · L121
 
 `d … => 回调`
 

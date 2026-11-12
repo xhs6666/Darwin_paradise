@@ -16,16 +16,18 @@ namespace DarwinPark.Planet
         public LandNavigationGraph(PlanetTerrainData data,LandNavigationSettings settings)
         {
             Terrain=data;Settings=settings;Width=Mathf.Clamp(settings.longitudeCells,32,512);Height=Mathf.Clamp(settings.latitudeCells,16,256);int n=Width*Height;Points=new Vector3[n];Directions=new Vector3[n];Walkable=new bool[n];Regions=new int[n];_edges=new byte[n];
-            for(int i=0;i<n;i++){var dir=PlanetTerrainSampler.DirectionFromUV((i%Width+.5f)/Width,(i/Width+.5f)/Height);Directions[i]=dir;Points[i]=dir*(data.Radius+PlanetTerrainSampler.SampleHeight(data,dir)*data.HeightScale);Walkable[i]=Dry(dir);}
+            for(int i=0;i<n;i++){var dir=PlanetTerrainSampler.DirectionFromUV((i%Width+.5f)/Width,(i/Width+.5f)/Height);Directions[i]=dir;Points[i]=dir*(data.Radius+SurfaceHeight(dir)*data.HeightScale);Walkable[i]=Dry(dir);}
             for(int i=0;i<n;i++)if(Walkable[i])for(int edge=0;edge<8;edge++){int next=Neighbour(i,edge);if(next<0||!Walkable[next])continue;if(Segment(Directions[i],Directions[next]))_edges[i]|=(byte)(1<<edge);}
             int region=0;var queue=new Queue<int>();for(int i=0;i<n;i++)if(Walkable[i]&&Regions[i]==0){Regions[i]=++region;queue.Enqueue(i);while(queue.Count>0){int node=queue.Dequeue();for(int e=0;e<8;e++)if(Linked(node,e)){int next=Neighbour(node,e);if(Regions[next]==0){Regions[next]=region;queue.Enqueue(next);}}}}
         }
+        // ★ 适配：真实生成数据用三角形高度；仅无网格的工具/测试数据回退到高度图。
+        public float SurfaceHeight(Vector3 direction)=>RadialTerrainSurface.TrySampleLocal(Terrain,direction,out var hit)?(hit.point.magnitude-Terrain.Radius)/Mathf.Max(.001f,Terrain.HeightScale):PlanetTerrainSampler.SampleHeight(Terrain,direction);
         public bool Dry(Vector3 direction)
-        {float height=PlanetTerrainSampler.SampleHeight(Terrain,direction),water=Terrain.Hydrology?.Water(direction)??Terrain.SeaLevel;return (height-water)*Terrain.HeightScale>Settings.shoreClearance;}
+        {float height=SurfaceHeight(direction),water=Terrain.Hydrology?.Water(direction)??Terrain.SeaLevel;return (height-water)*Terrain.HeightScale>Settings.shoreClearance;}
         public bool Segment(Vector3 a,Vector3 b)
         {
-            float distance=Vector3.Angle(a,b)*Mathf.Deg2Rad*(Terrain.Radius+Terrain.SeaLevel*Terrain.HeightScale);int steps=Mathf.Max(1,Mathf.CeilToInt(distance/Mathf.Max(.2f,Settings.segmentStep)));float previous=PlanetTerrainSampler.SampleHeight(Terrain,a);
-            for(int i=0;i<=steps;i++){var p=Vector3.Slerp(a,b,i/(float)steps).normalized;if(!Dry(p))return false;float h=PlanetTerrainSampler.SampleHeight(Terrain,p);if(i>0&&Mathf.Atan2(Mathf.Abs(h-previous)*Terrain.HeightScale,Mathf.Max(.001f,distance/steps))*Mathf.Rad2Deg>Settings.maximumSlopeDegrees)return false;previous=h;}return true;
+            float distance=Vector3.Angle(a,b)*Mathf.Deg2Rad*(Terrain.Radius+Terrain.SeaLevel*Terrain.HeightScale);int steps=Mathf.Max(1,Mathf.CeilToInt(distance/Mathf.Max(.2f,Terrain.Hydrology!=null?Mathf.Min(Settings.segmentStep,Terrain.Hydrology.Settings.riverHalfWidth):Settings.segmentStep)));float previous=SurfaceHeight(a);
+            for(int i=0;i<=steps;i++){var p=Vector3.Slerp(a,b,i/(float)steps).normalized;if(!Dry(p))return false;float h=SurfaceHeight(p);if(i>0&&Mathf.Atan2(Mathf.Abs(h-previous)*Terrain.HeightScale,Mathf.Max(.001f,distance/steps))*Mathf.Rad2Deg>Settings.maximumSlopeDegrees)return false;previous=h;}return true;
         }
         public int Cell(Vector3 direction){var uv=PlanetTerrainSampler.DirectionToUV(direction);return Mathf.Min(Height-1,(int)(uv.y*Height))*Width+Mathf.Min(Width-1,(int)(uv.x*Width));}
         public int Closest(Vector3 direction)

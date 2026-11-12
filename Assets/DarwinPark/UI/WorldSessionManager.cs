@@ -168,6 +168,8 @@ namespace DarwinPark.UI
         }
         public void SaveNow(bool? running=null)
         {
+            // ★ 新增：自动存档峰值可定位到保存链路，内部档案子范围扣除后归属自身。
+            using var measured=PerformanceTimings.Measure(PerformanceTimings.Area.WorldSave);
             // ★ 适配：成员副本不写世界文件，防止自动保存/退出将远端世界误写成本地权威存档。
             if(WorldAuthority.IsReplica){SaveStatus="联机世界由管理员保存";return;}
             if(Current==null)throw new InvalidOperationException("没有可保存的世界");

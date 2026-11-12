@@ -19,6 +19,8 @@ namespace DarwinPark.Planet
         {if(path!=null){if(_cache.Count>=_graph.Settings.routeCacheCount)_cache.Clear();_cache[(_job.start,_job.goal)]=path;}_job.route.Complete(_job.serial,path);_busy=false;}
         private void LateUpdate()
         {
+            // ★ 新增：采样可直接识别全局A*工作队列，而非笼统归到实体行动。
+            using var measuredCost=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.LandPathSearch);
             if(!DarwinPark.Core.WorldRuntimeGate.Ready||_graph==null)return;double began=Time.realtimeSinceStartupAsDouble;int budget=Mathf.Max(1,_graph.Settings.expansionsPerFrame);
             while(budget>0&&(Time.realtimeSinceStartupAsDouble-began)*1000<Mathf.Max(.1f,_graph.Settings.pathMilliseconds))
             {
@@ -39,14 +41,20 @@ namespace DarwinPark.Planet
         public void Complete(int serial,int[] path){if(!IsCurrent(serial))return;_path=path;_cursor=0;_pending=false;_failed=path==null;_retry=Time.unscaledTime+(_graph?.Settings.failureRetrySeconds??2);}
         public bool Resolve(PlanetTerrainMeshBuilder planet,Vector3 current,Vector3 destination,out Vector3 waypoint)
         {
-            waypoint=current;var graph=planet.Data?.Navigation;if(graph==null)return false;var a=PlanetTerrainSampler.WorldToLocalDirection(planet.transform,current);var b=PlanetTerrainSampler.WorldToLocalDirection(planet.transform,destination);int goal=graph.Cell(b);
-            if(_graph!=graph||_goal!=goal||_failed&&Time.unscaledTime>=_retry){_graph=graph;_goal=goal;_serial++;_path=null;_pending=true;_failed=false;LandPathScheduler.Instance?.RequestPath(this,_serial,graph.Closest(a),graph.Closest(b));}
+            using var measuredCost=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.LandRouteFollow);
+            waypoint=current;var graph=planet?.Data?.Navigation;if(graph==null)return false;var a=PlanetTerrainSampler.WorldToLocalDirection(planet.transform,current);var b=PlanetTerrainSampler.WorldToLocalDirection(planet.transform,destination);int goal=graph.Cell(b);
+            if(_graph!=graph||_goal!=goal||_failed&&Time.unscaledTime>=_retry){_graph=graph;_goal=goal;_serial++;_path=null;_pending=true;_failed=false;if(LandPathScheduler.Instance!=null)LandPathScheduler.Instance.RequestPath(this,_serial,graph.Closest(a),graph.Closest(b));else Complete(_serial,null);}
             if(_pending||_failed||_path==null)return false;
             while(_cursor<_path.Length&&Vector3.Distance(a,graph.Directions[_path[_cursor]])*(planet.radius+planet.Data.SeaLevel*planet.heightScale)<graph.Settings.waypointArrival)_cursor++;
             if(_cursor>=_path.Length){if(!graph.Segment(a,b)){_failed=true;_retry=Time.unscaledTime+graph.Settings.repathSeconds;return false;}waypoint=destination;return true;}
+            // ★ 修复（防Bug回归）：实际位置可能被碰撞推离旧路，不能沿缓存路点从湖面抄近路。
+            if(!graph.Segment(a,graph.Directions[_path[_cursor]])){_failed=true;_retry=Time.unscaledTime+graph.Settings.repathSeconds;return false;}
             waypoint=planet.transform.TransformPoint(graph.Points[_path[_cursor]]);return true;
         }
-        public static Vector3 SafeVelocity(PlanetTerrainMeshBuilder planet,Vector3 point,Vector3 velocity)
-        {var graph=planet.Data?.Navigation;if(graph==null||velocity.sqrMagnitude<1e-8f)return velocity;var a=PlanetTerrainSampler.WorldToLocalDirection(planet.transform,point);var b=PlanetTerrainSampler.WorldToLocalDirection(planet.transform,point+velocity*Mathf.Max(Time.fixedDeltaTime,Time.deltaTime));return graph.Segment(a,b)?velocity:Vector3.zero;}
+        public static Vector3 SafeVelocity(PlanetTerrainMeshBuilder planet,Vector3 point,Vector3 velocity,float bodyRadius=0)
+        {using var measuredCost=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.ShoreGuard);var graph=planet?.Data?.Navigation;if(velocity.sqrMagnitude<1e-8f)return velocity;if(graph==null)return Vector3.zero;var a=PlanetTerrainSampler.WorldToLocalDirection(planet.transform,point);var b=PlanetTerrainSampler.WorldToLocalDirection(planet.transform,point+velocity*Mathf.Max(Time.fixedDeltaTime,Time.deltaTime));if(!graph.Segment(a,b))return Vector3.zero;
+            // ★ 新增：检查前进端身体两侧，中心在岸上时也不能把身体推进水里；原地转身/后退仍可脱离岸边。
+            if(bodyRadius>0){var end=planet.transform.InverseTransformPoint(point+velocity*Mathf.Max(Time.fixedDeltaTime,Time.deltaTime));var side=Vector3.Cross(end,planet.transform.InverseTransformVector(velocity)).normalized*bodyRadius;if(!graph.Dry((end+side).normalized)||!graph.Dry((end-side).normalized))return Vector3.zero;}
+            return velocity;}
     }
 }

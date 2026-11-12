@@ -2,13 +2,13 @@
 
 [返回总索引](../README.md) · `Runtime` · `Assets/DarwinPark/Entities/Ecology/ParasiteBehavior.cs`
 
-[源文件](../../../Assets/DarwinPark/Entities/Ecology/ParasiteBehavior.cs) · 源码校验：`a7a6e62da0c88466a985588533be678aa53581c2898ea007679d9ebef80d7cd7`
+[源文件](../../../Assets/DarwinPark/Entities/Ecology/ParasiteBehavior.cs) · 源码校验：`07c2f705e2729befdf2d9ad1f26ee28433d65a9d07193fc6ffc67d3fc086dd56`
 
 方法按源文件位置排列。事件/回调引用不表示立即执行；分支与异常说明见总索引。完整源码与可点击关系图请打开离线手册。
 
-<a id="m551d2853750d787d"></a>
+<a id="m26d7e4af4cdffdbb"></a>
 
-## Host.get · L17
+## Host.get · L18
 
 `get`
 
@@ -26,9 +26,9 @@ flowchart TD
 
 ```
 
-<a id="m116c5bb8229a3331"></a>
+<a id="md057cd47821a7aa9"></a>
 
-## Host.set · L17
+## Host.set · L18
 
 `private set`
 
@@ -46,9 +46,9 @@ flowchart TD
 
 ```
 
-<a id="m00708cea0b7eade0"></a>
+<a id="me65a7509f034e027"></a>
 
-## Offset.get · L18
+## Offset.get · L19
 
 `public Vector3 Offset`
 
@@ -66,9 +66,9 @@ flowchart TD
 
 ```
 
-<a id="mbfa3f4c57a5d2c82"></a>
+<a id="mc0b1fc7eaac7771a"></a>
 
-## DetectedByHost.get · L19
+## DetectedByHost.get · L20
 
 `public bool DetectedByHost`
 
@@ -86,9 +86,9 @@ flowchart TD
 
 ```
 
-<a id="mc7a021b79e67e8db"></a>
+<a id="md2af822af86a84dd"></a>
 
-## DetectionRemaining.get · L20
+## DetectionRemaining.get · L21
 
 `public float DetectionRemaining`
 
@@ -106,9 +106,9 @@ flowchart TD
 
 ```
 
-<a id="ma3a4484cc186abac"></a>
+<a id="md0a6c5009a0a1a3e"></a>
 
-## VisibleTo · L21
+## VisibleTo · L22
 
 `public bool VisibleTo(DarwinEntity observer)`
 
@@ -135,11 +135,11 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [ParasiteBehavior.Host.get · L17](ec21ecbd299caaed.md#m551d2853750d787d)（访问器）
+- [ParasiteBehavior.Host.get · L18](ec21ecbd299caaed.md#m26d7e4af4cdffdbb)（访问器）
 
-<a id="me05181bc10965cab"></a>
+<a id="m5047a40ae90aa091"></a>
 
-## RestoreDetection · L22
+## RestoreDetection · L23
 
 `public void RestoreDetection(bool detected,float remaining)`
 
@@ -157,9 +157,9 @@ flowchart TD
 
 ```
 
-<a id="m907a16996c1f4745"></a>
+<a id="m45857745d20c309b"></a>
 
-## Active.get · L24
+## Active.get · L25
 
 `public bool Active`
 
@@ -182,9 +182,9 @@ flowchart TD
 - [EcologyQueries.Active · L29](bdf7ccc2c9c0452f.md#m200839bb9db5ec55)（方法）
 - [NutritionEcologySettings.Current.get · L19](846a17351dbd6aa4.md#mb3eb930022e314f3)（访问器）
 
-<a id="m2da36418e9812abe"></a>
+<a id="mb50e6bdc00e42f73"></a>
 
-## Internal.get · L25
+## Internal.get · L26
 
 `public bool Internal`
 
@@ -206,9 +206,9 @@ flowchart TD
 
 - [EcologyQueries.Active · L29](bdf7ccc2c9c0452f.md#m200839bb9db5ec55)（方法）
 
-<a id="m9ac8317ac6ba56a9"></a>
+<a id="md273b2395ba33966"></a>
 
-## OriginalKinematic.get · L26
+## OriginalKinematic.get · L27
 
 `public bool OriginalKinematic`
 
@@ -228,11 +228,11 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [ParasiteBehavior.Host.get · L17](ec21ecbd299caaed.md#m551d2853750d787d)（访问器）
+- [ParasiteBehavior.Host.get · L18](ec21ecbd299caaed.md#m26d7e4af4cdffdbb)（访问器）
 
-<a id="maccd44cbe53c1abf"></a>
+<a id="m583105d4b5e5f7bb"></a>
 
-## Awake · L27
+## Awake · L28
 
 `private void Awake()`
 
@@ -255,9 +255,9 @@ flowchart TD
 - [EcologySettings.Load · L18](90428a275d065ef6.md#mb0575490373edaf2)（方法）
 - [EcologyIdentity.Ensure · L23](bdf7ccc2c9c0452f.md#m8adfd15f583f225a)（方法）
 
-<a id="m8d3e856d0b67e07b"></a>
+<a id="md862501ee37e8380"></a>
 
-## Update · L28
+## Update · L29
 
 `private void Update()`
 
@@ -284,13 +284,13 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [ParasiteBehavior.Advance · L30](ec21ecbd299caaed.md#m14f2587c3fb9f420)（方法）
+- [ParasiteBehavior.Advance · L31](ec21ecbd299caaed.md#m52dd6e8d78f1a34c)（方法）
 - [ServiceLocator.TryGet · L26](f2fdbe9f9ccd93cb.md#m143b24e6d58471b0)（方法）
 - [SimulationClock.GameDeltaTime.get · L26](a8f444aec9614b0a.md#me7f11abae18a4f2d)（访问器）
 
-<a id="md862501ee37e8380"></a>
+<a id="mdf6475e5137b4c4a"></a>
 
-## OnDisable · L29
+## OnDisable · L30
 
 `private void OnDisable()`
 
@@ -310,11 +310,11 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [ParasiteBehavior.Detach · L87](ec21ecbd299caaed.md#m5855f26448789aa1)（方法）
+- [ParasiteBehavior.Detach · L94](ec21ecbd299caaed.md#m85ba1f015e87ec39)（方法）
 
-<a id="m14f2587c3fb9f420"></a>
+<a id="m52dd6e8d78f1a34c"></a>
 
-## Advance · L30
+## Advance · L31
 
 `public void Advance(float dt)`
 
@@ -346,18 +346,23 @@ flowchart TD
   b19["TryAttach(_candidate);"]
   b20{"判断：_body==null"}
   b21{"判断：_body.isKinematic"}
-  b22["up=EcologyQueries.Up(transform.position)<br/>direction=Vector3.ProjectOnPlane(_candidate.transform.position-transform.position,up).normalized"]
-  b23{"判断：ServiceLocator.TryGet&lt;SimulationClock&gt;(out var clock)"}
-  b24["clock.MotionTimeScale"]
-  b25["1"]
-  b26["scale=ServiceLocator.TryGet&lt;SimulationClock&gt;(out var clock)?clock.MotionTimeScale:1"]
-  b27["_body.linearVelocity=direction*_settings.parasiteSeekSpeed*scale+up*Mathf.Min(0,Vector3.Dot(_body.linearVelocity,up));"]
-  b28(["结束 / 返回"])
+  b22{"planet=EcologyQueries.Planet<br/>destination=_candidate.transform.position<br/>判断：_genes.GetAttribute(&quot;swimSpeed&quot;)&lt;=0"}
+  b23{"判断：_route.Resolve(planet,transform.position,destination,out destination)"}
+  b24["_body.linearVelocity=Vector3.zero;"]
+  b25["up=EcologyQueries.Up(transform.position)<br/>direction=Vector3.ProjectOnPlane(destination-transform.position,up).normalized"]
+  b26{"判断：ServiceLocator.TryGet&lt;SimulationClock&gt;(out var clock)"}
+  b27["clock.MotionTimeScale"]
+  b28["1"]
+  b29["scale=ServiceLocator.TryGet&lt;SimulationClock&gt;(out var clock)?clock.MotionTimeScale:1"]
+  b30{"tangent=direction*_settings.parasiteSeekSpeed*scale<br/>判断：_genes.GetAttribute(&quot;swimSpeed&quot;)&lt;=0"}
+  b31["tangent=DarwinPark.Planet.LandRoutePlan.SafeVelocity(planet,transform.position,tangent);"]
+  b32["_body.linearVelocity=tangent+up*Mathf.Min(0,Vector3.Dot(_body.linearVelocity,up));"]
+  b33(["结束 / 返回"])
   b0 --> b1
   b1 -->|"否"| b2
   b1 -->|"是"| b3
-  b2 --> b28
-  b3 -->|"是"| b28
+  b2 --> b33
+  b3 -->|"是"| b33
   b3 -->|"否"| b4
   b4 -->|"是"| b5
   b4 -->|"否"| b6
@@ -375,49 +380,59 @@ flowchart TD
   b12 -->|"是"| b13
   b12 -->|"否"| b14
   b13 --> b12
-  b14 --> b28
+  b14 --> b33
   b15 -->|"是"| b16
   b15 -->|"否"| b17
   b16 --> b17
-  b17 -->|"否"| b28
+  b17 -->|"否"| b33
   b17 -->|"是"| b18
   b18 -->|"是"| b19
   b18 -->|"否"| b20
-  b19 --> b28
+  b19 --> b33
   b20 -->|"否"| b21
-  b20 -->|"是"| b28
-  b21 -->|"是"| b28
+  b20 -->|"是"| b33
+  b21 -->|"是"| b33
   b21 -->|"否"| b22
-  b22 --> b23
-  b23 -->|"是"| b24
-  b23 -->|"否"| b25
-  b24 --> b26
+  b22 -->|"是"| b23
+  b22 -->|"否"| b25
+  b23 -->|"否"| b24
+  b23 -->|"是"| b25
+  b24 --> b33
   b25 --> b26
-  b26 --> b27
-  b27 --> b28
+  b26 -->|"是"| b27
+  b26 -->|"否"| b28
+  b27 --> b29
+  b28 --> b29
+  b29 --> b30
+  b30 -->|"是"| b31
+  b30 -->|"否"| b32
+  b31 --> b32
+  b32 --> b33
 
 ```
 
 项目内调用/回调引用：
 
-- [ParasiteBehavior.Detach · L87](ec21ecbd299caaed.md#m5855f26448789aa1)（方法）
+- [ParasiteBehavior.Detach · L94](ec21ecbd299caaed.md#m85ba1f015e87ec39)（方法）
 - [EcologyQueries.Alive · L39](bdf7ccc2c9c0452f.md#m8352bfacbe2996a8)（方法）
-- [ParasiteBehavior.Host.get · L17](ec21ecbd299caaed.md#m551d2853750d787d)（访问器）
+- [ParasiteBehavior.Host.get · L18](ec21ecbd299caaed.md#m26d7e4af4cdffdbb)（访问器）
 - [EntityGeneController.GetAttribute · L288](7494d53178552f0e.md#m45127bcdd833aaf5)（方法）
 - [EntityStats.TryGet · L93](75aa86a368efdf24.md#m03cef847022eee28)（方法）
 - [EntityStats.Modify · L107](75aa86a368efdf24.md#mf17c464aaa04f6f2)（方法）
 - [EntityStats.Feed · L98](75aa86a368efdf24.md#me8ee3fa22434267a)（方法）
-- [ParasiteBehavior.Follow · L86](ec21ecbd299caaed.md#mb480920daa98fe4b)（方法）
-- [ParasiteBehavior.FindHost · L54](ec21ecbd299caaed.md#m088811a59a53cf0a)（方法）
-- [ParasiteBehavior.CanHost · L61](ec21ecbd299caaed.md#m41afc9045bfae83d)（方法）
-- [ParasiteBehavior.HostRadius · L70](ec21ecbd299caaed.md#m45f0280c455ce0e4)（方法）
-- [ParasiteBehavior.TryAttach · L71](ec21ecbd299caaed.md#mdfba72c4cb69de71)（方法）
+- [ParasiteBehavior.Follow · L93](ec21ecbd299caaed.md#mc051bf3a9b9733ce)（方法）
+- [ParasiteBehavior.FindHost · L59](ec21ecbd299caaed.md#m5b3425b94bdcab23)（方法）
+- [ParasiteBehavior.CanHost · L68](ec21ecbd299caaed.md#m976734fde9bb01e4)（方法）
+- [ParasiteBehavior.HostRadius · L77](ec21ecbd299caaed.md#ma9c640d736992744)（方法）
+- [ParasiteBehavior.TryAttach · L78](ec21ecbd299caaed.md#m8473a35a233ea83d)（方法）
+- [LandRoutePlan.Resolve · L42](d357e13967229560.md#md0b0a64ddf86d978)（方法）
 - [EcologyQueries.Up · L42](bdf7ccc2c9c0452f.md#ma73e6bbbc726282f)（方法）
 - [ServiceLocator.TryGet · L26](f2fdbe9f9ccd93cb.md#m143b24e6d58471b0)（方法）
+- [LandRoutePlan.SafeVelocity · L54](d357e13967229560.md#mdb046d6a448848cc)（方法）
 
-<a id="m088811a59a53cf0a"></a>
+<a id="m5b3425b94bdcab23"></a>
 
-## FindHost · L54
+## FindHost · L59
 
 `private DarwinEntity FindHost()`
 
@@ -428,44 +443,49 @@ flowchart TD
 ```mermaid
 flowchart TD
   b0(["入口"])
-  b1["best=null<br/>distance=_settings.hostSearchRadius*_settings.hostSearchRadius"]
-  b2["EntityRegistry.All"]
-  b3{"判断：EntityRegistry.All"}
-  b4["var"]
-  b5{"判断：CanHost(entity)"}
-  b6{"d=(entity.transform.position-transform.position).sqrMagnitude<br/>判断：d&lt;distance"}
-  b7["best=entity;<br/>distance=d;"]
-  b8{"判断：EntityRegistry.All"}
-  b9["EntityRegistry.All"]
-  b10["连接 / 离开区域"]
+  b1["best=null<br/>distance=_settings.hostSearchRadius*_settings.hostSearchRadius<br/>cost=PerformanceTimings.Measure(PerformanceTimings.Area.ParasiteHostSearch)"]
+  b2["EntityCoordinateGrid.Query(transform.position,_settings.hostSearchRadius,_coordinates);"]
+  b3["_coordinates"]
+  b4{"判断：_coordinates"}
+  b5["var"]
+  b6{"entity=coordinate.entity<br/>判断：CanHost(entity)"}
+  b7{"判断：LandReachability.CanReach(_genes,entity)"}
+  b8{"d=(coordinate.position-transform.position).sqrMagnitude<br/>判断：d&lt;distance"}
+  b9["best=entity;<br/>distance=d;"]
+  b10["_coordinates"]
   b11["结果：best"]
-  b12(["结束 / 返回"])
+  b12["cost=PerformanceTimings.Measure(PerformanceTimings.Area.ParasiteHostSearch)"]
+  b13(["结束 / 返回"])
   b0 --> b1
   b1 --> b2
   b2 --> b3
-  b3 -->|"是"| b4
-  b3 -->|"否 · 经过finally 8"| b11
-  b4 --> b5
-  b5 -->|"否"| b3
-  b5 -->|"是"| b6
+  b3 --> b4
+  b4 -->|"是"| b5
+  b4 -->|"否 · 经过finally 10"| b11
+  b5 --> b6
   b6 -->|"是"| b7
-  b6 -->|"否"| b3
-  b7 --> b3
-  b8 -->|"否"| b9
-  b8 -->|"是"| b10
-  b9 --> b10
-  b11 -->|"返回"| b12
-  b3 -. "退出保护区时 finally（示意）" .-> b8
+  b6 -->|"否"| b4
+  b7 -->|"否"| b4
+  b7 -->|"是"| b8
+  b8 -->|"是"| b9
+  b8 -->|"否"| b4
+  b9 --> b4
+  b11 -->|"返回 · 经过finally 12"| b13
+  b4 -. "退出保护区时 finally（示意）" .-> b10
+  b2 -. "退出保护区时 finally（示意）" .-> b12
 
 ```
 
 项目内调用/回调引用：
 
-- [ParasiteBehavior.CanHost · L61](ec21ecbd299caaed.md#m41afc9045bfae83d)（方法）
+- [PerformanceTimings.Measure · L25](a8403a4c7503726d.md#m36fde3c234084192)（方法）
+- [EntityCoordinateGrid.Query · L26](f6d0404a662a5d5c.md#mb223b609771bd310)（方法）
+- [ParasiteBehavior.CanHost · L68](ec21ecbd299caaed.md#m976734fde9bb01e4)（方法）
+- [LandReachability.CanReach · L15](816416ac988cda79.md#m421ee61c476fabe8)（方法）
 
-<a id="m41afc9045bfae83d"></a>
+<a id="m976734fde9bb01e4"></a>
 
-## CanHost · L61
+## CanHost · L68
 
 `private bool CanHost(DarwinEntity entity)`
 
@@ -525,11 +545,11 @@ flowchart TD
 - [EcologyQueries.Alive · L39](bdf7ccc2c9c0452f.md#m8352bfacbe2996a8)（方法）
 - [EntityStats.TryGet · L93](75aa86a368efdf24.md#m03cef847022eee28)（方法）
 - [OptionalComponent.Read · L7](806c46b42ced4d36.md#m69622a4dee165c5a)（方法）
-- [ParasiteBehavior.Host.get · L17](ec21ecbd299caaed.md#m551d2853750d787d)（访问器）
+- [ParasiteBehavior.Host.get · L18](ec21ecbd299caaed.md#m26d7e4af4cdffdbb)（访问器）
 
-<a id="m45f0280c455ce0e4"></a>
+<a id="ma9c640d736992744"></a>
 
-## HostRadius · L70
+## HostRadius · L77
 
 `private static float HostRadius(DarwinEntity entity)`
 
@@ -561,9 +581,9 @@ flowchart TD
 
 ```
 
-<a id="mdfba72c4cb69de71"></a>
+<a id="m8473a35a233ea83d"></a>
 
-## TryAttach · L71
+## TryAttach · L78
 
 `public bool TryAttach(DarwinEntity host,bool restoring=false,Vector3 savedOffset=default,bool originalKinematic=false)`
 
@@ -693,17 +713,17 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [ParasiteBehavior.CanHost · L61](ec21ecbd299caaed.md#m41afc9045bfae83d)（方法）
-- [ParasiteBehavior.HostRadius · L70](ec21ecbd299caaed.md#m45f0280c455ce0e4)（方法）
-- [ParasiteBehavior.Detach · L87](ec21ecbd299caaed.md#m5855f26448789aa1)（方法）
-- [ParasiteBehavior.Host.set · L17](ec21ecbd299caaed.md#m116c5bb8229a3331)（访问器）
+- [ParasiteBehavior.CanHost · L68](ec21ecbd299caaed.md#m976734fde9bb01e4)（方法）
+- [ParasiteBehavior.HostRadius · L77](ec21ecbd299caaed.md#ma9c640d736992744)（方法）
+- [ParasiteBehavior.Detach · L94](ec21ecbd299caaed.md#m85ba1f015e87ec39)（方法）
+- [ParasiteBehavior.Host.set · L18](ec21ecbd299caaed.md#md057cd47821a7aa9)（访问器）
 - [EntityGeneController.GetAttribute · L288](7494d53178552f0e.md#m45127bcdd833aaf5)（方法）
 - [EcologyQueries.Up · L42](bdf7ccc2c9c0452f.md#ma73e6bbbc726282f)（方法）
-- [ParasiteBehavior.Follow · L86](ec21ecbd299caaed.md#mb480920daa98fe4b)（方法）
+- [ParasiteBehavior.Follow · L93](ec21ecbd299caaed.md#mc051bf3a9b9733ce)（方法）
 
-<a id="m72ae0b610a32846c"></a>
+<a id="mdb66a478067005fe"></a>
 
-## LateUpdate · L84
+## LateUpdate · L91
 
 `private void LateUpdate()`
 
@@ -726,12 +746,12 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [ParasiteBehavior.Host.get · L17](ec21ecbd299caaed.md#m551d2853750d787d)（访问器）
-- [ParasiteBehavior.Follow · L86](ec21ecbd299caaed.md#mb480920daa98fe4b)（方法）
+- [ParasiteBehavior.Host.get · L18](ec21ecbd299caaed.md#m26d7e4af4cdffdbb)（访问器）
+- [ParasiteBehavior.Follow · L93](ec21ecbd299caaed.md#mc051bf3a9b9733ce)（方法）
 
-<a id="mb480920daa98fe4b"></a>
+<a id="mc051bf3a9b9733ce"></a>
 
-## Follow · L86
+## Follow · L93
 
 `private void Follow()`
 
@@ -754,12 +774,12 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [ParasiteBehavior.Host.get · L17](ec21ecbd299caaed.md#m551d2853750d787d)（访问器）
+- [ParasiteBehavior.Host.get · L18](ec21ecbd299caaed.md#m26d7e4af4cdffdbb)（访问器）
 - [EntityNeighborhood.ObservePosition · L81](e5e24c4aff0395b1.md#m232339f32a8c5875)（方法）
 
-<a id="m5855f26448789aa1"></a>
+<a id="m85ba1f015e87ec39"></a>
 
-## Detach · L87
+## Detach · L94
 
 `public void Detach()`
 
@@ -819,4 +839,4 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [ParasiteBehavior.Host.set · L17](ec21ecbd299caaed.md#m116c5bb8229a3331)（访问器）
+- [ParasiteBehavior.Host.set · L18](ec21ecbd299caaed.md#md057cd47821a7aa9)（访问器）

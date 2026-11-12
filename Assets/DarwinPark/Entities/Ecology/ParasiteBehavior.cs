@@ -10,6 +10,7 @@ namespace DarwinPark.Entities.Ecology
     public sealed class ParasiteBehavior : MonoBehaviour
     {
         private EntityGeneController _genes;private DarwinEntity _entity,_candidate;private EcologySettings _settings;
+        private readonly List<EntityCoordinate> _coordinates=new();private readonly DarwinPark.Planet.LandRoutePlan _route=new();
         private Rigidbody _body;private bool _kinematic,_attached,_attachedInternal;private Vector3 _offset;private float _search;
         private bool _detectedByHost;private float _detectionRemaining;
         private readonly List<(Collider parasite,Collider host)> _ignored=new List<(Collider,Collider)>();
@@ -47,15 +48,21 @@ namespace DarwinPark.Entities.Ecology
             if(!CanHost(_candidate))return;
             if(Vector3.Distance(transform.position,_candidate.transform.position)<=_settings.attachReach+HostRadius(_candidate)){TryAttach(_candidate);return;}
             if(_body==null||_body.isKinematic)return;
-            Vector3 up=EcologyQueries.Up(transform.position),direction=Vector3.ProjectOnPlane(_candidate.transform.position-transform.position,up).normalized;
+            // ★ 修复（防Bug回归）：旧寄生寻宿主直接写速度绕过全局陆地路线，隔海候选不能再驱动实体入海。
+            var planet=EcologyQueries.Planet;var destination=_candidate.transform.position;
+            if(_genes.GetAttribute("swimSpeed")<=0&&!_route.Resolve(planet,transform.position,destination,out destination)){_body.linearVelocity=Vector3.zero;return;}
+            Vector3 up=EcologyQueries.Up(transform.position),direction=Vector3.ProjectOnPlane(destination-transform.position,up).normalized;
             /* ★ 适配：与实际交付模拟时间一致。 */ float scale=ServiceLocator.TryGet<SimulationClock>(out var clock)?clock.MotionTimeScale:1;
-            _body.linearVelocity=direction*_settings.parasiteSeekSpeed*scale+up*Mathf.Min(0,Vector3.Dot(_body.linearVelocity,up));
+            var tangent=direction*_settings.parasiteSeekSpeed*scale;if(_genes.GetAttribute("swimSpeed")<=0)tangent=DarwinPark.Planet.LandRoutePlan.SafeVelocity(planet,transform.position,tangent);
+            _body.linearVelocity=tangent+up*Mathf.Min(0,Vector3.Dot(_body.linearVelocity,up));
         }
         private DarwinEntity FindHost()
         {
             DarwinEntity best=null;float distance=_settings.hostSearchRadius*_settings.hostSearchRadius;
-            foreach(var entity in EntityRegistry.All)
-            {if(!CanHost(entity))continue;float d=(entity.transform.position-transform.position).sqrMagnitude;if(d<distance){best=entity;distance=d;}}
+            using var cost=PerformanceTimings.Measure(PerformanceTimings.Area.ParasiteHostSearch);
+            EntityCoordinateGrid.Query(transform.position,_settings.hostSearchRadius,_coordinates);
+            foreach(var coordinate in _coordinates)
+            {var entity=coordinate.entity;if(!CanHost(entity)||!LandReachability.CanReach(_genes,entity))continue;float d=(coordinate.position-transform.position).sqrMagnitude;if(d<distance){best=entity;distance=d;}}
             return best;
         }
         private bool CanHost(DarwinEntity entity)

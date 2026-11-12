@@ -352,9 +352,9 @@ flowchart TD
 
 项目内调用/回调引用：
 
-- [WorldParameterUpdate.Busy.get · L20](4087d9be2a65e96f.md#mec2ac85b8ff3f127)（访问器）
+- [WorldParameterUpdate.Busy.get · L21](4087d9be2a65e96f.md#m5597f9f51df8166b)（访问器）
 - [WorldControlsRegression.Check · L31](df3cc9cf0a2f6e97.md#mc0b7eac680c69043)（方法）
-- [WorldParameterUpdate.LastStatus.get · L21](4087d9be2a65e96f.md#m9aff979be84ce935)（访问器）
+- [WorldParameterUpdate.LastStatus.get · L23](4087d9be2a65e96f.md#m18e52034bf4bc4eb)（访问器）
 
 <a id="m0e827c29f2f40102"></a>
 
@@ -718,9 +718,9 @@ flowchart TD
 - [WorldEntityActions.ClearAll · L23](afe657f09857fa47.md#m6f4e8f1fb05f5b38)（方法）
 - [SimulationClock.GameTime.get · L23](a8f444aec9614b0a.md#m74adfa39a896652f)（访问器）
 - [PlanetTerrainMeshBuilder.Data.get · L81](415285cf043354a9.md#m1a65abfe0f34c5d8)（访问器）
-- [WorldParameterUpdate.Ensure · L27](4087d9be2a65e96f.md#mcefc896cc38899a6)（方法）
-- [WorldParameterUpdate.Request · L28](4087d9be2a65e96f.md#m942de54d110fe265)（方法）
-- [WorldParameterUpdate.Busy.get · L20](4087d9be2a65e96f.md#mec2ac85b8ff3f127)（访问器）
+- [WorldParameterUpdate.Ensure · L29](4087d9be2a65e96f.md#m486ce2b8f9ba798f)（方法）
+- [WorldParameterUpdate.Request · L30](4087d9be2a65e96f.md#m9f7325c90aa4ee6e)（方法）
+- [WorldParameterUpdate.Busy.get · L21](4087d9be2a65e96f.md#m5597f9f51df8166b)（访问器）
 - [WorldControlsRegression.WaitForUpdate · L46](df3cc9cf0a2f6e97.md#m4d67a246025ba1a7)（方法）
 - [SimulationClock.Play · L78](a8f444aec9614b0a.md#m7aa9e64b7de60ed0)（方法）
 - [MapEntityStatisticsUI.SelectGene · L69](da03211264cb6014.md#me708d870d6cec0dd)（方法）

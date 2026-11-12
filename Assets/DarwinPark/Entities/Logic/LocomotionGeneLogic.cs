@@ -12,7 +12,7 @@ namespace DarwinPark.Entities.Logic
     {
         private EntityGeneController _controller;
         private GeneInstance _gene;
-        private Rigidbody _rb;
+        private Rigidbody _rb;private Collider _collider;
         private PlanetTerrainMeshBuilder _planet;
         private LocomotionSettings _settings;
         private float _actionCooldown, _wanderTimer;
@@ -25,7 +25,7 @@ namespace DarwinPark.Entities.Logic
 
         public virtual void Initialize(EntityGeneController controller, GeneInstance gene)
         {
-            _controller = controller; _gene = gene; _rb = controller.GetComponent<Rigidbody>();
+            _controller = controller; _gene = gene;_collider=controller.GetComponent<Collider>(); _rb = controller.GetComponent<Rigidbody>();
             _planet = Object.FindFirstObjectByType<PlanetTerrainMeshBuilder>();
             _settings = LocomotionSettings.Load(); _wanderDir = Random.onUnitSphere;
         }
@@ -148,7 +148,7 @@ namespace DarwinPark.Entities.Logic
             float inward = Mathf.Min(0,Vector3.Dot(velocity,radial));
             Vector3 tangent = Vector3.Lerp(Vector3.ProjectOnPlane(velocity,radial),desired,1-Mathf.Exp(-_settings.steering*dt));
             // ★ 修复（防Bug回归）：群体避让和惯性也不能绕过岸边检查。
-            if(_controller.GetAttribute("swimSpeed")<=0)tangent=DarwinPark.Planet.LandRoutePlan.SafeVelocity(_planet,_controller.transform.position,tangent);
+            if(_controller.GetAttribute("swimSpeed")<=0)tangent=DarwinPark.Planet.LandRoutePlan.SafeVelocity(_planet,_controller.transform.position,tangent,_collider!=null?_collider.bounds.extents.magnitude:0);
             _rb.linearVelocity = Vector3.ClampMagnitude(tangent,_settings.maximumMoveSpeed*scale) + radial * inward;
         }
         public virtual string GetTooltipInfo() => _target != null ? "正在追击：" + _target.DisplayName : "提供移动与攻击；消化食性寻找活体，幼年寄生寻找宿主，食腐寻找尸体。食草倾向仅选择静止活体。";
