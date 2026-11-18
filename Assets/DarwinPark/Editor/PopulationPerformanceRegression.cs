@@ -32,7 +32,8 @@ namespace DarwinPark.EditorTools
         public static void RunAllBatch(){SessionState.SetBool(SuiteKey,true);RunBatch();}
         private static DarwinEntity Spawn(int index,int groups,bool wolf=false)
         {
-            var genome=new Genome();foreach(var id in new[]{"gene_growth","gene_nutrition","gene_reproduction","gene_population"})genome.Add(GeneInstance.Create(id,id=="gene_population"?(wolf?80:20):50,GeneDatabase.Get(id).Tier));
+            // ★ 适配：夹具满足当前种群表达对行动和中枢的前置条件。
+            var genome=new Genome();foreach(var id in new[]{"gene_growth","gene_nutrition","gene_reproduction","gene_locomotion","gene_nervous_system","gene_population"})genome.Add(GeneInstance.Create(id,id=="gene_population"?(wolf?80:20):50,GeneDatabase.Get(id).Tier));
             var before=EntityRegistry.All.ToArray();DarwinEntity.Spawner(genome,new Vector3(index%groups*120,340,index/groups*2),"性能验证");var entity=EntityRegistry.All.Single(e=>!before.Contains(e));
             entity.Genes.mutationChance=0;entity.GetComponent<EntityLifeCycle>().RestoreProgress(LifeCycleSettings.Load().adultProgress);entity.Genes.RestoreStageState(AgeState.Adult,3,2);
             string group=Groups[index%groups];if(wolf)entity.GetComponent<PopulationBehavior>().JoinColony(group,index<groups);else entity.GetComponent<AntColonyMember>().Assign(index<groups?AntRole.Queen:index%2==0?AntRole.Soldier:AntRole.Worker,group);
