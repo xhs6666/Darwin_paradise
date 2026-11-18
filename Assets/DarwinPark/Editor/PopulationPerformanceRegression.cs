@@ -87,6 +87,15 @@ namespace DarwinPark.EditorTools
                     foreach(var entity in entities)for(int read=0;read<20;read++){entity.Genes.GetAttribute("moveSpeed");if(entity.GetComponent<AntColonyMember>().Queen==null)throw new InvalidOperationException("王后缺失");}
                     if(PopulationGroupIndex.BuildCount!=builds)throw new InvalidOperationException("稳定成员的重复属性读取仍在重建群体索引");
                     Results.Add("PASS: repeated movement/queen reads reuse group index");
+                    // ★ 适配：多群同帧失效后共用一次注册表遍历，各群仍选出自己的王后。
+                    PopulationGroupIndex.Invalidate();
+                    for(int groupIndex=0;groupIndex<scenario.groups;groupIndex++)
+                    {
+                        var queen=entities[groupIndex].GetComponent<AntColonyMember>();
+                        if(queen.Queen!=queen)throw new InvalidOperationException("批量建立索引后串群");
+                    }
+                    if(PopulationGroupIndex.BuildCount!=builds+1)throw new InvalidOperationException("多群失效后重复扫描注册表");
+                    Results.Add("PASS: all colony lookups share one registry rebuild");
                     var originalQueen=entities[0].GetComponent<AntColonyMember>();var successor=entities[scenario.groups].GetComponent<AntColonyMember>();string group=originalQueen.GroupId;
                     successor.Assign(AntRole.Queen,group);originalQueen.gameObject.SetActive(false);
                     if(successor.Queen!=successor)throw new InvalidOperationException("停用旧王后后缓存仍引用旧领袖");

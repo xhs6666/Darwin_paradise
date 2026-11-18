@@ -12,30 +12,62 @@ namespace DarwinPark.Entities.Ecology
             public readonly List<PopulationBehavior> members=new List<PopulationBehavior>();
             public PopulationBehavior leader;
             public AntColonyMember queen;
+            public bool authorityChecked;
         }
         private static readonly Dictionary<(string,string),Group> Groups=new Dictionary<(string,string),Group>();
         private static readonly List<PopulationBehavior> Empty=new List<PopulationBehavior>();
+        private static readonly Group EmptyGroup=new Group();
+        private static bool _built;
         public static long BuildCount {get;private set;}
         // ★ 适配：资源归属索引同步成员变化，不能用上一帧的“已灭绝”结果回收仍有主人的补给。
         public static long Revision {get;private set;}
-        public static void Invalidate(){Groups.Clear();Revision++;}
+        public static void Invalidate(){Groups.Clear();_built=false;Revision++;}
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void Reset(){Groups.Clear();BuildCount=0;Revision=0;}
+        private static void Reset(){Groups.Clear();_built=false;BuildCount=0;Revision=0;}
         private static bool Earlier(PopulationBehavior a,PopulationBehavior b)=>b==null||a.JoinOrder<b.JoinOrder||a.JoinOrder==b.JoinOrder&&string.CompareOrdinal(EcologyIdentity.Of(a.GetComponent<DarwinEntity>()),EcologyIdentity.Of(b.GetComponent<DarwinEntity>()))<0;
         private static Group Get(PopulationBehavior owner)
         {
             var key=(owner.GroupId,owner.Mode);
-            if(Groups.TryGetValue(key,out var group))return group;
-            group=new Group();BuildCount++;
-            foreach(var member in PopulationBehavior.RegisteredMembers)
+            if(!_built)Build();
+            if(!Groups.TryGetValue(key,out var group))return EmptyGroup;
+            if(!group.authorityChecked)CheckAuthority(group,key.Item2==EcologySettings.Load().antState);
+            return group;
+        }
+        private static void Build()
+        {
+            // ★ 适配：一次注册表遍历为所有群建索引。发生死亡或换群后，多个群不再各扫一遍全体。
+            long revision;
+            do
             {
-                if(member==null||member.GroupId!=key.Item1||member.Mode!=key.Item2||!member.Active)continue;
-                group.members.Add(member);
+                revision=Revision;
+                Groups.Clear();
+                foreach(var member in PopulationBehavior.RegisteredMembers)
+                {
+                    if(member==null||string.IsNullOrEmpty(member.GroupId))continue;
+                    var key=(member.GroupId,member.Mode);
+                    if(!Groups.TryGetValue(key,out var group))
+                    {
+                        group=new Group();
+                        Groups.Add(key,group);
+                    }
+                    group.members.Add(member);
+                }
+                // 读取 Mode 可能首次刷新表达并触发失效。此时重建，避免其他群只收录部分成员。
+            }while(revision!=Revision);
+            _built=true;
+            BuildCount++;
+        }
+        private static void CheckAuthority(Group group,bool antMode)
+        {
+            // ★ 适配：领袖仍在本群首次查询时按实时生命和分工选择，避免预建索引提前冻结其资格。
+            foreach(var member in group.members)
+            {
+                if(member==null||!member.Active)continue;
                 if(group.leader==null||member.LeaderFlag&&!group.leader.LeaderFlag||member.LeaderFlag==group.leader.LeaderFlag&&Earlier(member,group.leader))group.leader=member;
-                var ant=DarwinPark.Core.OptionalComponent.Read<AntColonyMember>(member);
-                if(key.Item2==EcologySettings.Load().antState&&ant!=null&&ant.Role==AntRole.Queen&&Earlier(member,group.queen!=null?group.queen.Population:null))group.queen=ant;
+                if(antMode&&DarwinPark.Core.OptionalComponent.Read<AntColonyMember>(member) is AntColonyMember ant&&
+                    ant.Role==AntRole.Queen&&Earlier(member,group.queen!=null?group.queen.Population:null))group.queen=ant;
             }
-            Groups[key]=group;return group;
+            group.authorityChecked=true;
         }
         public static IEnumerable<PopulationBehavior> Members(PopulationBehavior owner)
         {

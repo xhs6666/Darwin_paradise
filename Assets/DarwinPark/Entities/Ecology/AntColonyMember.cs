@@ -78,7 +78,7 @@ namespace DarwinPark.Entities.Ecology
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)] private static void Reset()=>Members.Clear();
         public static AntColonyMember Ensure(PopulationBehavior pop)=>DarwinPark.Core.OptionalComponent.Read<AntColonyMember>(pop)??pop.gameObject.AddComponent<AntColonyMember>();
         public static AntColonyMember QueenFor(PopulationBehavior pop)=>DarwinPark.Core.OptionalComponent.Read<AntColonyMember>(pop)?.Queen;
-        public static bool IsManaged(EntityGeneController genes)=>genes!=null&&OptionalComponent.Read<AntColonyMember>(genes)?.Active==true;
+        public static bool IsManaged(EntityGeneController genes)=>Simulation.ActiveSimulationBatch.Read<AntColonyMember>(genes)?.Active==true;
         public void Assign(AntRole role,string group=null)
         {
             if(group!=null)Population.JoinColony(group,role==AntRole.Queen);

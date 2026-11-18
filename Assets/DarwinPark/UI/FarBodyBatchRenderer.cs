@@ -71,7 +71,9 @@ namespace DarwinPark.UI
                     view.SetDetail(cameraPosition, catalog);
                     if (!canSubmit || view == detail) continue;
                     var renderer = view.BodyRenderer;
-                    if (renderer == null || !renderer.enabled) continue;
+                    if (renderer == null || !renderer.enabled || renderer.sharedMaterial != material) continue;
+                    bool hidden = renderer.forceRenderingOff;
+                    if (hidden && !_hidden.Contains(renderer)) continue;
                     int viewLayer=renderer.gameObject.layer;
                     if((cullingMask&(1<<viewLayer))==0)continue;
                     var bounds=renderer.bounds;
@@ -79,10 +81,6 @@ namespace DarwinPark.UI
                     float depth=Vector3.Dot(bounds.center-cameraPosition,forward)-radius;
                     if(depth<=nearClip||radius*factor/(orthographic?1:depth)>settings.farBodyScreenPixels)continue;
                     if(!GeometryUtility.TestPlanesAABB(_planes,bounds))continue;
-                    // ★ 适配：先过滤近景和视锥外对象，只在确定需要合批时读取原材质与显隐状态。
-                    if(renderer.sharedMaterial!=material)continue;
-                    bool hidden=renderer.forceRenderingOff;
-                    if(hidden&&!_hidden.Contains(renderer))continue;
 
                     if(_count!=0&&layer!=viewLayer)
                         Submit(camera,mesh,material,layer);

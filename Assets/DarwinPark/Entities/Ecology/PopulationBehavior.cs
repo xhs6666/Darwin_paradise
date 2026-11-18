@@ -43,7 +43,7 @@ namespace DarwinPark.Entities.Ecology
         // ★ 适配：缓存属性组件但实时读取生命值，同帧死亡立即生效，不用每次关系查询都查找相同组件。
         private bool Alive {get{if(_stats==null)_stats=GetComponent<EntityStats>();return _entity!=null&&_entity.isActiveAndEnabled&&_stats!=null&&_stats.TryGet("health",out float hp)&&hp>0;}}
         public bool Active=>PopulationGene!=null&&Alive&&
-            (OptionalComponent.Read<EggIncubation>(this)?.Incubating!=true||
+            (Simulation.ActiveSimulationBatch.Read<EggIncubation>(_genes)?.Incubating!=true||
              Mode==_settings.antState&&!string.IsNullOrEmpty(GroupId)&&OptionalComponent.Read<AntColonyMember>(this)?.Role is AntRole role&&role!=AntRole.None);
         // ★ 适配：蚁群领袖由王后分工确定，狼群仍沿用原有决斗与加入顺序。
         public PopulationBehavior Leader=>PopulationGroupIndex.Leader(this);

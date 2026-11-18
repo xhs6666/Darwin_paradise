@@ -104,6 +104,17 @@ namespace DarwinPark.EditorTools
             float elapsed=.1f;ActionMotionBatch.Begin(observation.Genes,.5f);ActionMotionBatch.Step(observation.Genes,false);Check(!ActionMotionBatch.Consume(observation.Genes,ref elapsed),"非末尾小步不重复写物理移动");ActionMotionBatch.Step(observation.Genes,true);Check(ActionMotionBatch.Consume(observation.Genes,ref elapsed)&&Mathf.Abs(elapsed-.5f)<.0001f,"末尾小步使用完整累计时间转向");ActionMotionBatch.End(observation.Genes);
             ActionMotionBatch.Begin(observation.Genes,.7f);ActionMotionBatch.Begin(b.Genes,.1f);ActionMotionBatch.End(b.Genes);ActionMotionBatch.Step(observation.Genes,true);elapsed=0;Check(ActionMotionBatch.Consume(observation.Genes,ref elapsed)&&Mathf.Abs(elapsed-.7f)<.0001f,"嵌套实体回调恢复原批次累计时间");ActionMotionBatch.End(observation.Genes);
             var body=observation.GetComponent<Rigidbody>();var probe=new GravityProbeCache();Vector3 dir=(planet.transform.position-body.position).normalized;probe.Probe(planet.transform,body,dir,out _);long rays=probe.Raycasts;probe.Probe(planet.transform,body,dir,out _);Check(probe.Raycasts==rays,"静止同地形接地探测在有效期内复用");body.position+=Vector3.right;probe.Probe(planet.transform,body,dir,out _);Check(probe.Raycasts==rays+1,"位置改变立即恢复接地射线");
+            // ★ 适配：通过实际自动保存入口和磁盘文件核对后台快照，再验证显式保存可立即读到更新。
+            string savePath=WorldSaveStore.FileFor(session.Current.id);
+            var priorWrite=File.GetLastWriteTimeUtc(savePath);
+            observation.DisplayName="后台自动存档检查";
+            session.autoSaveInterval=.05f;
+            yield return Wait(()=>File.GetLastWriteTimeUtc(savePath)>priorWrite);
+            session.autoSaveInterval=36000;
+            Check(WorldSaveStore.Read(savePath).entities.Any(e=>e.name=="后台自动存档检查"),"自动保存后台落盘并可读取完整实体");
+            observation.DisplayName="显式保存检查";
+            session.SaveNow(false);
+            Check(WorldSaveStore.Read(savePath).entities.Any(e=>e.name=="显式保存检查")&&File.Exists(savePath+".bak"),"显式保存顺序落盘且保留上一代备份");
             Clear();Check(ResourceCoordinates.Count==0,"清场释放全局资源坐标与旧世界引用");
             File.WriteAllText(SimulationOptimization.FilePath,_optimization.Replace("\"decisionSeconds\": 0.25","\"decisionSeconds\": 0.3"));File.SetLastWriteTimeUtc(SimulationOptimization.FilePath,DateTime.UtcNow.AddSeconds(2));yield return new WaitForSecondsRealtime(2.2f);SimulationOptimization.Poll();Check(Mathf.Abs(SimulationOptimization.Current.decisionSeconds-.3f)<.0001f,"外部优化配置通过单一全局入口自动热加载");
 

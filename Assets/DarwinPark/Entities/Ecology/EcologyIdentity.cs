@@ -42,8 +42,12 @@ namespace DarwinPark.Entities.Ecology
         public static Vector3 Up(Vector3 point)=>(point-(Planet!=null?Planet.transform.position:Vector3.zero)).normalized;
         public static float Distance(Vector3 a,Vector3 b)
         {
-            if(Planet==null)return Vector3.Distance(a,b);
-            return Mathf.Acos(Mathf.Clamp(Vector3.Dot(Up(a),Up(b)),-1,1))*Mathf.Max(Planet.radius,Planet.WaterRadius);
+            var planet=Planet;
+            if(planet==null)return Vector3.Distance(a,b);
+            // ★ 适配：光环、队形和领地共用一次星球中心读取，保持原球面距离。
+            var center=planet.transform.position;
+            float cosine=Vector3.Dot((a-center).normalized,(b-center).normalized);
+            return Mathf.Acos(Mathf.Clamp(cosine,-1,1))*Mathf.Max(planet.radius,planet.WaterRadius);
         }
         public static Vector3 Surface(Vector3 point)
         {

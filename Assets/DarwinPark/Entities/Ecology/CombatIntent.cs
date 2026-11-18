@@ -20,7 +20,8 @@ namespace DarwinPark.Entities.Ecology
         public void Advance(float dt){Remaining=Mathf.Max(0,Remaining-dt);if(Remaining<=0)Target=null;}
         public static bool Destination(EntityGeneController genes,out Vector3 point,out DarwinEntity target)
         {
-            point=genes.transform.position;target=null;var intent=DarwinPark.Core.OptionalComponent.Read<CombatIntent>(genes);
+            // ★ 适配：反击目标仍读取实时字段，复用本实体已取过的组件。
+            point=genes.transform.position;target=null;var intent=Simulation.ActiveSimulationBatch.Read<CombatIntent>(genes);
             if(intent==null||intent.Remaining<=0)return false;
             if(!CanRetaliate(genes,intent.Target)||!EntityPerceptionHub.TryLocate(genes,intent.Target,out point)){intent.Target=null;return false;}
             target=intent.Target;return true;
