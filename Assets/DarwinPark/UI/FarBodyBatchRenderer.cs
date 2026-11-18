@@ -15,7 +15,6 @@ namespace DarwinPark.UI
         private static readonly int FarBody=Shader.PropertyToID("_FarBody");
         private readonly Matrix4x4[] _matrices=new Matrix4x4[BatchSize];
         private readonly Vector4[] _colors=new Vector4[BatchSize],_tints=new Vector4[BatchSize];
-        private readonly float[] _far=new float[BatchSize];
         private readonly Plane[] _planes=new Plane[6];
         private readonly MaterialPropertyBlock _batch=new();
         private HashSet<MeshRenderer> _hidden=new(),_visibleBatch=new();
@@ -24,7 +23,12 @@ namespace DarwinPark.UI
         public int LastInstances {get;private set;}
         public int LastBatches {get;private set;}
 
-        public FarBodyBatchRenderer() => System.Array.Fill(_far, 1f);
+        public FarBodyBatchRenderer()
+        {
+            var far=new float[BatchSize];
+            System.Array.Fill(far,1f);
+            _batch.SetFloatArray(FarBody,far);
+        }
 
         public static bool Enabled => SimulationOptimization.Current.farBodyBatches && SystemInfo.supportsInstancing;
 
@@ -67,9 +71,7 @@ namespace DarwinPark.UI
                     view.SetDetail(cameraPosition, catalog);
                     if (!canSubmit || view == detail) continue;
                     var renderer = view.BodyRenderer;
-                    if (renderer == null || !renderer.enabled || renderer.sharedMaterial != material) continue;
-                    bool hidden = renderer.forceRenderingOff;
-                    if (hidden && !_hidden.Contains(renderer)) continue;
+                    if (renderer == null || !renderer.enabled) continue;
                     int viewLayer=renderer.gameObject.layer;
                     if((cullingMask&(1<<viewLayer))==0)continue;
                     var bounds=renderer.bounds;
@@ -77,6 +79,10 @@ namespace DarwinPark.UI
                     float depth=Vector3.Dot(bounds.center-cameraPosition,forward)-radius;
                     if(depth<=nearClip||radius*factor/(orthographic?1:depth)>settings.farBodyScreenPixels)continue;
                     if(!GeometryUtility.TestPlanesAABB(_planes,bounds))continue;
+                    // ★ 适配：先过滤近景和视锥外对象，只在确定需要合批时读取原材质与显隐状态。
+                    if(renderer.sharedMaterial!=material)continue;
+                    bool hidden=renderer.forceRenderingOff;
+                    if(hidden&&!_hidden.Contains(renderer))continue;
 
                     if(_count!=0&&layer!=viewLayer)
                         Submit(camera,mesh,material,layer);
@@ -108,7 +114,6 @@ namespace DarwinPark.UI
         {
             _batch.SetVectorArray(BodyColor,_colors);
             _batch.SetVectorArray(BaseColor,_tints);
-            _batch.SetFloatArray(FarBody,_far);
             var parameters=new RenderParams(material)
             {
                 camera=camera,layer=layer,worldBounds=_bounds,matProps=_batch,

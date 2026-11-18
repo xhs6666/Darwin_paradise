@@ -20,11 +20,14 @@ namespace DarwinPark.Planet
             public bool hasGround,hasWater;
         }
         private ShoreSample[] _shoreSamples;
-        private readonly float _surfaceRadius,_segmentStep,_slopeLimit;
+        private readonly float _surfaceRadius,_segmentStep,_slopeLimit,_highestWaterRadius;
         public static readonly int[] DX={-1,0,1,-1,1,-1,0,1},DY={-1,-1,-1,0,0,1,1,1};
         public LandNavigationGraph(PlanetTerrainData data,LandNavigationSettings settings)
         {
             _surfaceRadius=data.Radius+data.SeaLevel*data.HeightScale;
+            _highestWaterRadius=data.HeightScale>0
+                ? data.Radius+(data.Hydrology?.MaximumWaterLevel??data.SeaLevel)*data.HeightScale+.001f
+                : float.PositiveInfinity;
             _segmentStep=Mathf.Max(.2f,data.Hydrology!=null?Mathf.Min(settings.segmentStep,data.Hydrology.Settings.riverHalfWidth):settings.segmentStep);
             _slopeLimit=Mathf.Tan(settings.maximumSlopeDegrees*Mathf.Deg2Rad);
             Terrain=data;Settings=settings;Width=Mathf.Clamp(settings.longitudeCells,32,512);Height=Mathf.Clamp(settings.latitudeCells,16,256);int n=Width*Height;Points=new Vector3[n];Directions=new Vector3[n];Walkable=new bool[n];Regions=new int[n];_edges=new byte[n];
@@ -70,12 +73,14 @@ namespace DarwinPark.Planet
                 slot.ground=PlanetCoordinate.SurfaceRadius(Terrain,direction);
                 slot.hasGround=true;
             }
+            ground=slot.ground;
+            // ★ 适配：整段仍采样坡度和身体两侧；单个地表样本高过所有水面时无需求出具体水位。
+            if (ground-_highestWaterRadius>Settings.shoreClearance) return true;
             if(!slot.hasWater)
             {
                 slot.water=Terrain.Hydrology==null?_surfaceRadius:PlanetCoordinate.WaterSurfaceRadius(Terrain,direction);
                 slot.hasWater=true;
             }
-            ground=slot.ground;
             return ground-slot.water>Settings.shoreClearance;
         }
         // ★ 适配：真实生成数据用三角形高度；仅无网格的工具/测试数据回退到高度图。
@@ -85,7 +90,8 @@ namespace DarwinPark.Planet
         private bool UseShoreCache=>_shoreSamples!=null&&DarwinPark.Core.SimulationOptimization.Current.shoreSampleReuse;
         // ★ 适配：真实水位和地形半径只采样一次；即使岸线余量设置为零也不能走入浅水。
         private bool HasDryClearance(Vector3 direction,float ground)
-            => ground - WaterRadius(direction) > Settings.shoreClearance;
+            => ground - _highestWaterRadius > Settings.shoreClearance ||
+                ground - WaterRadius(direction) > Settings.shoreClearance;
         public bool Segment(Vector3 a,Vector3 b)
         {
             // ★ 修复（防Bug回归）：物理步的微小夹角用 acos(dot) 会舍入为零，错误放大坡度并清掉启动速度；半角弦长保留短距离精度。

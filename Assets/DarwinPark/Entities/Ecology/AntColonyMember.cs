@@ -221,7 +221,7 @@ namespace DarwinPark.Entities.Ecology
         }
         public static float Attribute(EntityGeneController genes,string id,float value)
         {
-            var member=OptionalComponent.Read<AntColonyMember>(genes);if(member==null||!member.Active||member.Role==AntRole.None)return value;
+            var member=Simulation.ActiveSimulationBatch.Read<AntColonyMember>(genes);if(member==null||!member.Active||member.Role==AntRole.None)return value;
             var rule=AntColonySettings.Current.Rule(member.Role);
             if(id=="attack")return member.Young?0:value*rule.attackMultiplier;
             if(id=="moveSpeed")return value*(member.State.founding?1:rule.moveMultiplier);

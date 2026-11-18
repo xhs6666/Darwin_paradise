@@ -108,11 +108,19 @@ namespace DarwinPark.Planet
         {
             // ✦ 修复（Bug回归）：水位与坐标均在局部空间比较，兼容星球缩放。
             if (Data == null) return false;
-            // ★ 修复（防Bug回归）：只判断水位，无需重新定位地面三角形或导航区。
-            var local = transform.InverseTransformPoint(worldPosition);
+            return IsSubmergedLocal(transform.InverseTransformPoint(worldPosition), depthMargin);
+        }
+
+        public bool IsSubmergedLocal(Vector3 local, float depthMargin = 0f)
+        {
+            var data=Data;
+            if (data == null) return false;
             float radius = local.magnitude;
+            // ★ 适配：身体高于全星球所有水面时，省去经纬度和河段查询。界内仍使用真实水位。
+            float maximumWater=data.Radius+(data.Hydrology?.MaximumWaterLevel??data.SeaLevel)*data.HeightScale;
+            if (data.HeightScale>0 && radius > maximumWater+.001f) return false;
             var direction = local.sqrMagnitude > 1e-12f ? local / radius : Vector3.up;
-            float water = Data.Navigation?.WaterRadius(direction) ?? PlanetCoordinate.WaterSurfaceRadius(Data,direction);
+            float water = data.Navigation?.WaterRadius(direction) ?? PlanetCoordinate.WaterSurfaceRadius(data,direction);
             if (depthMargin <= 0) return water > radius;
             return (water - radius) * transform.TransformVector(direction).magnitude > depthMargin;
         }

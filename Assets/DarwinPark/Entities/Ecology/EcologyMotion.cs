@@ -60,12 +60,22 @@ namespace DarwinPark.Entities.Ecology
             // ★ 修复（防Bug回归）：群体和角色只修饰移动/攻击；成长、营养、光环等属性不能绕一遍群体关系，尤其避免光环查询嵌套放大。
             if(id=="jumpAbility")return EntityMovementLimits.Attribute(genes,id,value);
             if(id!="moveSpeed"&&id!="attack")return value;
-            // ★ 修复（防Bug回归）：固定分工已把移动/攻击乘为零时，不再解析领袖光环和搬运链；全部后续项均为乘法，结果保持零。
+            if(id=="moveSpeed"&&Immobilized(genes))return 0;
+            return ApplyRoleAndPopulation(genes,id,value);
+        }
+
+        // ★ 适配：中枢已确认未被搬运、附着或孵化；沿相同速度修饰链推进，无需再检查一遍。
+        internal static float MobileSpeed(EntityGeneController genes)
+            => genes.Evaluation!=null&&genes.Evaluation.Attributes.TryGetValue("moveSpeed",out float value)&&value!=0
+                ? ApplyRoleAndPopulation(genes,"moveSpeed",value) : 0;
+
+        private static float ApplyRoleAndPopulation(EntityGeneController genes,string id,float value)
+        {
+            // ★ 修复（防Bug回归）：固定分工已把移动/攻击乘为零时，不再解析领袖光环；后续乘法保持零。
             value=AntColonyMember.Attribute(genes,id,value);if(value==0)return 0;
             var population=ActiveSimulationBatch.Read<PopulationBehavior>(genes);
             if(id=="moveSpeed"&&population!=null)value*=population.MoveMultiplier;
             if(id=="attack"&&population!=null)value*=population.AttackMultiplier;
-            if(id=="moveSpeed"&&Immobilized(genes))return 0;
             return EntityMovementLimits.Attribute(genes,id,value);
         }
         public static bool Detectable(DarwinEntity target,Vector3 observer,float range,DarwinEntity observerEntity=null)

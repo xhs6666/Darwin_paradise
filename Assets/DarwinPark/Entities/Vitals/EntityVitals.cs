@@ -45,6 +45,16 @@ namespace DarwinPark.Entities.Vitals
             if(IsIncubating()){AdvanceIncubating();return;}
             using var performance=PerformanceTimings.Measure(PerformanceTimings.Area.Vitals);
             float rate=Ecology.EcologyEnergyBudget.Consumption(_genes,baseMetabolism,moveMetabolism);
+            // ★ 适配：满血且合并扣除后仍高于补仓阈值时，所有小步只有线性消耗。
+            // 接近阈值、受伤或非标准消耗继续走逐步结算，保留补仓、修复和饥饿事件。
+            if (steps > 1 && rate >= 0 &&
+                _stats.TryGet("health", out float health) && health >= 100f &&
+                _stats.TryGet("nutrient", out float nutrient) && nutrient - rate * dt > 4f &&
+                _stats.TryGetMaximum("nutrient", out float maxNutrient) && nutrient <= maxNutrient)
+            {
+                _stats.Modify("nutrient", -rate * dt);
+                return;
+            }
             for(int i=0;i<steps&&gameObject.activeInHierarchy;i++)
                 ApplyVitalsStep(SimulationSubsteps.Slice(dt,i,steps),rate);
         }

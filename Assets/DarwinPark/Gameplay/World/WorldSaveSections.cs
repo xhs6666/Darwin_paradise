@@ -116,72 +116,93 @@ namespace DarwinPark.UI
             }
         }
 
-        internal static void Write(WorldSaveData data, string path)
+        // ★ 适配：主线程生成不可变的分区文本，后台写盘不读取会继续变化的世界或 Unity 对象。
+        internal sealed class PreparedWrite
+        {
+            internal readonly string Generation = Guid.NewGuid().ToString("N");
+            internal readonly string[] Sections = new string[Names.Length];
+            internal string Manifest;
+        }
+
+        internal static PreparedWrite Prepare(WorldSaveData data)
+        {
+            var write = new PreparedWrite();
+            write.Sections[0] = JsonUtility.ToJson(new Terrain
+            {
+                terrainParameters = data.terrainParameters, environmentParameters = data.environmentParameters,
+                oreResolution = data.oreResolution, oreTimer = data.oreTimer, ore = data.ore
+            });
+            write.Sections[1] = JsonUtility.ToJson(new Rules
+            {
+                morphology=data.morphology, entityStateRegistry=data.entityStateRegistry, ecologyBalanceSettings=data.ecologyBalanceSettings,
+                definitions=data.definitions,tree=data.tree,gameSettings=data.gameSettings
+            });
+            write.Sections[2] = JsonUtility.ToJson(new Actors { entities = data.entities });
+            write.Sections[3] = JsonUtility.ToJson(new Ecology
+            {
+                colony=data.colony, maintenance=data.maintenance, mutationRounds=data.mutationRounds, corpseCleanup=data.corpseCleanup
+            });
+            var bodies = new Bodies();
+            var indices = new Dictionary<long, int>();
+            foreach (var entity in data.entities)
+            {
+                var composition = entity.BodyComposition;
+                if (composition == null)
+                {
+                    bodies.references.Add(-1);
+                    continue;
+                }
+                if (!indices.TryGetValue(composition.Key, out int index))
+                {
+                    index = bodies.compositions.Count;
+                    indices.Add(composition.Key, index);
+                    bodies.compositions.Add(composition);
+                }
+                bodies.references.Add(index);
+            }
+            write.Sections[4] = JsonUtility.ToJson(bodies);
+            var manifest = new Manifest
+            {
+                sectionLayout = Layout, generation = write.Generation, id=data.id, entityCount = data.entities.Count,
+                world = new WorldSaveData
+                {
+                    version=data.version, contentEpoch=data.contentEpoch, savedWithRelease=data.savedWithRelease,
+                    id=data.id, name=data.name, seed=data.seed, createdUtc=data.createdUtc, savedUtc=data.savedUtc,
+                    gameTime=data.gameTime,timeScale=data.timeScale,sunAngle=data.sunAngle,running=data.running,
+                    cameraPosition=data.cameraPosition,cameraRotation=data.cameraRotation,
+                    cameraDistance=data.cameraDistance,planetRotation=data.planetRotation
+                }
+            };
+            write.Manifest = JsonUtility.ToJson(manifest);
+            return write;
+        }
+
+        internal static void Write(WorldSaveData data, string path) => Write(Prepare(data), path);
+
+        internal static void Write(PreparedWrite write, string path)
         {
             lock (Gate)
             {
                 using var writerLock = new FileStream(path + ".lock", FileMode.OpenOrCreate, FileAccess.Write, FileShare.None);
-                string generation = Guid.NewGuid().ToString("N");
-                string folder = Generation(path, generation);
+                string folder = Generation(path, write.Generation);
                 if(Directory.Exists(Path.GetDirectoryName(folder)))WorldSaveManagement.RejectLink(Path.GetDirectoryName(folder));
                 string previous = ReadGeneration(path);
                 string obsolete = ReadGeneration(path + ".bak");
                 Directory.CreateDirectory(folder);
-                WriteText(Path.Combine(folder, Names[0]), new Terrain
-                {
-                    terrainParameters = data.terrainParameters, environmentParameters = data.environmentParameters,
-                    oreResolution = data.oreResolution, oreTimer = data.oreTimer, ore = data.ore
-                });
-                WriteText(Path.Combine(folder, Names[1]), new Rules
-                {
-                    morphology=data.morphology, entityStateRegistry=data.entityStateRegistry, ecologyBalanceSettings=data.ecologyBalanceSettings,
-                    definitions=data.definitions,tree=data.tree,gameSettings=data.gameSettings
-                });
-                WriteText(Path.Combine(folder, Names[2]), new Actors { entities = data.entities });
-                WriteText(Path.Combine(folder, Names[3]), new Ecology
-                {
-                    colony=data.colony, maintenance=data.maintenance, mutationRounds=data.mutationRounds, corpseCleanup=data.corpseCleanup
-                });
-                var bodies = new Bodies();
-                var indices = new Dictionary<long, int>();
-                foreach (var entity in data.entities)
-                {
-                    var composition = entity.BodyComposition;
-                    if (composition == null)
-                    {
-                        bodies.references.Add(-1);
-                        continue;
-                    }
-                    if (!indices.TryGetValue(composition.Key, out int index))
-                    {
-                        index = bodies.compositions.Count;
-                        indices.Add(composition.Key, index);
-                        bodies.compositions.Add(composition);
-                    }
-                    bodies.references.Add(index);
-                }
-                WriteText(Path.Combine(folder, Names[4]), bodies);
-                var manifest = new Manifest
-                {
-                    sectionLayout = Layout, generation = generation, id=data.id, entityCount = data.entities.Count,
-                    world = new WorldSaveData
-                    {
-                        version=data.version, contentEpoch=data.contentEpoch, savedWithRelease=data.savedWithRelease,
-                        id=data.id, name=data.name, seed=data.seed, createdUtc=data.createdUtc, savedUtc=data.savedUtc,
-                        gameTime=data.gameTime,timeScale=data.timeScale,sunAngle=data.sunAngle,running=data.running,
-                        cameraPosition=data.cameraPosition,cameraRotation=data.cameraRotation,
-                        cameraDistance=data.cameraDistance,planetRotation=data.planetRotation
-                    }
-                };
-                WriteAtomic(path, manifest);
+                for (int i = 0; i < Names.Length; i++)
+                    WriteText(Path.Combine(folder, Names[i]), write.Sections[i]);
+                WriteAtomicText(path, write.Manifest);
                 if (obsolete != null && obsolete != previous) RemoveGeneration(path, obsolete);
             }
         }
 
         internal static void WriteAtomic<T>(string path, T value)
+            => WriteAtomicText(path, JsonUtility.ToJson(value));
+
+        private static void WriteAtomicText(string path, string json)
         {
             string temporary = path + ".tmp";
-            WriteText(temporary, value);
+            WriteText(temporary, json);
             if (File.Exists(path)) File.Replace(temporary, path, path + ".bak");
             else File.Move(temporary, path);
         }
@@ -190,11 +211,11 @@ namespace DarwinPark.UI
             JsonUtility.FromJson<T>(File.ReadAllText(Path.Combine(folder, file), Encoding.UTF8)) ??
             throw new InvalidDataException("存档分区无效：" + file);
 
-        private static void WriteText<T>(string path, T value)
+        private static void WriteText(string path, string json)
         {
             using var stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
             using var writer = new StreamWriter(stream, new UTF8Encoding(false));
-            writer.Write(JsonUtility.ToJson(value));
+            writer.Write(json);
             writer.Flush();
             stream.Flush(true);
         }

@@ -14,6 +14,11 @@ namespace DarwinPark.Entities.Logic
         private EntityGeneController _controller;
         private GeneInstance _gene;
         private LocomotionSettings _settings;
+        private GenomeEvaluation _expression;
+        private int _expressionRevision = -1;
+        private bool _primary;
+        private LocomotionGeneLogic _motor;
+        private string _diet;
         private float _actionCooldown, _wanderTimer;
         private Vector3 _wanderPoint;
         // ★ 适配：自主追逐经全局陆地路线，不改变玩家手动输入。
@@ -31,15 +36,25 @@ namespace DarwinPark.Entities.Logic
         {
             // ★ 适配：按需采样独立列出行动逻辑，和其包含的队形/邻域子项区分。
             using var performance=PerformanceTimings.Measure(PerformanceTimings.Area.Locomotion);
-            // ★ 适配：社会谱系和复制行动基因只保留一个行为写入者；寄生/孵化自行控制移动。
-            if(!GeneBehaviorAuthority.IsPrimary<CentralGeneLogic>(_controller,_gene)||EcologyMotion.Immobilized(_controller))return;
-            if(dt<=0)return;
+            if (dt <= 0) return;
+            // ★ 适配：行动授权和马达从当前表达快照读取，避免每次补算重新查找同一基因。
+            if (_expressionRevision != _controller.LogicRevision || !ReferenceEquals(_expression, _controller.Evaluation))
+            {
+                _expressionRevision = _controller.LogicRevision;
+                _expression = _controller.Evaluation;
+                _primary = GeneBehaviorAuthority.IsPrimary<CentralGeneLogic>(_controller, _gene);
+                var action = GeneCapabilities.Active(_controller, BiologySettings.Current.locomotionGene);
+                _motor = action == null ? null : _controller.GetLogic(action.Gene) as LocomotionGeneLogic;
+                _diet = GeneCapabilities.Diet(_controller);
+            }
+            if (!_primary || EcologyMotion.Immobilized(_controller)) return;
             _actionCooldown -= dt;
-            float speed = _controller.GetAttribute("moveSpeed");
-            var action=GeneCapabilities.Active(_controller,BiologySettings.Current.locomotionGene);
-            if(action==null||_controller.GetLogic(action.Gene) is not LocomotionGeneLogic motor)return;
+            var motor = _motor;
+            if (motor == null) return;
             var stats = ActiveSimulationBatch.Read<EntityStats>(_controller);
-            if (speed <= 0 || stats == null || !stats.TryGet("health", out float hp) || hp <= 0) return;
+            if (stats == null || !stats.TryGet("health", out float hp) || hp <= 0) return;
+            float speed = EcologyMotion.MobileSpeed(_controller);
+            if (speed <= 0) return;
             // ★ 适配：使用重算时建立的实例索引，行动子步不重复扫描和分配查询闭包。
             // ★ 修复（防Bug回归）：行为状态共用面板评估结果，失效基因不执行行动。
             // ★ 适配：手动控制期间 AI 不再抢写速度，只有玩家按攻击键才执行近距离进食。
@@ -54,7 +69,7 @@ namespace DarwinPark.Entities.Logic
                 if (manual.CanMove && requested && _controller.GetAttribute("attack")>0)
                 {
                     // ★ 修复（防Bug回归）：手动每次攻击按准星重新选取，不沿用 AI 的最近猎物缓存。
-                    bool graze=GeneCapabilities.Diet(_controller)=="herbivore";
+                    bool graze=_diet=="herbivore";
                     _target=manual.GetAttackTarget();
                     // 玩家主动攻击不应被 AI 的食性筛选拒绝；没有行动能力仍无法攻击。
                     if(_target!=null)TryBite(stats,graze);
@@ -67,7 +82,7 @@ namespace DarwinPark.Entities.Logic
             if(plan!=null&&plan.Active)
             {
                 _decision.Reset();plan.Destination(out var plannedPoint,out _target);motor.Move(plannedPoint,speed,dt);
-                if(_target!=null)TryBite(stats,GeneCapabilities.Diet(_controller)=="herbivore");return;
+                if(_target!=null)TryBite(stats,_diet=="herbivore");return;
             }
             bool decide=_decision.Due(_controller,dt);
             if(decide)_decision.directive=EcologyMotion.Directive(_controller,out _decision.point,out _decision.target,out _decision.multiplier);
@@ -84,24 +99,23 @@ namespace DarwinPark.Entities.Logic
                 if(_target!=null)TryBite(stats,false);return;
             }
             // ★ 适配：由生态预算决定是否需补充繁殖储备，仓储充足后避免过度捕食。
-            if (NutritionTransfer.CanHuntForFood(_controller)&&EcologyEnergyBudget.WantsFood(_controller,stats,_settings.hungerThreshold) && GeneCapabilities.Diet(_controller) is string diet)
+            if ((_diet == "hunt" || _diet == "herbivore") &&
+                NutritionTransfer.CanHuntForFood(_controller) &&
+                EcologyEnergyBudget.WantsFood(_controller,stats,_settings.hungerThreshold))
             {
-                bool graze = diet == "herbivore";
-                if (diet == "hunt" || graze)
+                bool graze = _diet == "herbivore";
+                if(decide)FindTarget(graze);
+                else if(_target!=null&&!PerceivedTargets.Valid(_controller,_target,graze,out _observedTarget))_target=null;
+                if (_target != null)
                 {
-                    if(decide)FindTarget(graze);
-                    else if(_target!=null&&!PerceivedTargets.Valid(_controller,_target,graze,out _observedTarget))_target=null;
-                    if (_target != null)
-                    {
-                        _lastSeenTarget=_target;
-                        motor.Move(_observedTarget, speed, dt);
-                        TryBite(stats, graze);
-                        return;
-                    }
-                    if(_lastSeenTarget!=null&&EntityPerceptionHub.TryRecall(_controller,_lastSeenTarget,out var known)&&LandReachability.CanReach(_controller,_lastSeenTarget,known.position))
-                    {motor.Move(known.position,speed,dt);return;}
-                    // 没有猎物时继续搜索漫游，不能永久 return 原地饿死。
+                    _lastSeenTarget=_target;
+                    motor.Move(_observedTarget, speed, dt);
+                    TryBite(stats, graze);
+                    return;
                 }
+                if(_lastSeenTarget!=null&&EntityPerceptionHub.TryRecall(_controller,_lastSeenTarget,out var known)&&LandReachability.CanReach(_controller,_lastSeenTarget,known.position))
+                {motor.Move(known.position,speed,dt);return;}
+                // 没有猎物时继续搜索漫游，不能永久 return 原地饿死。
             }
             _target = null;_lastSeenTarget=null;
             _wanderTimer -= dt;

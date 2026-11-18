@@ -29,6 +29,8 @@ namespace DarwinPark.UI
         private PlanetTerrainMeshBuilder _builder;
         private string _initialTerrain,_initialEnvironment;
         private float _autoSave;
+        private Task _automaticWrite;
+        private string _automaticSaveDetails;
         private readonly HashSet<string> _favoriteIds=new HashSet<string>();
         private void Start()=>EnsureInitialized();
         private void EnsureInitialized()
@@ -62,6 +64,7 @@ namespace DarwinPark.UI
         public void Open(WorldSaveData data){if(!Busy){EnsureInitialized();WorldSaveStore.Validate(data);Begin(data,false);}}
         private void Begin(WorldSaveData data,bool isNew)
         {
+            FinishAutomaticWrite(true);
             WorldSaveStore.Validate(data);
             Busy=true;WorldRuntimeGate.Ready=false;WorldRuntimeGate.Loading=true;Progress=0;Status="准备世界";ServiceLocator.Get<SimulationClock>().Pause();
             // ★ 新增：只记录世界边界与保存结果，不逐帧打印地形进度或实体数值。
@@ -177,6 +180,15 @@ namespace DarwinPark.UI
             // ★ 适配：成员副本不写世界文件，防止自动保存/退出将远端世界误写成本地权威存档。
             if(WorldAuthority.IsReplica){SaveStatus="联机世界由管理员保存";return;}
             if(Current==null)throw new InvalidOperationException("没有可保存的世界");
+            // ★ 修复（防Bug回归）：显式保存必须实际落盘；先收尾较旧的后台快照，避免它覆盖更新的存档。
+            FinishAutomaticWrite(true);
+            CaptureSave(running);
+            WorldSaveStore.Write(Current);
+            ReportSaved(SaveDetails());
+        }
+
+        private void CaptureSave(bool? running)
+        {
             var clock=ServiceLocator.Get<SimulationClock>();var environment=ServiceLocator.Get<EnvironmentSystem>();
             Current.seed=_builder.seed;Current.terrainParameters=JsonUtility.ToJson(_builder);Current.environmentParameters=JsonUtility.ToJson(environment);
             Current.gameTime=clock.GameTime;Current.timeScale=clock.ConfiguredTimeScale;
@@ -195,14 +207,59 @@ namespace DarwinPark.UI
             Current.maintenance=PopulationMaintenance.Capture();
             Current.mutationRounds=DarwinPark.Entities.Simulation.MutationRoundController.Capture();
             Current.corpseCleanup=DarwinPark.Entities.Simulation.CorpseCleanupController.Capture();
-            WorldSaveStore.Write(Current);SaveStatus="已保存 "+DateTime.Now.ToString("HH:mm:ss");
-            Debug.Log("[存档] 保存成功 id="+Current.id+"，实体="+Current.entities.Count+"，模拟时间="+Current.gameTime+"，文件="+WorldSaveStore.FileFor(Current.id));
+        }
+
+        private string SaveDetails()
+            => " id="+Current.id+"，实体="+Current.entities.Count+"，模拟时间="+Current.gameTime+"，文件="+WorldSaveStore.FileFor(Current.id);
+
+        private void ReportSaved(string details)
+        {
+            SaveStatus="已保存 "+DateTime.Now.ToString("HH:mm:ss");
+            Debug.Log("[存档] 保存成功"+details);
+        }
+
+        private bool FinishAutomaticWrite(bool wait)
+        {
+            var write=_automaticWrite;
+            if(write==null)return true;
+            if(!wait&&!write.IsCompleted)return false;
+            _automaticWrite=null;
+            try{write.GetAwaiter().GetResult();ReportSaved(_automaticSaveDetails);}
+            catch(Exception ex){ReportAutomaticFailure(ex);}
+            return true;
+        }
+
+        private void ReportAutomaticFailure(Exception error)
+        {
+            SaveStatus="自动保存失败："+error.Message;
+            Debug.LogException(error);
         }
         private static readonly MorphologyExpression.Resolver SaveBodyResolver=new();
         private static SavedBodyComposition CaptureBody(DarwinEntity entity)=>entity.Genes.Evaluation==null?null:SaveBodyResolver.Capture(entity.Genes.Genome,entity.Genes.Evaluation);
 
         // ★ 修复（防Bug回归）：离线录制的临时相机/星球相位不能被自动存档写入世界。
-        private void Update(){if(!Busy&&!WorldRuntimeGate.Loading&&!WorldRuntimeGate.Recording&&WorldRuntimeGate.Ready&&Current!=null){_autoSave+=Time.unscaledDeltaTime;if(_autoSave>=autoSaveInterval){_autoSave=0;try{SaveNow();}catch(Exception ex){SaveStatus="自动保存失败："+ex.Message;Debug.LogException(ex);}}}}
-        private void OnApplicationQuit(){if(Current!=null&&!Busy)try{SaveNow();}catch(Exception ex){Debug.LogException(ex);}}
+        private void Update()
+        {
+            bool idle=FinishAutomaticWrite(false);
+            if(Busy||WorldRuntimeGate.Loading||WorldRuntimeGate.Recording||!WorldRuntimeGate.Ready||
+                Current==null||WorldAuthority.IsReplica)return;
+            _autoSave+=Time.unscaledDeltaTime;
+            if(!idle||_autoSave<autoSaveInterval)return;
+            _autoSave=0;
+            using var measured=PerformanceTimings.Measure(PerformanceTimings.Area.WorldSave);
+            try
+            {
+                CaptureSave(null);
+                var write=WorldSaveStore.PrepareAutomaticWrite(Current);
+                _automaticSaveDetails=SaveDetails();
+                _automaticWrite=Task.Run(write);
+            }
+            catch(Exception ex){ReportAutomaticFailure(ex);}
+        }
+        private void OnApplicationQuit()
+        {
+            FinishAutomaticWrite(true);
+            if(Current!=null&&!Busy)try{SaveNow();}catch(Exception ex){Debug.LogException(ex);}
+        }
     }
 }

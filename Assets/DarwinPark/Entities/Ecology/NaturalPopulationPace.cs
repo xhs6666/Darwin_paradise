@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using DarwinPark.Core;
+using DarwinPark.Entities.Simulation;
 using UnityEngine;
 namespace DarwinPark.Entities.Ecology
 {
@@ -44,9 +45,22 @@ namespace DarwinPark.Entities.Ecology
         {
             var life=LifeCycleSettings.Load();var cfg=Current;float year=life.secondsPerDay*365;
             if(!cfg.enabled)return genes.CurrentAge==DarwinPark.Entities.AgeState.Elder?Mathf.Max(life.minimumAgingSpeed,genes.GetAttribute("agingSpeed"))*life.agingProgressScale:Mathf.Max(0,genes.GetAttribute("growthSpeed"))*life.growthProgressScale;
-            float aging=Mathf.Max(life.minimumAgingSpeed,genes.GetAttribute("agingSpeed"))/cfg.referenceAgingSpeed;
-            float growth=Mathf.Max(0,genes.GetAttribute("growthSpeed"))/cfg.referenceGrowthSpeed;var member=OptionalComponent.Read<AntColonyMember>(genes);float mature=member!=null&&member.Active&&member.Role==AntRole.Worker?cfg.workerMaturityDays/365:cfg.maturityYears;
-            return genes.CurrentAge==DarwinPark.Entities.AgeState.Infant?life.adultProgress/(mature*year)*growth:genes.CurrentAge==DarwinPark.Entities.AgeState.Adult?(life.elderProgress-life.adultProgress)/((cfg.elderYears-mature)*year)*aging:(life.deathProgress-life.elderProgress)/((cfg.lifespanYears-cfg.elderYears)*year)*aging;
+            // ★ 适配：只读当前阶段需要的速度；老年寿命不依赖工蚁成熟时间。
+            var age=genes.CurrentAge;
+            if(age!=AgeState.Infant&&age!=AgeState.Adult)
+            {
+                float aging=Mathf.Max(life.minimumAgingSpeed,genes.GetAttribute("agingSpeed"))/cfg.referenceAgingSpeed;
+                return (life.deathProgress-life.elderProgress)/((cfg.lifespanYears-cfg.elderYears)*year)*aging;
+            }
+            var member=ActiveSimulationBatch.Read<AntColonyMember>(genes);
+            float mature=member!=null&&member.Active&&member.Role==AntRole.Worker?cfg.workerMaturityDays/365:cfg.maturityYears;
+            if(age==AgeState.Infant)
+            {
+                float growth=Mathf.Max(0,genes.GetAttribute("growthSpeed"))/cfg.referenceGrowthSpeed;
+                return life.adultProgress/(mature*year)*growth;
+            }
+            float adultAging=Mathf.Max(life.minimumAgingSpeed,genes.GetAttribute("agingSpeed"))/cfg.referenceAgingSpeed;
+            return (life.elderProgress-life.adultProgress)/((cfg.elderYears-mature)*year)*adultAging;
         }
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]private static void Reset(){_current=null;_stamp=0;_nextPoll=0;}
     }

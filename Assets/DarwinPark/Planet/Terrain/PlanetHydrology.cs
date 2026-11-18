@@ -10,7 +10,10 @@ namespace DarwinPark.Planet
         public readonly int Width,Height;public readonly float[] Bed,Spill,Accumulation;public readonly int[] Downstream;public readonly bool[] River,Lake;public readonly Vector3[] Directions;
         public readonly LandformSettings Settings;private readonly float _sea,_radius,_scale,_bankWidth;
         private bool[] _possibleRiver;
+        private int[] _nextRiverColumn;
+        private bool[] _possibleLake;
         public int RiverCells{get;private set;}public int LakeCells{get;private set;}
+        internal float MaximumWaterLevel { get; private set; }
         public Vector3[] ChannelDirections {get;private set;}
         public float[] ChannelWidths {get;private set;}
         public Vector3[][] ChannelPaths {get;private set;}
@@ -52,7 +55,33 @@ namespace DarwinPark.Planet
         // ★ 适配：按纬度行建立保守上界。只有整个查询范围不可能含河段时，水位才走无河快速路径。
         private void IndexPotentialRivers()
         {
+            MaximumWaterLevel=_sea;
             _possibleRiver=new bool[River.Length];
+            _nextRiverColumn=new int[Height*(Width+1)];
+            _possibleLake=new bool[Lake.Length];
+            // ★ 适配：按原纬度/经度顺序直达范围内的下一条河，避免每次水位查询扫描大量无河格。
+            for (int row = 0; row < Height; row++)
+            {
+                int rowStart = row * (Width + 1);
+                int next = Width;
+                _nextRiverColumn[rowStart + Width] = next;
+                for (int column = Width - 1; column >= 0; column--)
+                {
+                    int cell = row * Width + column;
+                    if (River[cell])
+                    {
+                        next = column;
+                        float highestSpill=Mathf.Max(Spill[cell],Spill[Downstream[cell]]);
+                        MaximumWaterLevel=Mathf.Max(MaximumWaterLevel,highestSpill-Settings.riverSurfaceInset/_scale);
+                    }
+                    _nextRiverColumn[rowStart + column] = next;
+                    if (!Lake[cell]) continue;
+                    MaximumWaterLevel=Mathf.Max(MaximumWaterLevel,Spill[cell]);
+                    for (int y = Mathf.Max(0, row - 1); y <= Mathf.Min(Height - 1, row + 1); y++)
+                        for (int x = -1; x <= 1; x++)
+                            _possibleLake[y * Width + (column + x + Width) % Width] = true;
+                }
+            }
             SearchRange(Vector3.right,out _,out int latitudeReach);
             var longitudeReach=new int[Height];
             for(int row=0;row<Height;row++)
@@ -95,14 +124,30 @@ namespace DarwinPark.Planet
             }
             coverage=water>_sea?float.PositiveInfinity:float.NegativeInfinity;float extended=_sea,extendedCoverage=float.NegativeInfinity;
             int extendedRiver=-1;float extendedAlong=0;
-            SearchRange(dir,out int rx,out int ry);int x=cell%Width,y=cell/Width;for(int dy=-ry;dy<=ry;dy++)for(int dx=-rx;dx<=rx;dx++)
+            SearchRange(dir,out int rx,out int ry);
+            int x=cell%Width,y=cell/Width;
+            int first=(x-rx+Width)%Width;
+            int last=first+2*rx;
+            for(int row=Mathf.Max(0,y-ry);row<=Mathf.Min(Height-1,y+ry);row++)
             {
-                if(y+dy<0||y+dy>=Height)continue;int i=(y+dy)*Width+(x+dx+Width)%Width;if(!River[i])continue;float distance=SegmentDistance(dir,i,out float t),width=Mathf.Lerp(ChannelWidth(i),ChannelWidth(Downstream[i]),t);
-                // 与真实下切的岸坡共用范围；水面只在低于水位的实际地形处出现，不以名义半宽截断岸边。
-                if(Settings.version>=3)width=Mathf.Max(_bankWidth,width+Settings.bankWidth-Settings.riverHalfWidth);
-                float mask=width-distance,level=Mathf.Lerp(Spill[i],Spill[Downstream[i]],t)-Settings.riverSurfaceInset/_scale;
-                if(mask>=0&&level>water){water=level;coverage=mask;river=i;along=t;}
-                else if(mask<0&&mask>extendedCoverage&&level>_sea){extended=level;extendedCoverage=mask;extendedRiver=i;extendedAlong=t;}
+                int lookup=row*(Width+1);
+                int column=_nextRiverColumn[lookup+first];
+                // 经线接缝按原扫描顺序绕回。极区若原范围重复覆盖首列，仍保持原顺序与选择。
+                for(int offset=0;offset<=last;offset+=Width)
+                {
+                    int end=Mathf.Min(Width-1,last-offset);
+                    for(;column<=end;column=_nextRiverColumn[lookup+column+1])
+                    {
+                        int i=row*Width+column;
+                        float distance=SegmentDistance(dir,i,out float t),width=Mathf.Lerp(ChannelWidth(i),ChannelWidth(Downstream[i]),t);
+                        // 与真实下切的岸坡共用范围；水面只在低于水位的实际地形处出现，不以名义半宽截断岸边。
+                        if(Settings.version>=3)width=Mathf.Max(_bankWidth,width+Settings.bankWidth-Settings.riverHalfWidth);
+                        float mask=width-distance,level=Mathf.Lerp(Spill[i],Spill[Downstream[i]],t)-Settings.riverSurfaceInset/_scale;
+                        if(mask>=0&&level>water){water=level;coverage=mask;river=i;along=t;}
+                        else if(mask<0&&mask>extendedCoverage&&level>_sea){extended=level;extendedCoverage=mask;extendedRiver=i;extendedAlong=t;}
+                    }
+                    if(last>=Width&&offset==0)column=_nextRiverColumn[lookup];
+                }
             }
             if(water<=_sea){water=extended;coverage=float.IsNegativeInfinity(extendedCoverage)?-_radius:extendedCoverage;river=extendedRiver;along=extendedAlong;}
             return water;
@@ -136,6 +181,7 @@ namespace DarwinPark.Planet
         private float LakeWater(Vector2 uv,int cell)
         {
             if(Settings.version<2)return Lake[cell]?Spill[cell]:_sea;
+            if (_possibleLake != null && !_possibleLake[cell]) return _sea;
             float x=uv.x*Width-.5f,y=uv.y*Height-.5f;int ix=Mathf.FloorToInt(x),iy=Mathf.FloorToInt(y);float best=float.PositiveInfinity,water=_sea;
             for(int dy=0;dy<=1;dy++)for(int dx=0;dx<=1;dx++){int row=Mathf.Clamp(iy+dy,0,Height-1),column=(ix+dx+Width)%Width,i=row*Width+column;if(!Lake[i])continue;float distance=(ix+dx-x)*(ix+dx-x)+(iy+dy-y)*(iy+dy-y);if(distance>=best)continue;best=distance;water=Spill[i];}return water;
         }

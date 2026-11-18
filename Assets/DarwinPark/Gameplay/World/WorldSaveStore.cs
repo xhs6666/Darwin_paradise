@@ -136,13 +136,36 @@ using UnityEngine;
         private static bool Finite(float value)=>!float.IsNaN(value)&&!float.IsInfinity(value);
         public static void Write(WorldSaveData data,string overridePath=null)
         {
-            Validate(data);data.contentEpoch=LanRelease.Current.contentEpoch;data.savedWithRelease=LanRelease.Current.release;data.savedUtc=DateTime.UtcNow.ToString("O");string path=overridePath??FileFor(data.id);
+            PrepareMetadata(data);
+            string path=overridePath??FileFor(data.id);
             Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path)));
             if(string.Equals(Path.GetFileName(path),"world.json",StringComparison.OrdinalIgnoreCase))
                 WorldSaveSections.Write(data,path);
             else WorldSaveSections.WriteAtomic(path,data);
             // ★ 适配：新档完整落盘后才收纳旧档；迁移失败不删除原文件，也不掩盖本次保存成功。
             if(overridePath==null)ArchiveLegacy(GamePaths.Saves,data.id);
+        }
+
+        // ★ 适配：自动存档在主线程校验并冻结快照，只把文件操作交给后台。
+        internal static Action PrepareAutomaticWrite(WorldSaveData data)
+        {
+            PrepareMetadata(data);
+            string id=data.id, path=FileFor(id), root=GamePaths.Saves;
+            var prepared=WorldSaveSections.Prepare(data);
+            return () =>
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+                WorldSaveSections.Write(prepared,path);
+                ArchiveLegacy(root,id);
+            };
+        }
+
+        private static void PrepareMetadata(WorldSaveData data)
+        {
+            Validate(data);
+            data.contentEpoch=LanRelease.Current.contentEpoch;
+            data.savedWithRelease=LanRelease.Current.release;
+            data.savedUtc=DateTime.UtcNow.ToString("O");
         }
         public static void ArchiveLegacy(string root,string id)
         {

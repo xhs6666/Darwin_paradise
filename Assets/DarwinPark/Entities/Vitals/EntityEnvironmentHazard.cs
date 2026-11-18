@@ -19,6 +19,9 @@ namespace DarwinPark.Entities.Vitals
         private EntityGeneController _genes;
         private PlanetTerrainMeshBuilder _planetBuilder;
         private Collider _bodyCollider;
+        private PlanetTerrainData _submersionTerrain;
+        private Vector3 _submersionLocal;
+        private bool _submerged;
 
         private EnvironmentConfig _config;
         private bool _loggedMissingConfig;
@@ -29,7 +32,21 @@ namespace DarwinPark.Entities.Vitals
         // ★ 修复（防Bug回归）：AI 和手动行动共用实时水位判断，不能用上一帧的溺水伤害状态允许水中奔跑。
         public bool IsSubmerged
         {
-            get { FindPlanetBuilder(); return _planetBuilder != null && _planetBuilder.Data != null && _planetBuilder.IsSubmerged(transform.position); }
+            get
+            {
+                FindPlanetBuilder();
+                if (_planetBuilder == null || _planetBuilder.Data == null) return false;
+                // ★ 适配：相同局部坐标上的补步复用精确水位；传送、星球移动和地形替换立即采样。
+                var local = _planetBuilder.transform.InverseTransformPoint(transform.position);
+                var terrain = _planetBuilder.Data;
+                if (!ReferenceEquals(terrain, _submersionTerrain) || !local.Equals(_submersionLocal))
+                {
+                    _submerged = _planetBuilder.IsSubmergedLocal(local);
+                    _submersionTerrain = terrain;
+                    _submersionLocal = local;
+                }
+                return _submerged;
+            }
         }
         /// <summary>0~1，环境已经“压不住”的程度。</summary>
         public float StressLevel { get; private set; }
