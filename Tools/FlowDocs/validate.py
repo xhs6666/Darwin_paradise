@@ -11,17 +11,20 @@ def check(value,message):
 check(len(s)==len(d['scripts']),'重复脚本ID');check(len(m)==len(d['methods']),'重复方法ID')
 expected={p.relative_to(root).as_posix() for p in (root/'Assets').rglob('*') if p.suffix in ('.cs','.shader','.hlsl')}
 check(expected=={x['path'] for x in s.values()},'脚本覆盖有遗漏或多余文件')
-check({p.stem for p in (folder/'脚本').glob('*.md') if re.fullmatch('[a-f0-9]{16}',p.stem)}==set(s),'过期或多余的脚本分图')
+# ★ 适配：模块手册必须完整包含脚本与方法，旧分图不应再生成。
+check(not list((folder/'脚本').glob('*.md')),'旧脚本分图尚未清理')
+check({p.stem for p in (folder/'模块').glob('*.md')}=={x['module'] for x in s.values()},'模块覆盖不完整')
+module_pages={p.stem:p.read_text('utf-8') for p in (folder/'模块').glob('*.md')}
 for script in s.values():
  source=(root/script['path']).read_bytes().decode('utf-8-sig').replace('\r\n','\n')
  check(source==script['source'],'源码副本过期：'+script['path'])
  check(hashlib.sha256(source.encode()).hexdigest()==script['hash'],'源码Hash过期：'+script['path'])
- check((folder/'脚本'/f"{script['id']}.md").exists(),'缺少脚本Mermaid分图')
+ check(f'<a id="s{script["id"]}"></a>' in module_pages[script["module"]],'缺少脚本章节')
  check(len(set(script['methods']))==len(script['methods']),'脚本方法重复')
  for method in script['methods']:check(method in m and m[method]['scriptId']==script['id'],'方法文件归属错误')
  for attachment in script.get('attachments',[]):check((root/attachment['asset']).exists(),'无效场景挂载')
 for method in m.values():
- script=s[method['scriptId']];linecount=len(script['source'].splitlines())
+ script=s[method['scriptId']];check(f'<a id="m{method["id"]}"></a>' in module_pages[script['module']],'缺少方法章节');linecount=len(script['source'].splitlines())
  check(1<=method['line']<=method['endLine']<=linecount+1,'方法行号越界：'+method['name'])
  for profile in method['profiles']:
   check(profile in method['graphs'] or method.get('graphRefs',{}).get(profile) in method['graphs'],'缺少版本流程图')

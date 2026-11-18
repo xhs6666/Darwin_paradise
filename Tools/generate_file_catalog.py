@@ -8,15 +8,21 @@ missing=cs-set(roles['scripts'])
 if missing:raise SystemExit('请在Tools/file_catalog_roles.json补充脚本职责：\n'+'\n'.join(sorted(missing)))
 flow=json.loads((root/'Docs/运行流程图/manifest.json').read_text('utf-8'));flow_by_path={s['path']:s for s in flow['scripts']}
 if {p for p in flow_by_path if p.endswith('.cs')}!=cs:raise SystemExit('源码清单已变化，请先运行Tools/FlowDocs/Generate.ps1更新流程图。')
-extra={'Tools/generate_file_catalog.py','Tools/file_catalog_roles.json','Docs/开发设计/项目文件作用索引.md','Docs/运行流程图/file-catalog.js','Tools/FlowDocs/FlowDocs.csproj','Docs/验证记录/文件作用索引验证-2026-11-06.md'}
+extra={'Tools/generate_file_catalog.py','Tools/file_catalog_roles.json','Docs/开发设计/项目文件作用索引.md','Docs/运行流程图/file-catalog.js','Tools/FlowDocs/FlowDocs.csproj','Docs/验证记录/构建与工具汇编.md'}
 files=(tracked|extra|set(roles['files']))
 files={p for p in files if (root/p).is_file() or p=='Docs/开发设计/项目文件作用索引.md'}
 # ★ 修复（防Bug回归）：精简后排除已删除meta，同时纳入待提交的新文件，避免目录统计滞后于实际源码。
 meta=sum(p.endswith('.meta') and (root/p).is_file() for p in tracked)
-files={p for p in files if not p.endswith('.meta') and not p.startswith('Docs/运行流程图/脚本/') and not p.startswith('Tools/FlowDocs/obj/')}
+files={p for p in files if not p.endswith('.meta') and not p.startswith(('Docs/运行流程图/脚本/','Docs/运行流程图/模块/')) and not p.startswith('Tools/FlowDocs/obj/')}
 # ★ 修复（防Bug回归）：玩家配置备份是本机可变数据，不纳入维护源码索引，也不能为生成文档删除玩家备份。
 files={p for p in files if not p.endswith(('.bak','.tmp'))}
-modules={'GameRoot':'启动与实体装配','Core':'公共基础服务','Genetics':'基因数据、表达与演化','Entities':'实体、生命与生态','AI':'AI决策模块','Environment':'环境参数与采样','Planet':'星球生成与视觉','UI':'界面、操控、世界与联机','Editor':'编辑器工具与回归','Tutorial':'Unity模板说明'}
+# Local agent settings are not gameplay assets or public project documentation.
+files={p for p in files if not p.startswith('.codex/')}
+
+modules={'GameRoot':'启动与实体装配','Core':'公共基础服务','Genetics':'基因数据、表达与演化','Entities':'实体、生命与生态','AI':'AI决策模块','Environment':'环境参数与采样','Planet':'星球生成与视觉','UI':'客户端界面、操控与表现适配','Editor':'编辑器工具与回归','Tutorial':'Unity模板说明'}
+
+# ✅ 新增：服务端已独立成模块，索引也必须展示其全部脚本和运维入口。
+modules.update({'ServerCore':'纯网络与版本核心','ServerUnity':'Unity 权威服务端','Gameplay':'世界、存档、玩法服务与网络会话'})
 
 def link(p,label=None):return f'[{label or p}](../../{p})'
 def text(value):return str(value).replace('|','／').replace('\n',' ')
@@ -69,7 +75,7 @@ lines=['# 项目文件作用索引','','这份索引按“改什么 → 找哪�
 '|行动/基础饱食消耗|`config/gameplay.json` → `GameplayTuning.cs` → `EntityVitals.cs`。|',
 '|默认实体基因|`Assets/Resources/Entities/entity_default.json`、`EntityFactory.cs`、`EntityGeneController.cs`。|',
 '|基因定义与进化关系|`Assets/Resources/Genes/`、`Genetics/default_tree.json`、`GeneTreeStorage.cs`、`GeneLogicRegistry.cs`。|',
-'|普通/孤雌繁殖|`ReproductionGeneLogic.cs`、`ParthenogenesisEvolutionUpgrade.cs`、`ecology_balance.json`及`parthenogenesis.json`。|',
+'|普通/孤雌繁殖|`ReproductionGeneLogic.cs`、`ReproductionEvolutionUpgrades.cs`、`ecology_balance.json`及`parthenogenesis.json`。|',
 '|王后、工匠和补给|`AntColonyMember.cs`、`AntColonyWorker.cs`、`AntColonyReproduction.cs`、`ColonyFeeding.cs`及`ant_colony.json`。|',
 '|攻击、尸体与营养守恒|`EntityCombat.cs`、`EntityDeathSettlement.cs`、`NutritionTransfer.cs`、`ColonyResource.cs`。|',
 '|营养寄生/卵寄生|`NutritionParasite.cs`、`EggHostPregnancy.cs`及`HeterotrophyGeneLogic.cs`；旧兼容入口不要与新逻辑混淆。|',
@@ -86,8 +92,9 @@ for module,title in modules.items():
  if not entries:continue
  lines+=['',f'### {module}：{title}（{len(entries)}个）','','|文件|作用|流程/源码|','|---|---|---|']
  for s in entries:
-  p=s['path'];lines.append(f"|{link(p)}|{text(roles['scripts'][p])}|[查看](../运行流程图/脚本/{s['id']}.md)|")
+  p=s['path'];lines.append(f"|{link(p)}|{text(roles['scripts'][p])}|[查看](../运行流程图/模块/{s['module']}.md#s{s['id']})|")
 sections=[('内置与外部配置',lambda p:p.startswith(('Assets/Resources/','config/')) and Path(p).suffix=='.json'),('场景、预制体和程序集定义',lambda p:Path(p).suffix in ('.unity','.prefab','.asmdef')),('Shader与HLSL',lambda p:Path(p).suffix in ('.shader','.hlsl')),('材质、渲染与媒体资源',lambda p:p.startswith('Assets/') and Path(p).suffix not in ('.cs','.json','.unity','.prefab','.asmdef','.shader','.hlsl') and not p.startswith('Assets/Resources/UI/')),('UI贴图与图标',lambda p:p.startswith('Assets/Resources/UI/') and Path(p).suffix!='.json'),('工程、依赖与仓库入口',lambda p:p.startswith(('Packages/','ProjectSettings/')) or '/' not in p),('历史验证产物',lambda p:p.startswith('Artifacts/')),('维护工具',lambda p:p.startswith('Tools/')),('文档与流程图阅读器',lambda p:p.startswith('Docs/'))]
+sections.insert(0, ('服务端运维入口', lambda p:p.startswith('Server/')))
 represented=set(cs)
 for title,predicate in sections:
  selected=[p for p in sorted(files) if p not in represented and predicate(p)]
@@ -102,7 +109,7 @@ f'- **`.meta`**：当前版本控制中有{meta}个。它们保存Unity资源GUI
 '- **同类文件不一定是当前主实现**：例如Planet/Legacy内OreGenerator/OreNode只为旧恢复场景保留GUID兼容，正式场景当前主矿脉看PlanetOreSystem；旧ParasiticGeneLogic/ParasiteBehavior不要当作新的NutritionParasite。Shader实际选用由材质和天气组件决定。',
 '- **一个文件可能有多个类**：HeterotrophyGeneLogic.cs还包含食腐/卵寄生实现，GeneLogicRegistry.cs也定义IGeneLogic接口；logicScriptId不保证与文件名相同。',
 '- **界面与逻辑分开**：按钮界面负责编辑/提交请求，具体生成、繁殖、伤害与权限检查应追到Entities和LanSession等实际执行入口。',
-'- **流程图分图**：`Docs/运行流程图/脚本/*.md`每个对应一个源码文件，统一作用是保存该文件的方法图与调用链接，已由上面的“查看”列逐个关联。',
+'- **流程图分图**：`Docs/运行流程图/模块/*.md`按模块合并，脚本和方法使用独立锚点，统一作用是保存该文件的方法图与调用链接，已由上面的“查看”列逐个关联。',
 '- **更新方式**：新增或改动文件职责时修改 `Tools/file_catalog_roles.json`，再运行 `python Tools/generate_file_catalog.py`。流程图的一键更新也会同步刷新文件索引。','']
 target=root/'Docs/开发设计/项目文件作用索引.md';target.write_text('\n'.join(lines).rstrip()+'\n',encoding='utf-8')
 explanations={**roles['files'],**roles['scripts']};(root/'Docs/运行流程图/file-catalog.js').write_text('window.FLOW_FILE_ROLES='+json.dumps(explanations,ensure_ascii=False,separators=(',',':'))+';\n',encoding='utf-8')

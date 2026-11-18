@@ -1,7 +1,7 @@
 {
   "id": "gene_territory",
   "displayName": "领地基因",
-  "category": "Locomotion",
+  "category": "Social",
   "parentGeneId": "gene_locomotion",
   "baseGeneId": "gene_locomotion",
   "isBaseGene": false,
@@ -54,5 +54,12 @@
       "factor": 0
     }
   ],
-  "suppressionRules": []
+  "suppressionRules": [],
+  "schemaVersion": 2,
+  "requiresGenes": [
+    "gene_nervous_system",
+    "gene_locomotion"
+  ],
+  "partBindings": [],
+  "partModifiers": []
 }

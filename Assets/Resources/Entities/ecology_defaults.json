@@ -1,6 +1,6 @@
 {
   "_说明": "新世界启用70%实际生产者、30%实际移动者；种源仅新世界一次建立，此后自然繁殖；可选比例调节只抑制超额新孕育。外部文件支持中文注释；应用后随世界存档保存。",
-  "version": 1,
+  "version": 2,
   "enableNewWorldRules": true,
   "minimumPopulation": 10,
   "producerRatio": 0.7,
@@ -48,6 +48,11 @@
           "id": "gene_nutrition",
           "value": 50,
           "tier": 0
+        },
+        {
+          "id": "gene_photosynthesis",
+          "value": 50,
+          "tier": 1
         }
       ]
     },
@@ -94,6 +99,26 @@
           "id": "gene_nutrient_utilization",
           "value": 50,
           "tier": 1
+        },
+        {
+          "id": "gene_nervous_system",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_observation",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_feeding_preference",
+          "value": 50,
+          "tier": 1
+        },
+        {
+          "id": "gene_nutrition",
+          "value": 80,
+          "tier": 0
         }
       ]
     },
@@ -140,6 +165,31 @@
           "id": "gene_nutrient_utilization",
           "value": 50,
           "tier": 1
+        },
+        {
+          "id": "gene_nervous_system",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_observation",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_feeding_preference",
+          "value": 50,
+          "tier": 1
+        },
+        {
+          "id": "gene_heterotrophy",
+          "value": 50,
+          "tier": 1
+        },
+        {
+          "id": "gene_nutrition",
+          "value": 80,
+          "tier": 0
         }
       ]
     },
@@ -186,6 +236,31 @@
           "id": "gene_nutrient_utilization",
           "value": 50,
           "tier": 1
+        },
+        {
+          "id": "gene_nervous_system",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_observation",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_feeding_preference",
+          "value": 50,
+          "tier": 1
+        },
+        {
+          "id": "gene_heterotrophy",
+          "value": 50,
+          "tier": 1
+        },
+        {
+          "id": "gene_nutrition",
+          "value": 80,
+          "tier": 0
         }
       ]
     },
@@ -220,13 +295,110 @@
         },
         {
           "id": "gene_nutrition",
-          "value": 50,
+          "value": 80,
           "tier": 0
         },
         {
           "id": "gene_locomotion",
           "value": 75,
           "tier": 0
+        },
+        {
+          "id": "gene_nervous_system",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_observation",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_feeding_preference",
+          "value": 50,
+          "tier": 1
+        },
+        {
+          "id": "gene_heterotrophy",
+          "value": 50,
+          "tier": 1
+        }
+      ]
+    },
+    {
+      "id": "aquatic_swimmer",
+      "name": "海洋游泳生物 · 鳃呼吸",
+      "genes": [
+        {
+          "id": "gene_growth",
+          "value": 20,
+          "tier": 0
+        },
+        {
+          "id": "gene_reproduction",
+          "value": 45,
+          "tier": 0
+        },
+        {
+          "id": "gene_environment",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_storage",
+          "value": 70,
+          "tier": 0
+        },
+        {
+          "id": "gene_repair",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_locomotion",
+          "value": 75,
+          "tier": 0,
+          "stateId": "swimming"
+        },
+        {
+          "id": "gene_heterotrophy",
+          "value": 75,
+          "tier": 1
+        },
+        {
+          "id": "gene_nutrient_utilization",
+          "value": 50,
+          "tier": 1
+        },
+        {
+          "id": "gene_nervous_system",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_observation",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_feeding_preference",
+          "value": 50,
+          "tier": 1
+        },
+        {
+          "id": "gene_nutrition",
+          "value": 80,
+          "tier": 0
+        },
+        {
+          "id": "gene_swimming",
+          "value": 75,
+          "tier": 1
+        },
+        {
+          "id": "gene_aquatic_respiration",
+          "value": 50,
+          "tier": 1
         }
       ]
     }

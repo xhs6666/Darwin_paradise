@@ -13,12 +13,15 @@ namespace DarwinPark.Entities.Ecology
         {
             target=null;point=genes.transform.position;multiplier=1;
             // ★ 适配：补给插队先维持生命，原反击/运输命令仍保留，完成后恢复。
-            if(ActiveSimulationBatch.Read<AntColonyMember>(genes) is AntColonyMember supplyMember&&supplyMember.Active&&supplyMember.TrySupplyDestination(out point))return true;
+            var supplyMember=ActiveSimulationBatch.Read<AntColonyMember>(genes);
+            if(supplyMember!=null&&supplyMember.Active&&supplyMember.TrySupplyDestination(out point))return true;
             // ★ 适配：反击使用真实目标，固定分工随后接管意图，不落回普通随机漫游。
             if(CombatIntent.Destination(genes,out point,out target))return true;
             // ★ 适配：RTS接入同一行动器，指令不能绕过基因速度、伤害与搬运规则。
             var rts=ActiveSimulationBatch.Read<RtsOrderController>(genes);if(rts!=null&&rts.Destination(out point,out target))return true;
-            var ant=ActiveSimulationBatch.Read<AntColonyMember>(genes);if(ant!=null&&ant.Destination(out point,out target,out multiplier))return true;
+            var population=ActiveSimulationBatch.Read<PopulationBehavior>(genes);
+            if(population?.ManualRemaining>0&&population.Destination(out point,out target))return true;
+            if(supplyMember!=null&&supplyMember.Destination(out point,out target,out multiplier,false))return true;
             // ★ 适配：普通实体获得独立营养利用基因后也能实际走向能量块，不只等待食物贴到身体旁。
             var energy=ActiveSimulationBatch.Read<EnergyBlockMetabolism>(genes);if(energy!=null&&energy.Destination(out point))return true;
             // ★ 适配：食性选择食物目标，行动基因仍是唯一移动写入者；无行动能力时只能在接触范围吸收。
@@ -26,13 +29,12 @@ namespace DarwinPark.Entities.Ecology
             if(ActiveSimulationBatch.Read<CorpseFeeding>(genes)?.Destination(out point)==true)return true;
             var territory=ActiveSimulationBatch.Read<TerritoryBehavior>(genes);
             if(territory!=null&&territory.Active&&territory.EvictionRemaining>0)return territory.Destination(out point,out multiplier);
-            var population=ActiveSimulationBatch.Read<PopulationBehavior>(genes);
             if(population!=null&&population.Destination(out point,out target))return true;
             if(territory!=null&&territory.Destination(out point,out multiplier))return true;
             // ★ 修复（防Bug回归）：休息及状态回退不能落回行动基因的自动捕食；反击已在前面由真实受击意图处理。
             if(PatrolRhythm.Defensive(genes))
             {
-                if(ActiveSimulationBatch.Read<EntityStateController>(genes)?.Current.Behavior==EntityStateBehavior.TerritoryPatrol)territory.PatrolDestination(out point);
+                if(ActiveSimulationBatch.Read<EntityStateController>(genes)?.Current.Behavior==EntityStateBehavior.TerritoryPatrol&&territory!=null)territory.PatrolDestination(out point);
                 return true;
             }
             if(PatrolRhythm.Resting(genes)){point=genes.transform.position;return true;}

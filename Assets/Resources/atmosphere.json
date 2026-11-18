@@ -1,0 +1,14 @@
+{
+  // 大气配色（全局显示设置），保存后约2秒生效；格式为 #RRGGBB。
+  "version": 1,
+  // 白天天空；晨昏和夜晚随太阳高度连续过渡。
+  "dayColor": "#3385FF",
+  // 日出、日落的地平线颜色。
+  "twilightColor": "#FF7138",
+  // 夜空散射颜色，建议保持较暗。
+  "nightColor": "#02040B",
+  // 观察视角昼夜开关、夜间保底亮度(0~1)、晨昏半宽(0.01~0.5)。
+  "enableDayNight": true,
+  "nightSurfaceBrightness": 0.009,
+  "terminatorWidth": 0.065
+}

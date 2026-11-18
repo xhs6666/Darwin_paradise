@@ -1021,8 +1021,8 @@ MonoBehaviour:
   attackMouseButton: 0
   lookSensitivity: 3
   zoomSensitivity: 4
-  minPitch: 5
-  maxPitch: 70
+  minPitch: -80
+  maxPitch: 80
   crosshairSize: 18
   crosshairThickness: 2
 --- !u!114 &987650101

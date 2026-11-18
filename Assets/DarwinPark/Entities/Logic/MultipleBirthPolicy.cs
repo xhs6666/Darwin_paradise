@@ -17,7 +17,15 @@ namespace DarwinPark.Entities.Logic
             int maximum=Mathf.FloorToInt(GameplayTuning.Current.multipleBirthMaximum);
             return Mathf.Clamp(2+Mathf.FloorToInt(Mathf.Clamp01(gene.EffectiveStrength/100f)*Mathf.Max(0,maximum-2)),1,maximum);
         }
-        public static MultipleBirthState Begin(EntityGeneController genes)=>new MultipleBirthState{planned=Count(genes),remaining=Count(genes)};
+        // ★ 修复（防Bug回归）：觅食目标与孕育扣款共用所需储粮，避免多胎按单胎提前停止储粮。
+        public static float RequiredReserve(EntityGeneController genes, float nutrientCost, float size)
+            => nutrientCost * size * Count(genes);
+
+        public static MultipleBirthState Begin(EntityGeneController genes)
+        {
+            int count = Count(genes);
+            return new MultipleBirthState { planned = count, remaining = count };
+        }
         public static MultipleBirthState Copy(MultipleBirthState value)=>value==null||value.planned==0&&value.remaining==0?null:new MultipleBirthState{planned=value.planned,remaining=value.remaining};
         public static void Validate(MultipleBirthState value)
         {

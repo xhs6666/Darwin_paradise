@@ -16,7 +16,7 @@ namespace DarwinPark.UI
         public void Load(string raw)
         {
             // ★ 适配：表单与运行库沿用同一旧字段迁移，避免编辑旧 mods 时吞掉新标签。
-            _definition=JsonUtility.FromJson<GeneDefinitionJson>(EcologyGeneDefaults.Upgrade(GeneEntityStateTags.Upgrade(raw)));_name=_definition.displayName;
+            _definition=JsonUtility.FromJson<GeneDefinitionJson>(raw);_name=_definition.displayName;
             _min.Clear();_max.Clear();_centers.Clear();
             foreach(var curve in _definition.attributeCurves){_min.Add(curve.minValue.ToString(CultureInfo.InvariantCulture));_max.Add(curve.maxValue.ToString(CultureInfo.InvariantCulture));}
             foreach(var state in _definition.states)_centers.Add(state.center.ToString(CultureInfo.InvariantCulture));

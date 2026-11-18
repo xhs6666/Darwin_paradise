@@ -13,10 +13,7 @@ namespace DarwinPark.Entities.Ecology
         public static bool BlocksOrdinary(EntityGeneController genes)=>AntColonyMember.IsManaged(genes);
         private static Genome Copy(Genome genome)
         {
-            var result=new Genome();
-            foreach(var gene in genome.Genes)
-            {var copy=GeneInstance.Create(gene.DefinitionId,gene.Value,gene.Tier);copy.Enabled=gene.Enabled;copy.CopyStrength=gene.CopyStrength;copy.MissingStateIds=new System.Collections.Generic.List<string>(gene.MissingStateIds);copy.OriginInstanceId=gene.InstanceId;result.Add(copy);}
-            return result;
+            var result=Genome.Copy(genome);for(int i=0;i<result.Genes.Count;i++)result.Genes[i].OriginInstanceId=genome.Genes[i].InstanceId;return result;
         }
         private static DarwinEntity Spawn(Genome genome,Vector3 point)
         {

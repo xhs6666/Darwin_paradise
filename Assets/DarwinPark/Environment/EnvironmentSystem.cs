@@ -62,10 +62,12 @@ namespace DarwinPark.Environment
         {
             float time = ServiceLocator.TryGet<SimulationClock>(out var clock) ? clock.GameTime : 0f;
 
+            ClimateDataHub.NorthernSummer = 0;
             if (enableClimateCycle)
             {
                 float cycleRad = (time / 3600f) * Mathf.PI * 2f; // 改为 3600 秒为一年
-                float seasonalTemp = Mathf.Sin(cycleRad) * TempSwing;
+                ClimateDataHub.NorthernSummer = Mathf.Sin(cycleRad);
+                float seasonalTemp = ClimateDataHub.NorthernSummer * TempSwing;
                 float seasonalHum = Mathf.Cos(cycleRad) * HumSwing;
 
                 CurrentTemperature = BaseTemperature + seasonalTemp;

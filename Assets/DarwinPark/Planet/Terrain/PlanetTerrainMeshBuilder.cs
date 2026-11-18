@@ -106,11 +106,25 @@ namespace DarwinPark.Planet
         /// <summary>★ 适配：判断世界坐标是否位于海平面以下。</summary>
         public bool IsSubmerged(Vector3 worldPosition, float depthMargin = 0f)
         {
-            return (worldPosition - transform.position).magnitude < LocalWaterRadius(worldPosition) - Mathf.Max(0f, depthMargin);
+            // ✦ 修复（Bug回归）：水位与坐标均在局部空间比较，兼容星球缩放。
+            if (Data == null) return false;
+            // ★ 修复（防Bug回归）：只判断水位，无需重新定位地面三角形或导航区。
+            var local = transform.InverseTransformPoint(worldPosition);
+            float radius = local.magnitude;
+            var direction = local.sqrMagnitude > 1e-12f ? local / radius : Vector3.up;
+            float water = Data.Navigation?.WaterRadius(direction) ?? PlanetCoordinate.WaterSurfaceRadius(Data,direction);
+            if (depthMargin <= 0) return water > radius;
+            return (water - radius) * transform.TransformVector(direction).magnitude > depthMargin;
         }
 
         // ★ 适配：海洋、湖泊和河流共用真实局部水面，避免看得见河水却按无水陆地寻路。
-        public float LocalWaterRadius(Vector3 position)=>Data?.Hydrology==null?WaterRadius:radius+Data.Hydrology.Water(PlanetTerrainSampler.WorldToLocalDirection(transform,position))*heightScale;
+        public float LocalWaterRadius(Vector3 position)
+        {
+            // ✦ 修复（Bug回归）：使用当前地形数据与变换后的真实水面距离。
+            if (Data == null) return WaterRadius;
+            var direction = transform.InverseTransformPoint(position).normalized;
+            return transform.TransformVector(direction * PlanetCoordinate.WaterSurfaceRadius(Data, direction)).magnitude;
+        }
 
         // ★ 适配：纯参数快照供后台计算；网格上传留在主线程。
         public PlanetTerrainConfig CaptureConfiguration()
@@ -190,6 +204,7 @@ namespace DarwinPark.Planet
             _mesh.Clear();
             _mesh.vertices = Data.Vertices;
             _mesh.triangles = Data.Triangles;
+            if(Data.LakeBedColors!=null)_mesh.colors32=Data.LakeBedColors;
             _mesh.RecalculateNormals();
             // ★ 修复：Cube-Sphere 的 6 个面使用重复顶点，RecalculateNormals 会在接缝
             // 产生两套不同法线，气候/高程图层叠加阴影后会出现直线断层。这里按位置合并法线。
@@ -209,6 +224,7 @@ namespace DarwinPark.Planet
             block.SetFloat("_HeightScale", heightScale);
             // ★ 核心修复：用动态算出来的海平面阈值，而不是输入的参数！
             block.SetFloat("_SeaLevel", Data.SeaLevel);
+            block.SetFloat("_LakeBedReady",Data.LakeBedColors!=null?1:0);
             // ★ 适配：Shader 的雪线/陆地归一化不再写死 0.9，统一从地形数据读取上限。
             block.SetFloat("_MaxHeight", PlanetTerrainData.MaxNormalizedHeight);
             mr.SetPropertyBlock(block);

@@ -1,7 +1,9 @@
 {
   "id": "gene_observation",
-  "displayName": "观察基因",
-  "category": "Locomotion",
+  "displayName": "探测基因",
+  "schemaVersion": 2,
+  "category": "Perception",
+  "partBindings": [{"slotId":"eye_left","partId":"eye_basic"},{"slotId":"eye_right","partId":"eye_basic"}],
   "isBaseGene": true,
   "tier": 0,
   "logicScriptId": "ObservationGeneLogic",

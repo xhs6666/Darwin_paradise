@@ -9,13 +9,20 @@ using UnityEngine;
 
 namespace DarwinPark.Entities.Ecology
 {
-    [Serializable] public sealed class EcologyDefaultGene {public string id;public float value;public int tier;}
+    [Serializable] public sealed class EcologyDefaultGene {public string id,stateId;public float value;public int tier;}
     [Serializable] public sealed class EcologyDefaultTemplate
     {
         public string id,name;public EcologyDefaultGene[] genes;
         public RandomSpawnRecipe Recipe()
         {
-            var genome=new Genome();foreach(var gene in genes)genome.Add(GeneInstance.Create(gene.id,gene.value,gene.tier));
+            var genome = new Genome();
+            foreach (var gene in genes)
+            {
+                var instance = GeneInstance.Create(gene.id, gene.value, gene.tier);
+                // ★ 适配：模板独立指定演化方向，游泳能力仍由强度表达。
+                if (!string.IsNullOrEmpty(gene.stateId)) instance.StateId = gene.stateId;
+                genome.Add(instance);
+            }
             return new RandomSpawnRecipe{method=RandomSpawnMethod.Template,name=name,template=genome};
         }
     }
@@ -31,7 +38,7 @@ namespace DarwinPark.Entities.Ecology
     {
         public const string ProducerRuleId="bd05a85fb9a740ac80a06eed1017da70",MobileRuleId="a982a1bc88ad45a5b5072f61421dcc30";
         private static EcologyDefaultsSettings _current;private static string _json;
-        public static string ConfigurationPath=>Path.Combine(GamePaths.Root,"config","ecology_defaults.json");
+        public static string ConfigurationPath=>Path.Combine(GamePaths.Root,"config","ecology_defaults_v2.json");
         public static EcologyDefaultsSettings Current {get{if(_current==null)UseSnapshot(null);return _current;}}
         public static string CurrentJson {get{_=Current;return _json;}}
         public static string ReadConfiguredJson()
@@ -43,7 +50,7 @@ namespace DarwinPark.Entities.Ecology
         public static EcologyDefaultsSettings Parse(string json)
         {
             var value=JsonUtility.FromJson<EcologyDefaultsSettings>(CommentedJson.Strip(json));
-            if(value==null||value.version!=1||value.minimumPopulation<1||value.minimumPopulation>100000||value.minimumWorkers<0||value.minimumWorkers>16||value.localProducerTarget<0||value.localProducerTarget>128||value.maximumFoundingMembers<1||!Finite(value.producerRatio)||!Finite(value.mobileRatio)||value.producerRatio<=0||value.mobileRatio<=0||Mathf.Abs(value.producerRatio+value.mobileRatio-1)>.00001f||!Finite(value.foundingFood)||value.foundingFood<0||!Finite(value.plantSpacing)||value.plantSpacing<=0||value.templates==null||value.templates.Length==0)throw new InvalidDataException("生态默认比例、创业储粮或数量配置无效");
+            if(value==null||value.version!=2||value.minimumPopulation<1||value.minimumPopulation>100000||value.minimumWorkers<0||value.minimumWorkers>16||value.localProducerTarget<0||value.localProducerTarget>128||value.maximumFoundingMembers<1||!Finite(value.producerRatio)||!Finite(value.mobileRatio)||value.producerRatio<=0||value.mobileRatio<=0||Mathf.Abs(value.producerRatio+value.mobileRatio-1)>.00001f||!Finite(value.foundingFood)||value.foundingFood<0||!Finite(value.plantSpacing)||value.plantSpacing<=0||value.templates==null||value.templates.Length==0)throw new InvalidDataException("生态默认比例、创业储粮或数量配置无效");
             var ids=new HashSet<string>();foreach(var template in value.templates)
             {
                 if(template==null||string.IsNullOrWhiteSpace(template.id)||!ids.Add(template.id)||string.IsNullOrWhiteSpace(template.name)||template.genes==null||template.genes.Length==0||template.genes.Length>PopulationMaintenanceSettings.Current.maximumGenomeGenes)throw new InvalidDataException("生态默认模板缺失或重复");

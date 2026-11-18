@@ -26,6 +26,12 @@ namespace DarwinPark.Core
         public float dragSpeedMultiplier=.2f, shiftDragMultiplier=4f, dragThresholdPixels=6f;
         private bool _leftDragStarted;
         private Vector2 _leftDragOrigin;
+        [Header("Alt + 右键观察方向")]
+        public float lookDegreesPerPixel=0.22f, autoStraightenAltitude=150f, straightenSpeed=6f;
+        private bool _looking,_lookAdjusted;
+        private Vector2 _lookPointer;
+        private Quaternion _orbitRotation,_lookOffset=Quaternion.identity;
+        public bool HasLookOffset=>_lookAdjusted;
 
         private float x = 45f;
         private float y = 25f;
@@ -38,12 +44,61 @@ namespace DarwinPark.Core
         // ★ 适配：实体跟随组件接管镜头时，保留轨道状态但停止本组件写相机位置。
         public bool EntityViewActive { get; set; }
 
+        // ★ 新增：小地图直接改变轨道朝向并同步缓存，保留缩放距离，下一帧不会跳回拖动前的位置。
+        public bool SetOrbitDirection(Vector3 outward)
+        {
+            if(target==null||EntityViewActive||outward.sqrMagnitude<1e-8f||!float.IsFinite(outward.x)||!float.IsFinite(outward.y)||!float.IsFinite(outward.z))return false;
+            // ★ 修复（防Bug回归）：沿用当前镜头的上方向，不在极点强制重建世界向上造成翻转或死锁。
+            var forward=-outward.normalized;var up=Vector3.ProjectOnPlane(transform.up,forward);
+            if(up.sqrMagnitude<1e-8f)up=Vector3.ProjectOnPlane(transform.right,forward);
+            return SetOrbitRotation(Quaternion.LookRotation(forward,up));
+        }
+        public bool SetOrbitRotation(Quaternion rotation)
+        {
+            float norm=Quaternion.Dot(rotation,rotation);
+            if(target==null||EntityViewActive||!float.IsFinite(norm)||norm<1e-8f)return false;
+            ClearLook();transform.rotation=rotation.normalized;SyncAngles();
+            distance=targetDistance=Mathf.Max(Vector3.Distance(transform.position,target.position),minDistance);
+            _isFocusing=false;_leftDragStarted=false;UpdateCameraPos(true);KeepAboveSurface();return true;
+        }
+        // ★ 修复（防Bug回归）：以当前镜头局部轴连续旋转，不把俯仰夹在±85度；到达南北极后仍能继续或反向拖动。
+        public bool RotateOrbit(float yawDegrees,float pitchDegrees)
+        {
+            if(target==null||EntityViewActive||!float.IsFinite(yawDegrees)||!float.IsFinite(pitchDegrees))return false;
+            _isFocusing=false;
+            // ★ 新增：轨道拖动与原地观察分别保存，转动观察方向不会改变相机所在的地表位置。
+            if(_lookAdjusted){_orbitRotation=(_orbitRotation*Quaternion.Euler(pitchDegrees,yawDegrees,0)).normalized;transform.rotation=_orbitRotation*_lookOffset;}
+            else transform.rotation=(transform.rotation*Quaternion.Euler(pitchDegrees,yawDegrees,0)).normalized;
+            SyncAngles();UpdateCameraPos(true);KeepAboveSurface();return true;
+        }
+        private void SyncAngles(){x=transform.rotation.eulerAngles.y;y=Mathf.DeltaAngle(0,transform.rotation.eulerAngles.x);}
+
         // ★ 适配：读档同步轨道缓存，恢复位置后不会在下一帧跳回旧镜头。
         public void RestoreView(Vector3 position,Quaternion rotation,float savedDistance)
-        {transform.SetPositionAndRotation(position,rotation);distance=targetDistance=savedDistance;x=rotation.eulerAngles.y;y=Mathf.DeltaAngle(0,rotation.eulerAngles.x);_isFocusing=false;}
+        {
+            ClearLook();transform.SetPositionAndRotation(position,rotation);distance=targetDistance=savedDistance;x=rotation.eulerAngles.y;y=Mathf.DeltaAngle(0,rotation.eulerAngles.x);_isFocusing=false;
+            // ★ 修复（防Bug回归）：保存时可能处于原地观察，读档仍按实际径向位置恢复轨道，不能把偏转的视线当作轨道位置。
+            if(target!=null&&(position-target.position).sqrMagnitude>1e-8f)
+            {var forward=(target.position-position).normalized;var up=Vector3.ProjectOnPlane(rotation*Vector3.up,forward);if(up.sqrMagnitude<1e-8f)up=Vector3.ProjectOnPlane(rotation*Vector3.right,forward);_orbitRotation=Quaternion.LookRotation(forward,up);_lookOffset=Quaternion.Inverse(_orbitRotation)*rotation;_lookAdjusted=Quaternion.Angle(_lookOffset,Quaternion.identity)>.05f;}
+        }
+        private void ClearLook(){_looking=_lookAdjusted=false;_lookOffset=Quaternion.identity;}
+        public bool RotateLook(float yawDegrees,float pitchDegrees)
+        {
+            if(target==null||EntityViewActive||!float.IsFinite(yawDegrees)||!float.IsFinite(pitchDegrees))return false;
+            if(!_lookAdjusted){_orbitRotation=transform.rotation;_lookAdjusted=true;}
+            _isFocusing=false;_lookOffset=(_lookOffset*Quaternion.Euler(pitchDegrees,yawDegrees,0)).normalized;transform.rotation=_orbitRotation*_lookOffset;return true;
+        }
+        public void StraightenLook(float deltaTime)
+        {
+            if(!_lookAdjusted)return;
+            _lookOffset=Quaternion.Slerp(_lookOffset,Quaternion.identity,1-Mathf.Exp(-straightenSpeed*Mathf.Max(0,deltaTime)));
+            transform.rotation=_orbitRotation*_lookOffset;
+            if(Quaternion.Angle(_lookOffset,Quaternion.identity)<.1f){transform.rotation=_orbitRotation;ClearLook();}
+        }
         void Start()
         {
             if (target == null) target = GameObject.Find("Planet")?.transform;
+            if(targetDistance<=0)transform.rotation=Quaternion.Euler(y,x,0);
             targetDistance = distance;
             UpdateCameraPos(true);
 
@@ -58,12 +113,16 @@ namespace DarwinPark.Core
         void LateUpdate()
         {
             // ★ 适配：覆盖菜单拥有输入时不处理世界操作。
-            if (DarwinPark.Core.GameInputGate.Blocked) return;
-            if (EntityViewActive) return;
+            if (DarwinPark.Core.GameInputGate.Blocked||EntityViewActive){_looking=_leftDragStarted=false;return;}
             if (target == null) return;
 
             // ★ 修复：鼠标在 UI 上时不再旋转/缩放，右键收藏条目不会带动星球。
             bool pointerOverUI = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+            // ★ 新增：仅世界内按下的 Alt+右键启动原地观察；松键、失焦或覆盖面板立即释放。
+            bool alt=Input.GetKey(KeyCode.LeftAlt)||Input.GetKey(KeyCode.RightAlt);
+            if(Input.GetMouseButtonDown(1)&&alt&&!pointerOverUI&&!IsDraggingUI){_looking=true;_lookPointer=Input.mousePosition;_leftDragStarted=false;}
+            if(!alt||!Input.GetMouseButton(1)||IsDraggingUI)_looking=false;
+            if(_looking&&!pointerOverUI){Vector2 pointer=Input.mousePosition;Vector2 delta=pointer-_lookPointer;_lookPointer=pointer;RotateLook(delta.x*lookDegreesPerPixel,-delta.y*lookDegreesPerPixel);}
 
             // ★ 修复（防Bug回归）：仅从世界开始的左键拖动旋转；点击和 UI 拖动不抢占相机。
             // ★ 适配：RTS左键属于框选，改用中键旋转，避免选框同时拖动相机。
@@ -71,7 +130,7 @@ namespace DarwinPark.Core
             if(Input.GetMouseButtonDown(dragButton))
             {_leftDragStarted=!IsDraggingUI && !pointerOverUI;_leftDragOrigin=Input.mousePosition;}
             if(Input.GetMouseButtonUp(dragButton) || IsDraggingUI) _leftDragStarted=false;
-            if (_leftDragStarted && !pointerOverUI && Input.GetMouseButton(dragButton) &&
+            if (!_looking && _leftDragStarted && !pointerOverUI && Input.GetMouseButton(dragButton) &&
                 Vector2.Distance(_leftDragOrigin,(Vector2)Input.mousePosition)>dragThresholdPixels)
             {
                 _isFocusing = false; // 打断聚焦动画
@@ -82,9 +141,8 @@ namespace DarwinPark.Core
                 float sensitivity = Mathf.Lerp(0.05f, 1.0f, distRatio);
 
                 float multiplier=dragSpeedMultiplier*((Input.GetKey(KeyCode.LeftShift)||Input.GetKey(KeyCode.RightShift))?shiftDragMultiplier:1);
-                x += Input.GetAxis("Mouse X") * baseRotateSpeed * sensitivity * 0.02f * multiplier;
-                y -= Input.GetAxis("Mouse Y") * baseRotateSpeed * sensitivity * 0.02f * multiplier;
-                y = Mathf.Clamp(y, -85f, 85f);
+                RotateOrbit(Input.GetAxis("Mouse X")*baseRotateSpeed*sensitivity*.02f*multiplier,
+                    -Input.GetAxis("Mouse Y")*baseRotateSpeed*sensitivity*.02f*multiplier);
             }
 
             // ★ 修复（防Bug回归）：投放/拖拽期间同样屏蔽缩放，避免瞄准地表时相机被滚轮带走。
@@ -117,6 +175,7 @@ namespace DarwinPark.Core
             else
             {
                 distance = Mathf.Lerp(distance, targetDistance, Time.deltaTime * 8f);
+                if(!_looking&&distance>=Mathf.Max(minDistance,minimumSurfaceRadius)+autoStraightenAltitude)StraightenLook(Time.unscaledDeltaTime);
                 UpdateCameraPos(false);
             }
             // ★ 修复（防Bug回归）：允许贴近地面观察，但按实际地形射线避免钻进山峰。
@@ -140,7 +199,10 @@ namespace DarwinPark.Core
                 if(collider.Raycast(new Ray(outside,-direction),out var hit,outsideRadius))
                     safe=Mathf.Max(safe,Vector3.Distance(hit.point,target.position)+surfaceClearance);
             }
-            distance=Mathf.Max(Vector3.Distance(transform.position,target.position),safe);
+            // ★ 修复（防Bug回归）：轨道写回的长度有浮点舍入，不能每次旋转都累加到距离缓存；明显的外部位移仍按实际位置恢复。
+            float actual=Vector3.Distance(transform.position,target.position);
+            if(Mathf.Abs(actual-distance)>Mathf.Max(1,distance)*1e-6f)distance=actual;
+            distance=Mathf.Max(distance,safe);
             targetDistance=Mathf.Max(targetDistance,safe);
             transform.position=target.position+direction*distance;
         }
@@ -148,10 +210,11 @@ namespace DarwinPark.Core
         private void UpdateCameraPos(bool immediate)
         {
             if (target == null) return;
-            Quaternion rotation = Quaternion.Euler(y, x, 0);
+            // ★ 修复（防Bug回归）：真实四元数姿态是轨道状态，不能每帧从欧拉角重建并丢失过极点后的方向。
+            Quaternion rotation = _lookAdjusted?_orbitRotation:transform.rotation;
             Vector3 position = rotation * new Vector3(0.0f, 0.0f, -distance) + target.position;
 
-            transform.rotation = rotation;
+            transform.rotation = _lookAdjusted?rotation*_lookOffset:rotation;
             transform.position = position;
         }
 
@@ -171,6 +234,7 @@ namespace DarwinPark.Core
         // 平滑聚焦到目标实体
         public void FocusOn(Vector3 targetWorldPos)
         {
+            ClearLook();
             if (target == null) target = GameObject.Find("Planet")?.transform;
             if (target == null) return;
 
@@ -195,5 +259,6 @@ namespace DarwinPark.Core
 
             _isFocusing = true;
         }
+        private void OnApplicationFocus(bool focused){if(!focused)_looking=_leftDragStarted=false;}
     }
 }

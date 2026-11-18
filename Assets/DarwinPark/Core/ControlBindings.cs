@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace DarwinPark.Core
 {
-    public enum ControlAction { Forward, Back, Left, Right, Jump, Attack, ReleaseCursor, ExitView, ReleaseEnergy, Pause, WorldPause, Rts, CycleLayer, ClearLayer }
+    public enum ControlAction { Forward, Back, Left, Right, Jump, Attack, ReleaseCursor, ExitView, ReleaseEnergy, Pause, WorldPause, Rts, CycleLayer, ClearLayer, ToggleBottomBar }
     // ★ 新增：所有可改键输入共用同一份绑定；只保存本机偏好，联机指令仍由房主验证权限。
     public static class ControlBindings
     {
@@ -12,7 +12,7 @@ namespace DarwinPark.Core
         [Serializable] public sealed class Data { public Entry[] bindings; }
         private const string Preference="DarwinPark.Controls.v1";
         private static Dictionary<ControlAction,KeyCode> _keys;
-        public static readonly string[] Labels={"前进","后退","向左","向右","跳跃","攻击","按住释放鼠标","退出实体操控","吐出能量块","暂停 / 继续","星球视角暂停","切换 RTS","切换图层","取消图层显示"};
+        public static readonly string[] Labels={"前进","后退","向左","向右","跳跃","攻击","按住释放鼠标","退出实体操控","吐出能量块","暂停 / 继续","星球视角暂停","切换 RTS","切换图层","取消图层显示","显示 / 隐藏底部控制栏"};
         private static Dictionary<ControlAction,KeyCode> Defaults()
         {
             var asset=Resources.Load<TextAsset>("control_bindings");
@@ -31,16 +31,35 @@ namespace DarwinPark.Core
             {
                 var saved=JsonUtility.FromJson<Data>(PlayerPrefs.GetString(Preference));
                 var proposed=new Dictionary<ControlAction,KeyCode>(_keys);
+                bool includesBottomBar=false;
                 foreach(var entry in saved.bindings)
                 {
                     if(!Enum.TryParse(entry.action,out ControlAction action)||!Enum.IsDefined(typeof(ControlAction),action)||!Enum.TryParse(entry.key,out KeyCode key)||!Valid(key))throw new FormatException("无效按键");
                     proposed[action]=key;
+                    includesBottomBar|=action==ControlAction.ToggleBottomBar;
+                }
+                if(!includesBottomBar)
+                {
+                    if(proposed[ControlAction.ClearLayer]==KeyCode.BackQuote)
+                        proposed[ControlAction.ClearLayer]=Unused(proposed,ControlAction.ClearLayer,KeyCode.Backspace,KeyCode.Delete,KeyCode.F9);
+                    proposed[ControlAction.ToggleBottomBar]=Unused(proposed,ControlAction.ToggleBottomBar,KeyCode.BackQuote,KeyCode.F10,KeyCode.F11);
                 }
                 foreach(var a in proposed)foreach(var b in proposed)
                     if(a.Key!=b.Key&&SameKey(a.Value,b.Value)&&Overlaps(a.Key,b.Key))throw new FormatException("按键冲突");
                 _keys=proposed;
             }
             catch(Exception ex){Debug.LogWarning("[按键] 保存的绑定无效，使用默认值："+ex.Message);}
+        }
+        private static KeyCode Unused(Dictionary<ControlAction,KeyCode> bindings,ControlAction action,params KeyCode[] choices)
+        {
+            foreach(var candidate in choices)
+            {
+                bool inUse=false;
+                foreach(var pair in bindings)
+                    if(pair.Key!=action&&SameKey(pair.Value,candidate)&&Overlaps(pair.Key,action)){inUse=true;break;}
+                if(!inUse)return candidate;
+            }
+            throw new FormatException("无法分配可用的默认按键");
         }
         public static KeyCode Get(ControlAction action){Ensure();return _keys[action];}
         public static bool Held(ControlAction action)

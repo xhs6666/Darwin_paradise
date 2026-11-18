@@ -1,0 +1,1 @@
+cameras=1 lights=1 renderers=7; no entity scans; no new per-frame jobs

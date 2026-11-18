@@ -12,6 +12,7 @@ namespace DarwinPark.Genetics
     [Serializable] public class GeneTreeDocument
     {
         public int version=1;
+        public int contentEpoch=2;
         // ★ 适配：记录营养分支迁移，既补齐旧树，也保留迁移后用户主动编辑的连线。
         public int nutritionVersion;
         // ★ 适配：孤雌生殖分支增量迁移一次，之后尊重用户自己的树编辑。
@@ -24,7 +25,8 @@ namespace DarwinPark.Genetics
     }
     public static class GeneTreeStorage
     {
-        public static string Folder => Path.Combine(DarwinPark.Core.GamePaths.Mods,"Default");
+        // ★ 新增：新内容使用独立模组目录，旧文件原样保留但不加载、不自动改写。
+        public static string Folder => Path.Combine(DarwinPark.Core.GamePaths.Mods,"BodyPartsV2");
         public static string GenesFolder => Path.Combine(Folder,"Genes");
         public static GeneTreeDocument Active {get;private set;} = new GeneTreeDocument();
         public static Dictionary<string,string> ReadCatalog(string directory=null)
@@ -43,8 +45,8 @@ namespace DarwinPark.Genetics
         private static void Add(Dictionary<string,string> map,string text,string name)
         {
             // ★ 适配：旧 mods 补状态标签及已知默认生态矩阵；显式空标签、自定义抑制和属性曲线仍保留。
-            text=EcologyGeneDefaults.Upgrade(GeneEntityStateTags.Upgrade(text));
             var def=JsonUtility.FromJson<GeneDefinitionJson>(text);
+            MorphologyRegistry.ValidateGene(def);
             if(def==null || def.id!=name || !System.Text.RegularExpressions.Regex.IsMatch(def.id??"","^[A-Za-z0-9_-]+$"))
                 throw new InvalidDataException("文件名与基因 id 必须一致："+name);
             if(!Enum.TryParse<GeneCategory>(def.category,true,out _)) throw new InvalidDataException("无效 category："+name);
@@ -65,17 +67,21 @@ namespace DarwinPark.Genetics
                 if(builtin==null){Debug.LogWarning("[GeneTree] 缺少 Genetics/default_tree");return new GeneTreeDocument();}
                 return JsonUtility.FromJson<GeneTreeDocument>(builtin.text);
             }
-            return JsonUtility.FromJson<GeneTreeDocument>(File.ReadAllText(file)) ?? throw new InvalidDataException("基因树为空");
+            string raw=File.ReadAllText(file);if(!raw.Contains("\"contentEpoch\""))throw new InvalidDataException("不支持旧版本基因树，原文件保留");return JsonUtility.FromJson<GeneTreeDocument>(raw) ?? throw new InvalidDataException("基因树为空");
         }
         public static void Validate(GeneTreeDocument doc,Dictionary<string,string> catalog)
         {
             // ★ 适配：已知旧默认关系先迁移再校验，避免新出错限制让已保存世界无法打开。
-            NutrientUtilizationEvolutionUpgrade.Apply(doc,catalog);
-            // ★ 适配：营养分支和卵寄生先迁移，再验证旧世界的定义与连线。
-            NutritionEvolutionUpgrade.Apply(doc,catalog);
-            ParthenogenesisEvolutionUpgrade.Apply(doc,catalog);MultipleBirthEvolutionUpgrade.Apply(doc,catalog);
-            ObservationGeneUpgrade.Apply(doc,catalog);
+            // ★ 新增：按用户要求直接拒绝旧内容，不执行旧树或旧定义迁移。
+            if(doc?.contentEpoch!=2)throw new InvalidDataException("基因树内容版本不兼容，需要BodyPartsV2配置");
             if(doc==null || doc.nodes==null || doc.edges==null) throw new InvalidDataException("无效基因树");
+            foreach(var entry in catalog)
+            {
+                var gene=JsonUtility.FromJson<GeneDefinitionJson>(entry.Value);MorphologyRegistry.ValidateGene(gene);
+                // ★ 修复（防Bug回归）：组合条件也必须指向已注册基因，拼错ID不能悄悄令形体规则永久失效。
+                var references=gene.requiresGenes.Concat(gene.partBindings.SelectMany(b=>new[]{b.requireGene,b.forbidGene})).Concat(gene.partModifiers.SelectMany(m=>new[]{m.requireGene,m.forbidGene}));
+                if(gene.id!=entry.Key||references.Any(id=>!string.IsNullOrEmpty(id)&&!catalog.ContainsKey(id)))throw new InvalidDataException("基因ID或组合引用无效："+entry.Key);
+            }
             var ids=new HashSet<string>();
             foreach(var n in doc.nodes) if(!catalog.ContainsKey(n.id)||!ids.Add(n.id)) throw new InvalidDataException("缺失或重复节点："+n.id);
             foreach(var e in doc.edges)
@@ -114,8 +120,8 @@ namespace DarwinPark.Genetics
         public static IEnumerable<TextAsset> RuntimeAssets()
         {
             Dictionary<string,string> catalog;
-            try { if(GeneRuntimeProfile.Catalog!=null){catalog=GeneRuntimeProfile.Catalog;GeneEntityStateTags.UpgradeCatalog(catalog);EcologyGeneDefaults.UpgradeCatalog(catalog);Active=GeneRuntimeProfile.Tree;}else{catalog=ReadCatalog();Load();}Validate(Active,catalog); }
-            catch(Exception ex){ Debug.LogError("[GeneTree] 自定义配置加载失败："+ex.Message);Active=new GeneTreeDocument();return Resources.LoadAll<TextAsset>("Genes"); }
+            try { if(GeneRuntimeProfile.Catalog!=null){catalog=GeneRuntimeProfile.Catalog;Active=GeneRuntimeProfile.Tree;}else{catalog=ReadCatalog();Load();}Validate(Active,catalog); }
+            catch(Exception ex){throw new InvalidDataException("新内容配置加载失败，未使用旧版本兜底："+ex.Message,ex); }
             return catalog.Select(k=>new TextAsset(k.Value){name=k.Key}).ToArray();
         }
         public static void ApplyInfluences(GeneDefinition definition)

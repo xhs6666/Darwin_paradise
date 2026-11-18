@@ -8,6 +8,6 @@ namespace DarwinPark.Genetics
         public static GeneTreeDocument Tree;
         [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.SubsystemRegistration)]
         // ★ 适配：离开世界必须一起释放状态规则快照，下一世界不能串用上个世界的规则。
-        public static void Clear(){Catalog=null;Tree=null;EntityStateRegistry.Clear();}
+        public static void Clear(){Catalog=null;Tree=null;EntityStateRegistry.Clear();MorphologyRegistry.Clear();}
     }
 }

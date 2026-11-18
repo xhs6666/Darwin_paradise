@@ -18,6 +18,7 @@ namespace DarwinPark.Entities.Vitals
         private EntityStats _stats;
         private EntityGeneController _genes;
         private PlanetTerrainMeshBuilder _planetBuilder;
+        private Collider _bodyCollider;
 
         private EnvironmentConfig _config;
         private bool _loggedMissingConfig;
@@ -45,6 +46,7 @@ namespace DarwinPark.Entities.Vitals
         {
             _stats = GetComponent<EntityStats>();
             _genes = GetComponent<EntityGeneController>();
+            _bodyCollider = GetComponent<Collider>();
         }
 
         private void Start()
@@ -163,6 +165,29 @@ namespace DarwinPark.Entities.Vitals
             _stats.Modify("health", -_config.temperatureHealthDamagePerSecond * damageScale * dt, false);
         }
 
+        // ✦ 新增：实时浸没深度也用于休眠分组和修复，避免岸边实体复制陆地代表的安全状态。
+        public bool IsInWater => ImmersionDepth > (_config?.drowningDepthThreshold ?? 0.1f);
+        public float ImmersionDepth
+        {
+            get
+            {
+                FindPlanetBuilder();
+                if (_planetBuilder == null || _planetBuilder.Data == null) return 0;
+                // ✦ 修复（Bug回归）：中心仍在水面之上的实体也可能已入水；取碰撞体靠近球心的实际表面。
+                var coordinate = Geography;
+                float scale = _planetBuilder.transform.TransformVector(coordinate.Direction).magnitude;
+                float depth = coordinate.Immersion * scale;
+                if (_bodyCollider != null && _bodyCollider.enabled)
+                {
+                    var center = _planetBuilder.transform.position;
+                    float bottomRadius = (_bodyCollider.ClosestPoint(center) - center).magnitude;
+                    depth = coordinate.WaterRadius * scale - bottomRadius;
+                }
+                // 地表下方的水位不产生伤害，空中飞越海面也不会因下方是海洋而受伤。
+                return coordinate.IsWater ? Mathf.Min(depth, coordinate.WaterDepth * scale) : 0f;
+            }
+        }
+
         private void UpdateDrowning(float dt)
         {
             FindPlanetBuilder();
@@ -173,11 +198,10 @@ namespace DarwinPark.Entities.Vitals
                 return;
             }
 
-            float distanceToCenter = (transform.position - _planetBuilder.transform.position).magnitude;
-            float waterRadius = _planetBuilder.LocalWaterRadius(transform.position);
-            float depth = waterRadius - distanceToCenter;
+            float depth = ImmersionDepth;
 
-            IsDrowning = depth > _config.drowningDepthThreshold;
+            // ★ 新增：游泳与水下呼吸分别授权；只有独立呼吸能力能免于深水窒息。
+            IsDrowning = depth > _config.drowningDepthThreshold&&_genes.GetAttribute("waterBreathing")<=0;
             if (!IsDrowning)
             {
                 _lastDrowningSeverity = 0f;
@@ -243,11 +267,21 @@ namespace DarwinPark.Entities.Vitals
             return fallback;
         }
 
+        // ✦ 新增：供行为与伤害共享实时地理状态，不能只沿用上一帧的 IsDrowning。
+        public PlanetCoordinate Geography
+        {
+            get
+            {
+                FindPlanetBuilder();
+                if (Ecology.EntityGeography.TryRead(_genes, out var coordinate)) return coordinate;
+                return _planetBuilder != null && _planetBuilder.Data != null ? PlanetCoordinate.At(_planetBuilder, transform.position) : default;
+            }
+        }
+
         private void FindPlanetBuilder()
         {
             if (_planetBuilder != null) return;
-            var planet = GameObject.Find("Planet");
-            if (planet != null) _planetBuilder = planet.GetComponent<PlanetTerrainMeshBuilder>();
+            _planetBuilder = Ecology.EcologyQueries.Planet;
         }
 
         private float GetEnvironmentResistance()
@@ -299,8 +333,16 @@ namespace DarwinPark.Entities.Vitals
                 ? $" | <color=#FF6B6B>适应缺口 {suppression:F0}（所有基因受抑）</color>"
                 : "";
 
-            if (IsDrowning)
-                return $"<color=#FF6B6B>溺水 ({_lastDrowningSeverity * 100f:F0}%) | 温度 {CurrentTemperature:F1}°C</color>{pressure}";
+            // ★ 修复（防Bug回归）：状态读取当前身体浸没，而非上次伤害结算；刚入水或暂停查看时也不能显示为舒适。
+            // 此处只展示风险，不推进伤害，暂停仍停止生命与营养损耗。
+            float depth = ImmersionDepth;
+            var config = _config;
+            if (config == null && ServiceLocator.TryGet<EnvironmentSystem>(out var environment)) config = environment.Config;
+            if (config != null && depth > config.drowningDepthThreshold)
+            {
+                float severity = Mathf.Max(config.minimumDrowningSeverity, Mathf.Clamp01(depth / Mathf.Max(0.1f, config.drowningSeverityDepth)));
+                return $"<color=#FF6B6B>溺水 ({severity * 100f:F0}%) | 温度 {CurrentTemperature:F1}°C</color>{pressure}";
+            }
             if (_isColdHazard)
                 return $"<color=#6EC6FF>寒冷 ({_lastTemperatureSeverity * 100f:F0}%) | 温度 {CurrentTemperature:F1}°C</color>{pressure}";
             if (_isHeatHazard)

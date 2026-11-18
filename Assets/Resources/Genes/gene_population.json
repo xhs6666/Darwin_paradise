@@ -1,7 +1,7 @@
 {
   "id": "gene_population",
   "displayName": "种群基因",
-  "category": "Locomotion",
+  "category": "Social",
   "parentGeneId": "gene_territory",
   "baseGeneId": "gene_locomotion",
   "isBaseGene": false,
@@ -55,5 +55,12 @@
       "targetGeneId": "gene_territory",
       "coefficient": 1000
     }
-  ]
+  ],
+  "schemaVersion": 2,
+  "requiresGenes": [
+    "gene_nervous_system",
+    "gene_locomotion"
+  ],
+  "partBindings": [],
+  "partModifiers": []
 }

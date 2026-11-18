@@ -23,6 +23,9 @@ namespace DarwinPark.Core
         public bool directGroundQueries=true;public float groundNormalAngleDegrees=.15f,groundVelocityEpsilon=.0001f;
         // ★ 新增：活跃执行与批内组件缓存可分别热关闭，便于同场景因果对照。
         public bool activeExecutionPlan=true,activeComponentReuse=true;
+        public bool staggerRoutineDecisions=true,shoreSampleReuse=true,farBodyBatches=true;
+        public int decisionFrameBuckets=3;
+        public float farBodyScreenPixels=24,shorePriorityDistance=2;
         public float entitySkyDensityMultiplier=8;
         public float decisionSeconds=.25f,mateSearchSeconds=.5f,groundProbeSeconds=.2f,resourceCellSize=32,visualRefreshSeconds=.25f,lightDistance=80;
         private static SimulationOptimization _current;private static long _stamp;private static float _poll;
@@ -35,6 +38,8 @@ namespace DarwinPark.Core
             if(value!=null&&(value.groundNormalAngleDegrees>1||value.groundVelocityEpsilon>.01f))throw new InvalidDataException("接地写入阈值超出有效范围");
             if(value!=null&&(value.entitySkyDensityMultiplier<1||value.entitySkyDensityMultiplier>32))throw new InvalidDataException("实体视角天空散射倍率必须为1～32");
             if(value==null||value.version!=1||value.localPlacementFailureLimit<1||value.localPlacementFailureLimit>1024||value.workerQueueLimit<1||value.workerQueueLimit>128||value.expressionCacheLimit<1||value.expressionCacheLimit>4096||value.maximumResourceCells<1||value.maximumResourceCells>1000000||value.corpseBatchSize<1||value.corpseBatchSize>511)throw new InvalidDataException("计算优化配置版本或数量无效");
+            if(value.decisionFrameBuckets<1||value.decisionFrameBuckets>8||value.farBodyScreenPixels>128)
+                throw new InvalidDataException("错峰批数或远景像素阈值无效");
             foreach(var field in typeof(SimulationOptimization).GetFields())if(field.FieldType==typeof(float)){float n=(float)field.GetValue(value);if(!float.IsFinite(n)||n<=0)throw new InvalidDataException("计算优化参数必须为正有限数："+field.Name);}
             return value;
         }

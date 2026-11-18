@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 namespace DarwinPark.Entities.Ecology
 {
     // ★ 新增：行动只筛已投递的可见候选，追击点使用观察状态提供的采样/实时坐标，不再逐子步扫全体实体。
@@ -6,7 +6,7 @@ namespace DarwinPark.Entities.Ecology
     {
         public static bool Valid(EntityGeneController genes,DarwinEntity target,bool graze,out Vector3 point,bool foodOnly=false,float maximumRange=float.PositiveInfinity)
         {
-            point=default;return target!=null&&target.gameObject!=genes.gameObject&&EcologyQueries.Alive(target)&&EntityPerceptionHub.TryLocate(genes,target,out point,maximumRange)&&(!graze||target.Genes.GetAttribute("moveSpeed")<=0)&&(!foodOnly||NutritionTransfer.FoodTargetAllowed(genes,target))&&EcologyMotion.CanHunt(genes,target)&&LandReachability.CanReach(genes,target);
+            point=default;return target!=null&&target.gameObject!=genes.gameObject&&EcologyQueries.Alive(target)&&EntityPerceptionHub.TryLocate(genes,target,out point,maximumRange)&&(!graze||target.Genes.GetAttribute("moveSpeed")<=0)&&(!foodOnly||NutritionTransfer.FoodTargetAllowed(genes,target))&&EcologyMotion.CanHunt(genes,target)&&LandReachability.CanReach(genes,target,point);
         }
         public static DarwinEntity Nearest(EntityGeneController genes,bool graze,DarwinEntity previous,out Vector3 point,bool foodOnly=false,float maximumRange=float.PositiveInfinity)
         {

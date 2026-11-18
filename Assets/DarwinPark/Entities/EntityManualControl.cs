@@ -1,5 +1,6 @@
-using DarwinPark.Core;
+﻿using DarwinPark.Core;
 using DarwinPark.Entities.Logic;
+using DarwinPark.Genetics;
 using UnityEngine;
 
 namespace DarwinPark.Entities
@@ -16,6 +17,9 @@ namespace DarwinPark.Entities
         private EntityGeneController _genes;
         private Transform _planet;
         private EntityJumpMotor _jump;
+        private PlanetGravity _gravity;
+        private Collider _collider;
+        private DarwinPark.Entities.Vitals.EntityEnvironmentHazard _hazard;
         private Ray? _aimRay;
         private bool _attackQueued;
         public float aimRayDistance=200f;
@@ -26,10 +30,36 @@ namespace DarwinPark.Entities
         public void ClearAttack(){_attackQueued=false;AttackHeld=false;}
         public void SetAim(Ray ray){_aimRay=ray;}
         public DarwinEntity GetAttackTarget()=>_aimRay.HasValue?EntityAttackAim.Pick(gameObject,_aimRay.Value,aimRayDistance,aimRadius):null;
-        public bool CanMove => _genes != null && !Ecology.EcologyMotion.Immobilized(_genes) && _genes.GetAttribute("moveSpeed") > 0 &&
-            _genes.Evaluation != null && _genes.Evaluation.Genes.Exists(g => g.IsActive && _genes.GetLogic(g.Gene) is LocomotionGeneLogic);
-        private void Awake() { _body = GetComponent<Rigidbody>(); _genes = GetComponent<EntityGeneController>(); }
-        public void BeginControl(Transform planet) { Simulation.ActiveSimulationBatch.Invalidate(_genes);_planet = planet; _jump = GetComponent<EntityJumpMotor>(); IsControlled = true; SetInput(Vector3.zero, false); }
+        public bool CanMove => _genes != null && !Ecology.EcologyMotion.Immobilized(_genes) &&
+            GeneCapabilities.Active(_genes, BiologySettings.Current.locomotionGene) is { } action &&
+            _genes.GetLogic(action.Gene) is LocomotionGeneLogic &&
+            (_hazard?.IsSubmerged==true ? SwimmingSpeed : _genes.GetAttribute("moveSpeed"))>0;
+
+        internal float SwimmingSpeed
+        {
+            get
+            {
+                if(!IsControlled||_genes?.Evaluation==null)return 0;
+                float speed=_genes.GetAttribute("swimSpeed");
+                if(speed>0)return EntityMovementLimits.Speed(speed);
+                if(GeneCapabilities.Active(_genes,BiologySettings.Current.locomotionGene)?.State?.StateId!="swimming")return 0;
+                return _genes.Evaluation.Attributes.TryGetValue("moveSpeed",out float groundSpeed)
+                    ? EntityMovementLimits.Speed(groundSpeed*.6f):0;
+            }
+        }
+        private void Awake()
+        {
+            _body=GetComponent<Rigidbody>();_genes=GetComponent<EntityGeneController>();
+            _gravity=GetComponent<PlanetGravity>();_collider=GetComponent<Collider>();
+            _hazard=GetComponent<DarwinPark.Entities.Vitals.EntityEnvironmentHazard>();
+        }
+        public void BeginControl(Transform planet)
+        {
+            Simulation.ActiveSimulationBatch.Invalidate(_genes);
+            _planet=planet;_jump=GetComponent<EntityJumpMotor>();IsControlled=true;
+            if(_gravity!=null)_gravity.ManualControl=this;
+            SetInput(Vector3.zero,false);
+        }
         public void SetInput(Vector3 direction, bool attack)
         {
             MoveDirection = Vector3.ClampMagnitude(direction, 1); AttackHeld = attack && CanMove;
@@ -37,6 +67,7 @@ namespace DarwinPark.Entities
         public void Release()
         {
             SetInput(Vector3.zero, false);ClearAttack(); IsControlled = false; _aimRay=null;
+            if(_gravity!=null&&_gravity.ManualControl==this)_gravity.ManualControl=null;
             _jump?.Cancel();
             if (_body != null && !_body.isKinematic && _planet != null)
             {
@@ -52,14 +83,23 @@ namespace DarwinPark.Entities
             if (scale <= 0) return;
             Vector3 up = (transform.position - _planet.position).normalized;
             // ★ 修复（防Bug回归）：陆地行动基因不提供游泳能力，入水后保留下沉而停止切向推进。
-            bool underwater=GetComponent<DarwinPark.Entities.Vitals.EntityEnvironmentHazard>()?.IsSubmerged == true;
-            Vector3 direction = CanMove && !underwater ? Vector3.ProjectOnPlane(MoveDirection,up).normalized * MoveDirection.magnitude : Vector3.zero;
+            bool underwater=_gravity?.Grounding.ReadForAnchor(_planet).underwater??(_hazard?.IsSubmerged==true);
+            Vector3 direction = CanMove ? Vector3.ProjectOnPlane(MoveDirection,up).normalized * MoveDirection.magnitude : Vector3.zero;
             // ★ 适配：保留经过接地验证的跳跃上升速度，其余向外冲量仍被防飞天约束清除。
             if (_jump == null) _jump = GetComponent<EntityJumpMotor>();
             if(underwater) _jump?.Cancel();
             float radial = Vector3.Dot(_body.linearVelocity,up);
-            _body.linearVelocity = direction * (_genes.GetAttribute("moveSpeed") * scale) +
-                up * (_jump != null ? _jump.RadialVelocity(up,radial) : Mathf.Min(0,radial));
+            // ✦ 修复（Bug回归）：手动输入也经过同一海岸守卫，不能绕过 AI 的陆地限制。
+            // ★ 修复（防Bug回归）：水中手动推进读取游泳能力，避免潜水时沿用陆地速度。
+            float swimSpeed = SwimmingSpeed;
+            Vector3 tangent = direction * ((underwater ? swimSpeed : _genes.GetAttribute("moveSpeed")) * scale);
+            if (swimSpeed <= 0)
+            {
+                tangent = DarwinPark.Planet.LandRoutePlan.SafeVelocity(_planet.GetComponent<DarwinPark.Planet.PlanetTerrainMeshBuilder>(), _body.position, tangent, _collider != null ? _collider.bounds.extents.magnitude : 0);
+            }
+            float vertical=underwater&&swimSpeed>0?radial:
+                _jump != null ? _jump.RadialVelocity(up,radial) : Mathf.Min(0,radial);
+            _body.linearVelocity = tangent + up*vertical;
         }
         private void OnDisable() => Release();
     }

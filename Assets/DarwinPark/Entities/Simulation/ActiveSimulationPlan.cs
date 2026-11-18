@@ -13,8 +13,8 @@ namespace DarwinPark.Entities.Simulation
         internal readonly Dictionary<Type,Component> components=new();public bool KnownOnly{get;private set;}
         public static long Executed,Skipped,Builds,ComponentReads,ComponentHits;
         public void Invalidate()=>_revision=-1;
-        private static bool Passive(Type type)=>type==typeof(GrowthGeneLogic)||type==typeof(RepairGeneLogic)||type==typeof(StorageGeneLogic)||type==typeof(EnvironmentAdaptationGeneLogic)||type==typeof(ObservationGeneLogic)||type==typeof(HeterotrophyGeneLogic)||type==typeof(ScavengingGeneLogic)||type==typeof(ParasiticGeneLogic);
-        private static bool Known(Type type)=>Passive(type)||type==typeof(NutritionGeneLogic)||type==typeof(EnergyBlockGeneLogic)||type==typeof(LocomotionGeneLogic)||type==typeof(TerritoryGeneLogic)||type==typeof(PopulationGeneLogic)||type==typeof(ReproductionGeneLogic)||type==typeof(OviparousGeneLogic)||type==typeof(MultipleBirthGeneLogic)||type==typeof(EggParasiticGeneLogic);
+        private static bool Passive(Type type)=>type==typeof(TerritoryGeneLogic)||type==typeof(PopulationGeneLogic)||type==typeof(NutritionGeneLogic)||type==typeof(LocomotionGeneLogic)||type==typeof(NutrientParasitismGeneLogic)||type==typeof(GrowthGeneLogic)||type==typeof(RepairGeneLogic)||type==typeof(StorageGeneLogic)||type==typeof(EnvironmentAdaptationGeneLogic)||type==typeof(ObservationGeneLogic)||type==typeof(HeterotrophyGeneLogic)||type==typeof(ScavengingGeneLogic)||type==typeof(ParasiticGeneLogic);
+        private static bool Known(Type type)=>Passive(type)||type==typeof(CentralGeneLogic)||type==typeof(AutotrophyGeneLogic)||type==typeof(NutritionGeneLogic)||type==typeof(EnergyBlockGeneLogic)||type==typeof(LocomotionGeneLogic)||type==typeof(TerritoryGeneLogic)||type==typeof(PopulationGeneLogic)||type==typeof(ReproductionGeneLogic)||type==typeof(OviparousGeneLogic)||type==typeof(MultipleBirthGeneLogic)||type==typeof(EggParasiticGeneLogic);
         public void Prepare(EntityGeneController owner,IReadOnlyList<IGeneLogic> logics)
         {
             if(_revision==owner.LogicRevision&&_run.Length>=logics.Count)return;_revision=owner.LogicRevision;Builds++;KnownOnly=true;
@@ -24,9 +24,9 @@ namespace DarwinPark.Entities.Simulation
                 var logic=logics[i];var type=logic.GetType();KnownOnly&=Known(type);bool run=!Passive(type);
                 if(run&&_genes.TryGetValue(logic,out var gene))
                 {
-                    if(type==typeof(NutritionGeneLogic))run=GeneBehaviorAuthority.IsPrimary<NutritionGeneLogic>(owner,gene);
+                    if(type==typeof(CentralGeneLogic))run=GeneBehaviorAuthority.IsPrimary<CentralGeneLogic>(owner,gene);
+                    else if(type==typeof(NutritionGeneLogic))run=GeneBehaviorAuthority.IsPrimary<NutritionGeneLogic>(owner,gene);
                     else if(type==typeof(EnergyBlockGeneLogic))run=GeneBehaviorAuthority.IsPrimary<EnergyBlockGeneLogic>(owner,gene);
-                    else if(type==typeof(LocomotionGeneLogic)||type==typeof(TerritoryGeneLogic)||type==typeof(PopulationGeneLogic))run=GeneBehaviorAuthority.IsPrimary<LocomotionGeneLogic>(owner,gene);
                     // 繁殖副本仍运行：原入口会推进配偶缓存并清掉非主表达的等待计时，不能当空调用删除。
                 }
                 _run[i]=run;

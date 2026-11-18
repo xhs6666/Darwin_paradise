@@ -13,6 +13,7 @@ namespace DarwinPark.UI
         public int placementCount=1, maxPlacementCount=200;
         public float batchSpacing=2f;
         [HideInInspector] public Genome CustomGenome;
+        [HideInInspector] public string TemplateName;
         private GameObject _ghostObj;
         private bool _dragging;
 
@@ -23,6 +24,7 @@ namespace DarwinPark.UI
             // ★ 新增：数量配置属于当前默认/模板槽位，右键设置后可连续左键投放。
             if(data.button==PointerEventData.InputButton.Right){PlacementQuantityPopup.Show(this);return;}
             if (data.button != PointerEventData.InputButton.Left || data.dragging) return;
+            PlacementQuantityPopup.CloseAll();
             var tool = EntityPlacementTool.Instance;
             if (tool == null) { Log.Error(Log.Tag.UI, "场景缺少 EntityPlacementTool"); return; }
             tool.BeginPlacement(entityPrefab, CustomGenome,Mathf.Clamp(placementCount,1,maxPlacementCount));
@@ -31,6 +33,7 @@ namespace DarwinPark.UI
         {
             if(!WorldAuthority.CanEdit)return;
             if (data.button != PointerEventData.InputButton.Left || entityPrefab == null) return;
+            PlacementQuantityPopup.CloseAll();
             // ★ 适配：拖拽投放同样先释放手动控制。
             EntityViewController.Instance?.ExitView();
             EntityPlacementTool.Instance?.CancelPlacement();
@@ -59,6 +62,8 @@ namespace DarwinPark.UI
         }
         private void OnDisable()
         {
+            // ★ 修复（防Bug回归）：数量窗口挂在 Canvas 根节点，来源槽位失效时必须主动关闭。
+            PlacementQuantityPopup.CloseFor(this);
             if (_dragging) OrbitCamera.IsDraggingUI = false;
             _dragging = false; EntityPlacementUtility.DestroyPreview(_ghostObj); _ghostObj = null;
         }

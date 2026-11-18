@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using DarwinPark.Entities.Stats;
+using DarwinPark.Planet;
 using UnityEngine;
 
 namespace DarwinPark.Entities.Ecology
@@ -36,7 +37,25 @@ namespace DarwinPark.Entities.Ecology
         public static Vector3 Home(AntColonyMember member,Vector3 center,float radius)
         {
             int slot=Slot(member)+1;float distance=Mathf.Min(radius,Settings.spacing*Mathf.Sqrt(slot));
-            return Offset(center,distance,slot*2.39996323f);
+            return Landward(member,Offset(center,distance,slot*2.39996323f));
+        }
+
+        internal static Vector3 Landward(AntColonyMember member,Vector3 destination)
+        {
+            var planet=EcologyQueries.Planet;
+            var graph=planet?.Data?.Navigation;
+            if(graph==null||member.Genes.GetAttribute("swimSpeed")>0)return destination;
+            var transform=planet.transform;
+            var desired=PlanetTerrainSampler.WorldToLocalDirection(transform,destination);
+            if(graph.Dry(desired))return destination;
+            var current=PlanetTerrainSampler.WorldToLocalDirection(transform,member.transform.position);
+            for(int step=1;step<=4;step++)
+            {
+                var candidate=Vector3.Slerp(desired,current,step*.2f);
+                if(graph.Dry(candidate))
+                    return transform.TransformPoint(candidate*PlanetCoordinate.SurfaceRadius(graph.Terrain,candidate));
+            }
+            return member.transform.position;
         }
         public static float BodyRadius(DarwinEntity entity)
         {var col=entity.GetComponent<Collider>();return col!=null?Mathf.Max(col.bounds.extents.x,col.bounds.extents.y,col.bounds.extents.z):Settings.spacing*.25f;}

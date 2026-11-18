@@ -14,6 +14,7 @@ namespace DarwinPark.Entities.Ecology
     public sealed class PopulationBehavior : MonoBehaviour
     {
         private static readonly List<PopulationBehavior> Members=new List<PopulationBehavior>();
+        private static readonly HashSet<PopulationBehavior> Registered=new();
         private static long _serial;
         internal static IReadOnlyList<PopulationBehavior> RegisteredMembers=>Members;
         private EntityGeneController _genes;private DarwinEntity _entity;private EcologySettings _settings;
@@ -34,14 +35,7 @@ namespace DarwinPark.Entities.Ecology
         {
             get
             {
-                // ★ 修复（防Bug回归）：一次表达只选一次种群基因，属性读取不能不断分配 LINQ 迭代器和排序数组。
-                if(!ReferenceEquals(_populationEvaluation,_genes.Evaluation))
-                {
-                    _populationEvaluation=_genes.Evaluation;_populationGene=null;
-                    if(_populationEvaluation!=null)foreach(var gene in _populationEvaluation.Genes)
-                        if(gene.IsActive&&gene.Definition.Id==_settings.populationGene&&(_populationGene==null||gene.EffectiveStrength>_populationGene.EffectiveStrength))_populationGene=gene;
-                    PopulationGroupIndex.Invalidate();
-                }
+                if(!ReferenceEquals(_populationEvaluation,_genes.Evaluation))OnGenesChanged(_genes.Evaluation);
                 return _populationGene;
             }
         }
@@ -70,12 +64,26 @@ namespace DarwinPark.Entities.Ecology
             }
         }
         private void Awake(){_genes=GetComponent<EntityGeneController>();_entity=GetComponent<DarwinEntity>();_settings=EcologySettings.Load();EcologyIdentity.Ensure(gameObject);_genes.OnEvaluationChanged+=OnGenesChanged;}
-        // ★ 修复（防Bug回归）：表达变更必须立即使关系缓存失效，不能等下一帧才移除同帧禁用/变为其他模式的成员。
-        private void OnGenesChanged(Genetics.GenomeEvaluation evaluation){_populationEvaluation=null;_populationGene=null;PopulationGroupIndex.Invalidate();}
+        // ★ 修复（防Bug回归）：实时表达仍选最强的种群基因；只有成员资格或种群类型变化才使群组索引失效。
+        private void OnGenesChanged(Genetics.GenomeEvaluation evaluation)
+        {
+            if(ReferenceEquals(_populationEvaluation,evaluation))return;
+            var previous=_populationGene;
+            _populationEvaluation=evaluation;
+            _populationGene=null;
+            if(evaluation!=null)
+                foreach(var gene in evaluation.Genes)
+                    if(gene.IsActive&&gene.Definition.Id==_settings.populationGene&&
+                        (_populationGene==null||gene.EffectiveStrength>_populationGene.EffectiveStrength))
+                        _populationGene=gene;
+            if((previous==null)!=(_populationGene==null)||previous?.State?.StateId!=_populationGene?.State?.StateId)
+                PopulationGroupIndex.Invalidate();
+        }
         private void OnDestroy(){if(_genes!=null)_genes.OnEvaluationChanged-=OnGenesChanged;}
-        private void OnDisable(){Members.Remove(this);PopulationGroupIndex.Invalidate();}
+        private void OnDisable(){UnregisterMember();PopulationGroupIndex.Invalidate();}
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void Reset(){Members.Clear();_serial=0;}
+        private static void Reset(){Members.Clear();Registered.Clear();_serial=0;}
+        private bool UnregisterMember(){if(!Registered.Remove(this))return false;Members.Remove(this);return true;}
         private void Update(){Advance(ServiceLocator.TryGet<SimulationClock>(out var clock)?clock.GameDeltaTime:Time.deltaTime);}
         public void Advance(float dt)
         {
@@ -83,24 +91,24 @@ namespace DarwinPark.Entities.Ecology
             using var performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.Population);
             // ★ 适配：副本保留读档的身份与分工，只由房主计算成员变化。
             if(WorldAuthority.IsReplica)return;
-            if(!Active){OptionalComponent.Read<AntColonyMember>(this)?.Suspend();if(Members.Remove(this)||!string.IsNullOrEmpty(GroupId))PopulationGroupIndex.Invalidate();GroupId="";LeaderFlag=false;Command=PopulationCommand.None;return;}
+            if(!Active){OptionalComponent.Read<AntColonyMember>(this)?.Suspend();if(UnregisterMember()||!string.IsNullOrEmpty(GroupId))PopulationGroupIndex.Invalidate();GroupId="";LeaderFlag=false;Command=PopulationCommand.None;return;}
             if(dt<=0)return;
             string previousGroup=_mode!=null&&_mode!=Mode?GroupId:null;
-            if(_mode!=null&&_mode!=Mode){OptionalComponent.Read<AntColonyMember>(this)?.Suspend();Members.Remove(this);PopulationGroupIndex.Invalidate();GroupId="";LeaderFlag=false;Command=PopulationCommand.None;}
-            _mode=Mode;EnsureMembership();
+            if(_mode!=null&&_mode!=Mode){OptionalComponent.Read<AntColonyMember>(this)?.Suspend();UnregisterMember();PopulationGroupIndex.Invalidate();GroupId="";LeaderFlag=false;Command=PopulationCommand.None;}
+            _mode=Mode;if(!Registered.Contains(this)||string.IsNullOrEmpty(GroupId))EnsureMembership();
             // ★ 适配：种群状态改变后独立成群也记录真实来源；加入既有种群不会改写其谱系。
             if(!string.IsNullOrEmpty(previousGroup)&&previousGroup!=GroupId&&LeaderFlag)PopulationArchive.RecordFounding(previousGroup,GroupId,Mode,_entity.DisplayName,"种群状态变化形成新种群");
             if(OptionalComponent.Read<EggIncubation>(this)?.Incubating==true)return;
             // ★ 适配：固定分工独立推进，旧全群采集与决斗不能覆盖蚁群角色。
-            if(Mode==_settings.antState){AntColonyMember.Ensure(this).Advance(dt);return;}
             _duelRemaining=Mathf.Max(0,_duelRemaining-dt);_manualRemaining=Mathf.Max(0,_manualRemaining-dt);
             CommandRemaining=Mathf.Max(0,CommandRemaining-dt);
             if(CommandRemaining<=0||Command==PopulationCommand.Hunt&&(!EcologyQueries.Alive(Target)||SameGroup(Target))){Command=PopulationCommand.None;Target=null;}
+            if(Mode==_settings.antState){AntColonyMember.Ensure(this).Advance(dt);return;}
             var leader=Leader;if(leader!=null&&!leader.LeaderFlag)leader.LeaderFlag=true;
-            if(!IsLeader&&leader!=null&&_duelRemaining<=0&&leader._duelRemaining<=0&&EcologyQueries.Distance(transform.position,leader.transform.position)<=_settings.arrivalDistance&&Score()>leader.Score()*_settings.duelAdvantage)
+            if(leader!=this&&leader!=null&&_duelRemaining<=0&&leader._duelRemaining<=0&&EcologyQueries.Distance(transform.position,leader.transform.position)<=_settings.arrivalDistance&&Score()>leader.Score()*_settings.duelAdvantage)
                 ChallengeLeadership(out _);
             _scan-=dt;
-            if(IsLeader&&_scan<=0&&_manualRemaining<=0){_scan=_settings.scanInterval;AutoCommand();}
+            if(leader==this&&_scan<=0&&_manualRemaining<=0&&Simulation.ActionDecisionCadence.RoutineTurn(_genes)){_scan=_settings.scanInterval;AutoCommand();}
             if(Mode==_settings.antState&&Command==PopulationCommand.Gather&&EcologyQueries.Distance(transform.position,EcologyQueries.ToWorld(CommandPointLocal))<=_settings.arrivalDistance&&Planet.PlanetOreSystem.Instance!=null)
             {
                 float auraBonus=InAura?1+_settings.antGatherBonus:1;
@@ -119,7 +127,7 @@ namespace DarwinPark.Entities.Ecology
                 // ★ 新增：新建种群记录真实成立时间；读档期间不把首次观察误写成出生。
                 if(neighbor==null&&WorldRuntimeGate.Ready&&!WorldRuntimeGate.Loading&&!WorldAuthority.IsReplica)PopulationArchive.Register(GroupId,Mode,_entity.DisplayName,true);
             }
-            _serial=Math.Max(_serial,JoinOrder);if(!Members.Contains(this)){Members.Add(this);PopulationGroupIndex.Invalidate();}
+            _serial=Math.Max(_serial,JoinOrder);if(Registered.Add(this)){Members.Add(this);PopulationGroupIndex.Invalidate();}
         }
         // ★ 适配：出生继承和新王后建群通过此接口写入持久标识，不重新按距离随机入群。
         public void JoinColony(string group,bool queen)
@@ -161,8 +169,10 @@ namespace DarwinPark.Entities.Ecology
                 var prey=PerceivedTargets.Nearest(_genes,false,null,out var seen,true);
                 if(prey!=null){Issue(PopulationCommand.Hunt,prey,seen,false,out _);return;}
             }
-            if(Mode==_settings.antState&&FindOre(out var ore)){Issue(PopulationCommand.Gather,null,ore,false,out _);return;}
-            var territory=DarwinPark.Core.OptionalComponent.Read<TerritoryBehavior>(this);Issue(PopulationCommand.Rally,null,territory!=null?territory.Center:transform.position,false,out _);
+            var territory=DarwinPark.Core.OptionalComponent.Read<TerritoryBehavior>(this);
+            if(territory!=null&&territory.HasCenter&&EcologyQueries.Distance(transform.position,territory.Center)>_settings.arrivalDistance)
+                Issue(PopulationCommand.Rally,null,territory.Center,false,out _);
+            else if(Command==PopulationCommand.Rally) Issue(PopulationCommand.None,null,transform.position,false,out _);
         }
         public bool FindOre(out Vector3 point)
         {
@@ -194,7 +204,9 @@ namespace DarwinPark.Entities.Ecology
                 }
                 return true;
             }
-            point=EcologyQueries.ToWorld(CommandPointLocal);return true;
+            point=EcologyQueries.ToWorld(CommandPointLocal);
+            return Command!=PopulationCommand.Rally||_manualRemaining>0||
+                EcologyQueries.Distance(transform.position,point)>_settings.arrivalDistance;
         }
         public void ShareReward(float amount)
         {
@@ -205,7 +217,7 @@ namespace DarwinPark.Entities.Ecology
         }
         public void Restore(EcologySaveState state)
         {
-            Members.Remove(this);PopulationGroupIndex.Invalidate();GroupId=state.groupId??"";JoinOrder=state.joinOrder;LeaderFlag=state.leader;_mode=state.mode;
+            UnregisterMember();PopulationGroupIndex.Invalidate();GroupId=state.groupId??"";JoinOrder=state.joinOrder;LeaderFlag=state.leader;_mode=state.mode;
             Command=state.command;CommandRemaining=state.commandRemaining;CommandPointLocal=state.commandPoint;_manualRemaining=state.manualRemaining;_duelRemaining=state.duelRemaining;
             EnsureMembership();
         }

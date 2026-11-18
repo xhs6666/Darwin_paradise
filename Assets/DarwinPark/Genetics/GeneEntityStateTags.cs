@@ -28,7 +28,7 @@ namespace DarwinPark.Genetics
         }
         public static List<string> Read(string raw)
         {
-            var gene=JsonUtility.FromJson<GeneDefinitionJson>(Upgrade(raw));Validate(gene,EntityStateRegistry.Current);return new List<string>(gene.entityStateTags);
+            var gene=JsonUtility.FromJson<GeneDefinitionJson>(raw);Validate(gene,EntityStateRegistry.Current);return new List<string>(gene.entityStateTags);
         }
     }
 }

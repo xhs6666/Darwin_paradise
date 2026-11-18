@@ -6,7 +6,7 @@ namespace DarwinPark.Entities.Ecology
     {
         public static void Record(AntColonyMember member,ColonyActivity activity)
         {
-            if(member.State.role==null||member.Role==AntRole.Worker||ColonyFoundingSupport.Collecting(member)||activity==ColonyActivity.Feed||member.State.plan?.feeding==true)return;
+            if(EntityActivityPlan.BlocksAutomatic(member)||member.State.role==null||member.Role==AntRole.Worker||ColonyFoundingSupport.Collecting(member)||activity==ColonyActivity.Feed||member.State.plan?.feeding==true)return;
             var tasks=WorkerTaskQueue.Tasks(member);int index=tasks.Count>0&&tasks[0].kind==PlannedTaskKind.Feed?1:0;
             var kind=activity switch {ColonyActivity.Patrol=>PlannedTaskKind.Patrol,ColonyActivity.Hunt=>PlannedTaskKind.Hunt,ColonyActivity.Rest=>PlannedTaskKind.Rest,ColonyActivity.Founding=>PlannedTaskKind.Founding,ColonyActivity.Reproduce=>PlannedTaskKind.Reproduce,_=>PlannedTaskKind.Follow};
             if(index<tasks.Count&&tasks[index].kind==kind)return;

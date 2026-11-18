@@ -33,5 +33,8 @@
     }
   ],
   "attributeLinkages": [],
-  "suppressionRules": []
+  "suppressionRules": [],
+  "schemaVersion": 2,
+  "partBindings": [],
+  "partModifiers": []
 }

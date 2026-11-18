@@ -15,6 +15,8 @@ namespace DarwinPark.Entities
         private PhysicsMaterial _surfaceMaterial;
         // ★ 适配：组件/地形与接地结果由独立缓存管理。
         private EntityGroundProbe _grounding;private EntityGeneController _genes;
+        internal EntityManualControl ManualControl;
+        internal bool ShoreBlocked;
         public EntityGroundProbe Grounding=>_grounding??=new EntityGroundProbe(GetComponent<Rigidbody>());
 
         void Start()

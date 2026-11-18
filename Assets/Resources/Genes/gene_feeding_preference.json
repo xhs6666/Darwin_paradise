@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 2,
+  "id": "gene_feeding_preference",
+  "displayName": "食性偏好基因",
+  "category": "Nutrition",
+  "parentGeneId": "gene_heterotrophy",
+  "isBaseGene": false,
+  "tier": 1,
+  "logicScriptId": "",
+  "aiModuleId": "",
+  "attributeCurves": [],
+  "states": [
+    {
+      "stateId": "herbivore",
+      "displayName": "食草",
+      "center": 25,
+      "color": [
+        0.3,
+        0.8,
+        0.3
+      ]
+    },
+    {
+      "stateId": "hunt",
+      "displayName": "捕猎",
+      "center": 75,
+      "color": [
+        0.9,
+        0.2,
+        0.2
+      ]
+    }
+  ],
+  "attributeLinkages": [],
+  "suppressionRules": [],
+  "partBindings": [],
+  "partModifiers": [
+    {
+      "slotId": "mouth",
+      "parameter": "scaleX",
+      "minimum": 0.7,
+      "maximum": 1.4,
+      "rangeMin": 0,
+      "rangeMax": 100
+    }
+  ],
+  "requiresGenes": [
+    "gene_heterotrophy"
+  ],
+  "explicitState": true,
+  "defaultStateId": "herbivore",
+  "entityStateTagVersion": 1,
+  "entityStateTags": []
+}

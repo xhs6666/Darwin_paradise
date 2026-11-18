@@ -1,0 +1,7 @@
+{
+  "protocol": 2,
+  "contentEpoch": 2,
+  "minimumSave": 2,
+  "maximumSave": 2,
+  "release": "0.2.0"
+}

@@ -2,6 +2,15 @@ using System.Collections.Generic;
 
 namespace DarwinPark.Genetics.Mutation
 {
+    // ★ 适配：突变类型与返回结果是同一个数据约定，合并维护。
+    public enum MutationType
+    {
+        Error = 0,
+        Duplicate = 1,
+        Deletion = 2,
+        Insertion = 3
+    }
+
     public class MutationResult
     {
         public bool Success;

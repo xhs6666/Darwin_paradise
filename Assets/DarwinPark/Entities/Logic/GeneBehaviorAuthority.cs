@@ -1,17 +1,36 @@
 using System;
-using System.Linq;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using DarwinPark.Genetics;
 
 namespace DarwinPark.Entities.Logic
 {
-    // ★ 新增：复制基因保留属性叠加，但每个实体只有一个移动/繁殖行为写入者，避免重复攻击、孕育和抢方向。
+    // ★ 新增：主行为只随表达或逻辑挂载变化；子步重复查询不再遍历整个基因集合，弱引用避免持有已销毁实体。
     public static class GeneBehaviorAuthority
     {
+        private sealed class Selection {public GenomeEvaluation evaluation;public int revision;public GeneInstance gene;}
+        private static readonly ConditionalWeakTable<EntityGeneController,Dictionary<Type,Selection>> Cache=new ConditionalWeakTable<EntityGeneController,Dictionary<Type,Selection>>();
         public static bool IsPrimary<T>(EntityGeneController controller,GeneInstance gene) where T:class,IGeneLogic
         {
-            // ★ 修复（防Bug回归）：每个模拟步只需找最大优先级，不能为四类行为反复创建和排序相同的基因集合。
-            // ★ 适配：缓存随逻辑挂载版本更新，表达事件先于挂载时也不会留下旧主行为。
-            return GeneAuthorityCache.IsPrimary<T>(controller,gene);
+            var values=Cache.GetValue(controller,_=>new Dictionary<Type,Selection>());var key=typeof(T);
+            if(!values.TryGetValue(key,out var value)){value=new Selection{revision=-1};values.Add(key,value);}
+            if(!ReferenceEquals(value.evaluation,controller.Evaluation)||value.revision!=controller.LogicRevision)
+            {
+                GeneEvaluation selected=null;
+                if(controller.Evaluation!=null)foreach(var candidate in controller.Evaluation.Genes)
+                    if(candidate.IsActive&&controller.GetLogic(candidate.Gene) is T&&(selected==null||candidate.Definition.Tier>selected.Definition.Tier||candidate.Definition.Tier==selected.Definition.Tier&&string.CompareOrdinal(candidate.Gene.InstanceId,selected.Gene.InstanceId)<0))selected=candidate;
+                value.evaluation=controller.Evaluation;value.revision=controller.LogicRevision;value.gene=selected?.Gene;
+            }
+            return value.gene==gene;
         }
+    }
+}
+
+namespace DarwinPark.Entities.Logic
+{
+    // ★ 适配：保留既有公开入口，缓存实现与主行为选择合并维护。
+    public static class GeneAuthorityCache
+    {
+        public static bool IsPrimary<T>(EntityGeneController controller,DarwinPark.Genetics.GeneInstance gene) where T:class,IGeneLogic=>GeneBehaviorAuthority.IsPrimary<T>(controller,gene);
     }
 }

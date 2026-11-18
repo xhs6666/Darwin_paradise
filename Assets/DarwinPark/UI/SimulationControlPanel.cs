@@ -3,11 +3,12 @@ using DarwinPark.Environment;
 using DarwinPark.Planet;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace DarwinPark.UI
 {
-    public class SimulationControlPanel : MonoBehaviour
+    public partial class SimulationControlPanel : MonoBehaviour
     {
         [Header("实体配置")]
         public GameObject EntityPrefab;
@@ -21,6 +22,7 @@ namespace DarwinPark.UI
         private int _currentPage = 0;
         private GameObject _page1Container;
         private GameObject _page2Container;
+        private PlanetGlobeMinimap _minimap;
         private Button _tabPrevBtn;
         private Button _tabNextBtn;
 
@@ -28,6 +30,7 @@ namespace DarwinPark.UI
         private GameObject _activeParamMenu;
         private string _activeParamId;
         private GameObject _bottomPanel;
+        private bool _bottomPanelHidden;
         private readonly Vector3[] _panelCorners = new Vector3[4];
         // ★ 新增：提供底栏实际屏幕边界，让混用IMGUI的RTS栏跟随Canvas缩放，而不是猜测固定高度。
         public bool TryGetScreenRect(out Rect rect)
@@ -45,6 +48,7 @@ namespace DarwinPark.UI
         private UIRoot _uiRoot;
         private bool _uiBuilt;
         private Coroutine _buildRoutine;
+        private SimulationAuthorityView _authorityView;
 
         private void OnEnable()
         {
@@ -97,6 +101,7 @@ namespace DarwinPark.UI
             root.MainCanvas.sortingOrder = Mathf.Max(root.MainCanvas.sortingOrder, 200);
 
             BuildUI(root.MainCanvas.transform);
+            _authorityView=new SimulationAuthorityView(_bottomPanel.transform,_page2Container.transform,_tabNextBtn);
             // ★ 修复（防Bug回归）：不再安装免费补给UI；能量块仅由实际生态转换或营养利用基因消耗营养吐出。
             // ★ 修复（防Bug回归）：只在构建完成后标记成功，避免异常后留下半成品。
             _uiBuilt = true;
@@ -204,6 +209,9 @@ namespace DarwinPark.UI
             statistics.AddComponent<MapEntityStatisticsUI>();
             // ★ 适配：规则独立卡片位于第一页，不改变统计/筛选和第二页种群档案布局。
             var rules=UIFactory.NewRect("SimulationRules",_page1Container.transform);rules.AddComponent<SimulationRulesPanel>();
+            // ★ 新增：地图独占第一页右侧，原控件路径不变；统计/规则继续在剩余宽度中自适应。
+            var globe=UIFactory.NewRect("GlobeMinimap",contentArea.transform,typeof(Image));_minimap=globe.AddComponent<PlanetGlobeMinimap>();
+            _page1Container.GetComponent<RectTransform>().offsetMax=new Vector2(-_minimap.ReservedWidth,0);
 
             SwitchPage(0);
         }
@@ -242,10 +250,13 @@ namespace DarwinPark.UI
 
         private void SwitchPage(int targetPage)
         {
+            // ★ 修复（防Bug回归）：分页必须同时结束根 Canvas 上的弹窗和投放模式。
+            PlacementQuantityPopup.CloseAll();EntityPlacementTool.Instance?.CancelPlacement();DestroyMenus();
             // ★ 适配：页面切换与创造权限分离，创造控件单独屏蔽。
             _currentPage = Mathf.Clamp(targetPage, 0, 1);
             _page1Container.SetActive(_currentPage == 0);
             _page2Container.SetActive(_currentPage == 1);
+            if(_minimap!=null)_minimap.gameObject.SetActive(_currentPage==0);
 
             UIVisualTheme.Paint(_tabPrevBtn.image,_currentPage==0?"selected":"button");
             UIVisualTheme.Paint(_tabNextBtn.image,_currentPage==1?"selected":"button");
@@ -259,181 +270,30 @@ namespace DarwinPark.UI
             var timeSec = CreateAbsoluteSection(parent, "TimeSec", 0, 300);
             BuildTimeSection(timeSec);
 
-            CreateDivider(parent, 320);
+            UIFactory.CreateDivider(parent, 320);
 
             var layerSec = CreateAbsoluteSection(parent, "LayerSec", 340, 240);
             BuildLayerSection(layerSec);
 
-            CreateDivider(parent, 600);
+            UIFactory.CreateDivider(parent, 600);
 
             var paramSec = CreateAbsoluteSection(parent, "ParamSec", 620, 200);
             BuildParamSection(paramSec);
         }
 
-        private void BuildTimeSection(GameObject parent)
-        {
-            var btnGO = UIFactory.NewRect("PlayBtn", parent.transform, typeof(Image), typeof(Button), typeof(RightClickHandler));
-            var brt = btnGO.GetComponent<RectTransform>();
-            brt.anchorMin = new Vector2(0, 0.5f);
-            brt.anchorMax = new Vector2(0, 0.5f);
-            brt.pivot = new Vector2(0, 0.5f);
-            brt.sizeDelta = new Vector2(80, 80);
-            brt.anchoredPosition = new Vector2(0, 0);
-
-            var bg = btnGO.GetComponent<Image>();
-            UIVisualTheme.Paint(bg,"button");
-
-            btnGO.GetComponent<Button>().onClick.AddListener(() => _clock?.Toggle());
-
-            var iconGO = UIFactory.NewRect("Icon", btnGO.transform, typeof(Image));
-            UIFactory.Stretch(iconGO.GetComponent<RectTransform>(), 15, 15);
-            _playIcon = iconGO.GetComponent<Image>();
-            _playIcon.sprite = _iconPause;
-            _playIcon.preserveAspect = true;
-            _playIcon.color=UIVisualTheme.Accent;_playIcon.raycastTarget=false;
-
-            // ★ 适配：没有图标资源时用文字兜底，保证播放/暂停按钮始终可辨认。
-            if (_iconPause == null && _iconPlay == null)
-            {
-                _playFallback = UIFactory.NewText("PlayFallback", btnGO.transform, "II", 26, TextAnchor.MiddleCenter);
-                UIFactory.Stretch(_playFallback.rectTransform);
-                _playFallback.raycastTarget = false;
-            }
-
-            btnGO.GetComponent<RightClickHandler>().OnRightClick += () => ToggleSpeedMenu(brt);
-
-            var timeTextGO = UIFactory.NewText("TimeText", parent.transform, "0-00-00\n(第 0 天) 00:00", 16, TextAnchor.MiddleLeft);
-            var trt = timeTextGO.rectTransform;
-            trt.anchorMin = new Vector2(0, 0.5f);
-            trt.anchorMax = new Vector2(0, 0.5f);
-            trt.pivot = new Vector2(0, 0.5f);
-            trt.sizeDelta = new Vector2(200, 80);
-            trt.anchoredPosition = new Vector2(100, 0);
-            _timeText = timeTextGO;
-        }
-
-        private void ToggleSpeedMenu(RectTransform targetBtn)
-        {
-            if(!WorldAuthority.CanEdit)return;
-            if (_activeSpeedMenu != null) { Destroy(_activeSpeedMenu); _activeSpeedMenu = null; return; }
-            DestroyMenus();
-
-            var root = ServiceLocator.Get<UIRoot>("需要 UIRoot").MainCanvas.transform;
-            _activeSpeedMenu = UIFactory.NewRect("SpeedMenu", root, typeof(Image));
-            var mrt = _activeSpeedMenu.GetComponent<RectTransform>();
-            UIVisualTheme.Paint(_activeSpeedMenu.GetComponent<Image>());
-
-            Vector3[] corners = new Vector3[4];
-            targetBtn.GetWorldCorners(corners);
-            mrt.position = corners[1] + new Vector3(0, 10, 0);
-            mrt.pivot = new Vector2(0, 0);
-            mrt.sizeDelta = new Vector2(120, 200);
-
-            var vlg = _activeSpeedMenu.AddComponent<VerticalLayoutGroup>();
-            vlg.padding = new RectOffset(5, 5, 5, 5);
-            vlg.spacing = 2;
-
-            string[] speeds = { "暂停", "1x", "2x", "4x", "8x", "16x" };
-            float[] values = { 0f, 1f, 2f, 4f, 8f, 16f };
-
-            for (int i = 0; i < speeds.Length; i++)
-            {
-                float speedValue = values[i];
-                var btn = UIFactory.NewButton("Speed_" + i, _activeSpeedMenu.transform, speeds[i], () => {
-                    if (speedValue == 0) _clock.Pause();
-                    else { _clock.SetTimeScale(speedValue); if (!_clock.IsRunning) _clock.Play(); }
-                    DestroyMenus();
-                }, new Vector2(100, 30));
-                btn.gameObject.AddComponent<LayoutElement>().preferredHeight = 30;
-            }
-        }
 
 
 
 
 
-        private void BuildParamSection(GameObject parent)
-        {
-            var grid = parent.AddComponent<GridLayoutGroup>();
-            grid.cellSize = new Vector2(80, 80);
-            grid.spacing = new Vector2(10, 10);
-            grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-            grid.constraintCount = 2;
-            grid.childAlignment = TextAnchor.MiddleCenter;
 
-            CreateParamButton("btn_param_temp", "温度", parent.transform);
-            CreateParamButton("btn_param_hum", "湿度", parent.transform);
-            CreateParamButton("btn_param_terrain", "地形", parent.transform);
-            CreateParamButton("btn_param_seed", "种子", parent.transform);
-        }
 
-        private void CreateParamButton(string iconId, string fallbackName, Transform parent)
-        {
-            var btnGO = UIFactory.NewRect(iconId, parent, typeof(Image), typeof(Button), typeof(RightClickHandler));
-            var bg = btnGO.GetComponent<Image>();
-            UIVisualTheme.Paint(bg,"button");
 
-            var sprite = UIIconRegistry.Get(iconId);
-            if (sprite != null)
-            {
-                var iconGO = UIFactory.NewRect("Icon", btnGO.transform, typeof(Image));
-                var irt = iconGO.GetComponent<RectTransform>();
-                UIFactory.Stretch(irt, 20, 20);
-                var iconImg = iconGO.GetComponent<Image>();
-                iconImg.sprite = sprite;
-                iconImg.preserveAspect = true;
-                iconImg.color=UIVisualTheme.Muted;
-                iconImg.raycastTarget = false;
-            }
 
-            var txt = UIFactory.NewText("Name", btnGO.transform, fallbackName, 12, TextAnchor.LowerCenter);
-            UIFactory.Stretch(txt.rectTransform, 2, 5);
-            txt.raycastTarget = false;
 
-            // ★ 修复（防Bug回归）：参数左键打开，右键只取消，不再把滑条释放冒泡到覆盖层的关闭按钮。
-            btnGO.GetComponent<Button>().onClick.AddListener(() => ToggleParamPopup(iconId, fallbackName));
-            btnGO.GetComponent<RightClickHandler>().OnRightClick += DestroyMenus;
-        }
 
-        private void ToggleParamPopup(string paramId, string paramName)
-        {
-            if(!WorldAuthority.CanEdit)return;
-            if (_activeParamMenu != null && _activeParamId==paramId) { DestroyMenus(); return; }
-            DestroyMenus();
 
-            var root = ServiceLocator.Get<UIRoot>("需要 UIRoot").MainCanvas.transform;
 
-            _activeParamId=paramId;
-            _activeParamMenu = UIFactory.NewRect("ParamMenuOverlay", root, typeof(Image), typeof(RightClickHandler));
-            var oRt = _activeParamMenu.GetComponent<RectTransform>();
-            oRt.anchorMin = Vector2.zero; oRt.anchorMax = Vector2.one; oRt.offsetMin = Vector2.zero; oRt.offsetMax = Vector2.zero;
-            _activeParamMenu.GetComponent<Image>().color = new Color(0, 0, 0, 0.01f);
-            // ★ 修复（防Bug回归）：透明根节点不挡住原按钮，允许再次点击关闭。
-            _activeParamMenu.GetComponent<Image>().raycastTarget=false;
-            _activeParamMenu.GetComponent<RightClickHandler>().OnRightClick += DestroyMenus;
-
-            var menu = UIFactory.NewRect("ParamMenuContent", _activeParamMenu.transform, typeof(Image));
-            var mrt = menu.GetComponent<RectTransform>();
-            UIVisualTheme.Paint(menu.GetComponent<Image>());
-            menu.GetComponent<Image>().raycastTarget = true;
-
-            mrt.anchorMin = new Vector2(0.5f, 0);
-            mrt.anchorMax = new Vector2(0.5f, 0);
-            mrt.pivot = new Vector2(0.5f, 0);
-            mrt.anchoredPosition = new Vector2(0, 225f);
-            mrt.sizeDelta = new Vector2(420, 90);
-
-            var title = UIFactory.NewText("Title", menu.transform, "设定" + paramName + " (全年平均)", 16, TextAnchor.MiddleCenter);
-            title.color = UIVisualTheme.Text;
-            var trt = title.rectTransform;
-            trt.anchorMin = new Vector2(0, 1); trt.anchorMax = new Vector2(1, 1); trt.pivot = new Vector2(0.5f, 1);
-            trt.anchoredPosition = new Vector2(0, -8); trt.sizeDelta = new Vector2(0, 20);
-
-            // ★ 适配：参数草稿、文本输入与 Shift 应用由独立编辑器管理，种子不再落入空分支。
-            var editor=menu.AddComponent<PlanetParameterEditor>();
-            editor.Initialize(paramId, paramName);
-            editor.CancelRequested=DestroyMenus;
-        }
         private void DestroyMenus()
         {
             if (_activeSpeedMenu != null) Destroy(_activeSpeedMenu);
@@ -475,17 +335,6 @@ namespace DarwinPark.UI
             return go;
         }
 
-        private void CreateDivider(Transform parent, float xOffset)
-        {
-            var div = UIFactory.NewRect("Divider", parent, typeof(Image));
-            var rt = div.GetComponent<RectTransform>();
-            rt.anchorMin = new Vector2(0, 0.1f);
-            rt.anchorMax = new Vector2(0, 0.9f);
-            rt.pivot = new Vector2(0, 0.5f);
-            rt.offsetMin = new Vector2(xOffset, 0);
-            rt.offsetMax = new Vector2(xOffset + 2, 0);
-            div.GetComponent<Image>().color = UIVisualTheme.Border;
-        }
 
         private void Update()
         {
@@ -493,15 +342,19 @@ namespace DarwinPark.UI
             using var performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.BottomUI);
             if(WorldRuntimeGate.Ready&&!GameInputGate.Blocked)
             {
-                if(ControlBindings.Down(ControlAction.ClearLayer))HandleLayerKey(ControlBindings.Get(ControlAction.ClearLayer));
+                if(ControlBindings.Down(ControlAction.ToggleBottomBar))
+                {
+                    HandleVisibilityKey(ControlBindings.Get(ControlAction.ToggleBottomBar),TypingInField());
+                }
+                else if(ControlBindings.Down(ControlAction.ClearLayer))
+                {
+                    if(!TypingInField())HandleLayerKey(ControlBindings.Get(ControlAction.ClearLayer));
+                }
                 else if(ControlBindings.Down(ControlAction.CycleLayer))HandleLayerKey(ControlBindings.Get(ControlAction.CycleLayer));
             }
             if(_currentSelectedLayer=="layer_population"&&!PopulationRangeLayer.Visible)SetLayer("default");
             // ★ 适配：普通成员看不到创造页，作弊权限撤回后立即关闭修改弹窗。
-            if(_uiBuilt&&_tabNextBtn!=null){_tabNextBtn.interactable=true;if(!WorldAuthority.CanEdit)DestroyMenus();
-                var spawning=_page2Container?.transform.Find("EntitySpawnPanel");if(spawning!=null)spawning.gameObject.SetActive(WorldAuthority.CanEdit);
-                var play=_bottomPanel?.transform.Find("ContentArea/Page1/TimeSec/PlayBtn")?.GetComponent<Button>();if(play!=null)play.interactable=WorldAuthority.CanEdit;
-                var parameters=_bottomPanel?.transform.Find("ContentArea/Page1/ParamSec");if(parameters!=null)parameters.gameObject.SetActive(WorldAuthority.CanEdit);}
+            if(_uiBuilt)_authorityView?.Apply(WorldAuthority.CanEdit,DestroyMenus);
             if(Input.GetKeyDown(KeyCode.Escape))DestroyMenus();
             // ★ 修复：万一底部栏被外部脚本/场景切换销毁，自动重建，而不是永久消失。
             if (_uiBuilt && _bottomPanel == null && _uiRoot != null)
@@ -512,7 +365,7 @@ namespace DarwinPark.UI
 
             KeepBottomPanelVisible();
 
-            if (_clock != null && _timeText != null)
+            if (!_bottomPanelHidden && _clock != null && _timeText != null)
             {
                 // ★ 核心修复：统一 10秒=1天，365天=1年
                 int totalDays = Mathf.FloorToInt(_clock.GameTime / 10f);
@@ -533,6 +386,21 @@ namespace DarwinPark.UI
             }
         }
 
+        private static bool TypingInField()
+        {
+            var selection=EventSystem.current?.currentSelectedGameObject;
+            return selection!=null&&selection.GetComponentInParent<InputField>()?.isFocused==true;
+        }
+
+        public bool HandleVisibilityKey(KeyCode key,bool typing)
+        {
+            if(key!=ControlBindings.Get(ControlAction.ToggleBottomBar)||typing||GameInputGate.Blocked||!WorldRuntimeGate.Ready)return false;
+            _bottomPanelHidden=!_bottomPanelHidden;
+            if(_bottomPanelHidden)DestroyMenus();
+            KeepBottomPanelVisible();
+            return true;
+        }
+
         /// <summary>
         /// ★ 修复：底部栏必须始终贴在屏幕底部并位于 Canvas 其他 UI 之上。
         /// 只做幂等校正，不覆盖内容布局，避免每帧重建。
@@ -540,6 +408,11 @@ namespace DarwinPark.UI
         private void KeepBottomPanelVisible()
         {
             if (_bottomPanel == null) return;
+            if (_bottomPanelHidden)
+            {
+                if(_bottomPanel.activeSelf)_bottomPanel.SetActive(false);
+                return;
+            }
 
             if (!_bottomPanel.activeSelf) _bottomPanel.SetActive(true);
 
@@ -578,160 +451,16 @@ namespace DarwinPark.UI
             // 底栏已在构建时排序；弹窗按打开顺序置顶，布局校正不再改兄弟顺序。
         }
 
-        private void OnRunningChanged(bool running)
-        {
-            if (_playIcon != null) _playIcon.sprite = running ? _iconPause : _iconPlay;
-            if (_playFallback != null) _playFallback.text = running ? "II" : "▶";
-        }
+
 
         // ★ 补全：生成图层按钮的扫描逻辑（确保它存在）
-        private void BuildLayerSection(GameObject parent)
-        {
-            // ★ 修复 1：先清空父节点下所有旧的子物体，防止重复生成
-            foreach (Transform child in parent.transform) Destroy(child.gameObject);
 
-            var grid = parent.AddComponent<GridLayoutGroup>();
-            grid.cellSize = new Vector2(60, 60);
-            grid.spacing = new Vector2(10, 10);
-            grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-            grid.constraintCount = 3;
-            grid.childAlignment = TextAnchor.MiddleCenter;
 
-            // ★ 修复 2：使用 HashSet 去重，防止扫描到相同名字的图片生成两遍
-            HashSet<string> uniqueLayerIds = new HashSet<string>();
 
-            foreach (var id in UIIconRegistry.GetAllIds())
-            {
-                if (id.StartsWith("layer_")) uniqueLayerIds.Add(id);
-            }
 
-            // 如果没扫到图片，塞入默认的三个图层
-            if (uniqueLayerIds.Count == 0)
-            {
-                uniqueLayerIds.Add("layer_ore");
-                uniqueLayerIds.Add("layer_terrain");
-                uniqueLayerIds.Add("layer_climate");
-            }
 
-            // ★ 修复（防Bug回归）：补图标后 Resources 的扫描顺序会改变，显式保留旧版矿脉/地形/气候位置。
-            var orderedIds=new List<string>();
-            foreach(var layer in UIVisualTheme.Data.layerButtons)if(uniqueLayerIds.Contains(layer.id))orderedIds.Add(layer.id);
-            foreach(var id in uniqueLayerIds)if(!orderedIds.Contains(id))orderedIds.Add(id);
-            foreach (var id in orderedIds)
-            {
-                string displayName=id.Replace("layer_", "");
-                foreach(var layer in UIVisualTheme.Data.layerButtons)if(layer.id==id)displayName=layer.label;
-                CreateLayerIcon(parent.transform, id, displayName);
-            }
-        }
 
-        private void CreateLayerIcon(Transform parent, string iconId, string fallbackText)
-        {
-            if(!_layerOrder.Contains(iconId))_layerOrder.Add(iconId);
-            var btnGO = UIFactory.NewRect(iconId, parent, typeof(Image), typeof(Button));
-            var img = btnGO.GetComponent<Image>();
-            // ★ 适配：图标与按钮背景分离，选中时只更新面板表面，避免把线条图标当底色染暗。
-            UIVisualTheme.Paint(img,"button");
-            // ★ 修复（防Bug回归）：SpriteSwap的焦点/悬停图会覆盖取消后的普通底图，图层状态改由唯一选中值驱动。
-            btnGO.GetComponent<Button>().transition=Selectable.Transition.None;
-            var sprite = UIIconRegistry.Get(iconId);
 
-            if (sprite != null)
-            {
-                UIVisualTheme.AddIcon(btnGO.transform,iconId,new Vector2(30,30),new Vector2(0,6),new Vector2(.5f,.5f)).color=UIVisualTheme.Muted;
-            }
-            var txt = UIFactory.NewText("Txt", btnGO.transform, fallbackText, 12, TextAnchor.LowerCenter);
-            UIFactory.Stretch(txt.rectTransform,2,4);
-            // ★ 适配：新按钮使用网格的下方空位，原三个按钮仍由原三列布局定位。
-            if(iconId=="layer_population")
-            {var element=btnGO.AddComponent<LayoutElement>();element.ignoreLayout=true;var rt=btnGO.GetComponent<RectTransform>();rt.anchorMin=rt.anchorMax=new Vector2(.5f,.5f);rt.sizeDelta=new Vector2(60,44);rt.anchoredPosition=new Vector2(0,-62);
-             btnGO.AddComponent<RightClickHandler>().OnRightClick+=PopulationRangeLayer.ToggleStyle;}
-
-            // 绑定点击事件
-            btnGO.GetComponent<Button>().onClick.AddListener(() => OnLayerClicked(iconId));
-        }
-
-        private void OnLayerClicked(string layerId)
-        {
-            // ★ 核心修复：如果点击的是当前已选中的图层，则切回默认图层
-            if (_currentSelectedLayer == layerId)
-            {
-                layerId = "default";
-            }
-            SetLayer(layerId);
-        }
-        public bool HandleLayerKey(KeyCode key,bool typing=false)
-        {
-            // ★ 新增：图层只读快捷键对普通成员开放，输入框及覆盖菜单不触发。
-            var selected=UnityEngine.EventSystems.EventSystem.current?.currentSelectedGameObject;
-            if(typing||GameInputGate.Blocked||!WorldRuntimeGate.Ready||selected!=null&&selected.GetComponentInParent<InputField>() is InputField input&&input.isFocused)return false;
-            if(key==ControlBindings.Get(ControlAction.ClearLayer)){SetLayer("default");return true;}
-            if(key!=ControlBindings.Get(ControlAction.CycleLayer)||_layerOrder.Count==0)return false;
-            int index=_layerOrder.IndexOf(_currentSelectedLayer);SetLayer(index+1>=_layerOrder.Count?"default":_layerOrder[index+1]);return true;
-        }
-        public void SetLayer(string layerId)
-        {
-            if(layerId!="default"&&!_layerOrder.Contains(layerId))return;
-            _currentSelectedLayer = layerId;
-            // ★ 适配：新图层独立绘制种群范围，原三个图层的按钮坐标与 Shader 模式保持不变。
-            PopulationRangeLayer.SetVisible(layerId=="layer_population");
-
-            Debug.Log($"[Layer] 切换到图层: {layerId}");
-
-            // 1. 更新按钮高亮
-            var images = GetComponentsInChildren<UnityEngine.UI.Image>(true);
-            foreach (var img in images)
-            {
-                if (img.gameObject.name.StartsWith("layer_"))
-                {
-                    if (img.gameObject.name == layerId && layerId != "default")
-                        UIVisualTheme.Paint(img,"selected");
-                    else
-                        UIVisualTheme.Paint(img,"button");
-                }
-            }
-
-            // 2. 通知星球的 Shader 切换渲染模式
-            var planet = GameObject.Find("Planet");
-            if (planet != null)
-            {
-                var mr = planet.GetComponent<MeshRenderer>();
-                if (mr != null)
-                {
-                    var block = new MaterialPropertyBlock();
-                    mr.GetPropertyBlock(block);
-
-                    if (layerId == "layer_ore")
-                    {
-                        block.SetFloat("_LayerMode", 3f);
-                        if (DarwinPark.Planet.PlanetOreSystem.Instance != null)
-                            block.SetTexture("_OreMap", DarwinPark.Planet.PlanetOreSystem.Instance.OreMapTexture);
-                    }
-                    else if (layerId == "layer_terrain") block.SetFloat("_LayerMode", 1f);
-                    else if (layerId == "layer_climate")
-                    {
-                        // ★ 修复：切到气候图层时确保气候图已生成并绑定。
-                        // 旧版没挂 PlanetClimateMap，Shader 只能采样默认灰图，表现为整颗星球发白。
-                        var climateMap = DarwinPark.Planet.PlanetClimateMap.Instance;
-                        if (climateMap == null)
-                        {
-                            Log.Error(Log.Tag.Planet, "找不到 PlanetClimateMap，无法显示气候图层");
-                        }
-                        else
-                        {
-                            if (!climateMap.IsReady) climateMap.GenerateClimateMap();
-                            block.SetFloat("_LayerMode", 2f);
-                            // ★ 修复：统一写回贴图 + _ClimateReady + 温度编码范围，
-                            // 避免在生成后新建的 block 覆盖掉温度编码参数。
-                            climateMap.ApplyToBlock(block);
-                        }
-                    }
-                    else block.SetFloat("_LayerMode", 0f);
-
-                    mr.SetPropertyBlock(block);
-                }
-            }
-        }
 
     }
 }

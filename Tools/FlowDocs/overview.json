@@ -601,14 +601,14 @@
     "nodes": [
       {
         "id": "n0",
-        "text": "行动逻辑选择行为",
-        "target": "LocomotionGeneLogic.OnUpdate",
+        "text": "中枢逻辑选择行为",
+        "target": "CentralGeneLogic.OnUpdate",
         "kind": "entry"
       },
       {
         "id": "n1",
         "text": "咬击判定与伤害",
-        "target": "LocomotionGeneLogic.TryBite",
+        "target": "CentralGeneLogic.TryBite",
         "kind": "step"
       },
       {
@@ -1334,7 +1334,7 @@
       {
         "id": "n2",
         "text": "房主处理命令与权限",
-        "target": "LanSession.ProcessCommand",
+        "target": "LanServerRuntime.ProcessCommand",
         "kind": "step"
       },
       {
@@ -1352,7 +1352,7 @@
       {
         "id": "n5",
         "text": "副本应用快照",
-        "target": "LanSession.ApplyFrame",
+        "target": "LanClientRuntime.ApplyFrame",
         "kind": "step"
       },
       {

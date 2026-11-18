@@ -8,7 +8,7 @@ namespace DarwinPark.Entities.Logic
     public sealed class HeterotrophyGeneLogic:IGeneLogic
     {
         private EntityGeneController _genes;
-        public void Initialize(EntityGeneController controller,GeneInstance gene){_genes=controller;if(DarwinPark.Core.OptionalComponent.Read<NutritionParasite>(controller)==null)controller.gameObject.AddComponent<NutritionParasite>();}
+        public void Initialize(EntityGeneController controller,GeneInstance gene){_genes=controller;}
         public void OnUpdate(float dt){}
         public string GetTooltipInfo()=>NutritionTransfer.CanDigest(_genes)?"击败后按消化效率吸收营养，吃不下的营养留为尸体。":"幼年寄生：隐藏并跟随宿主吸收饱食度，保留宿主安全口粮；成年脱离，独立消化取食。";
     }

@@ -7,6 +7,7 @@ namespace DarwinPark.Genetics
     public class GeneEvaluation
     {
         public GeneInstance Gene;
+        internal int GenomeIndex;
         public GeneDefinition Definition;
         public GeneStateDefinition State;
         public float SuppressionAmount;
@@ -14,7 +15,8 @@ namespace DarwinPark.Genetics
         public Dictionary<string,float> AttributeContributions=new Dictionary<string,float>();
         public const float MinimumActiveStrength=10f;
         public float EnvironmentSuppression,RoleSuppression;public bool GestatingAtEvaluation;
-        public bool IsActive => EffectiveStrength >= MinimumActiveStrength; // 生效阈值改为 10
+        public bool MissingRequirements;
+        public bool IsActive => EffectiveStrength >= MinimumActiveStrength && (Definition==null||!Definition.ExplicitState||State!=null);
     }
 
     public class GenomeEvaluation
@@ -41,11 +43,14 @@ namespace DarwinPark.Genetics
             if (genome == null) return result;
 
             // 1. 处理抑制关系
-            var suppressions = new Dictionary<GeneInstance, float>();
-            foreach (var gene in genome.Genes)
+            // ★ 修复（防Bug回归）：同定义的启用实例受到相同抑制，按定义累计一次，保留原累加顺序。
+            var suppressions = new Dictionary<string, float>();
+            var definitions = new GeneDefinition[genome.Genes.Count];
+            for (int index = 0; index < genome.Genes.Count; index++)
             {
+                var gene = genome.Genes[index];
                 if (!gene.Enabled) continue;
-                var def = GeneDatabase.Get(gene.DefinitionId);
+                var def = definitions[index] = GeneDatabase.Get(gene.DefinitionId);
                 if (def == null || def.SuppressionRules == null) continue;
 
                 // 如果是繁殖基因，且不在孕育期，则不产生抑制
@@ -55,24 +60,22 @@ namespace DarwinPark.Genetics
 
                 foreach (var rule in def.SuppressionRules)
                 {
-                    foreach (var target in genome.FindByDefinition(rule.TargetGeneId))
-                    {
-                        if (!target.Enabled) continue;
-                        suppressions.TryGetValue(target, out var cur);
-                        suppressions[target] = cur + gene.Value * rule.Coefficient / 1000f;
-                    }
+                    if (rule.TargetGeneId == null) continue;
+                    suppressions.TryGetValue(rule.TargetGeneId, out float current);
+                    suppressions[rule.TargetGeneId] = current + gene.Value * rule.Coefficient / 1000f;
                 }
             }
 
             // 2. 逐基因计算属性
 
-            foreach (var gene in genome.Genes)
+            for (int index = 0; index < genome.Genes.Count; index++)
             {
+                var gene = genome.Genes[index];
                 if (!gene.Enabled) continue;
-                var def = GeneDatabase.Get(gene.DefinitionId);
+                var def = definitions[index];
                 if (def == null) continue;
 
-                suppressions.TryGetValue(gene, out var sup);
+                suppressions.TryGetValue(gene.DefinitionId, out var sup);
                 // ★ 适配：角色表达抑制只影响有效值与属性，不改写遗传值。
                 float role=0;
                 if(additionalSuppression!=null&&additionalSuppression.TryGetValue(gene.DefinitionId,out float extra)){role=Mathf.Max(0,extra);sup+=role;}
@@ -84,8 +87,9 @@ namespace DarwinPark.Genetics
                 var eval = new GeneEvaluation
                 {
                     Gene = gene,
+                    GenomeIndex = index,
                     Definition = def,
-                    State = def.ResolveState(gene.Value, gene.MissingStateIds),
+                    State = def.ResolveState(gene),
                     // ★ 修复（防Bug回归）：面板同时显示环境抑制，保证有效值与抑制值一致。
                     SuppressionAmount = sup + global,
                     // ★ 适配：仅记录来源数值供界面解释，不额外拼接字符串或改变求值。
@@ -97,8 +101,45 @@ namespace DarwinPark.Genetics
             }
 
             // ★ 修复（防Bug回归）：同时记录每个表达真正贡献的属性，失效基因和被同谱系替代的共有属性不能冒用实体总值。
+            // ★ 新增：先整体求组合依赖，防止前置缺失时部位和行为留下半生效属性。
+            RemoveUnsatisfiedExpressions(result.Genes);
             result.Attributes = GeneAttributeInheritance.Accumulate(result.Genes);
             return result;
+        }
+
+        private static void RemoveUnsatisfiedExpressions(List<GeneEvaluation> evaluations)
+        {
+            if (!evaluations.Exists(gene => gene.IsActive && gene.Definition.RequiresGenes.Count > 0)) return;
+
+            // ★ 修复（防Bug回归）：检查前置时按定义查找，保留同定义多个有效副本及级联失效。
+            var activeCounts = new Dictionary<string, int>();
+            foreach (var gene in evaluations)
+            {
+                if (!gene.IsActive) continue;
+                string id = gene.Definition.Id;
+                activeCounts.TryGetValue(id, out int count);
+                activeCounts[id] = count + 1;
+            }
+
+            bool changed;
+            do
+            {
+                changed = false;
+                foreach (var gene in evaluations)
+                {
+                    if (!gene.IsActive) continue;
+                    foreach (string required in gene.Definition.RequiresGenes)
+                    {
+                        if (required != null && activeCounts.ContainsKey(required)) continue;
+                        string id = gene.Definition.Id;
+                        if (--activeCounts[id] == 0) activeCounts.Remove(id);
+                        gene.MissingRequirements = true;
+                        gene.EffectiveStrength = 0;
+                        changed = true;
+                        break;
+                    }
+                }
+            } while (changed);
         }
     }
 }

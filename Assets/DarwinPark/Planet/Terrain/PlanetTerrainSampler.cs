@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace DarwinPark.Planet
 {
@@ -76,7 +76,8 @@ namespace DarwinPark.Planet
         public static Vector3 WorldToLocalDirection(Transform planet, Vector3 worldPos)
         {
             if (planet == null) return Vector3.up;
-            return planet.InverseTransformDirection(worldPos - planet.position).normalized;
+            // ✦ 修复（Bug回归）：坐标查询必须包含缩放逆变换，方向变换会在非均匀缩放时偏离地理位置。
+            return planet.InverseTransformPoint(worldPos).normalized;
         }
     }
 }

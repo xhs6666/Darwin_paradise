@@ -1,0 +1,2 @@
+linear luminance: oldDay=0.195547 day=0.195628 oldNight=0.098148 night=0.015390
+splitDayAttenuation=0.978029 splitNightAttenuation=0.389281

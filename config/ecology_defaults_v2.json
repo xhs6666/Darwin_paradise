@@ -1,0 +1,406 @@
+{
+  "_说明": "新世界启用70%实际生产者、30%实际移动者；种源仅新世界一次建立，此后自然繁殖；可选比例调节只抑制超额新孕育。外部文件支持中文注释；应用后随世界存档保存。",
+  "version": 2,
+  "enableNewWorldRules": true,
+  "minimumPopulation": 10,
+  "producerRatio": 0.7,
+  "mobileRatio": 0.3,
+  "producerTemplate": "producer",
+  "mobileTemplate": "mobile",
+  "_建群": "每只新王后一生仅领取一次有限育幼储粮；前两胎优先工匠，工匠成年前王后临时采集；不免除寿命、饥饿、环境或上限。",
+  "enableFoundingSupport": true,
+  "minimumWorkers": 2,
+  "foundingFood": 64,
+  "maximumFoundingMembers": 4,
+  "localProducerTarget": 8,
+  "plantSpacing": 3,
+  "templates": [
+    {
+      "id": "producer",
+      "name": "默认生产者 · 自养繁衍",
+      "genes": [
+        {
+          "id": "gene_growth",
+          "value": 20,
+          "tier": 0
+        },
+        {
+          "id": "gene_reproduction",
+          "value": 45,
+          "tier": 0
+        },
+        {
+          "id": "gene_environment",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_storage",
+          "value": 70,
+          "tier": 0
+        },
+        {
+          "id": "gene_repair",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_nutrition",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_photosynthesis",
+          "value": 50,
+          "tier": 1
+        }
+      ]
+    },
+    {
+      "id": "mobile",
+      "name": "默认移动实体 · 消化取食",
+      "genes": [
+        {
+          "id": "gene_growth",
+          "value": 20,
+          "tier": 0
+        },
+        {
+          "id": "gene_reproduction",
+          "value": 45,
+          "tier": 0
+        },
+        {
+          "id": "gene_environment",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_storage",
+          "value": 70,
+          "tier": 0
+        },
+        {
+          "id": "gene_repair",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_locomotion",
+          "value": 75,
+          "tier": 0
+        },
+        {
+          "id": "gene_heterotrophy",
+          "value": 75,
+          "tier": 1
+        },
+        {
+          "id": "gene_nutrient_utilization",
+          "value": 50,
+          "tier": 1
+        },
+        {
+          "id": "gene_nervous_system",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_observation",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_feeding_preference",
+          "value": 50,
+          "tier": 1
+        },
+        {
+          "id": "gene_nutrition",
+          "value": 80,
+          "tier": 0
+        }
+      ]
+    },
+    {
+      "id": "ant_founder",
+      "name": "蚁群创始王后 · 无性繁殖",
+      "genes": [
+        {
+          "id": "gene_growth",
+          "value": 20,
+          "tier": 0
+        },
+        {
+          "id": "gene_reproduction",
+          "value": 45,
+          "tier": 0
+        },
+        {
+          "id": "gene_environment",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_storage",
+          "value": 70,
+          "tier": 0
+        },
+        {
+          "id": "gene_repair",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_population",
+          "value": 20,
+          "tier": 2
+        },
+        {
+          "id": "gene_locomotion",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_nutrient_utilization",
+          "value": 50,
+          "tier": 1
+        },
+        {
+          "id": "gene_nervous_system",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_observation",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_feeding_preference",
+          "value": 50,
+          "tier": 1
+        },
+        {
+          "id": "gene_heterotrophy",
+          "value": 50,
+          "tier": 1
+        },
+        {
+          "id": "gene_nutrition",
+          "value": 80,
+          "tier": 0
+        }
+      ]
+    },
+    {
+      "id": "scavenger",
+      "name": "移动清道夫 · 食腐回收",
+      "genes": [
+        {
+          "id": "gene_growth",
+          "value": 20,
+          "tier": 0
+        },
+        {
+          "id": "gene_reproduction",
+          "value": 45,
+          "tier": 0
+        },
+        {
+          "id": "gene_environment",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_storage",
+          "value": 70,
+          "tier": 0
+        },
+        {
+          "id": "gene_repair",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_locomotion",
+          "value": 75,
+          "tier": 0
+        },
+        {
+          "id": "gene_scavenging",
+          "value": 50,
+          "tier": 2
+        },
+        {
+          "id": "gene_nutrient_utilization",
+          "value": 50,
+          "tier": 1
+        },
+        {
+          "id": "gene_nervous_system",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_observation",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_feeding_preference",
+          "value": 50,
+          "tier": 1
+        },
+        {
+          "id": "gene_heterotrophy",
+          "value": 50,
+          "tier": 1
+        },
+        {
+          "id": "gene_nutrition",
+          "value": 80,
+          "tier": 0
+        }
+      ]
+    },
+    {
+      "id": "pioneer_mobile",
+      "name": "初始移动先驱 · 自养繁衍",
+      "genes": [
+        {
+          "id": "gene_growth",
+          "value": 20,
+          "tier": 0
+        },
+        {
+          "id": "gene_reproduction",
+          "value": 45,
+          "tier": 0
+        },
+        {
+          "id": "gene_environment",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_storage",
+          "value": 70,
+          "tier": 0
+        },
+        {
+          "id": "gene_repair",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_nutrition",
+          "value": 80,
+          "tier": 0
+        },
+        {
+          "id": "gene_locomotion",
+          "value": 75,
+          "tier": 0
+        },
+        {
+          "id": "gene_nervous_system",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_observation",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_feeding_preference",
+          "value": 50,
+          "tier": 1
+        },
+        {
+          "id": "gene_heterotrophy",
+          "value": 50,
+          "tier": 1
+        }
+      ]
+    },
+    {
+      "id": "aquatic_swimmer",
+      "name": "海洋游泳生物 · 鳃呼吸",
+      "genes": [
+        {
+          "id": "gene_growth",
+          "value": 20,
+          "tier": 0
+        },
+        {
+          "id": "gene_reproduction",
+          "value": 45,
+          "tier": 0
+        },
+        {
+          "id": "gene_environment",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_storage",
+          "value": 70,
+          "tier": 0
+        },
+        {
+          "id": "gene_repair",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_locomotion",
+          "value": 75,
+          "tier": 0,
+          "stateId": "swimming"
+        },
+        {
+          "id": "gene_heterotrophy",
+          "value": 75,
+          "tier": 1
+        },
+        {
+          "id": "gene_nutrient_utilization",
+          "value": 50,
+          "tier": 1
+        },
+        {
+          "id": "gene_nervous_system",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_observation",
+          "value": 50,
+          "tier": 0
+        },
+        {
+          "id": "gene_feeding_preference",
+          "value": 50,
+          "tier": 1
+        },
+        {
+          "id": "gene_nutrition",
+          "value": 80,
+          "tier": 0
+        },
+        {
+          "id": "gene_swimming",
+          "value": 75,
+          "tier": 1
+        },
+        {
+          "id": "gene_aquatic_respiration",
+          "value": 50,
+          "tier": 1
+        }
+      ]
+    }
+  ]
+}

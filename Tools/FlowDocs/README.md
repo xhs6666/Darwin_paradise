@@ -5,7 +5,7 @@
 ## 打开手册
 
 - 双击 `Docs/运行流程图/index.html`，在浏览器搜索脚本/方法、切换Editor/Player、查看控制流程、调用图、被调用者、接口候选、源代码行号与场景挂载。
-- 在支持Mermaid的Markdown阅读器或GitHub查看 `Docs/运行流程图/README.md` → `主流程.md` / `脚本/*.md`。
+- 在支持Mermaid的Markdown阅读器或GitHub查看 `Docs/运行流程图/README.md` → `主流程.md` / `模块/*.md`。
 - 图中可缩放、全屏、下载SVG和复制Mermaid。页面的数据、字体样式及脚本均为本地资源，没有CDN依赖。
 
 ## 一键更新
@@ -16,7 +16,9 @@
 powershell -ExecutionPolicy Bypass -File Tools/FlowDocs/Generate.ps1
 ```
 
-此操作依次编译工具、运行小型源码自测、重新分析所有Assets脚本、生成页面数据与Mermaid分图，然后校验覆盖、源码SHA256、图边、方法链接和条件编译版本。改动后出现校验失败时，应先修复生成器或引用，不能把缺图当作该方法未运行。
+已成功恢复过依赖的工作区，可追加 `-NoRestore` 复用现有依赖；首次使用仍需正常恢复。
+
+此操作依次编译工具、运行小型源码自测、重新分析所有Assets脚本、生成页面数据与按模块合并的Mermaid手册，然后校验覆盖、源码SHA256、图边、方法链接和条件编译版本。改动后出现校验失败时，应先修复生成器或引用，不能把缺图当作该方法未运行。
 
 ```powershell
 # 只检查已有文档是否过期
@@ -36,10 +38,14 @@ node Tools/FlowDocs/browser-check.mjs
 - `validate.py`：与源码逐文件比对并检查全部链接和图结构。
 - `browser-check.mjs`：离线加载、搜索筛选、版本差异、关系导航、源码定位、全部SVG布局及窄屏显示检查。
 - `Docs/运行流程图/atlas.js`、`atlas.css`、`index.html`：交互阅读器；生成器保留这些手写资源。
-- 其余数据和脚本Markdown为生成结果，直接修改会在更新时覆盖。
+- 其余数据和模块Markdown为生成结果，直接修改会在更新时覆盖。
 
 扫描边界是Assets中的C#、Shader和HLSL。Packages/Library和Tools不属于游戏源码覆盖范围；零方法的数据类/枚举也会列入索引。自动属性的隐式存储、字段初始化原文可在源码视图查看。Unity消息跨组件顺序、虚方法/接口的实际实例、反射与字符串入口、线程调度和完整GPU宏展开都不能由静态文档证明。实现候选和动态边界已单独标记。
 
 源码校验和与位置ID使用统一LF换行后的UTF-8文本，避免不同Git换行设置导致相同源码被误报为过期。生成数据不含生成时间，便于审查和复现。
 
 “文件作用”页和脚本标题下的职责说明来自 `Tools/file_catalog_roles.json`。新增脚本应补充此文件；一键更新会运行 `Tools/generate_file_catalog.py` 同步Markdown索引和离线说明数据。
+
+模块手册按 `Module` 输出到 `Docs/运行流程图/模块/`。每个脚本使用 `s<脚本ID>`、方法使用 `m<方法ID>` 锚点，文件索引与业务主流程同步链接这些章节。不会重新生成逐脚本Markdown文件。
+
+文档按主题合并，旧页到章节映射保存在 `Tools/docs_layout.json`。运行 `python Tools/validate_docs.py` 检查主题覆盖、本地链接与章节锚点。

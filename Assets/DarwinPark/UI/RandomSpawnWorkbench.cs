@@ -58,7 +58,7 @@ namespace DarwinPark.UI
         private static RandomSpawnRecipe Copy(RandomSpawnRecipe source)=>JsonUtility.FromJson<RandomSpawnRecipe>(JsonUtility.ToJson(source));
         private static RandomSpawnRecipe Template(EntityTemplateData template)
         {
-            var genome=template==null?RandomSpawnRecipe.DefaultGenome():new Genome();if(template!=null)foreach(var gene in template.genes)genome.Add(GeneInstance.Create(gene.definitionId,gene.value,gene.tier));
+            var genome=template==null?RandomSpawnRecipe.DefaultGenome():template.ToGenome();
             return new RandomSpawnRecipe{method=RandomSpawnMethod.Template,name=template?.templateName??"默认实体",template=genome};
         }
         public void SelectTemplate(EntityTemplateData template){_draft=Template(template);_presetId=null;}

@@ -22,6 +22,8 @@ namespace DarwinPark.Entities
 
         // ★ 关键修改 1：定义一个静态委托，让上层（GameBootstrap）把生成逻辑注入进来
         public static Action<Genome, Vector3, string> Spawner;
+        // ★ 新增：表现安装由客户端注册，实体/专服程序集不引用模型表现代码。
+        public static Action<DarwinEntity> PreparePresentation;
 
         private void Awake()
         {

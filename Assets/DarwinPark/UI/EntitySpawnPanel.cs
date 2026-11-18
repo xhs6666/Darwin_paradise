@@ -48,7 +48,7 @@ namespace DarwinPark.UI
             CreateFavoritesButton(leftSec.transform);
 
             // ================= 分隔线 1 =================
-            CreateDivider(transform, 90);
+            UIFactory.CreateDivider(transform, 90);
 
             // ================= 中间：模板区域 (两行四列) =================
             var templateSec = UIFactory.NewRect("TemplateSec", transform);
@@ -69,6 +69,7 @@ namespace DarwinPark.UI
             _templateGridParent = templateSec.transform;
             // ★ 适配：全星球随机投放由独立栏负责，保留原有默认、收藏与模板放置入口。
             RandomSpawnPanel.Attach(transform);
+
         }
 
         private void CreateSpawnSlot(Transform parent, string label, GameObject prefab, Genome customGenome)
@@ -112,7 +113,9 @@ namespace DarwinPark.UI
         {
             if (_templateGridParent == null) return;
 
-            foreach (Transform child in _templateGridParent) Destroy(child.gameObject);
+            // ★ 修复（防Bug回归）：延迟销毁前先停用旧槽位，阻断旧模板投放和残留数量窗口。
+            PlacementQuantityPopup.CloseAll();EntityPlacementTool.Instance?.CancelPlacement();
+            foreach (Transform child in _templateGridParent){child.gameObject.SetActive(false);Destroy(child.gameObject);}
 
             for (int i = 0; i < 8; i++)
             {
@@ -157,29 +160,12 @@ namespace DarwinPark.UI
 
             var spawner = btnGO.GetComponent<EntitySpawnerUI>();
             spawner.entityPrefab = DefaultEntityPrefab;
-            spawner.CustomGenome = ConvertToGenome(tpl.genes);
+            spawner.CustomGenome = tpl.ToGenome();
+            spawner.TemplateName=tpl.templateName;
+            // ★ 新增：模板右上角有独立删除入口，子按钮接收点击，不触发父槽位放置。
+            var delete=UIFactory.NewButton("DeleteTemplate",btnGO.transform,"×",()=>PlacementQuantityPopup.Show(spawner,true),new Vector2(20,20));
+            var dr=(RectTransform)delete.transform;dr.anchorMin=dr.anchorMax=dr.pivot=Vector2.one;dr.anchoredPosition=new Vector2(-2,-2);UIVisualTheme.StyleButton(delete);UIVisualTheme.Paint(delete.image,"danger");
         }
 
-        private Genome ConvertToGenome(List<GeneInstanceData> genes)
-        {
-            var genome = new Genome();
-            foreach (var g in genes)
-            {
-                genome.Add(GeneInstance.Create(g.definitionId, g.value, g.tier));
-            }
-            return genome;
-        }
-
-        private void CreateDivider(Transform parent, float xOffset)
-        {
-            var div = UIFactory.NewRect("Divider", parent, typeof(Image));
-            var rt = div.GetComponent<RectTransform>();
-            rt.anchorMin = new Vector2(0, 0.1f);
-            rt.anchorMax = new Vector2(0, 0.9f);
-            rt.pivot = new Vector2(0, 0.5f);
-            rt.offsetMin = new Vector2(xOffset, 0);
-            rt.offsetMax = new Vector2(xOffset + 2, 0);
-            div.GetComponent<Image>().color = UIVisualTheme.Border;
-        }
     }
 }

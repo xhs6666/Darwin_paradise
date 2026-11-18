@@ -24,6 +24,7 @@ namespace DarwinPark.EditorTools
     [InitializeOnLoad] public static class WorldControlsRegression
     {
         private const string Key="DarwinPark.WorldControls";private static bool _started;private static readonly List<string> Passed=new List<string>();
+        private static bool? _naturalSeedEnabled;
         private static readonly BindingFlags Private=BindingFlags.NonPublic|BindingFlags.Instance;
         private static string Folder=>Path.GetFullPath("Artifacts/WorldControlsReview");
         static WorldControlsRegression(){EditorApplication.update+=()=>{if(!_started&&Application.isPlaying&&SessionState.GetBool(Key,false)&&LanSession.Instance!=null){_started=true;LanSession.Instance.StartCoroutine(Guard());}};}
@@ -33,6 +34,7 @@ namespace DarwinPark.EditorTools
         {
             Directory.CreateDirectory(Folder);File.WriteAllText(Path.Combine(Folder,"result.txt"),"RUNNING");Passed.Clear();string error=null;var stack=new Stack<IEnumerator>();stack.Push(Run());
             while(stack.Count>0){bool next=false;object value=null;try{next=stack.Peek().MoveNext();if(next)value=stack.Peek().Current;}catch(Exception ex){error=ex.ToString();Debug.LogException(ex);break;}if(!next){stack.Pop();continue;}if(value is IEnumerator nested)stack.Push(nested);else yield return value;}
+            if(_naturalSeedEnabled.HasValue)NaturalPopulationPace.Current.enabled=_naturalSeedEnabled.Value;
             File.WriteAllText(Path.Combine(Folder,"result.txt"),(error==null?"PASS":"FAIL")+"\n"+error+"\n"+string.Join("\n",Passed));SessionState.SetBool(Key,false);Debug.Log("[WorldControls] "+(error==null?"PASS":"FAIL")+" "+Passed.Count);EditorApplication.Exit(error==null?0:1);
         }
         private static DarwinEntity Spawn(Vector3 point)
@@ -42,12 +44,18 @@ namespace DarwinPark.EditorTools
             if(result==null)return null;result.Genes.mutationChance=0;result.Genes.enabled=false;result.GetComponent<EntityLifeCycle>().RestoreProgress(LifeCycleSettings.Load().adultProgress);result.Genes.RestoreStageState(AgeState.Adult,3,2);result.Genes.Recalculate();
             result.GetComponent<Rigidbody>().isKinematic=true;result.GetComponent<DarwinPark.Entities.Vitals.EntityVitals>().enabled=false;result.GetComponent<DarwinPark.Entities.Vitals.EntityEnvironmentHazard>().enabled=false;return result;
         }
-        private static IEnumerator Capture(string name){yield return null;yield return new WaitForEndOfFrame();ScreenCapture.CaptureScreenshot(Path.Combine(Folder,name+".png"));yield return null;yield return null;}
+        // ★ 修复（防Bug回归）：Editor 批处理不触发帧末等待，CI 不能因截图让整套世界回归挂起。
+        private static IEnumerator Capture(string name){yield return null;if(!Application.isBatchMode)yield return new WaitForEndOfFrame();ScreenCapture.CaptureScreenshot(Path.Combine(Folder,name+".png"));yield return null;yield return null;}
         private static IEnumerator WaitForUpdate(WorldParameterUpdate update)
         {double start=EditorApplication.timeSinceStartup;int frames=0;while(update.Busy){if(EditorApplication.timeSinceStartup-start>=120)throw new TimeoutException("参数更新超时");frames++;yield return null;}Check(frames>1&&update.LastStatus=="已应用","加载动画跨帧运行并完成后台更新");}
         private static IEnumerator Run()
         {
             yield return null;yield return null;
+            // ★ 适配：本夹具验证精确实体数；隔离自然种源，不能因新增默认生态使旧断言随机失败。
+            _naturalSeedEnabled=NaturalPopulationPace.Current.enabled;NaturalPopulationPace.Current.enabled=false;
+            Check(typeof(WorldSessionManager).Assembly.GetName().Name=="DarwinPark.Gameplay"&&typeof(LanSession).Assembly==typeof(WorldSessionManager).Assembly,"世界和网络会话实际编译在独立玩法程序集");
+            Check(!typeof(DedicatedServerBootstrap).Assembly.GetReferencedAssemblies().Any(a=>a.Name=="DarwinPark.UI"),"权威服务端无UI程序集依赖");
+            Check(GameplayPresentation.PrepareControls!=null&&LanRuntimeServices.CreateClient!=null,"客户端表现和副本适配器实际安装");
             var world=Object.FindFirstObjectByType<WorldSessionManager>();var builder=Object.FindFirstObjectByType<PlanetTerrainMeshBuilder>();var climate=PlanetClimateMap.Instance;var clock=ServiceLocator.Get<SimulationClock>();
             builder.subdivisions=16;climate.mapResolution=64;typeof(WorldSessionManager).GetField("_initialTerrain",Private).SetValue(world,JsonUtility.ToJson(builder));world.Create("世界设置隔离回归",742031,.5f,20,44);while(world.Busy)yield return null;clock.Pause();
             var root=ServiceLocator.Get<UIRoot>();var control=Object.FindFirstObjectByType<SimulationControlPanel>();var page=typeof(SimulationControlPanel).GetMethod("SwitchPage",Private);
@@ -55,6 +63,9 @@ namespace DarwinPark.EditorTools
             Check(stats.gameObject.activeInHierarchy,"第一页显示实体统计");yield return Capture("page1");page.Invoke(control,new object[]{1});Check(!stats.gameObject.activeInHierarchy,"第二页不重复显示统计");page.Invoke(control,new object[]{0});yield return null;yield return null;
             Check(stats.gameObject.activeInHierarchy&&stats.GetComponent<MapEntityActions>()!=null,"实体统计和动作只放在第一页");Check(stats.transform.Find("WorldSettings/ThemeIcon").GetComponent<Image>().sprite!=null,"统计右上角齿轮实际加载图标");
             Vector3 home=EcologyQueries.Surface(builder.transform.position+Vector3.up*400);var a=Spawn(home);var b=Spawn(home+Vector3.right*3);var c=Spawn(home+Vector3.forward*3);yield return null;stats.RefreshNow();Check(stats.Total==3,"全地图实体统计与现有存活实体一致");
+            var copied=Genome.Copy(a.Genes.Genome);var originalGene=a.Genes.Genome.Genes[0];var copiedGene=copied.Genes[0];
+            Check(copiedGene.InstanceId!=originalGene.InstanceId&&copiedGene.DefinitionId==originalGene.DefinitionId&&!ReferenceEquals(copiedGene.MissingStateIds,originalGene.MissingStateIds),"统一基因复制保持定义并隔离实例身份和列表");
+            float originalValue=originalGene.Value;copiedGene.Value=originalValue+1;Check(originalGene.Value==originalValue,"修改复制基因不能污染实体或模板");
             stats.transform.Find("WorldSettings").GetComponent<Button>().onClick.Invoke();var settings=WorldGameSettingsPanel.Instance;Check(settings!=null&&settings.Visible&&GameInputGate.Blocked,"齿轮打开本存档设置并拦截背景输入");
             var overlay=root.MainCanvas.transform.Find("WorldGameSettingsOverlay/Panel");overlay.Find("EntityLimit").GetComponent<InputField>().text="3";overlay.Find("Apply").GetComponent<Button>().onClick.Invoke();
             Check(EntityPopulationLimit.Maximum==3&&WorldSaveStore.Read(WorldSaveStore.FileFor(world.Current.id)).gameSettings.entityLimit==3,"实体上限实际写盘读取，属于当前存档");yield return Capture("world-settings");settings.Close();
@@ -65,7 +76,13 @@ namespace DarwinPark.EditorTools
             Object.DestroyImmediate(c.gameObject);reproduction.OnUpdate(.1f);Check(!a.Genes.IsGestating&&EntityRegistry.All.Count==3,"空位释放后真实出生且不突破上限");
             Check(WorldEntityActions.SetLimit(1,false)&&EntityRegistry.All.Count==3,"降低上限保留已有实体");
             using(EntityPopulationLimit.RestoreScope()){Check(Spawn(home+Vector3.right*9)!=null,"读档豁免完整恢复超过上限的已有实体");}Check(!EntityPopulationLimit.CanSpawn,"读档作用域结束立即恢复上限");
-            world.SaveNow(false);var overCap=WorldSaveStore.Read(WorldSaveStore.FileFor(world.Current.id));world.Open(overCap);while(world.Busy)yield return null;Check(EntityRegistry.All.Count==4&&EntityPopulationLimit.Maximum==1&&!clock.IsRunning,"实际读档完整恢复超上限的四个实体并保持暂停");
+            EntityFavoritesManager.Instance.ToggleFavorite(a);world.SaveNow(false);var overCap=WorldSaveStore.Read(WorldSaveStore.FileFor(world.Current.id));world.Open(overCap);while(world.Busy)yield return null;Check(EntityRegistry.All.Count==4&&EntityPopulationLimit.Maximum==1&&!clock.IsRunning,"实际读档完整恢复超上限的四个实体并保持暂停");
+            Check(EntityRegistry.All.Count(e=>EntityFavoritesManager.Instance.IsFavorite(e))==1,"迁移玩法后收藏通过客户端适配器恢复");
+            var favoriteQuery=GameplayPresentation.IsFavorite;var cameraCapture=GameplayPresentation.CaptureCamera;
+            try{GameplayPresentation.IsFavorite=null;GameplayPresentation.CaptureCamera=null;world.SaveNow(false);Check(WorldSaveStore.Read(WorldSaveStore.FileFor(world.Current.id)).entities.Count(e=>e.favorite)==1,"缺少表现适配时仍保留存档收藏数据");}
+            finally{GameplayPresentation.IsFavorite=favoriteQuery;GameplayPresentation.CaptureCamera=cameraCapture;}
+            // ★ 适配：读档会重建 HUD 子节点，测试也必须重新取得实际控件，不能使用上个世界已销毁的统计组件。
+            stats=root.MainCanvas.transform.Find("BottomPanel/ContentArea/Page1/MapEntityStatistics").GetComponent<MapEntityStatisticsUI>();
             WorldAuthority.CanEdit=false;yield return null;page.Invoke(control,new object[]{1});yield return null;Check(!root.MainCanvas.transform.Find("BottomPanel/ContentArea/Page2/EntitySpawnPanel").gameObject.activeSelf,"成员第二页隐藏创造控件");page.Invoke(control,new object[]{0});yield return null;
             Check(stats.gameObject.activeInHierarchy&&!root.MainCanvas.transform.Find("BottomPanel/ContentArea/Page2/EntitySpawnPanel").gameObject.activeSelf,"普通成员能看第一页统计但看不到创造功能");Check(!stats.transform.Find("WorldSettings").gameObject.activeSelf&&!stats.transform.Find("ClearAllEntities").gameObject.activeSelf,"普通成员隐藏设置和清除按钮");
             Check(!WorldEntityActions.ClearAll()&&!WorldEntityActions.SetLimit(0,false),"直接调用管理入口也拒绝无权限操作");WorldAuthority.CanEdit=true;yield return null;

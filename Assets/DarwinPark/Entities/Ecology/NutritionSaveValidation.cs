@@ -11,6 +11,7 @@ namespace DarwinPark.Entities.Ecology
         public static void Validate(EcologySaveState state,ICollection<string> catalog)
         {
             if(state==null)return;
+            EntityActivityPlan.Validate(state.activityPlan);
             if(state.nutritionParasiteCount<0||!string.IsNullOrEmpty(state.nutritionParasite?.host)&&(!Guid.TryParseExact(state.nutritionParasite.host,"N",out _)||state.nutritionParasite.host==state.id))throw new InvalidDataException("营养寄生宿主标识或数量无效");
             if(state.foreignEggs==null)return;
             foreach(var egg in state.foreignEggs)

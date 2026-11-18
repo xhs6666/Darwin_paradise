@@ -1,0 +1,11 @@
+{
+  // 大气配色（全局显示设置），保存后约2秒生效；格式为 #RRGGBB。
+  "version": 1,
+  "dayColor": "#3385FF",
+  "twilightColor": "#FF7138",
+  "nightColor": "#02040B",
+  // 观察视角的地表/海水/云层昼夜显示；数据图层不受影响。
+  "enableDayNight": true,
+  "nightSurfaceBrightness": 0.009,
+  "terminatorWidth": 0.065
+}

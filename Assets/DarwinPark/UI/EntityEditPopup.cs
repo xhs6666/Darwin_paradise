@@ -8,7 +8,7 @@ using Object=UnityEngine.Object;
 namespace DarwinPark.UI
 {
     // ★ 新增：实体编辑使用独立弹窗，失效原因仅由基因悬浮显示，原实体面板尺寸、基因行和滚动布局保持一致。
-    public sealed class EntityEditPopup:MonoBehaviour
+    public sealed partial class EntityEditPopup:MonoBehaviour
     {
         public static EntityEditPopup Instance{get;private set;}public bool Visible=>_overlay!=null;
         private GameObject _overlay;private DarwinEntity _entity;private bool _running,_blocked;private Vector2 _scroll;
@@ -26,6 +26,7 @@ namespace DarwinPark.UI
             _entity=entity;_status="";_cursor=Cursor.lockState;_cursorVisible=Cursor.visible;Cursor.lockState=CursorLockMode.None;Cursor.visible=true;_scroll=Vector2.zero;_blocked=GameInputGate.Blocked;_running=ServiceLocator.Get<SimulationClock>().IsRunning;if(!WorldAuthority.Online)ServiceLocator.Get<SimulationClock>().Pause();GameInputGate.Blocked=true;
             _overlay=UIFactory.NewRect("EntityEditOverlay",ServiceLocator.Get<UIRoot>().MainCanvas.transform,typeof(Image));UIFactory.Stretch(_overlay.GetComponent<RectTransform>());_overlay.GetComponent<Image>().color=Color.clear;
             for(int i=0;i<StatIds.Length;i++){float value=0;entity?.GetComponent<EntityStats>()?.TryGet(StatIds[i],out value);_values[i]=value.ToString("F2");}
+            LoadBodyAndTasks();
         }
         public bool ApplyStage(AgeState age)
         {bool ok=_entity!=null&&LanEditActions.Submit(new LanCommand{kind="entityStage",entity=EcologyIdentity.Of(_entity),count=(int)age});_status=ok?(WorldAuthority.IsReplica?"已提交，等待房主确认":"生命阶段已应用"):"无法修改：请检查权限和实体状态";Object.FindFirstObjectByType<GeneInspectorUI>()?.RefreshDisplayedInfo();return ok;}
@@ -44,6 +45,7 @@ namespace DarwinPark.UI
             {
                 GUILayout.Label("生命阶段");bool previous=GUI.enabled;GUI.enabled=previous&&WorldAuthority.CanEdit;GUILayout.BeginHorizontal();if(GUILayout.Button("幼年"))ApplyStage(AgeState.Infant);if(GUILayout.Button("成年"))ApplyStage(AgeState.Adult);if(GUILayout.Button("老年"))ApplyStage(AgeState.Elder);GUILayout.EndHorizontal();
                 for(int i=0;i<StatIds.Length;i++){GUILayout.BeginHorizontal();GUILayout.Label(StatNames[i],GUILayout.Width(80));_values[i]=GUILayout.TextField(_values[i],32);if(GUILayout.Button("应用",GUILayout.Width(64))){if(float.TryParse(_values[i],out var value))ApplyStat(StatIds[i],value);else _status="请输入有效数值";}GUILayout.EndHorizontal();}GUI.enabled=previous;
+                DrawBodyAndTasks();
             }
             if(!string.IsNullOrEmpty(_status))GUILayout.Label(_status);
             // ★ 修复（防Bug回归）：原因改由基因卡悬浮呈现，此窗只保留实体编辑。

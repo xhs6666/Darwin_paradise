@@ -30,6 +30,19 @@ namespace DarwinPark.Core
             }
         }
 
+        // ★ 适配：生成栏与控制栏共用分隔线布局。
+        public static void CreateDivider(Transform parent, float xOffset)
+        {
+            var div = NewRect("Divider", parent, typeof(Image));
+            var rt = div.GetComponent<RectTransform>();
+            rt.anchorMin = new Vector2(0, 0.1f);
+            rt.anchorMax = new Vector2(0, 0.9f);
+            rt.pivot = new Vector2(0, 0.5f);
+            rt.offsetMin = new Vector2(xOffset, 0);
+            rt.offsetMax = new Vector2(xOffset + 2, 0);
+            div.GetComponent<Image>().color = UIVisualTheme.Border;
+        }
+
         public static GameObject NewRect(string name, Transform parent, params Type[] extra)
         {
             var go = new GameObject(name, typeof(RectTransform));

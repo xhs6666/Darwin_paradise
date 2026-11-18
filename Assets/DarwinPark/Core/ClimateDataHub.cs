@@ -7,6 +7,7 @@ namespace DarwinPark.Core
         public static float BaseHumidity = 44f;
 
         // ★ 新增：季节偏移。EnvironmentSystem 每帧写入，Planet 只依赖 Core，避免程序集循环引用。
+        public static float NorthernSummer;
         public static float SeasonalTemperatureOffset = 0f;
         public static float SeasonalHumidityOffset = 0f;
     }

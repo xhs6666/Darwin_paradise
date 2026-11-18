@@ -10,40 +10,47 @@
   "aiModuleId": "",
   "attributeCurves": [
     {
-      "attributeId": "host_drain_rate",
-      "minValue": 0.2,
+      "attributeId": "digestion_efficiency",
+      "minValue": 0.5,
       "maxValue": 1.5
     },
     {
-      "attributeId": "digestion_efficiency",
-      "minValue": 0.5,
-      "maxValue": 1
+      "attributeId": "attack",
+      "minValue": 1,
+      "maxValue": 20
     }
   ],
   "states": [
     {
-      "stateId": "parasite",
-      "displayName": "寄生",
-      "center": 25,
-      "color": [
-        0.6,
-        0.3,
-        0.8
-      ]
-    },
-    {
       "stateId": "digest",
-      "displayName": "消化",
-      "center": 75,
+      "displayName": "异养消化",
+      "center": 50,
       "color": [
-        0.9,
+        0.8,
         0.35,
-        0.2
+        0.25
       ]
     }
   ],
-  "attributeLinkages": [],
+  "attributeLinkages": [
+    {
+      "sourceAttributeId": "sys_size",
+      "targetAttributeId": "attack",
+      "mode": "Multiply",
+      "factor": 1.2
+    }
+  ],
   "suppressionRules": [],
   "entityStateTagVersion": 1,
-  "entityStateTags": []
+  "entityStateTags": [],
+  "schemaVersion": 2,
+  "partBindings": [
+    {
+      "slotId": "mouth",
+      "partId": "mouth_basic"
+    }
+  ],
+  "requiresGenes": [
+    "gene_nutrition"
+  ]
 }

@@ -34,6 +34,8 @@ namespace DarwinPark.UI
             _jump = manual.GetComponent<EntityJumpMotor>() ?? manual.gameObject.AddComponent<EntityJumpMotor>();
             _jump.Bind(planet);
             _pitch = 0; // ★ 修复（防Bug回归）：第一人称进入时平视，滚轮不能改变眼位。
+            // ★ 修复（防Bug回归）：旧第三人称组件的正数下限会让第一人称永远无法抬头，保留原上限并迁移为双向范围。
+            if(minPitch>=0){minPitch=-Mathf.Abs(maxPitch);Debug.LogWarning("[控制] 已迁移旧俯仰范围，恢复抬头");}
             _savedLock = Cursor.lockState; _savedVisible = Cursor.visible; _active = true;CursorReleased=false;
             SetCaptured(true);
             if (ServiceLocator.TryGet<UIRoot>(out var root) && root.MainCanvas != null)
@@ -62,13 +64,14 @@ namespace DarwinPark.UI
             SetCaptured(!blocked);
             if (_crosshair != null) _crosshair.SetActive(!blocked&&running);
             _acceptAttack=!blocked&&running&&Time.frameCount>_captureFrame+1;
-            if (blocked||!running) { _manual.SetInput(Vector3.zero, false);_manual.ClearAttack(); return; }
+            if (blocked) { _manual.SetInput(Vector3.zero, false);_manual.ClearAttack(); return; }
             // ★ 修复（防Bug回归）：刚锁鼠标时的居中位移不代表玩家转向，跳过捕获后的前两帧。
             if (Time.frameCount > _captureFrame + 1)
             {
-                forward = Quaternion.AngleAxis(Input.GetAxis("Mouse X") * lookSensitivity, up) * forward;
-                _pitch = Mathf.Clamp(_pitch - Input.GetAxis("Mouse Y") * lookSensitivity, minPitch, maxPitch);
+                ApplyLook(new Vector2(Input.GetAxis("Mouse X"),Input.GetAxis("Mouse Y")),up,ref forward);
             }
+            // ★ 修复（防Bug回归）：暂停停止行动和攻击，但不应禁止玩家抬头观察天空。
+            if(!running){_manual.SetInput(Vector3.zero,false);_manual.ClearAttack();return;}
             // ★ 修复（防Bug回归）：锁定第一人称，禁用滚轮拉远。
             float y = (Input.GetKey(forwardKey) ? 1 : 0) - (Input.GetKey(backKey) ? 1 : 0);
             float x = (Input.GetKey(rightKey) ? 1 : 0) - (Input.GetKey(leftKey) ? 1 : 0);
@@ -80,6 +83,8 @@ namespace DarwinPark.UI
             if (running && Input.GetKeyDown(jumpKey)) _jump.TryJump(_manual.CanMove);
         }
         public void SetCursorReleased(bool held){if(!_active||CursorReleased==held)return;CursorReleased=held;_manual?.SetInput(Vector3.zero,false);_manual?.ClearAttack();SetCaptured(!held);}
+        public void ApplyLook(Vector2 delta,Vector3 up,ref Vector3 forward)
+        {forward=Quaternion.AngleAxis(delta.x*lookSensitivity,up)*forward;_pitch=Mathf.Clamp(_pitch-delta.y*lookSensitivity,minPitch,maxPitch);}
         private void OnGUI()
         {
             // ★ 修复（防Bug回归）：低帧率时按下/松开可能发生在同一帧，补收事件并锁存一次攻击。

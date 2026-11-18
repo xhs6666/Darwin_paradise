@@ -8,17 +8,36 @@ namespace DarwinPark.Genetics
     {
         public static List<GeneEvaluation> Inspect(Genome genome,GenomeEvaluation evaluation)
         {
-            var result=new List<GeneEvaluation>();foreach(var gene in genome.Genes)
+            // ★ 修复（防Bug回归）：批量检查先建实例索引；禁用行只构造自己的诊断数据。
+            var byGene = new Dictionary<GeneInstance, GeneEvaluation>();
+            if (evaluation != null)
+                foreach (var value in evaluation.Genes)
+                    if (!byGene.ContainsKey(value.Gene)) byGene.Add(value.Gene, value);
+
+            var result = new List<GeneEvaluation>(genome.Genes.Count);
+            foreach (var gene in genome.Genes)
             {
-                var existing=evaluation?.Genes.Find(e=>e.Gene==gene);if(existing!=null){result.Add(existing);continue;}
-                var definition=GeneDatabase.Get(gene.DefinitionId);if(definition==null)continue;
-                result.Add(new GeneEvaluation{Gene=gene,Definition=definition,State=definition.ResolveState(gene.Value,gene.MissingStateIds),EffectiveStrength=0});
+                if (!byGene.TryGetValue(gene, out var inspected)) inspected = InspectGene(gene, null);
+                if (inspected != null) result.Add(inspected);
             }
             return result;
+        }
+
+        public static GeneEvaluation InspectGene(GeneInstance gene, GenomeEvaluation evaluation)
+        {
+            if (gene == null) return null;
+            var existing = evaluation?.Genes.Find(value => value.Gene == gene);
+            if (existing != null) return existing;
+            var definition = GeneDatabase.Get(gene.DefinitionId);
+            return definition == null ? null : new GeneEvaluation
+            {
+                Gene = gene, Definition = definition, State = definition.ResolveState(gene)
+            };
         }
         public static List<string> Explain(Genome genome,GeneEvaluation evaluation)
         {
             var reasons=new List<string>();var gene=evaluation.Gene;
+            if(evaluation.MissingRequirements)reasons.Add("缺少组合能力的前置基因。");
             if(!gene.Enabled){reasons.Add("该基因已被手动禁用。");return reasons;}
             if(gene.Value<GeneEvaluation.MinimumActiveStrength)reasons.Add($"原始值 {gene.Value:F1} 低于生效阈值 {GeneEvaluation.MinimumActiveStrength:F1}。");
             if(evaluation.EnvironmentSuppression>0)reasons.Add($"环境不适应抑制 {evaluation.EnvironmentSuppression:F1}。");
@@ -38,6 +57,6 @@ namespace DarwinPark.Genetics
             if(evaluation.IsActive&&gene.CopyStrength<=0)reasons.Add("表达值生效，但复制强度为0，不提供属性贡献。");
             return reasons;
         }
-        public static string Summary(GeneEvaluation evaluation)=>!evaluation.Gene.Enabled?"已禁用":evaluation.EffectiveStrength<GeneEvaluation.MinimumActiveStrength?(evaluation.SuppressionAmount>0?"受抑制":"数值不足"):evaluation.State==null?"无可用状态":"生效中";
+        public static string Summary(GeneEvaluation evaluation)=>evaluation.Definition.ExplicitState&&evaluation.State==null?"缺少可用模式":evaluation.MissingRequirements?"缺少前置基因":!evaluation.Gene.Enabled?"已禁用":evaluation.EffectiveStrength<GeneEvaluation.MinimumActiveStrength?(evaluation.SuppressionAmount>0?"受抑制":"数值不足"):evaluation.State==null?"无可用状态":"生效中";
     }
 }

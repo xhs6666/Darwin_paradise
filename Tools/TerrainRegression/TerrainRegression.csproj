@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net8.0</TargetFramework><OutputType>Exe</OutputType><UseAppHost>false</UseAppHost><ImplicitUsings>enable</ImplicitUsings><Nullable>disable</Nullable></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../Artifacts/ServerCompile/DarwinPark.Planet/DarwinPark.Planet.csproj" />
+    <Reference Include="UnityEngine.CoreModule"><HintPath>$(UnityManagedPath)/UnityEngine/UnityEngine.CoreModule.dll</HintPath></Reference>
+    <Compile Include="../../Artifacts/TerrainRegression/ManagedTerrainGenerator.cs" />
+    <Compile Include="../../Artifacts/TerrainRegression/ManagedHeightField.cs" />
+  </ItemGroup>
+</Project>

@@ -20,7 +20,7 @@ namespace DarwinPark.Planet
 
         public Vector3[] Vertices;
         public int[] Triangles;
-        public Color[] Colors;
+        public Color32[] LakeBedColors;
         public Bounds Bounds;
         public float SeaLevel;
         // ★ 适配：水系与最终地形一起生成，玩法与显示共用。

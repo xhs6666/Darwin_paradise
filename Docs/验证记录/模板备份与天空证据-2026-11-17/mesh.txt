@@ -1,0 +1,1 @@
+vertices=210416 triangles=387903 sharedEdges=565510

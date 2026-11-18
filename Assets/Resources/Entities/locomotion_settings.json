@@ -15,5 +15,6 @@
   "jumpSizeExponent": 0.5,
   "stationaryFriction": 1,
   "movingFriction": 0,
-  "frictionMotionThreshold": 0.01
+  "frictionMotionThreshold": 0.01,
+  "turnDegreesPerSecond": 180
 }

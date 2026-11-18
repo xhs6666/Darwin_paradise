@@ -60,7 +60,7 @@ namespace DarwinPark.Entities
         {
             if (_planet == null || _ground == null) return false;
             // ★ 适配：与重力/安全网共享当前三角形，真实接触间隙和向下速度修正规则保持不变。
-            bool corrected=ManualGroundPhysics.Resolve(_body,_collider,_probe.Read(_planet),out bool cancel);if(cancel)IsJumping=false;return corrected;
+            bool corrected=PlanetGroundPhysics.ResolvePenetration(_body,_collider,_probe.Read(_planet),out bool cancel);if(cancel)IsJumping=false;return corrected;
         }
         private void OnDisable() => Cancel();
     }

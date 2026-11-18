@@ -1,4 +1,4 @@
-{
+﻿{
   "geneId": "gene_observation",
   "rangeAttribute": "visionRange",
   "wideState": "wide_view",
@@ -9,5 +9,11 @@
   "attentionRefreshSeconds": 0.1,
   "migrationSource": "gene_locomotion",
   "coordinateCellSize": 64,
-  "maximumCellsPerQuery": 4096
+  "maximumCellsPerQuery": 4096,
+  "coordinateRevisionCellLimit": 65536,
+  "perceptionBudgetMilliseconds": 1.5,
+  "perceptionScansPerFrame": 64,
+  "minimumRealRefreshSeconds": 0.05,
+  "memorySeconds": 5,
+  "maximumRememberedTargets": 256
 }

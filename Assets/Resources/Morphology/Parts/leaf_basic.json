@@ -1,0 +1,19 @@
+{
+  "id": "leaf_basic",
+  "primitive": "sphere",
+  "modelResource": "",
+  "color": "#83DF70",
+  "minimumScale": {
+    "x": 0.03,
+    "y": 0.03,
+    "z": 0.03
+  },
+  "maximumScale": {
+    "x": 4,
+    "y": 4,
+    "z": 4
+  },
+  "efficiencyAttribute": "absorbEfficiency",
+  "efficiencyMaximum": 15,
+  "efficientColor": "#126B20"
+}

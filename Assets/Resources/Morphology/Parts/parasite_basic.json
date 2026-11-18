@@ -1,0 +1,16 @@
+{
+  "id": "parasite_basic",
+  "primitive": "capsule",
+  "modelResource": "",
+  "color": "#843D46",
+  "minimumScale": {
+    "x": 0.03,
+    "y": 0.03,
+    "z": 0.03
+  },
+  "maximumScale": {
+    "x": 4,
+    "y": 4,
+    "z": 4
+  }
+}

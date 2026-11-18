@@ -17,7 +17,7 @@ namespace DarwinPark.UI
             End(); _target = target; _camera = camera; _oldNear = camera.nearClipPlane;
             camera.nearClipPlane = nearClip;
             _renderers = target.GetComponentsInChildren<Renderer>(); _hidden = new bool[_renderers.Length];
-            for (int i=0;i<_renderers.Length;i++) { _hidden[i]=_renderers[i].forceRenderingOff; _renderers[i].forceRenderingOff=true; }
+            for (int i=0;i<_renderers.Length;i++) { BodyVisualScheduler.Release(_renderers[i]); _hidden[i]=_renderers[i].forceRenderingOff; _renderers[i].forceRenderingOff=true; }
         }
         public void Apply(Vector3 up, Vector3 forward, float pitch, EntityManualControl manual)
         {
@@ -25,9 +25,16 @@ namespace DarwinPark.UI
             var collider = _target.GetComponent<Collider>();
             float radius = collider != null ? Mathf.Min(collider.bounds.extents.x, collider.bounds.extents.y, collider.bounds.extents.z) : .5f;
             Vector3 eye = _target.transform.position + up * radius * eyeHeightRatio;
-            Vector3 direction = Quaternion.AngleAxis(pitch, Vector3.Cross(up,forward)) * forward;
+            Vector3 direction = LookDirection(up,forward,pitch);
             _camera.transform.SetPositionAndRotation(eye, Quaternion.LookRotation(direction,up));
             manual.SetAim(new Ray(eye,direction));
+        }
+        // ★ 修复（防Bug回归）：经纬极点或初始方向恰好朝天时，投影不能留下零向量，导致俯仰轴消失。
+        public static Vector3 LookDirection(Vector3 up,Vector3 forward,float pitch)
+        {
+            up=up.normalized;forward=Vector3.ProjectOnPlane(forward,up).normalized;
+            if(forward.sqrMagnitude<1e-8f)forward=Vector3.Cross(up,Mathf.Abs(up.y)<.9f?Vector3.up:Vector3.right).normalized;
+            return (Quaternion.AngleAxis(pitch,Vector3.Cross(up,forward).normalized)*forward).normalized;
         }
         public void End()
         {

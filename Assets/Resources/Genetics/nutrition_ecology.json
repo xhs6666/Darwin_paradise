@@ -20,5 +20,6 @@
   "foodThreshold": 8,
   "eggHostRadius": 40,
   "eggIncubationSeconds": 15,
-  "adultParasitesDigest": true
+  "adultParasitesDigest": true,
+  "nutrientParasiteGene": "gene_nutrient_parasitism"
 }

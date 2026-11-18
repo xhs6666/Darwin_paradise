@@ -20,7 +20,7 @@ namespace DarwinPark.Entities.Ecology
             if(food<hungerThreshold)return true;
             if(genes.CurrentAge==AgeState.Elder||food>=settings.reserveFeedingThreshold||!stats.TryGet(settings.reserveAttribute,out float reserve))return false;
             if(!stats.TryGet(settings.sizeAttribute,out float size))return false;
-            if(reserve>=LifeCycleSettings.Load().nutrientCost*Mathf.Max(settings.minimumReproductionSize,size))return false;
+            if(reserve>=MultipleBirthPolicy.RequiredReserve(genes, LifeCycleSettings.Load().nutrientCost, Mathf.Max(settings.minimumReproductionSize,size)))return false;
             return genes.Evaluation.Genes.Exists(g=>g.IsActive&&genes.GetLogic(g.Gene) is ReproductionGeneLogic);
         }
         // ★ 修复（防Bug回归）：比例规则和空间竞争共用已存在的表达分类；不能在每个繁殖检查重复遍历并走零速度修饰链。
@@ -32,16 +32,17 @@ namespace DarwinPark.Entities.Ecology
         }
         public static void Produce(EntityGeneController genes,GeneInstance source,float dt)
         {
-            if(dt<=0||!GeneBehaviorAuthority.IsPrimary<NutritionGeneLogic>(genes,source))return;
+            if(dt<=0||GeneCapabilities.Active(genes,source.DefinitionId)?.Gene!=source)return;
             // ★ 适配：遗传食性资格按表达版本复用，实际吸收和容量仍每次实时核算。
-            if(Simulation.ActiveNutritionContext.Blocked(genes))return;
+            // ★ 新增：混合营养允许共同表达；各来源按自身贡献分摊最终效率，避免组合或复制重复产粮。
             var stats=ActiveSimulationBatch.Read<EntityStats>(genes);if(stats==null)return;
             // ★ 修复（防Bug回归）：使用重算时维护的实例索引，生产小步不再创建捕获闭包并扫描全部基因。
             var evaluation=genes.GetEvaluation(source);var state=evaluation?.IsActive==true?evaluation.State:null;
             var settings=EcologyBalanceSettings.Current;float efficiency=genes.GetAttribute(settings.absorptionAttribute);
+            float own=0,total=0;foreach(var item in genes.Evaluation.Genes)if(item.IsActive&&item.Definition.LogicScriptId=="AutotrophyGeneLogic"&&item.AttributeContributions.TryGetValue(settings.absorptionAttribute,out float contribution)){total+=contribution;if(item.Definition.Id==source.DefinitionId)own+=contribution;}efficiency*=total>0?own/total:0;
             if(efficiency<=0||state==null)return;
             // ★ 适配：生产者分类已由帧共享快照计算，不能在每个子步再次遍历表达并读取同一组移动修饰组件。
-            if(state.StateId==settings.photoState)stats.Feed(efficiency*settings.photoProductionRate*dt*GameplayTuning.Current.nutritionGainMultiplier/EntityNeighborhood.ProductionCompetition(genes));
+            if(state.StateId==settings.photoState)stats.Feed(efficiency*settings.photoProductionRate*dt*Mathf.Max(0,Vector3.Dot(EcologyQueries.Up(genes.transform.position),SunSystem.LightDirection))*GameplayTuning.Current.nutritionGainMultiplier/EntityNeighborhood.ProductionCompetition(genes));
             else if(state.StateId==settings.chemicalState&&PlanetOreSystem.Instance!=null)
                 stats.Feed(PlanetOreSystem.Instance.ConsumeOre(genes.transform.position,efficiency*settings.mineralExtractionRate*dt*GameplayTuning.Current.nutritionGainMultiplier));
         }

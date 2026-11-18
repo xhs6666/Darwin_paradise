@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 2,
+  "id": "gene_nutrient_parasitism",
+  "displayName": "营养寄生基因",
+  "category": "Nutrition",
+  "parentGeneId": "gene_heterotrophy",
+  "isBaseGene": false,
+  "tier": 1,
+  "logicScriptId": "NutrientParasitismGeneLogic",
+  "aiModuleId": "",
+  "attributeCurves": [
+    {
+      "attributeId": "host_drain_rate",
+      "minValue": 0.5,
+      "maxValue": 2
+    }
+  ],
+  "states": [
+    {
+      "stateId": "parasite",
+      "displayName": "营养寄生",
+      "center": 50,
+      "color": [
+        0.5,
+        0.7,
+        0.6
+      ]
+    }
+  ],
+  "attributeLinkages": [],
+  "suppressionRules": [],
+  "partBindings": [
+    {
+      "slotId": "parasite",
+      "partId": "parasite_basic"
+    }
+  ],
+  "partModifiers": [],
+  "requiresGenes": [
+    "gene_heterotrophy"
+  ],
+  "explicitState": false,
+  "defaultStateId": "",
+  "entityStateTagVersion": 1,
+  "entityStateTags": []
+}

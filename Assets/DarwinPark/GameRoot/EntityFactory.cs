@@ -32,6 +32,9 @@ namespace DarwinPark.GameRoot
 
         private static DarwinEntity AttachComponents(GameObject go, Genome genome, string displayName)
         {
+            if(genome!=null)MorphologyRegistry.ValidateGenome(genome);
+            // ★ 新增：专服运行时生成的预制实体也裁掉表现组件，部件能力仍由同一基因数据求值。
+            if(DedicatedServerMode.Enabled){foreach(var renderer in go.GetComponentsInChildren<Renderer>(true)){renderer.enabled=false;Object.Destroy(renderer);}foreach(var filter in go.GetComponentsInChildren<MeshFilter>(true))Object.Destroy(filter);}
             // 1. 确保有碰撞体
             var col = go.GetComponent<Collider>();
             if (col == null) col = go.AddComponent<SphereCollider>();
@@ -89,6 +92,7 @@ namespace DarwinPark.GameRoot
 
             // ★ 修复（防Bug回归）：幼年是生命阶段，不能把遗传的生长基因值强制改成 10。
             if(go.GetComponent<EntityLifeCycle>()==null)go.AddComponent<EntityLifeCycle>();
+            DarwinEntity.PreparePresentation?.Invoke(entity);
 
             return entity;
         }

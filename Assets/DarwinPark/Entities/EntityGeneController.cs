@@ -107,6 +107,8 @@ namespace DarwinPark.Entities
                 _combat.Advance(step);
                 // ★ 适配：独立状态机先按配置选择意图，所有复制行动基因随后共用一个行为写入者。
                 _state?.Advance(step);
+                // ★ 新增：显式任务按模拟时间推进，暂停不消耗计划；植物的补给/休息无需安装大脑。
+                Simulation.ActiveSimulationBatch.Read<Ecology.EntityActivityPlan>(this)?.Advance(step);
                 // ★ 修复（防Bug回归）：仍使用逻辑快照防止重算时修改集合，但复用缓冲区，避免每个实体每个子步分配新列表。
                 // ★ 适配：优化重复计算，只在逻辑重算后重建快照；回调中的重算仅标记失效，不能修改正在遍历的列表。
                 if(_snapshotRevision!=LogicRevision){_simulationLogics.Clear();_simulationLogics.AddRange(_activeLogics.Values);_snapshotRevision=LogicRevision;_activePlan.Invalidate();LogicSnapshotBuilds++;}

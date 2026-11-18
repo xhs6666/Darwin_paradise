@@ -36,6 +36,8 @@ namespace DarwinPark.Genetics
                     var def = new GeneDefinition
                     {
                         Id = json.id,
+                        ExplicitState=json.explicitState,DefaultStateId=json.defaultStateId,BodyColorWeight=json.bodyColorWeight,
+                        PartBindings=json.partBindings,PartModifiers=json.partModifiers,RequiresGenes=json.requiresGenes,
                         DisplayName = json.displayName,
                         Category = (GeneCategory)Enum.Parse(typeof(GeneCategory), json.category, true),
                         ParentGeneId = json.parentGeneId,
@@ -58,6 +60,8 @@ namespace DarwinPark.Genetics
                     {
                         foreach (var c in json.attributeCurves)
                         {
+                            // ★ 修复（防Bug回归）：旧世界快照的普通行动曲线曾无条件提供游泳；现独立由游泳基因表达。
+                            if (json.id == "gene_locomotion" && c.attributeId == "swimSpeed") continue;
                             def.AttributeCurves.Add(new AttributeCurve
                             {
                                 attributeId = c.attributeId,

@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 2,
+  "id": "gene_photosynthesis",
+  "displayName": "阳光自养基因",
+  "category": "Nutrition",
+  "parentGeneId": "gene_nutrition",
+  "isBaseGene": false,
+  "tier": 1,
+  "logicScriptId": "AutotrophyGeneLogic",
+  "aiModuleId": "",
+  "attributeCurves": [
+    {
+      "attributeId": "absorbEfficiency",
+      "minValue": 3,
+      "maxValue": 10
+    }
+  ],
+  "states": [
+    {
+      "stateId": "photo",
+      "displayName": "阳光自养",
+      "center": 50,
+      "color": [
+        0.2,
+        0.8,
+        0.25
+      ]
+    }
+  ],
+  "attributeLinkages": [],
+  "suppressionRules": [],
+  "partBindings": [
+    {
+      "slotId": "leaf_left",
+      "partId": "leaf_basic"
+    },
+    {
+      "slotId": "leaf_right",
+      "partId": "leaf_basic"
+    }
+  ],
+  "partModifiers": [
+    {
+      "slotId": "leaf_left",
+      "parameter": "scaleX",
+      "attributeId": "nutrientStorage",
+      "minimum": 0.8,
+      "maximum": 1.4,
+      "rangeMin": 0,
+      "rangeMax": 500
+    },
+    {
+      "slotId": "leaf_right",
+      "parameter": "scaleX",
+      "attributeId": "nutrientStorage",
+      "minimum": 0.8,
+      "maximum": 1.4,
+      "rangeMin": 0,
+      "rangeMax": 500
+    },
+    {
+      "slotId": "leaf_left",
+      "parameter": "scaleX",
+      "requireGene": "gene_locomotion",
+      "minimum": 0.65,
+      "maximum": 0.65,
+      "rangeMin": 0,
+      "rangeMax": 100
+    },
+    {
+      "slotId": "leaf_right",
+      "parameter": "scaleX",
+      "requireGene": "gene_locomotion",
+      "minimum": 0.65,
+      "maximum": 0.65,
+      "rangeMin": 0,
+      "rangeMax": 100
+    }
+  ],
+  "requiresGenes": [
+    "gene_nutrition"
+  ],
+  "explicitState": false,
+  "defaultStateId": "",
+  "entityStateTagVersion": 1,
+  "entityStateTags": []
+}

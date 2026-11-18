@@ -34,7 +34,7 @@ namespace DarwinPark.Entities
             if(!config.stationarySleep||genes==null||collider==null||ground==null||ground.transform!=planet||moveSpeed>0)return;
             // ★ 修复（防Bug回归）：只在真正接触星球地面时休眠；不能把出生下落或站在移动实体上误当成静止植物。
             // ★ 修复（防Bug回归）：高速/下落时根本不可能休眠，先判断速度避免无效ClosestPoint；斜坡再验证真实接触。
-            if(body.linearVelocity.sqrMagnitude>config.restSpeed*config.restSpeed||!VerifiedGroundRest.Touching(collider,ground,point,normal,config.restContactSlack))return;
+            if(body.linearVelocity.sqrMagnitude>config.restSpeed*config.restSpeed||!PlanetGroundPhysics.VerifyRestContact(collider,ground,point,normal,config.restContactSlack))return;
             var builder=planet.GetComponent<PlanetTerrainMeshBuilder>();if(builder==null||builder.Data==null)return;
             if(!Contacts.TryGetValue(body,out var record)){record=new Contact();Contacts.Add(body,record);}
             // ★ 适配：地形重建或星球参数变化后也须唤醒，不能让旧休眠实体悬在新地表上方。

@@ -89,12 +89,12 @@ namespace DarwinPark.Entities.Logic
             float size = 1f;
             // ★ 适配：实际扣款与提前储粮采用同一体型下限，微型实体不会准备不足的繁殖预算。
             if (stats.TryGet("size", out var s)) size = Mathf.Max(Ecology.EcologyBalanceSettings.Current.minimumReproductionSize, s);
-            float requiredNutrient = _settings.nutrientCost * size * MultipleBirthPolicy.Count(_controller);
+            float requiredNutrient = MultipleBirthPolicy.RequiredReserve(_controller, _settings.nutrientCost, size);
             // ★ 适配：超过维持目标只延长新孕育的间隔；已有孕育在上面的独立分支正常完成。
             bool maintenanceReady=PopulationMaintenance.BreedingReady(_controller,ref _maintenanceWait,dt);
 
-            var repDef = GeneDatabase.Get(_gene.DefinitionId);
-            var repState = repDef?.ResolveState(_gene.Value, _gene.MissingStateIds);
+            // ★ 适配：繁殖按同一份表达状态行动，不在每个模拟子步重复定位状态。
+            var repState = _controller.GetEvaluation(_gene)?.State;
             bool sexual=repState?.StateId=="sexual";
             // ★ 修复（防Bug回归）：只有孤雌分支需要在缺粮时继续观察配偶；普通繁殖保留先查储备，避免成百实体无效物理扫描。
             if(!ParthenogenesisCondition.Enabled(_controller)&&(!stats.TryGet("storedNutrient",out float available)||available<requiredNutrient))
@@ -171,26 +171,13 @@ namespace DarwinPark.Entities.Logic
         {
             bool hasAction=_controller.Evaluation.Genes.Exists(g=>g.IsActive && _controller.GetLogic(g.Gene) is LocomotionGeneLogic);
             if(DarwinEntity.Spawner==null || !OffspringPlacement.TryGetPosition(_controller.transform.position,_partnerGenome==null && !hasAction,out var spawnPos))return false;
-            var childGenome = new Genome();
-
-            if (_partnerGenome == null)
+            // ★ 新增：遗传形体、离散模式和部位参数随基因一起复制，不能出生时退回默认身体。
+            var childGenome=Genome.Copy(_controller.Genome);
+            for(int i=0;i<childGenome.Genes.Count;i++)
             {
-                foreach (var g in _controller.Genome.Genes)
-                {
-                    var copy=GeneInstance.Create(g.DefinitionId,g.Value,g.Tier);
-                    copy.Enabled=g.Enabled;copy.CopyStrength=g.CopyStrength;copy.MissingStateIds=new List<string>(g.MissingStateIds);copy.OriginInstanceId=g.InstanceId;
-                    childGenome.Add(copy);
-                }
-            }
-            else
-            {
-                foreach (var myGene in _controller.Genome.Genes)
-                {
-                    var partnerGene = _partnerGenome.Genes.Find(g => g.DefinitionId == myGene.DefinitionId);
-                    float newValue = myGene.Value;
-                    if (partnerGene != null) newValue = (myGene.Value + partnerGene.Value) * 0.5f;
-                    childGenome.Add(GeneInstance.Create(myGene.DefinitionId, newValue, myGene.Tier));
-                }
+                var copy=childGenome.Genes[i];var original=_controller.Genome.Genes[i];copy.OriginInstanceId=original.InstanceId;
+                var partnerGene=_partnerGenome?.Genes.Find(g=>g.DefinitionId==original.DefinitionId);
+                if(partnerGene!=null){copy.Value=(original.Value+partnerGene.Value)*.5f;copy.StateId=Random.value<.5f?original.StateId:partnerGene.StateId;}
             }
 
             if (DarwinEntity.Spawner != null)

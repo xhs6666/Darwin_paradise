@@ -1,0 +1,16 @@
+{
+  "id": "storage_basic",
+  "primitive": "sphere",
+  "modelResource": "",
+  "color": "#D6A760",
+  "minimumScale": {
+    "x": 0.03,
+    "y": 0.03,
+    "z": 0.03
+  },
+  "maximumScale": {
+    "x": 4,
+    "y": 4,
+    "z": 4
+  }
+}

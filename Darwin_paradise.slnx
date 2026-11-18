@@ -1,11 +1,14 @@
 ﻿<Solution>
   <Project Path="DarwinPark.Editor.csproj" />
   <Project Path="DarwinPark.Entities.csproj" />
+  <Project Path="DarwinPark.Planet.csproj" />
   <Project Path="DarwinPark.UI.csproj" />
   <Project Path="DarwinPark.Genetics.csproj" />
+  <Project Path="DarwinPark.Server.Unity.csproj" />
   <Project Path="DarwinPark.Core.csproj" />
-  <Project Path="DarwinPark.Planet.csproj" />
+  <Project Path="DarwinPark.Gameplay.csproj" />
   <Project Path="Assembly-CSharp.csproj" />
   <Project Path="DarwinPark.AI.csproj" />
   <Project Path="DarwinPark.Environment.csproj" />
+  <Project Path="DarwinPark.ServerCore.csproj" />
 </Solution>

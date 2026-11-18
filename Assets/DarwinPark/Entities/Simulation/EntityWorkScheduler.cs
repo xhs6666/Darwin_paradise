@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -14,45 +14,13 @@ namespace DarwinPark.Entities.Simulation
     // ★ 新增：由GameBootstrap运行时挂载。交互/受伤实体先算，静止近邻共享基础变化，个体身份和繁殖不合并。
     [DefaultExecutionOrder(-100)] public sealed class EntityWorkScheduler:MonoBehaviour
     {
-        private sealed class Entry
-        {
-            public EntityGeneController genes;public EntityStats stats;public EntityLifeCycle life;
-            public EntityVitals vitals;public EntityEnvironmentHazard environment;public EntityStateController state;
-            public DarwinEntity entity;public EntityManualControl manual;public NutritionParasite nutritionParasite;public ParasiteBehavior parasite;public EggIncubation egg;
-            public int reproductionRevision=-1;public DarwinPark.Entities.Logic.ReproductionGeneLogic reproduction;
-            public Vector3 position;public float quiet;public float pending {get=>genes.PendingSimulationTime;set=>genes.PendingSimulationTime=value;}public int revision=-1,frame=-1,ordinal,count;public bool dormant;
-            public int signature;public string stateId;public bool supported;
-            public double nextDue=double.NaN;
-        }
-        private sealed class Cohort {public readonly List<Entry> members=new List<Entry>();public float time,priority;public Cohort next;}
-        // ★ 修复（防Bug回归）：兼容条件使用值类型和预计算散列，27格查询不能反复拼接/散列完整基因字符串。
-        private readonly struct SharedState:IEquatable<SharedState>
-        {
-            private readonly int _signature,_timeBand,_foodBand,_reserveBand,_flags,_hash;
-            private readonly string _state;private readonly AgeState _age;
-            private readonly float _health,_size,_foodMax,_reserveMax;
-            public SharedState(Entry entry,GameplayTuning tuning)
-            {
-                _signature=entry.signature;_state=entry.stateId;_age=entry.genes.CurrentAge;
-                _flags=(entry.genes.IsGestating?1:0)|(entry.vitals!=null&&entry.vitals.isActiveAndEnabled?2:0)|(entry.environment!=null&&entry.environment.isActiveAndEnabled?4:0);
-                _timeBand=Mathf.FloorToInt(entry.pending/tuning.mergeInterval);
-                entry.stats.TryGet("nutrient",out var food);entry.stats.TryGet("storedNutrient",out var reserve);
-                entry.stats.TryGet("size",out _size);entry.stats.TryGet("health",out _health);
-                _foodBand=Mathf.FloorToInt(food/tuning.mergeFoodTolerance);_reserveBand=Mathf.FloorToInt(reserve/tuning.mergeReserveTolerance);
-                _foodMax=food+entry.stats.CapacityRemaining("nutrient");_reserveMax=reserve+entry.stats.CapacityRemaining("storedNutrient");
-                var hash=new HashCode();hash.Add(_signature);hash.Add(_state);hash.Add(_age);hash.Add(_flags);hash.Add(_timeBand);hash.Add(_foodBand);hash.Add(_reserveBand);hash.Add(_health);hash.Add(_size);hash.Add(_foodMax);hash.Add(_reserveMax);_hash=hash.ToHashCode();
-            }
-            public bool Equals(SharedState other)=>_signature==other._signature&&_state==other._state&&_age==other._age&&_flags==other._flags&&_timeBand==other._timeBand&&_foodBand==other._foodBand&&_reserveBand==other._reserveBand&&_health==other._health&&_size==other._size&&_foodMax==other._foodMax&&_reserveMax==other._reserveMax;
-            public override bool Equals(object value)=>value is SharedState other&&Equals(other);
-            public override int GetHashCode()=>_hash;
-        }
         private static EntityWorkScheduler _instance;
-        private readonly Dictionary<EntityGeneController,Entry> _entries=new Dictionary<EntityGeneController,Entry>();
-        private readonly List<Entry> _active=new List<Entry>();
-        private readonly List<Entry> _controlled=new List<Entry>(),_injured=new List<Entry>();
-        private readonly List<Cohort> _groups=new List<Cohort>();
-        private readonly List<Cohort> _pool=new List<Cohort>();private int _usedGroups;
-        private readonly Dictionary<(Vector3Int,SharedState),Cohort> _cells=new Dictionary<(Vector3Int,SharedState),Cohort>();
+        private readonly Dictionary<EntityGeneController,EntityScheduleEntry> _entries=new Dictionary<EntityGeneController,EntityScheduleEntry>();
+        private readonly List<EntityScheduleEntry> _active=new List<EntityScheduleEntry>();
+        private readonly List<EntityScheduleEntry> _controlled=new List<EntityScheduleEntry>(),_injured=new List<EntityScheduleEntry>();
+        private readonly List<StationaryCohort> _groups=new List<StationaryCohort>();
+        private readonly List<StationaryCohort> _pool=new List<StationaryCohort>();private int _usedGroups;
+        private readonly Dictionary<(Vector3Int,CohortCompatibility),StationaryCohort> _cells=new Dictionary<(Vector3Int,CohortCompatibility),StationaryCohort>();
         private readonly Dictionary<string,int> _signatures=new Dictionary<string,int>();
         private readonly HashSet<int> _liveSignatures=new HashSet<int>();private readonly List<string> _retiredSignatures=new List<string>();
         private int _nextSignature;private bool _signaturesDirty;
@@ -82,10 +50,10 @@ namespace DarwinPark.Entities.Simulation
         {
             ordinal=0;count=1;if(!Handled(genes))return false;var entry=_instance._entries[genes];ordinal=entry.ordinal;count=entry.count;return count>1;
         }
-        private Entry Get(EntityGeneController genes)
+        private EntityScheduleEntry Get(EntityGeneController genes)
         {
             if(_entries.TryGetValue(genes,out var entry))return entry;
-            entry=new Entry{genes=genes,entity=genes.GetComponent<DarwinEntity>(),stats=genes.GetComponent<EntityStats>(),life=genes.GetComponent<EntityLifeCycle>(),vitals=genes.GetComponent<EntityVitals>(),environment=genes.GetComponent<EntityEnvironmentHazard>(),position=genes.transform.position};
+            entry=new EntityScheduleEntry{genes=genes,entity=genes.GetComponent<DarwinEntity>(),stats=genes.GetComponent<EntityStats>(),life=genes.GetComponent<EntityLifeCycle>(),vitals=genes.GetComponent<EntityVitals>(),environment=genes.GetComponent<EntityEnvironmentHazard>(),position=genes.transform.position};
             _entries.Add(genes,entry);return entry;
         }
         // ★ 适配：全局每帧一次检查自然数值的热加载，不在每个实体的生命小步访问磁盘。
@@ -95,6 +63,26 @@ namespace DarwinPark.Entities.Simulation
             // ★ 适配：只在主动性能采样期间计时，定位完整场景的实际消耗。
             using var performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.Scheduler);
             if(dt<=0||WorldAuthority.IsReplica)return;
+            RefreshMembership();
+            foreach(var previous in _groups){previous.members.Clear();previous.next=null;}
+            _active.Clear();_controlled.Clear();_injured.Clear();_groups.Clear();_cells.Clear();_usedGroups=0;DormantMembers=0;
+            var tuning=GameplayTuning.Current;
+            double frameStart=_simulationTime;_simulationTime+=dt;
+            bool phaseChanged=_phaseInterval!=tuning.mergeInterval||_phaseRadius!=tuning.mergeRadius||_phaseBuckets!=tuning.mergePhaseBuckets||_stagger!=tuning.mergeStaggerBatches;
+            _phaseInterval=tuning.mergeInterval;_phaseRadius=tuning.mergeRadius;_phaseBuckets=tuning.mergePhaseBuckets;_stagger=tuning.mergeStaggerBatches;
+            // ★ 修复（防Bug回归）：出生/死亡会改注册表，推进前先完成调度快照，不能边枚举边生成。
+            CollectEntries(dt, tuning, frameStart, phaseChanged);
+            if(_signaturesDirty)TrimSignatures();
+            // 三档优先级用线性分桶，普通实体不再付出O(n log n)组件查询成本。
+            foreach(var group in _groups)foreach(var member in group.members)member.count=group.members.Count;
+            AdvanceActive(_controlled,dt,tuning);AdvanceActive(_injured,dt,tuning);AdvanceActive(_active,dt,tuning);
+            // 最久未结算者优先，持续生成近邻组不会饿死远处组。
+            SettleGroups(tuning);
+        }
+
+        // ✅ 适配：成员变更、候选收集与分组结算各有边界，调用顺序与原实现一致。
+        private void RefreshMembership()
+        {
             if(_membership!=EntityRegistry.MembershipRevision)
             {
                 _present.Clear();foreach(var entity in EntityRegistry.All)if(entity!=null&&entity.Genes!=null)_present.Add(entity.Genes);
@@ -105,13 +93,10 @@ namespace DarwinPark.Entities.Simulation
                 foreach(var genes in _present)Get(genes);
                 _membership=EntityRegistry.MembershipRevision;
             }
-            foreach(var previous in _groups){previous.members.Clear();previous.next=null;}
-            _active.Clear();_controlled.Clear();_injured.Clear();_groups.Clear();_cells.Clear();_usedGroups=0;DormantMembers=0;
-            var tuning=GameplayTuning.Current;
-            double frameStart=_simulationTime;_simulationTime+=dt;
-            bool phaseChanged=_phaseInterval!=tuning.mergeInterval||_phaseRadius!=tuning.mergeRadius||_phaseBuckets!=tuning.mergePhaseBuckets||_stagger!=tuning.mergeStaggerBatches;
-            _phaseInterval=tuning.mergeInterval;_phaseRadius=tuning.mergeRadius;_phaseBuckets=tuning.mergePhaseBuckets;_stagger=tuning.mergeStaggerBatches;
-            // ★ 修复（防Bug回归）：出生/死亡会改注册表，推进前先完成调度快照，不能边枚举边生成。
+        }
+
+        private void CollectEntries(float dt, GameplayTuning tuning, double frameStart, bool phaseChanged)
+        {
             foreach(var entry in _entries.Values)
             {
                 var genes=entry.genes;if(genes==null||!genes.isActiveAndEnabled)continue;
@@ -146,11 +131,10 @@ namespace DarwinPark.Entities.Simulation
                 }
                 else if(entry.pending+0.00001f>=tuning.mergeInterval)AddGroup(entry,tuning);
             }
-            if(_signaturesDirty)TrimSignatures();
-            // 三档优先级用线性分桶，普通实体不再付出O(n log n)组件查询成本。
-            foreach(var group in _groups)foreach(var member in group.members)member.count=group.members.Count;
-            AdvanceActive(_controlled,dt,tuning);AdvanceActive(_injured,dt,tuning);AdvanceActive(_active,dt,tuning);
-            // 最久未结算者优先，持续生成近邻组不会饿死远处组。
+        }
+
+        private void SettleGroups(GameplayTuning tuning)
+        {
             _groups.Sort((a,b)=>b.priority.CompareTo(a.priority));
             int budget=Mathf.FloorToInt(tuning.mergeGroupsPerFrame);
             foreach(var group in _groups)
@@ -205,13 +189,13 @@ namespace DarwinPark.Entities.Simulation
             _retiredSignatures.Clear();foreach(var pair in _signatures)if(!_liveSignatures.Contains(pair.Value))_retiredSignatures.Add(pair.Key);
             foreach(var signature in _retiredSignatures)_signatures.Remove(signature);_retiredSignatures.Clear();_signaturesDirty=false;
         }
-        private void QueueActive(Entry entry)
+        private void QueueActive(EntityScheduleEntry entry)
         {
             if(entry.manual?.IsControlled==true)_controlled.Add(entry);
             else if(entry.stats!=null&&entry.stats.CapacityRemaining("health")>0)_injured.Add(entry);
             else _active.Add(entry);
         }
-        private static void AdvanceActive(List<Entry> entries,float dt,GameplayTuning tuning)
+        private static void AdvanceActive(List<EntityScheduleEntry> entries,float dt,GameplayTuning tuning)
         {
             foreach(var entry in entries)
             {
@@ -222,25 +206,26 @@ namespace DarwinPark.Entities.Simulation
                 if(owed>0&&entry.genes!=null&&entry.genes.gameObject.activeInHierarchy)StationaryCohortKernel.AdvanceCore(entry.genes,owed);
             }
         }
-        private static bool CanShare(Cohort group,Entry first)
+        private static bool CanShare(StationaryCohort group,EntityScheduleEntry first)
         {
             foreach(var entry in group.members)
                 if(entry.genes==null||!entry.genes.isActiveAndEnabled||entry.revision!=entry.genes.LogicRevision||!Eligible(entry)||entry.genes.CurrentAge!=first.genes.CurrentAge||entry.genes.IsGestating!=first.genes.IsGestating)return false;
             return true;
         }
-        private static bool Eligible(Entry entry)
+        private static bool Eligible(EntityScheduleEntry entry)
         {
             var genes=entry.genes;
             if(!entry.supported||entry.stats==null||entry.life==null||entry.life.HasDied||entry.stats.CapacityRemaining("health")>0||!entry.stats.TryGet("health",out var hp)||hp<=0||!entry.stats.TryGet("nutrient",out var food)||food<=0)return false;
+            if(DarwinPark.Core.OptionalComponent.Read<EntityActivityPlan>(genes)?.Active==true)return false;
             // ★ 修复（防Bug回归）：每帧刷新可附着组件引用，小步内直接检查实时字段；零基础速度无需重复走群体/寄生修饰链。
-            if(genes.EnvironmentGeneSuppression>0||entry.environment?.StressLevel>0||entry.environment?.IsDrowning==true||entry.manual?.IsControlled==true||entry.nutritionParasite?.Host!=null||entry.parasite?.Active==true||entry.egg?.Incubating==true||AntColonyWorker.IsCarried(entry.entity))return false;
+            if(genes.EnvironmentGeneSuppression>0||entry.environment?.StressLevel>0||entry.environment?.IsDrowning==true||entry.environment?.IsInWater==true||entry.manual?.IsControlled==true||entry.nutritionParasite?.Host!=null||entry.parasite?.Active==true||entry.egg?.Incubating==true||AntColonyWorker.IsCarried(entry.entity))return false;
             if(genes.Evaluation.Attributes.TryGetValue("moveSpeed",out var move)&&move>0&&genes.GetAttribute("moveSpeed")>0)return false;
             return entry.supported;
         }
-        private void AddGroup(Entry entry,GameplayTuning tuning)
+        private void AddGroup(EntityScheduleEntry entry,GameplayTuning tuning)
         {
             Vector3 point=entry.position;float radius=tuning.mergeRadius;var cell=new Vector3Int(Mathf.FloorToInt(point.x/radius),Mathf.FloorToInt(point.y/radius),Mathf.FloorToInt(point.z/radius));
-            var shared=new SharedState(entry,tuning);Cohort found=null;
+            var shared=new CohortCompatibility(entry,tuning);StationaryCohort found=null;
             for(int x=-1;x<=1&&found==null;x++)for(int y=-1;y<=1&&found==null;y++)for(int z=-1;z<=1&&found==null;z++)
             {
                 if(!_cells.TryGetValue((cell+new Vector3Int(x,y,z),shared),out var candidate))continue;
@@ -250,7 +235,7 @@ namespace DarwinPark.Entities.Simulation
             if(found==null)
             {
                 // ★ 修复（防Bug回归）：组与成员数组在结算之间复用；桶用单链表，避免每次到期为每个格子分配List。
-                if(_usedGroups==_pool.Count)_pool.Add(new Cohort());
+                if(_usedGroups==_pool.Count)_pool.Add(new StationaryCohort());
                 found=_pool[_usedGroups++];found.time=found.priority=entry.pending;_groups.Add(found);
                 var key=(cell,shared);_cells.TryGetValue(key,out found.next);_cells[key]=found;
             }
@@ -263,7 +248,7 @@ namespace DarwinPark.Entities.Simulation
             var text=new StringBuilder();
             foreach(var gene in genes.Genome.Genes)
             {
-                text.Append(gene.DefinitionId.Length).Append(':').Append(gene.DefinitionId).Append(':').Append(gene.Value.ToString("R",CultureInfo.InvariantCulture)).Append(':').Append(gene.Tier).Append(':').Append(gene.Enabled).Append(':').Append(gene.CopyStrength.ToString("R",CultureInfo.InvariantCulture)).Append(':');
+                text.Append(gene.DefinitionId.Length).Append(':').Append(gene.DefinitionId).Append(':').Append(gene.StateId?.Length??0).Append(':').Append(gene.StateId).Append(':').Append(gene.Value.ToString("R",CultureInfo.InvariantCulture)).Append(':').Append(gene.Tier).Append(':').Append(gene.Enabled).Append(':').Append(gene.CopyStrength.ToString("R",CultureInfo.InvariantCulture)).Append(':');
                 foreach(var state in gene.MissingStateIds)text.Append(state?.Length??-1).Append(':').Append(state).Append(',');text.Append(';');
             }
             return text.ToString();

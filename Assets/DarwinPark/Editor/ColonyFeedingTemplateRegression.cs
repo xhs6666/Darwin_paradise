@@ -82,6 +82,7 @@ namespace DarwinPark.EditorTools
                 EntityTemplateManager.SaveTemplate(worker.Entity);EntityTemplateManager.SaveTemplate(worker.Entity);worker.Entity.DisplayName=savedName;
                 Check(File.Exists(EntityTemplateStore.FilePath)&&EntityTemplateManager.Templates.Count(t=>t.templateName==name)==1,"模板实际落盘且同名保存不重复");
                 File.WriteAllText(Path.Combine(Folder,"fixture.json"),JsonUtility.ToJson(EntityTemplateManager.Templates.Single(t=>t.templateName==name)));
+                File.WriteAllText(Path.Combine(Folder,"template-world-id.txt"),EntityTemplateManager.WorldId);
                 VerifyStoreRecovery();
                 File.WriteAllText(Path.Combine(Folder,"result.txt"),"PASS\n"+string.Join("\n",Passed));
                 Debug.Log("[ColonyFeedingTemplateReview] PASS: "+Passed.Count+" checks");
@@ -105,6 +106,7 @@ namespace DarwinPark.EditorTools
             try
             {
                 var expected=JsonUtility.FromJson<EntityTemplateData>(File.ReadAllText(Path.Combine(Folder,"fixture.json")));
+                EntityTemplateManager.UseWorld(File.ReadAllText(Path.Combine(Folder,"template-world-id.txt")));
                 var actual=EntityTemplateManager.Templates.Single(t=>t.templateName==expected.templateName);
                 if(JsonUtility.ToJson(expected)!=JsonUtility.ToJson(actual))throw new InvalidOperationException("重启后模板基因或名称变化");
                 File.WriteAllText(Path.Combine(Folder,"restart.txt"),"PASS: 独立Unity进程从默认模板路径恢复名称、图标及全部基因数值/层级");

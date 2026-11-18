@@ -3,6 +3,7 @@
   "DuplicateWeight": 0.05,
   "DeletionWeight": 0.05,
   "InsertionWeight": 0.0,
+  "ProtectedGeneIds": ["gene_growth", "gene_reproduction", "gene_nutrition"],
   "MaxErrorDelta": 15,
   "ErrorBiasPower": 3,
   "MaxInteractionDistance": 25,

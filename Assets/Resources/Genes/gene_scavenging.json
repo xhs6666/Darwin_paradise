@@ -30,5 +30,11 @@
   "attributeLinkages": [],
   "suppressionRules": [],
   "entityStateTagVersion": 1,
-  "entityStateTags": []
+  "entityStateTags": [],
+  "schemaVersion": 2,
+  "partBindings": [],
+  "partModifiers": [],
+  "requiresGenes": [
+    "gene_heterotrophy"
+  ]
 }

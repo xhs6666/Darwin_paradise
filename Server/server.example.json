@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "port": 47777,
+  "worldId": "",
+  "worldName": "Darwin Paradise Server",
+  "seed": 78031,
+  "tickRate": 30,
+  "autoSaveSeconds": 120,
+  "startupTimeout": 300,
+  "land": 0.5,
+  "temperature": 20,
+  "humidity": 44,
+  "cheats": false
+}

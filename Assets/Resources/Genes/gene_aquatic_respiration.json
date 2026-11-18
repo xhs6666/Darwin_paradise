@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 2,
+  "id": "gene_aquatic_respiration",
+  "displayName": "水下呼吸基因",
+  "category": "Adaptation",
+  "parentGeneId": "gene_environment",
+  "isBaseGene": false,
+  "tier": 1,
+  "attributeCurves": [
+    {
+      "attributeId": "waterBreathing",
+      "minValue": 1,
+      "maxValue": 1
+    }
+  ],
+  "states": [
+    {
+      "stateId": "gills",
+      "displayName": "鳃呼吸",
+      "center": 50,
+      "color": [
+        0.7,
+        0.3,
+        0.4
+      ]
+    }
+  ],
+  "attributeLinkages": [],
+  "suppressionRules": [],
+  "partBindings": [
+    {
+      "slotId": "gill_left",
+      "partId": "gill_basic"
+    },
+    {
+      "slotId": "gill_right",
+      "partId": "gill_basic"
+    }
+  ],
+  "entityStateTagVersion": 1,
+  "entityStateTags": []
+}

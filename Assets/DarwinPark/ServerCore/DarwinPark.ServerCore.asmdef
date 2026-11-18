@@ -1,0 +1,7 @@
+{
+  "name": "DarwinPark.ServerCore",
+  "rootNamespace": "DarwinPark.ServerCore",
+  "references": [],
+  "autoReferenced": true,
+  "noEngineReferences": true
+}

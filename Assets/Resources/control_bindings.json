@@ -13,6 +13,7 @@
     {"action":"WorldPause","key":"Space"},
     {"action":"Rts","key":"R"},
     {"action":"CycleLayer","key":"L"},
-    {"action":"ClearLayer","key":"BackQuote"}
+    {"action":"ClearLayer","key":"Backspace"},
+    {"action":"ToggleBottomBar","key":"BackQuote"}
   ]
 }

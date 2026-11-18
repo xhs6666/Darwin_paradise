@@ -44,7 +44,8 @@ sealed class Atlas(string root)
                 if(cache.TryGetValue(name,out var cached))return cached;var project=projects[name];
                 var symbols=project.Descendants("DefineConstants").SelectMany(x=>x.Value.Split(';')).Where(x=>x.Length>0).Distinct().ToArray();
                 var defines=profile=="Editor"?symbols:symbols.Where(x=>!x.StartsWith("UNITY_EDITOR",StringComparison.Ordinal)).Append("UNITY_STANDALONE_WIN").ToArray();
-                var parse=new CSharpParseOptions(LanguageVersion.Latest,preprocessorSymbols:defines);
+                // ★ 修复（防Bug回归）：与Unity源码的C#9一致，避免新版Roslyn将合法变量field误判成C#14关键字。
+                var parse=new CSharpParseOptions(LanguageVersion.CSharp9,preprocessorSymbols:defines);
                 var includes=project.Descendants("Compile").Select(x=>x.Attribute("Include")?.Value).Where(x=>x!=null).Select(x=>Relative(Path.GetFullPath(Path.Combine(Root,x!)))).ToHashSet(StringComparer.OrdinalIgnoreCase);
                 var trees=scripts.Where(s=>includes.Contains(s.Path)&&(profile=="Editor"||s.Scope!="Editor")).Select(s=>CSharpSyntaxTree.ParseText(s.Source,parse,Path.Combine(Root,s.Path))).ToArray();
                 var references=new List<MetadataReference>();
@@ -221,26 +222,34 @@ sealed class Atlas(string root)
     static int Balanced(string s,int start){int depth=0;bool line=false,block=false,quoted=false;for(int i=start;i<s.Length;i++){char c=s[i],next=i+1<s.Length?s[i+1]:'\0';if(line){if(c=='\n')line=false;continue;}if(block){if(c=='*'&&next=='/'){block=false;i++;}continue;}if(quoted){if(c=='\\'){i++;continue;}if(c=='"')quoted=false;continue;}if(c=='/'&&next=='/'){line=true;i++;continue;}if(c=='/'&&next=='*'){block=true;i++;continue;}if(c=='"'){quoted=true;continue;}if(c=='{')depth++;if(c=='}'&&--depth==0)return i;}return -1;}
     void Write()
     {
-        string output=Path.Combine(Root,"Docs/运行流程图");Directory.CreateDirectory(output);Directory.CreateDirectory(Path.Combine(output,"脚本"));
+        string output=Path.Combine(Root,"Docs/运行流程图");Directory.CreateDirectory(output);Directory.CreateDirectory(Path.Combine(output,"模块"));
         var overviewPath=Path.Combine(Root,"Tools/FlowDocs/overview.json");var overview=File.Exists(overviewPath)?JsonSerializer.Deserialize<JsonElement>(File.ReadAllText(overviewPath)):JsonSerializer.Deserialize<JsonElement>("[]");
         var manifest=new{version=1,scripts,methods=methods.Values.OrderBy(m=>m.ScriptId).ThenBy(m=>m.Line).ToArray(),diagnostics,overview,limits=new[]{"静态结构与调用关系，不等于运行时性能或完整执行轨迹。","Unity消息的跨组件顺序由引擎/场景/执行序配置决定，普通同名方法不自动认定为Unity入口。","接口/虚方法指向编译时声明；委托、事件、反射、字符串入口保留动态边界，不伪造实际目标。","异常边标注潜在处理入口；精确抛出位置、finally延后传播和协程/async恢复需结合源码与运行情况。","自动属性仅有隐式存储，图中标为声明；属性/字段初始化表达式保留在脚本源码视图。","GPU按兼容控制结构展示，名称匹配仅为候选。"}};
         string serialized=JsonSerializer.Serialize(manifest,json);File.WriteAllText(Path.Combine(output,"atlas-data.js"),"window.FLOW_ATLAS="+serialized+";\n",new UTF8Encoding(false));File.WriteAllText(Path.Combine(output,"manifest.json"),serialized,new UTF8Encoding(false));
-        var pagesRoot=Path.GetFullPath(Path.Combine(output,"脚本"));var keepPages=scripts.Select(s=>s.Id+".md").ToHashSet(StringComparer.Ordinal);
-        // ★ 新增：只清理本生成器hash命名的旧分图，删除/重命名脚本后不能留下误导维护者的过期页。
-        foreach(var page in Directory.GetFiles(pagesRoot,"*.md"))if(Path.GetDirectoryName(Path.GetFullPath(page))==pagesRoot&&Regex.IsMatch(Path.GetFileName(page),@"^[a-f0-9]{16}\.md$")&&!keepPages.Contains(Path.GetFileName(page)))File.Delete(page);
-        foreach(var script in scripts)
+        // ★ 适配：按模块合并脚本分图，固定脚本/方法锚点保留跨文件导航，避免每次生成数百页。
+        string ModuleFile(string scriptId)=>scripts.Single(s=>s.Id==scriptId).Module+".md";
+        foreach(var module in scripts.GroupBy(s=>s.Module).OrderBy(g=>g.Key,StringComparer.Ordinal))
         {
-            var md=new StringBuilder($"# {Path.GetFileName(script.Path)}\n\n[返回总索引](../README.md) · `{script.Scope}` · `{script.Path}`\n\n[源文件](../../../{script.Path}) · 源码校验：`{script.Hash}`\n\n");
-            md.AppendLine("方法按源文件位置排列。事件/回调引用不表示立即执行；分支与异常说明见总索引。完整源码与可点击关系图请打开离线手册。\n");
-            foreach(var id in script.Methods)
+            var md=new StringBuilder($"# {module.Key} 模块流程\n\n[返回总索引](../README.md) · [离线交互手册](../index.html)\n\n## 脚本目录\n\n");
+            foreach(var script in module)md.AppendLine($"- [{script.Path}](#s{script.Id})（{script.Methods.Count}个方法/回调）");
+            foreach(var script in module)
             {
-                var method=methods[id];md.AppendLine($"<a id=\"m{method.Id}\"></a>\n\n## {method.Name} · L{method.Line}\n\n`{method.Signature.Replace("`","'")}`\n\n{method.Summary}\n");
-                foreach(var pair in method.Graphs){md.AppendLine($"### {string.Join(" / ",method.Profiles.Where(p=>p==pair.Key||method.GraphRefs.GetValueOrDefault(p)==pair.Key))} · {pair.Value.Mode}\n\n```mermaid\n{Mermaid(pair.Value)}\n```\n");}
-                var targets=method.Calls.SelectMany(c=>c.Targets).Distinct().Select(t=>methods[t]).ToArray();if(targets.Length>0){md.AppendLine("项目内调用/回调引用：\n");foreach(var target in targets){var file=scripts.Single(s=>s.Id==target.ScriptId);md.AppendLine($"- [{target.Owner}.{target.Name} · L{target.Line}]({file.Id}.md#m{target.Id})（{target.Kind}）");}md.AppendLine();}
+                md.AppendLine($"\n---\n\n<a id=\"s{script.Id}\"></a>\n\n## {Path.GetFileName(script.Path)}\n\n`{script.Scope}` · `{script.Path}`\n\n[源文件](../../../{script.Path}) · 源码校验：`{script.Hash}`\n\n方法按源文件位置排列。事件/回调引用不表示立即执行；完整源码与关系图请打开离线手册。\n");
+                foreach(var id in script.Methods)
+                {
+                    var method=methods[id];md.AppendLine($"<a id=\"m{method.Id}\"></a>\n\n### {method.Name} · L{method.Line}\n\n`{method.Signature.Replace("`","'")}`\n\n{method.Summary}\n");
+                    foreach(var pair in method.Graphs)md.AppendLine($"#### {string.Join(" / ",method.Profiles.Where(p=>p==pair.Key||method.GraphRefs.GetValueOrDefault(p)==pair.Key))} · {pair.Value.Mode}\n\n```mermaid\n{Mermaid(pair.Value)}\n```\n");
+                    var targets=method.Calls.SelectMany(c=>c.Targets).Distinct().Select(t=>methods[t]).ToArray();
+                    if(targets.Length>0){md.AppendLine("项目内调用/回调引用：\n");foreach(var target in targets)md.AppendLine($"- [{target.Owner}.{target.Name} · L{target.Line}]({ModuleFile(target.ScriptId)}#m{target.Id})（{target.Kind}）");md.AppendLine();}
+                }
+                if(script.Methods.Count==0)md.AppendLine("本文件没有显式方法体，属于数据/枚举/标记声明；字段与类型定义请在离线源码视图查看。\n");
             }
-            if(script.Methods.Count==0)md.AppendLine("本文件没有显式方法体，属于数据/枚举/标记声明；字段与类型定义请在离线源码视图查看。\n");
-            File.WriteAllText(Path.Combine(output,"脚本",script.Id+".md"),md.ToString().Replace("\r\n","\n").TrimEnd()+"\n",new UTF8Encoding(false));
+            File.WriteAllText(Path.Combine(output,"模块",module.Key+".md"),md.ToString().Replace("\r\n","\n").TrimEnd()+"\n",new UTF8Encoding(false));
         }
+        // ★ 修复（防Bug回归）：模块已写入后，只删除输出目录内原生成器hash命名的旧页，保留手写资料。
+        var pagesRoot=Path.GetFullPath(Path.Combine(output,"脚本"));
+        if(Directory.Exists(pagesRoot))foreach(var page in Directory.GetFiles(pagesRoot,"*.md"))
+            if(Path.GetDirectoryName(Path.GetFullPath(page))==pagesRoot&&Regex.IsMatch(Path.GetFileName(page),@"^[a-f0-9]{16}\.md$"))File.Delete(page);
         var main=new StringBuilder("# 游戏业务主流程\n\n[返回总索引](README.md) · [离线可交互版本](index.html)\n\n这些图用于跨模块业务导航；虚线表示回调、异步传输或数据依赖，不把它们伪装成直接调用。精确的分支/循环/返回和真实调用目标请打开方法分图。\n\n");
         foreach(var flow in overview.EnumerateArray())
         {
@@ -251,7 +260,7 @@ sealed class Atlas(string root)
             foreach(var node in flow.GetProperty("nodes").EnumerateArray())if(node.TryGetProperty("target",out var target))
             {
                 var method=methods.Values.FirstOrDefault(m=>m.Owner+"."+m.Name==target.GetString());if(method==null)throw new InvalidDataException("主流程方法不存在："+target.GetString());
-                main.AppendLine($"- [{method.Owner}.{method.Name} · L{method.Line}](脚本/{method.ScriptId}.md#m{method.Id})");
+                main.AppendLine($"- [{method.Owner}.{method.Name} · L{method.Line}](模块/{ModuleFile(method.ScriptId)}#m{method.Id})");
             }
             if(flow.TryGetProperty("note",out var note))main.AppendLine("\n"+note.GetString()+"\n");
         }
@@ -260,9 +269,11 @@ sealed class Atlas(string root)
         File.WriteAllText(Path.Combine(output,"coverage.json"),JsonSerializer.Serialize(new{stats,diagnostics,scripts=scripts.Select(s=>new{s.Id,s.Path,s.Scope,methods=s.Methods.Count,s.Hash}),modes=methods.Values.SelectMany(m=>m.Graphs.Values).GroupBy(g=>g.Mode).Select(g=>new{mode=g.Key,count=g.Count()})},new JsonSerializerOptions{WriteIndented=true}),new UTF8Encoding(false));
         var readme=new StringBuilder("# 游戏运行逻辑流程图手册\n\n**推荐打开 [离线交互手册](index.html)**：无需网络，可搜索脚本/方法、筛选运行时/编辑器/GPU、查看方法控制流程、调用/被调用关系、源码及条件编译分支，复制Mermaid。\n\n");
         readme.AppendLine($"[{overview.GetArrayLength()}条业务主流程](主流程.md) · [生成工具与维护说明](../../Tools/FlowDocs/README.md)\n\n覆盖 **{stats.csharp} 个C#脚本、{stats.gpu} 个Shader/HLSL文件、{stats.methods} 个方法/构造/访问器/局部函数/回调/GPU函数**。没有显式方法的数据脚本也在索引中。未扫描Unity Packages/Library生成文件；Tools为离线生成器，不进入游戏运行图。\n\n");
-        readme.AppendLine("## 阅读与维护\n\n1. 先在首页阅读业务主流程，点击节点进入相关方法。\n2. 按模块或脚本查找方法。菱形为判断，圆角为入口/出口；蓝色为普通步骤，紫色为挂起/异步，虚线为异常或动态边界。\n3. 调用页显示编译时可确定的目标；事件注册、委托、接口/虚方法不是已证明的运行顺序。源码按钮显示完整原文与行号。\n4. Editor/Player分别分析；同一方法可切换条件编译视图。Shader/HLSL单独标记，不与CPU方法混淆。\n5. 更改源码后运行 `powershell -ExecutionPolicy Bypass -File Tools/FlowDocs/Generate.ps1`，再运行 `python Tools/FlowDocs/validate.py`。不要手工改生成数据或脚本分图。\n\n");
-        readme.AppendLine("## 分析边界\n\n- 编译器控制流块反映局部分支/循环/返回；不测量运行时间，也不规定不同MonoBehaviour的全部先后顺序。\n- catch入口用潜在异常边标注，finally与异步/协程恢复保留区域和语句，仍需结合源码看异常传播。\n- 无方法体的接口/自动访问器标为声明；动态调用和外部引擎/系统API明确列出，不凭名称伪造实现。\n- GPU函数通过兼容语法抽取控制结构；名称链接只表示候选，着色器宏/include的完整执行需结合渲染管线。\n- 精确覆盖与源码SHA256见 [coverage.json](coverage.json)。语义分析诊断一并公开，不能把未解析调用当作没有调用。\n\n## 全部脚本\n\n|模块|脚本|范围|方法/回调|\n|---|---|---|---|\n");
-        foreach(var script in scripts)readme.AppendLine($"|{script.Module}|[{script.Path}](脚本/{script.Id}.md)|{script.Scope}|{script.Methods.Count}|");
+        readme.AppendLine("## 阅读与维护\n\n1. 先在首页阅读业务主流程，点击节点进入相关方法。\n2. 按模块或脚本查找方法。菱形为判断，圆角为入口/出口；蓝色为普通步骤，紫色为挂起/异步，虚线为异常或动态边界。\n3. 调用页显示编译时可确定的目标；事件注册、委托、接口/虚方法不是已证明的运行顺序。源码按钮显示完整原文与行号。\n4. Editor/Player分别分析；同一方法可切换条件编译视图。Shader/HLSL单独标记，不与CPU方法混淆。\n5. 更改源码后运行 `powershell -ExecutionPolicy Bypass -File Tools/FlowDocs/Generate.ps1`，再运行 `python Tools/FlowDocs/validate.py`。不要手工改生成数据或模块手册。\n\n");
+        readme.AppendLine("## 分析边界\n\n- 编译器控制流块反映局部分支/循环/返回；不测量运行时间，也不规定不同MonoBehaviour的全部先后顺序。\n- catch入口用潜在异常边标注，finally与异步/协程恢复保留区域和语句，仍需结合源码看异常传播。\n- 无方法体的接口/自动访问器标为声明；动态调用和外部引擎/系统API明确列出，不凭名称伪造实现。\n- GPU函数通过兼容语法抽取控制结构；名称链接只表示候选，着色器宏/include的完整执行需结合渲染管线。\n- 精确覆盖与源码SHA256见 [coverage.json](coverage.json)。语义分析诊断一并公开，不能把未解析调用当作没有调用。\n\n## 模块手册\n");
+        foreach(var module in scripts.Select(s=>s.Module).Distinct().OrderBy(m=>m,StringComparer.Ordinal))readme.AppendLine($"- [{module}](模块/{module}.md)");
+        readme.AppendLine("\n## 全部脚本\n\n|模块|脚本|范围|方法/回调|\n|---|---|---|---|\n");
+        foreach(var script in scripts)readme.AppendLine($"|{script.Module}|[{script.Path}](模块/{script.Module}.md#s{script.Id})|{script.Scope}|{script.Methods.Count}|");
         File.WriteAllText(Path.Combine(output,"README.md"),readme.ToString().Replace("\r\n","\n").TrimEnd()+"\n",new UTF8Encoding(false));Console.WriteLine(JsonSerializer.Serialize(stats));
     }
     public static string Mermaid(GraphDoc graph)

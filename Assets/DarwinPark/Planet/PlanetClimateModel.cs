@@ -4,31 +4,7 @@ using UnityEngine;
 namespace DarwinPark.Planet
 {
     /// <summary>气候图的一次生成结果（纯数据，方便在编辑器/测试中复用与验证）。</summary>
-    public sealed class PlanetClimateResult
-    {
-        public int Resolution;
-        public float SeaLevel;
 
-        public float[] Height;
-        public float[] Temperature;
-        public float[] Humidity;
-        public float[] Precipitation;
-        public float[] CoastProximity;
-        public float[] WindFetch;
-        public float[] Continentality;
-        public float[] Relief;
-        public bool[] Ocean;
-        public Color[] Pixels;
-        public ClimateType[] Types;
-
-        public int LandCells;
-        public int DesertCells;
-        public int SnowCells;
-        public float MinTemperature = float.MaxValue;
-        public float MaxTemperature = float.MinValue;
-        public float MinHumidity = float.MaxValue;
-        public float MaxHumidity = float.MinValue;
-    }
 
     /// <summary>
     /// ★ 新增：星球气候模型（纯 C#，不依赖场景对象）。
@@ -100,152 +76,13 @@ namespace DarwinPark.Planet
             // 风程是连续场，不会像“最近海洋方向”那样在等距边界产生扇形断层。
             int coarseResolution = Mathf.Clamp(res / 4, 48, 256);
             float[] coarseFetch = BuildCoarseWindFetch(coarseResolution);
+            if (_cfg.earth?.enabled == true)
+                result.Circulation = new ClimateCirculation(_data,_cfg,Mathf.Clamp(coarseResolution,48,128));
 
             // ---------- 3. 温度/湿度噪声 ----------
-            var temperatureNoise = new FBMNoise(new FBMConfig
-            {
-                octaves = 3,
-                frequency = _cfg.temperatureNoiseFrequency,
-                amplitude = 1f,
-                lacunarity = 2f,
-                gain = 0.5f,
-                warpStrength = 0.35f
-            }, _seed + 1701);
+            float altitudeRange = Mathf.Max(0.01f, PlanetTerrainData.MaxNormalizedHeight - _data.SeaLevel);
+            new ClimateAtmosphere(_data,_cfg,_seed).Build(result,coastDistance,coarseFetch,coarseResolution,coastScale,altitudeRange,tempOffset,humidityOffset);
 
-            var currentNoise = new FBMNoise(new FBMConfig
-            {
-                octaves = 2,
-                frequency = _cfg.oceanCurrentFrequency,
-                amplitude = 1f,
-                lacunarity = 2f,
-                gain = 0.5f,
-                warpStrength = 0.5f
-            }, _seed + 2303);
-
-            var moistureNoise = new FBMNoise(new FBMConfig
-            {
-                octaves = 3,
-                frequency = _cfg.moistureNoiseFrequency,
-                amplitude = 1f,
-                lacunarity = 2f,
-                gain = 0.5f,
-                warpStrength = 0.25f
-            }, _seed + 9001);
-
-            Vector3 windDir = _cfg.GetWindDirection();
-            float maxHeight = PlanetTerrainData.MaxNormalizedHeight;
-            float altitudeRange = Mathf.Max(0.01f, maxHeight - _data.SeaLevel);
-
-            for (int y = 0; y < res; y++)
-            {
-                float v = (y + 0.5f) / res;
-                float lat = (v - 0.5f) * Mathf.PI;
-                float solar = Mathf.Pow(Mathf.Cos(lat), Mathf.Max(0.1f, _cfg.latitudeTempExponent));
-                // ★ 修复（防Bug回归）：降低纬向辐射支配，温度由区域、海洋、海拔和水分共同决定。
-                float regionalBase = _cfg.regionalTemperature;
-
-                for (int x = 0; x < res; x++)
-                {
-                    int i = y * res + x;
-                    float u = (x + 0.5f) / res;
-                    Vector3 dir = PlanetTerrainSampler.DirectionFromUV(u, v);
-                    bool isOcean = result.Ocean[i];
-                    float height = result.Height[i];
-                    float altitudeNorm = Mathf.Clamp01((height - _data.SeaLevel) / altitudeRange);
-                    float coastProximity = Mathf.Exp(-coastDistance[i] / coastScale);
-                    float continentality = 1f - coastProximity;
-                    float fetch = SampleCoarseBilinear(coarseFetch, coarseResolution, u, v);
-
-                    result.CoastProximity[i] = coastProximity;
-                    result.Continentality[i] = continentality;
-                    result.WindFetch[i] = fetch;
-
-                    // ---------- 温度：太阳辐射是基准，但不是唯一条件 ----------
-                    float oceanTemperature = Mathf.Lerp(regionalBase, Mathf.Lerp(_cfg.oceanPoleTemp, _cfg.oceanEquatorTemp, solar), EarthClimateRules.SolarWeight(_cfg))
-                        + currentNoise.Sample(dir) * _cfg.oceanCurrentAmplitude + tempOffset;
-
-                    float temperature = Mathf.Lerp(regionalBase, Mathf.Lerp(_cfg.poleTemp, _cfg.equatorTemp, solar), EarthClimateRules.SolarWeight(_cfg))
-                        + tempOffset
-                        - altitudeNorm * _cfg.altitudeTempDrop
-                        + temperatureNoise.Sample(dir) * _cfg.temperatureNoiseAmplitude
-                            * (0.45f + 0.55f * continentality);
-
-                    if (isOcean)
-                    {
-                        temperature = Mathf.Lerp(temperature, oceanTemperature, _cfg.oceanTempModeration);
-                    }
-                    else
-                    {
-                        // 近海被海水热惯性拉平，内陆温差更大。
-                        temperature = Mathf.Lerp(temperature, oceanTemperature,
-                            _cfg.coastalTempModeration * Mathf.Pow(coastProximity, 1.5f));
-                    }
-
-                    // ---------- 湿度：风程 + 海岸 + 迎风坡 + 雨影 + 起伏 ----------
-                    float humidity;
-                    float relief = 0f;
-                    float windLift = 0f;
-                    if (isOcean)
-                    {
-                        humidity = 100f;
-                    }
-                    else
-                    {
-                        SampleNeighbourhood(dir, height, out relief, out float coldPool);
-                        result.Relief[i] = relief;
-                        temperature -= coldPool * _cfg.basinColdPoolDrop;
-                        float fetchMoisture = Mathf.Exp(-fetch / Mathf.Max(0.05f, _cfg.windFetchScale));
-                        ComputeWindExposure(dir, height, EarthClimateRules.Wind(dir,_cfg), out windLift, out float rainShadow01);
-                        // windwardMoistureBonus / leewardDryness 继续作为迎风/背风的调参倍率，
-                        // 与 orographic/rainShadow 的绝对幅度配合使用。
-                        float orographic = windLift * _cfg.orographicMoistureBonus
-                            * (1f + Mathf.Max(0f, _cfg.windwardMoistureBonus));
-                        float rainShadow = rainShadow01 * _cfg.rainShadowDryness
-                            * (1f + Mathf.Max(0f, _cfg.leewardDryness));
-
-                        humidity = _cfg.baseHumidityReference + humidityOffset
-                            + _cfg.windFetchMoisture * fetchMoisture
-                            + _cfg.coastInfluence * coastProximity
-                            - _cfg.inlandDryness * continentality
-                            - relief * _cfg.terrainReliefMoisturePenalty
-                            + orographic
-                            - rainShadow
-                            + moistureNoise.Sample(dir) * _cfg.moistureNoiseAmplitude;
-
-                        // ★ 平滑海岸下限：用连续权重把海岸附近“托”到目标湿度，
-                        // 代替旧版 `if (coastProximity >= threshold) humidity = max(...)`
-                        // 的硬阈值——那条硬阈值正是气候图出现等距断层的根因之一。
-                        float coastWeight = Mathf.SmoothStep(0f, 1f,
-                            Mathf.InverseLerp(_cfg.coastProximityThreshold * 0.45f,
-                                _cfg.coastProximityThreshold + 0.25f, coastProximity));
-                        float coastTarget = _cfg.minCoastHumidity + humidityOffset * 0.5f;
-                        humidity = Mathf.Lerp(humidity, Mathf.Max(humidity, coastTarget), coastWeight * 0.85f);
-                        // ★ 适配：赤道辐合/副热带下沉及真实河湖补湿，沿海下限不能覆盖下沉干燥。
-                        humidity+=EarthClimateRules.Humidity(dir,_cfg)+(_data.Hydrology?.Moisture(dir)??0);
-                    }
-
-                    float precipitation = isOcean
-                        ? 100f
-                        : Mathf.Clamp(humidity - altitudeNorm * _cfg.altitudePrecipitationPenalty
-                            + windLift * _cfg.orographicMoistureBonus * 0.3f, 0f, 100f);
-
-                    // 干旱区增温：放在湿度之后，让“缺水 + 高温”形成正反馈，
-                    // 同时不引入任何离散分支（连续权重）。
-                    if (!isOcean)
-                    {
-                        float dryHeat = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(55f, 15f, humidity));
-                        temperature += dryHeat * _cfg.aridHeatBonus * Mathf.Max(0f, solar);
-                    }
-
-                    result.Temperature[i] = Mathf.Clamp(temperature, -60f, 60f);
-                    result.Humidity[i] = Mathf.Clamp(humidity, 4f, 100f);
-                    result.Precipitation[i] = precipitation;
-                }
-            }
-
-            // ★ 新增：对陆地温湿度做两次小范围平滑。
-            // 迎风/背风在真实山脊上本来就是突变；低分辨率纹理若逐像素保留，
-            // 会被玩家看成“气候断层”。扩散几像素后既保留雨影，又消除刀切边。
             SmoothLandField(result, res, result.Temperature, 3);
             SmoothLandField(result, res, result.Humidity, 3);
 
@@ -443,23 +280,7 @@ namespace DarwinPark.Planet
             return smoothed;
         }
 
-        private static float SampleCoarseBilinear(float[] data, int coarse, float u, float v)
-        {
-            float fx = u * coarse - 0.5f;
-            float fy = Mathf.Clamp(v * coarse - 0.5f, 0f, coarse - 1.001f);
-            int x0 = Mathf.FloorToInt(fx);
-            int y0 = Mathf.FloorToInt(fy);
-            float tx = fx - x0;
-            float ty = fy - y0;
-            int x1 = (x0 + 1) % coarse;
-            x0 = (x0 % coarse + coarse) % coarse;
-            int y1 = Mathf.Clamp(y0 + 1, 0, coarse - 1);
-            y0 = Mathf.Clamp(y0, 0, coarse - 1);
 
-            float a = Mathf.Lerp(data[y0 * coarse + x0], data[y0 * coarse + x1], tx);
-            float b = Mathf.Lerp(data[y1 * coarse + x0], data[y1 * coarse + x1], tx);
-            return Mathf.Lerp(a, b, ty);
-        }
 
         /// <summary>
         /// 迎风抬升 / 背风雨影，都写成连续权重 0~1。
@@ -467,60 +288,13 @@ namespace DarwinPark.Planet
         /// 湿度图出现狭长“断层”的原因；这里改为在上风方 8~30 像素窗口内
         /// 采样，让过渡自然铺开。
         /// </summary>
-        private void ComputeWindExposure(Vector3 dir, float height, Vector3 windDir,
-            out float lift01, out float rainShadow01)
-        {
-            lift01 = 0f;
-            rainShadow01 = 0f;
 
-            Vector3 tangent = Vector3.ProjectOnPlane(windDir, dir);
-            if (tangent.sqrMagnitude < 1e-8f) return;
-            tangent.Normalize();
-
-            // 上风方三个距离：近处判断抬升，远处判断是否被山体挡住了水汽。
-            float upNear = PlanetTerrainSampler.SampleHeight(_data, (dir - tangent * 0.015f).normalized);
-            float upMid = PlanetTerrainSampler.SampleHeight(_data, (dir - tangent * 0.035f).normalized);
-            float upFar = PlanetTerrainSampler.SampleHeight(_data, (dir - tangent * 0.065f).normalized);
-
-            float rise = height - upNear;
-            lift01 = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.01f, 0.12f, rise));
-
-            float blocked = Mathf.Max(upMid, upFar) - height;
-            float shadow = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.02f, 0.14f, blocked));
-            rainShadow01 = shadow * (1f - lift01);
-        }
 
         /// <summary>
         /// 一次采样四邻域，同时得到局部起伏（山地更干）和盆地冷空气堆积。
         /// ★ 优化：旧版把这两件事拆成两次四邻域采样，气候图每像元多跑 4 次高度插值。
         /// </summary>
-        private void SampleNeighbourhood(Vector3 dir, float centerHeight,
-            out float relief01, out float coldPool01)
-        {
-            Vector3 axis = Mathf.Abs(Vector3.Dot(dir, Vector3.up)) > 0.99f ? Vector3.right : Vector3.up;
-            Vector3 tangent = Vector3.Cross(dir, axis).normalized;
-            Vector3 bitangent = Vector3.Cross(dir, tangent).normalized;
-            const float reliefStep = 0.006f;
-            const float basinStep = 0.018f;
 
-            float h1 = PlanetTerrainSampler.SampleHeight(_data, (dir + tangent * reliefStep).normalized);
-            float h2 = PlanetTerrainSampler.SampleHeight(_data, (dir - tangent * reliefStep).normalized);
-            float h3 = PlanetTerrainSampler.SampleHeight(_data, (dir + bitangent * reliefStep).normalized);
-            float h4 = PlanetTerrainSampler.SampleHeight(_data, (dir - bitangent * reliefStep).normalized);
-
-            float maxDiff = Mathf.Max(
-                Mathf.Max(Mathf.Abs(h1 - centerHeight), Mathf.Abs(h2 - centerHeight)),
-                Mathf.Max(Mathf.Abs(h3 - centerHeight), Mathf.Abs(h4 - centerHeight)));
-            relief01 = Mathf.Clamp01(maxDiff * 12f);
-
-            // 用较远一圈的四个方向估计周围地势，避免把山峰本身当成盆地。
-            float b1 = PlanetTerrainSampler.SampleHeight(_data, (dir + tangent * basinStep).normalized);
-            float b2 = PlanetTerrainSampler.SampleHeight(_data, (dir - tangent * basinStep).normalized);
-            float b3 = PlanetTerrainSampler.SampleHeight(_data, (dir + bitangent * basinStep).normalized);
-            float b4 = PlanetTerrainSampler.SampleHeight(_data, (dir - bitangent * basinStep).normalized);
-            float avg = (b1 + b2 + b3 + b4) * 0.25f;
-            coldPool01 = Mathf.Clamp01((avg - centerHeight) * 8f);
-        }
 
         /// <summary>连续混色：所有生态色都按权重叠加，没有离散 if/else。</summary>
         private Color EvaluateBiomeColor(float temperature, float humidity, float altitudeNorm,

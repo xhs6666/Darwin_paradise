@@ -57,7 +57,7 @@ namespace DarwinPark.Entities
             if (_builder == null || _builder.Data == null) return;
 
             // ★ 适配：共享重力已定位的真实地面，不为同一实体再次执行双线性高度采样。
-            SurfaceAnchorPhysics.Advance(this,_rb,_grounding.Read(_builder.transform),ref _airTime);
+            PlanetGroundPhysics.AdvanceAnchor(this,_rb,_grounding.ReadForAnchor(_builder.transform),ref _airTime);
         }
     }
 }

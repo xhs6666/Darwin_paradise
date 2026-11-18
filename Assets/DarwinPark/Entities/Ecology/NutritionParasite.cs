@@ -21,7 +21,7 @@ namespace DarwinPark.Entities.Ecology
         private Rigidbody _body;private bool _attached,_kinematic,_detect;private float _scan;
         public DarwinEntity Host {get;private set;}
         // ★ 适配：已孵化的幼体才可营养寄生，食腐出错分支优先接管食性，避免复制基因同时执行两套吸收。
-        public bool Active=>_genes!=null&&_genes.CurrentAge==AgeState.Infant&&DarwinPark.Core.OptionalComponent.Read<EggIncubation>(this)?.Incubating!=true&&EcologyQueries.Active(_genes,NutritionEcologySettings.Current.scavengerGene)==null&&EcologyQueries.Active(_genes,NutritionEcologySettings.Current.heterotrophyGene)?.State?.StateId==NutritionEcologySettings.Current.parasiteState;
+        public bool Active=>_genes!=null&&_genes.CurrentAge==AgeState.Infant&&DarwinPark.Core.OptionalComponent.Read<EggIncubation>(this)?.Incubating!=true&&EcologyQueries.Active(_genes,NutritionEcologySettings.Current.scavengerGene)==null&&EcologyQueries.Active(_genes,NutritionEcologySettings.Current.nutrientParasiteGene)?.State?.StateId==NutritionEcologySettings.Current.parasiteState;
         public static int CountOn(DarwinEntity host)=>host!=null&&Counts.TryGetValue(host,out int count)?count:0;
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)] private static void Reset()=>Counts.Clear();
         private void Awake(){_genes=GetComponent<EntityGeneController>();_entity=GetComponent<DarwinEntity>();_stats=GetComponent<EntityStats>();EcologyIdentity.Ensure(gameObject);}

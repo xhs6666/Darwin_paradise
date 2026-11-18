@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -75,9 +75,10 @@ namespace DarwinPark.EditorTools
             var here=new Vector3(0,350,0);var wide=Spawn(here,("gene_locomotion",50),("gene_observation",25),("gene_heterotrophy",100));var attention=Spawn(here+Vector3.forward,("gene_locomotion",50),("gene_observation",75),("gene_heterotrophy",100));var target=Spawn(here+Vector3.right*10,("gene_storage",50));var far=Spawn(here+Vector3.right*500,("gene_storage",50));
             Check(EntityPerceptionHub.Range(wide.Genes)>EntityPerceptionHub.Range(attention.Genes),"视野范围状态比注意力状态接收更大范围");
             Check(EntityPerceptionHub.Read(wide.Genes).Any(s=>s.entity==target)&&!EntityPerceptionHub.Read(wide.Genes).Any(s=>s.entity==far),"只向观察者投递视野内实体坐标");long searches=EntityPerceptionHub.Searches;for(int i=0;i<100;i++)EntityPerceptionHub.Read(wide.Genes);Check(EntityPerceptionHub.Searches==searches,"同帧100次行动子步复用一次收件箱");
-            EntityPerceptionHub.TryLocate(wide.Genes,target,out var sampled);EntityPerceptionHub.Read(attention.Genes);target.transform.position+=Vector3.right*3;EntityNeighborhood.ObservePosition(target.Genes);
-            Check(EntityPerceptionHub.TryLocate(wide.Genes,target,out var retained)&&retained==sampled,"范围状态保持上次收到的采样坐标");Check(EntityPerceptionHub.TryLocate(attention.Genes,target,out var tracked)&&tracked==target.transform.position,"注意力状态实时读取目标新坐标而不全量重搜");
-            target.transform.position=here+Vector3.right*100;EntityNeighborhood.ObservePosition(target.Genes);Check(!EntityPerceptionHub.TryLocate(wide.Genes,target,out _)&&!EntityPerceptionHub.TryLocate(attention.Genes,target,out _),"目标离开视野后不能继续获得追踪坐标");
+            EntityPerceptionHub.TryLocate(wide.Genes,target,out var sampled);GlobalCoordinateRegression.ForceScan(attention.Genes);EntityPerceptionHub.TryLocate(attention.Genes,target,out var attentionSample);target.transform.position+=Vector3.right*3;EntityNeighborhood.ObservePosition(target.Genes);
+            Check(EntityPerceptionHub.TryLocate(wide.Genes,target,out var retained)&&retained==sampled,"范围状态保持上次收到的采样坐标");Check(EntityPerceptionHub.TryLocate(attention.Genes,target,out var tracked)&&tracked==attentionSample,"Attention tracks the last delivered snapshot between scans");
+            EntityPerceptionHub.Notice(attention.Genes,target);Check(EntityPerceptionHub.TryLocate(attention.Genes,target,out var noticed)&&noticed==target.transform.position,"Visible notices update attention without scanning the world");
+            target.transform.position=here+Vector3.right*100;EntityNeighborhood.ObservePosition(target.Genes);GlobalCoordinateRegression.ForceScan(wide.Genes);GlobalCoordinateRegression.ForceScan(attention.Genes);Check(!EntityPerceptionHub.TryLocate(wide.Genes,target,out _)&&!EntityPerceptionHub.TryLocate(attention.Genes,target,out _),"目标离开视野后不能继续获得追踪坐标");
             target.transform.position=here+Vector3.right*10;EntityNeighborhood.ObservePosition(target.Genes);wide.Genes.Genome.Genes.First(g=>g.DefinitionId=="gene_observation").Enabled=false;wide.Genes.Recalculate();Check(EntityPerceptionHub.Range(wide.Genes)==0&&!EntityPerceptionHub.TryLocate(wide.Genes,target,out _),"禁用观察基因立即撤销视野信息");
             wide.Genes.Genome.Genes.First(g=>g.DefinitionId=="gene_observation").Enabled=true;wide.Genes.Recalculate();var newborn=Spawn(here+Vector3.right*5,("gene_storage",50));Check(EntityPerceptionHub.Read(wide.Genes).Any(s=>s.entity==newborn),"同帧新注册实体可进入坐标收件箱");newborn.gameObject.SetActive(false);Check(!EntityPerceptionHub.TryLocate(wide.Genes,newborn,out _),"实体停用后立即撤销检索资格");
             var legacy=Spawn(here+Vector3.forward*2,("gene_locomotion",50));Check(Mathf.Abs(EntityPerceptionHub.Range(legacy.Genes)-legacy.Genes.GetAttribute("senseRange"))<.001f,"旧实体无观察基因时保持原感知范围");

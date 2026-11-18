@@ -7,6 +7,14 @@ namespace DarwinPark.Genetics
     public class GeneDefinitionJson
     {
         public string id;
+        // ★ 新增：第二内容纪元直接使用新结构，拒绝旧定义，不安装兼容适配层。
+        public int schemaVersion;
+        public bool explicitState;
+        public string defaultStateId;
+        public float bodyColorWeight;
+        public List<PartBinding> partBindings=new();
+        public List<PartModifier> partModifiers=new();
+        public List<string> requiresGenes=new();
         public string displayName;
         public string category;
         public string parentGeneId = "";

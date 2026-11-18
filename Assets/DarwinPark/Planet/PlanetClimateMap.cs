@@ -25,6 +25,7 @@ namespace DarwinPark.Planet
 
         private PlanetTerrainMeshBuilder _terrainBuilder;
         private PlanetClimateSystem _climateSystem;
+        public ClimateCirculation Circulation { get; private set; }
         private Color[] _pixels;
         private float[] _heightMap;
         private float[] _temperatureMap;
@@ -114,6 +115,7 @@ namespace DarwinPark.Planet
         public void ApplyGeneratedClimate(PlanetClimateResult result)
         {
             int res=result.Resolution;_isDirty=false;_lastGenerateTime=Time.unscaledTime;
+            Circulation = result.Circulation;
             _pixels = result.Pixels;
             _heightMap = result.Height;
             _temperatureMap = result.Temperature;
@@ -213,8 +215,10 @@ namespace DarwinPark.Planet
                 ? _climateSystem.config
                 : new PlanetClimateConfig();
             temp = Mathf.Clamp(temp + tempOffset, -60f, 70f);
-            humidity = Mathf.Clamp(humidity + humidityOffset, 0f, 100f);
-            precipitation = Mathf.Clamp(precipitation, 0f, 100f);
+            // ★ 适配：热半球沿海夏季向岸输送水汽，冬季反转；同一结果供实体和降水读数使用。
+            float monsoon = isOcean ? 0 : Circulation?.Monsoon(uv.x,uv.y,ClimateDataHub.NorthernSummer) ?? 0;
+            humidity = Mathf.Clamp(humidity + humidityOffset + monsoon, 0f, 100f);
+            precipitation = Mathf.Clamp(precipitation + monsoon, 0f, 100f);
 
             data = new ClimateData
             {

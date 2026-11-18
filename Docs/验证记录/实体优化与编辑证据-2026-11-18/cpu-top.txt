@@ -1,0 +1,60 @@
+frame=58 self=24.435 total=24.435 bytes=0 calls=1 /Main Thread/PlayerLoop/UpdateScene/WaitForLastPresentation/Semaphore.WaitForSignal
+frame=56 self=24.070 total=24.070 bytes=0 calls=1 /Main Thread/PlayerLoop/UpdateScene/WaitForLastPresentation/Semaphore.WaitForSignal
+frame=57 self=23.357 total=23.357 bytes=0 calls=1 /Main Thread/PlayerLoop/UpdateScene/WaitForLastPresentation/Semaphore.WaitForSignal
+frame=54 self=22.537 total=22.537 bytes=0 calls=1 /Main Thread/PlayerLoop/UpdateScene/WaitForLastPresentation/Semaphore.WaitForSignal
+frame=52 self=22.084 total=22.084 bytes=0 calls=1 /Main Thread/PlayerLoop/UpdateScene/WaitForLastPresentation/Semaphore.WaitForSignal
+frame=55 self=21.864 total=21.864 bytes=0 calls=1 /Main Thread/PlayerLoop/UpdateScene/WaitForLastPresentation/Semaphore.WaitForSignal
+frame=51 self=20.766 total=20.766 bytes=0 calls=1 /Main Thread/PlayerLoop/UpdateScene/WaitForLastPresentation/Semaphore.WaitForSignal
+frame=53 self=15.929 total=15.929 bytes=0 calls=1 /Main Thread/PlayerLoop/UpdateScene/WaitForLastPresentation/Semaphore.WaitForSignal
+frame=51 self=5.283 total=5.283 bytes=0 calls=4 /Main Thread/EditorLoop
+frame=53 self=4.725 total=5.043 bytes=0 calls=1 /Main Thread/PlayerLoop/UpdateScene/FixedUpdate.PhysicsFixedUpdate/Physics.RunSimulationStage/Physics.Simulate/PxScene.simulate
+frame=53 self=4.112 total=4.112 bytes=0 calls=4 /Main Thread/EditorLoop
+frame=54 self=3.955 total=3.955 bytes=0 calls=4 /Main Thread/EditorLoop
+frame=56 self=3.739 total=3.739 bytes=0 calls=4 /Main Thread/EditorLoop
+frame=52 self=3.140 total=3.140 bytes=0 calls=4 /Main Thread/EditorLoop
+frame=55 self=3.062 total=3.062 bytes=0 calls=4 /Main Thread/EditorLoop
+frame=57 self=2.846 total=2.846 bytes=0 calls=4 /Main Thread/EditorLoop
+frame=53 self=2.354 total=2.354 bytes=0 calls=1 /Main Thread/PlayerLoop/UpdateScene/PreLateUpdate.ScriptRunBehaviourLateUpdate/LateBehaviourUpdate/DarwinPark.Core.dll!DarwinPark.Core::OrbitCamera.LateUpdate() [Invoke]
+frame=58 self=2.123 total=2.123 bytes=0 calls=4 /Main Thread/EditorLoop
+frame=51 self=1.739 total=2.373 bytes=0 calls=2 /Main Thread/PlayerLoop/UpdateScene/FixedUpdate.PhysicsFixedUpdate/Physics.RunSimulationStage/Physics.Simulate/PxScene.simulate
+frame=52 self=1.269 total=1.878 bytes=0 calls=2 /Main Thread/PlayerLoop/UpdateScene/FixedUpdate.PhysicsFixedUpdate/Physics.RunSimulationStage/Physics.Simulate/PxScene.simulate
+frame=55 self=0.995 total=1.770 bytes=0 calls=2 /Main Thread/PlayerLoop/UpdateScene/FixedUpdate.PhysicsFixedUpdate/Physics.RunSimulationStage/Physics.Simulate/PxScene.simulate
+frame=55 self=0.478 total=0.618 bytes=0 calls=1 /Main Thread/PlayerLoop/RenderPlayModeViewCameras/UnityEngine.CoreModule.dll!UnityEngine.Rendering::RenderPipelineManager.DoRenderLoop_Internal() [Invoke]/Inl_UniversalRenderTotal/Inl_RenderCameraStack/Inl_UniversalRenderPipeline.RenderSingleCameraInternal: Main Camera/Inl_RecordRenderGraph/Inl_On Record Render Graph
+frame=57 self=0.350 total=0.931 bytes=0 calls=2 /Main Thread/PlayerLoop/UpdateScene/FixedUpdate.PhysicsFixedUpdate/Physics.RunSimulationStage/Physics.Simulate/PxScene.simulate
+frame=53 self=0.349 total=0.349 bytes=0 calls=1 /Main Thread/Profiler.FlushCounters/Profiler.FlushMemoryCounters
+frame=55 self=0.338 total=0.385 bytes=0 calls=2 /Main Thread/PlayerLoop/RenderPlayModeViewCameras/UnityEngine.CoreModule.dll!UnityEngine.Rendering::RenderPipelineManager.DoRenderLoop_Internal() [Invoke]/Inl_UniversalRenderTotal/Inl_RenderCameraStack/Inl_ScriptableRenderContext.Submit/UniversalRenderPipeline.RenderSingleCameraInternal: Main Camera/ExecuteRenderGraph/DrawScreenSpaceUI/UI.RenderOverlays/Canvas.RenderOverlays
+frame=57 self=0.316 total=0.419 bytes=0 calls=1 /Main Thread/PlayerLoop/RenderPlayModeViewCameras/UnityEngine.CoreModule.dll!UnityEngine.Rendering::RenderPipelineManager.DoRenderLoop_Internal() [Invoke]/Inl_UniversalRenderTotal/Inl_RenderCameraStack/Inl_UniversalRenderPipeline.RenderSingleCameraInternal: Main Camera/Inl_RecordRenderGraph/Inl_On Record Render Graph
+frame=51 self=0.310 total=0.310 bytes=0 calls=1 /Main Thread/Profiler.FlushCounters/Profiler.FlushMemoryCounters
+frame=56 self=0.303 total=0.303 bytes=0 calls=1 /Main Thread/Profiler.FlushCounters/Profiler.FlushMemoryCounters
+frame=56 self=0.297 total=0.584 bytes=0 calls=1 /Main Thread/PlayerLoop/UpdateScene/FixedUpdate.PhysicsFixedUpdate/Physics.RunSimulationStage/Physics.Simulate/PxScene.simulate
+frame=57 self=0.296 total=0.296 bytes=0 calls=1 /Main Thread/Profiler.FlushCounters/Profiler.FlushMemoryCounters
+frame=56 self=0.294 total=0.419 bytes=0 calls=1 /Main Thread/PlayerLoop/RenderPlayModeViewCameras/UnityEngine.CoreModule.dll!UnityEngine.Rendering::RenderPipelineManager.DoRenderLoop_Internal() [Invoke]/Inl_UniversalRenderTotal/Inl_RenderCameraStack/Inl_UniversalRenderPipeline.RenderSingleCameraInternal: Main Camera/Inl_RecordRenderGraph/Inl_On Record Render Graph
+frame=54 self=0.294 total=0.402 bytes=0 calls=1 /Main Thread/PlayerLoop/RenderPlayModeViewCameras/UnityEngine.CoreModule.dll!UnityEngine.Rendering::RenderPipelineManager.DoRenderLoop_Internal() [Invoke]/Inl_UniversalRenderTotal/Inl_RenderCameraStack/Inl_UniversalRenderPipeline.RenderSingleCameraInternal: Main Camera/Inl_RecordRenderGraph/Inl_On Record Render Graph
+frame=54 self=0.293 total=0.848 bytes=0 calls=2 /Main Thread/PlayerLoop/UpdateScene/FixedUpdate.PhysicsFixedUpdate/Physics.RunSimulationStage/Physics.Simulate/PxScene.simulate
+frame=54 self=0.293 total=0.293 bytes=0 calls=1 /Main Thread/Profiler.FlushCounters/Profiler.FlushMemoryCounters
+frame=52 self=0.290 total=0.394 bytes=0 calls=1 /Main Thread/PlayerLoop/RenderPlayModeViewCameras/UnityEngine.CoreModule.dll!UnityEngine.Rendering::RenderPipelineManager.DoRenderLoop_Internal() [Invoke]/Inl_UniversalRenderTotal/Inl_RenderCameraStack/Inl_UniversalRenderPipeline.RenderSingleCameraInternal: Main Camera/Inl_RecordRenderGraph/Inl_On Record Render Graph
+frame=53 self=0.289 total=0.389 bytes=0 calls=1 /Main Thread/PlayerLoop/RenderPlayModeViewCameras/UnityEngine.CoreModule.dll!UnityEngine.Rendering::RenderPipelineManager.DoRenderLoop_Internal() [Invoke]/Inl_UniversalRenderTotal/Inl_RenderCameraStack/Inl_UniversalRenderPipeline.RenderSingleCameraInternal: Main Camera/Inl_RecordRenderGraph/Inl_On Record Render Graph
+frame=58 self=0.288 total=0.295 bytes=6026 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.UI.dll!DarwinPark.UI::GameMainMenu.Update() [Invoke]
+frame=52 self=0.288 total=0.288 bytes=0 calls=1 /Main Thread/Profiler.FlushCounters/Profiler.FlushMemoryCounters
+frame=55 self=0.285 total=0.444 bytes=2576 calls=14 /Main Thread/PlayerLoop/RenderPlayModeViewCameras/UnityEngine.CoreModule.dll!UnityEngine.Rendering::RenderPipelineManager.DoRenderLoop_Internal() [Invoke]/Inl_UniversalRenderTotal/Inl_RenderCameraStack/Inl_ScriptableRenderContext.Submit/UniversalRenderPipeline.RenderSingleCameraInternal: Main Camera/ExecuteRenderGraph/DrawScreenSpaceUI/GUI.Repaint/UnityEngine.IMGUIModule.dll!UnityEngine::GUIUtility.BeginGUI() [Invoke]
+frame=55 self=0.284 total=0.284 bytes=0 calls=1 /Main Thread/Profiler.FlushCounters/Profiler.FlushMemoryCounters
+frame=51 self=0.271 total=0.373 bytes=0 calls=1 /Main Thread/PlayerLoop/RenderPlayModeViewCameras/UnityEngine.CoreModule.dll!UnityEngine.Rendering::RenderPipelineManager.DoRenderLoop_Internal() [Invoke]/Inl_UniversalRenderTotal/Inl_RenderCameraStack/Inl_UniversalRenderPipeline.RenderSingleCameraInternal: Main Camera/Inl_RecordRenderGraph/Inl_On Record Render Graph
+frame=54 self=0.262 total=25.772 bytes=1320 calls=1 /Main Thread/PlayerLoop/UpdateScene
+frame=58 self=0.247 total=0.323 bytes=0 calls=1 /Main Thread/PlayerLoop/RenderPlayModeViewCameras/UnityEngine.CoreModule.dll!UnityEngine.Rendering::RenderPipelineManager.DoRenderLoop_Internal() [Invoke]/Inl_UniversalRenderTotal/Inl_RenderCameraStack/Inl_UniversalRenderPipeline.RenderSingleCameraInternal: Main Camera/Inl_RecordRenderGraph/Inl_On Record Render Graph
+frame=58 self=0.224 total=0.224 bytes=0 calls=1 /Main Thread/Profiler.FlushCounters/Profiler.FlushMemoryCounters
+frame=58 self=0.211 total=0.514 bytes=0 calls=1 /Main Thread/PlayerLoop/UpdateScene/FixedUpdate.PhysicsFixedUpdate/Physics.RunSimulationStage/Physics.Simulate/PxScene.simulate
+frame=55 self=0.209 total=0.209 bytes=0 calls=2 /Main Thread/PlayerLoop/UpdateScene/FixedUpdate.PhysicsFixedUpdate/Physics.RunSimulationStage/Physics.Simulate/PxScene.simulate/PxsDynamics.solverSetupSolve
+frame=52 self=0.207 total=0.207 bytes=0 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/UnityEngine.UI.dll!UnityEngine.EventSystems::EventSystem.Update() [Invoke]
+frame=54 self=0.167 total=0.184 bytes=0 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunDelayedDynamicFrameRate
+frame=56 self=0.162 total=0.162 bytes=0 calls=28 /Main Thread/PlayerLoop/RenderPlayModeViewCameras/UnityEngine.CoreModule.dll!UnityEngine.Rendering::RenderPipelineManager.DoRenderLoop_Internal() [Invoke]/Inl_UniversalRenderTotal/Inl_RenderCameraStack/Inl_ScriptableRenderContext.Submit/UniversalRenderPipeline.RenderSingleCameraInternal: Main Camera/ExecuteRenderGraph/DrawScreenSpaceUI/GUI.Repaint/UnityEngine.IMGUIModule.dll!UnityEngine::GUIUtility.BeginGUI() [Invoke]/EditorResources.Load/AssetDatabase.GetGUIDFromAssetPathV2
+frame=51 self=0.161 total=0.261 bytes=0 calls=2 /Main Thread/PlayerLoop/UpdateScene/FixedUpdate.ScriptRunBehaviourFixedUpdate/FixedBehaviourUpdate
+frame=52 self=0.161 total=0.161 bytes=0 calls=2 /Main Thread/PlayerLoop/UpdateScene/FixedUpdate.PhysicsFixedUpdate/Physics.RunSimulationStage/Physics.Simulate/PxScene.simulate/PxsContext.contactManagerDiscreteUpdate
+frame=51 self=0.158 total=0.158 bytes=0 calls=2 /Main Thread/PlayerLoop/UpdateScene/FixedUpdate.PhysicsFixedUpdate/Physics.RunSimulationStage/Physics.Simulate/PxScene.simulate/ScScene.processLostContact
+frame=54 self=0.144 total=0.146 bytes=872 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate/DarwinPark.Entities.dll!DarwinPark.Entities.Ecology::PopulationArchiveObserver.Update() [Invoke]
+frame=51 self=0.135 total=0.502 bytes=448 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate
+frame=58 self=0.133 total=0.136 bytes=2980 calls=1 /Main Thread/PlayerLoop/UpdateScene/PreLateUpdate.ScriptRunBehaviourLateUpdate/LateBehaviourUpdate/DarwinPark.Planet.dll!DarwinPark.Planet::PlanetWeatherVisuals.LateUpdate() [Invoke]
+frame=52 self=0.132 total=0.133 bytes=0 calls=2 /Main Thread/PlayerLoop/RenderPlayModeViewCameras/UnityEngine.CoreModule.dll!UnityEngine.Rendering::RenderPipelineManager.DoRenderLoop_Internal() [Invoke]/Inl_UniversalRenderTotal/Inl_RenderCameraStack/Inl_UniversalRenderPipeline.RenderSingleCameraInternal: Main Camera/CullScriptable/SceneCulling/CullSendEvents/WaitForJobGroupID
+frame=52 self=0.129 total=0.599 bytes=448 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate
+frame=54 self=0.129 total=0.304 bytes=2576 calls=14 /Main Thread/PlayerLoop/RenderPlayModeViewCameras/UnityEngine.CoreModule.dll!UnityEngine.Rendering::RenderPipelineManager.DoRenderLoop_Internal() [Invoke]/Inl_UniversalRenderTotal/Inl_RenderCameraStack/Inl_ScriptableRenderContext.Submit/UniversalRenderPipeline.RenderSingleCameraInternal: Main Camera/ExecuteRenderGraph/DrawScreenSpaceUI/GUI.Repaint/UnityEngine.IMGUIModule.dll!UnityEngine::GUIUtility.BeginGUI() [Invoke]
+frame=53 self=0.128 total=0.548 bytes=448 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunBehaviourUpdate/BehaviourUpdate
+frame=53 self=0.127 total=0.127 bytes=0 calls=1 /Main Thread/PlayerLoop/UpdateScene/Update.ScriptRunDelayedTasks/UnityEngine.CoreModule.dll!UnityEngine::UnitySynchronizationContext.ExecuteTasks() [Invoke]

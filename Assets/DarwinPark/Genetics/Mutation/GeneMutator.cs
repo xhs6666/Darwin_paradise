@@ -7,13 +7,17 @@ namespace DarwinPark.Genetics.Mutation
     {
         public static Genome CreateBaseGenome()
         {
-            var genome = new Genome();
-            genome.Add(GeneInstance.Create("gene_growth", 20f, 0));
-            genome.Add(GeneInstance.Create("gene_nutrition", 50f, 0));
-            // ★ 新增：没有实体默认 JSON 时的兜底基因组也要有环境适应方向。
-            genome.Add(GeneInstance.Create("gene_environment", 50f, 0));
-            return genome;
+            // ★ 修复（防Bug回归）：兜底也读取同一默认实体配置，不能由第二份硬编码名单漏掉基础繁殖基因。
+            var asset=Resources.Load<TextAsset>("Entities/entity_default");
+            if(asset==null)throw new System.InvalidOperationException("缺少 Entities/entity_default，无法创建完整基础基因组");
+            var data=JsonUtility.FromJson<EntityGeneData>(asset.text);
+            if(data?.genes==null||data.genes.Count==0)throw new System.InvalidOperationException("默认实体基因配置为空");
+            return data.ToGenome();
         }
+
+        // ★ 修复（防Bug回归）：替换 DefinitionId 同样会删除原类型；所有减少必要基础副本的路径共用配置中的保护名单。
+        private static bool IsLastBaseCopy(Genome genome,GeneInstance gene)
+            => GeneMutationSettings.IsProtected(gene.DefinitionId)&&genome.Genes.Count(g=>g.DefinitionId==gene.DefinitionId)<=1;
 
         public static MutationResult Mutate(Genome genome, GeneMutationSettings settings)
         {
@@ -40,9 +44,11 @@ namespace DarwinPark.Genetics.Mutation
 
             if (roll < settings.ErrorWeight) // ★ 修复：默认 90% 数值出错，实际读取配置权重
             {
+                // ★ 新增：联合变异属于数值出错事件，不改变原有90/5/5类型权重。
+                var joint=JointGeneMutation.Try(genome);if(joint!=null)return joint;
                 // ★ 适配：数值出错分支可沿工具配置的侧向出错关系迁移，仍保持90/5/5类型权重。
                 string errorTarget=GeneTreeStorage.Successor(gene.DefinitionId,"error",gene.Value,genome);
-                if(errorTarget!=null){gene.DefinitionId=errorTarget;gene.Tier=GeneDatabase.Get(errorTarget).Tier;}
+                if(errorTarget!=null&&!IsLastBaseCopy(genome,gene)){gene.DefinitionId=errorTarget;gene.Tier=GeneDatabase.Get(errorTarget).Tier;gene.StateId=GeneDatabase.Get(errorTarget).DefaultStateId;}
                 float delta = Random.Range(-settings.MaxErrorDelta, settings.MaxErrorDelta);
                 if(preferAdaptation && settings.AdaptationTargetValue>=0 && gene.DefinitionId==settings.AdaptationGeneId)
                     delta=Mathf.Abs(delta)*Mathf.Sign(settings.AdaptationTargetValue-gene.Value);
@@ -54,42 +60,19 @@ namespace DarwinPark.Genetics.Mutation
                 var copy = GeneInstance.Create(gene.DefinitionId, gene.Value, gene.Tier);
                 copy.CopyStrength = Random.Range(settings.DuplicateMinStrength, settings.DuplicateMaxStrength);
 
-                var def = GeneDatabase.Get(gene.DefinitionId);
-                var currentState = def?.ResolveState(gene.Value, gene.MissingStateIds);
-
-                // 平行变异
-                if (currentState != null)
-                {
-                    if (currentState.StateId == "fast_growth" && Random.value < 0.4f)
-                    {
-                        copy.DefinitionId = "gene_repair";
-                        Debug.Log("[变异] 生长基因补充了修复基因！");
-                    }
-                    else if (currentState.StateId == "hetero" && Random.value < 0.3f)
-                    {
-                        copy.DefinitionId = "gene_storage";
-                        Debug.Log("[变异] 营养基因变异为储存基因！");
-                    }
-                }
+                copy.StateId=gene.StateId;
 
                 // ★ 适配：复制的新基因优先使用配置的向下进化关系。
                 string next=GeneTreeStorage.Successor(gene.DefinitionId,"evolution",gene.Value,genome);
-                if(next!=null){copy.DefinitionId=next;copy.Tier=GeneDatabase.Get(next).Tier;}
+                if(next!=null){copy.DefinitionId=next;copy.Tier=GeneDatabase.Get(next).Tier;copy.StateId=GeneDatabase.Get(next).DefaultStateId;}
                 genome.Add(copy);
                 return MutationResult.Ok(MutationType.Duplicate, $"复制出了 {copy.DefinitionId}");
             }
             else // 默认 5% 缺失
             {
-                // ★ 新增：基础基因保护逻辑
-                string[] coreGenes = { "gene_growth", "gene_reproduction", "gene_nutrition" };
-                if (System.Array.IndexOf(coreGenes, gene.DefinitionId) >= 0)
+                if (IsLastBaseCopy(genome,gene))
                 {
-                    // 统计当前基因组里这个基础基因有几个
-                    int count = genome.Genes.Count(g => g.DefinitionId == gene.DefinitionId);
-                    if (count <= 1)
-                    {
-                        return MutationResult.Fail($"{gene.DefinitionId} 是唯一的基础基因，无法缺失！");
-                    }
+                    return MutationResult.Fail($"{gene.DefinitionId} 是唯一的基础基因，无法缺失！");
                 }
 
                 genome.Remove(gene.InstanceId);

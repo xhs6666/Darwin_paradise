@@ -2,6 +2,7 @@
   "version": 1,
   "nutritionVersion": 1,
   "nodes": [
+    {"id":"gene_swimming","position":{"x":480,"y":960},"error":true},
     {
       "id": "gene_nutrient_utilization",
       "position": {
@@ -161,18 +162,55 @@
         "y": 430
       },
       "error": false
+    },
+    {
+      "id": "gene_photosynthesis",
+      "position": {
+        "x": 400,
+        "y": 500
+      }
+    },
+    {
+      "id": "gene_mineral_autotrophy",
+      "position": {
+        "x": 560,
+        "y": 500
+      }
+    },
+    {
+      "id": "gene_nervous_system",
+      "position": {
+        "x": 720,
+        "y": 500
+      }
+    },
+    {
+      "id": "gene_feeding_preference",
+      "position": {
+        "x": 880,
+        "y": 500
+      }
+    },
+    {
+      "id": "gene_nutrient_parasitism",
+      "position": {
+        "x": 1040,
+        "y": 500
+      }
+    },
+    {
+      "id": "gene_aquatic_respiration",
+      "position": {
+        "x": 1200,
+        "y": 500
+      }
     }
   ],
   "edges": [
+    {"from":"gene_locomotion","to":"gene_swimming","kind":"error","value":100},
     {
       "from": "gene_storage",
       "to": "gene_nutrient_utilization",
-      "kind": "error",
-      "value": 100
-    },
-    {
-      "from": "gene_locomotion",
-      "to": "gene_territory",
       "kind": "error",
       "value": 100
     },
@@ -235,9 +273,40 @@
       "to": "gene_multiple_birth",
       "kind": "error",
       "value": 100
+    },
+    {
+      "from": "gene_nutrition",
+      "to": "gene_photosynthesis",
+      "kind": "evolution",
+      "value": 100
+    },
+    {
+      "from": "gene_nutrition",
+      "to": "gene_mineral_autotrophy",
+      "kind": "evolution",
+      "value": 100
+    },
+    {
+      "from": "gene_heterotrophy",
+      "to": "gene_feeding_preference",
+      "kind": "evolution",
+      "value": 100
+    },
+    {
+      "from": "gene_heterotrophy",
+      "to": "gene_nutrient_parasitism",
+      "kind": "evolution",
+      "value": 100
+    },
+    {
+      "from": "gene_environment",
+      "to": "gene_aquatic_respiration",
+      "kind": "evolution",
+      "value": 100
     }
   ],
   "parthenogenesisVersion": 1,
   "multipleBirthVersion": 1,
-  "observationVersion": 1
+  "observationVersion": 1,
+  "contentEpoch": 2
 }

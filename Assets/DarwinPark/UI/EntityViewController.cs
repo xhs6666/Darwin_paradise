@@ -59,8 +59,7 @@ namespace DarwinPark.UI
             // ★ 适配：捕获鼠标后左键只攻击，准星不参与 UI 射线，世界双击拾取不再抢占。
             bool blocked = typing || placing;
             Vector3 up = (Target.transform.position-_planet.position).normalized;
-            _forward = Vector3.ProjectOnPlane(_forward,up).normalized;
-            if (_forward.sqrMagnitude < .01f) _forward = Vector3.ProjectOnPlane(Vector3.forward,up).normalized;
+            _forward=EntityFirstPersonCamera.LookDirection(up,_forward,0);
             _input.Tick(blocked,up,ref _forward,ref _height,ref _distance,minFollowDistance,maxFollowDistance);
         }
         // ★ 新增：同一实体的双击才切换，UI/空白点击不会沿用上一次命中。
@@ -82,7 +81,7 @@ namespace DarwinPark.UI
             EntityPlacementTool.Instance?.CancelPlacement();
             _camera = camera; _orbit = orbit; _planet = orbit.target; _terrain = _planet.GetComponent<MeshCollider>();
             _savedPosition = camera.transform.position; _savedRotation = camera.transform.rotation;
-            _forward = Vector3.ProjectOnPlane(camera.transform.up,(entity.transform.position-_planet.position).normalized).normalized;
+            _forward=EntityFirstPersonCamera.LookDirection((entity.transform.position-_planet.position).normalized,camera.transform.up,0);
             _distance = followDistance; _height = followHeight;
             Target = entity; _manual = entity.GetComponent<EntityManualControl>() ?? entity.gameObject.AddComponent<EntityManualControl>();
             _manual.BeginControl(_planet); _active = true; _orbit.EntityViewActive = true;
@@ -98,7 +97,7 @@ namespace DarwinPark.UI
         {
             if (!_active || Target == null || _camera == null || _planet == null) return;
             Vector3 up = (Target.transform.position-_planet.position).normalized;
-            Vector3 forward = Vector3.ProjectOnPlane(_forward,up).normalized;
+            Vector3 forward=EntityFirstPersonCamera.LookDirection(up,_forward,0);
             // ★ 适配：最终相机和攻击射线由同一个眼位/朝向生成。
             _firstPerson.Apply(up,forward,_input.Pitch,_manual);
         }

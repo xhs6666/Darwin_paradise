@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace DarwinPark.Genetics.Mutation
@@ -11,6 +12,20 @@ namespace DarwinPark.Genetics.Mutation
         public float DuplicateWeight = 0.05f;
         public float DeletionWeight = 0.05f;
         public float InsertionWeight = 0f;
+        public string[] ProtectedGeneIds=Array.Empty<string>();
+        private static HashSet<string> _protectedGenes;
+        // ★ 修复（防Bug回归）：必须保留的基础类型独立配置；树根标记也包含可演化的行动基因，不能混作保护名单。
+        public static bool IsProtected(string id)
+        {
+            if(_protectedGenes==null)
+            {
+                var configured=CreateDefault().ProtectedGeneIds;
+                if(configured==null||configured.Length==0||Array.Exists(configured,string.IsNullOrWhiteSpace))throw new InvalidOperationException("mutation_settings 缺少有效的 ProtectedGeneIds");
+                _protectedGenes=new HashSet<string>(configured,StringComparer.Ordinal);
+            }
+            return _protectedGenes.Contains(id);
+        }
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]private static void Reset()=>_protectedGenes=null;
         public static GeneMutationSettings CreateDefault()
         {
             var json=Resources.Load<TextAsset>("Entities/mutation_settings");

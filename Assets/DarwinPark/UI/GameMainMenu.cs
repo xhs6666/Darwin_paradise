@@ -26,6 +26,9 @@ namespace DarwinPark.UI
         private int _settingsTab;
         private readonly ControlSettingsPage _controls=new ControlSettingsPage();
         private Vector2 _settingsScroll;
+        private readonly WorldSaveDetailsPage _saveDetails=new WorldSaveDetailsPage();
+        private readonly Dictionary<string,Rect> _saveCardRects=new Dictionary<string,Rect>();
+        private Rect _saveHitViewport;
         public Rect SettingsWindowRect=>new Rect((Screen.width-Mathf.Min(480,Screen.width-32))/2,(Screen.height-Mathf.Min(560,Screen.height-32))/2,Mathf.Min(480,Screen.width-32),Mathf.Min(560,Screen.height-32));
         public Rect SettingsReturnRect {get{var r=SettingsWindowRect;return new Rect(r.x+8,r.yMax-48,r.width-16,38);}}
         public bool Visible => _visible;
@@ -92,10 +95,13 @@ namespace DarwinPark.UI
             // ★ 适配：参数进度与存档设置自行处理输入，Esc不能再打开叠加的暂停菜单。
             if (EntityEditPopup.Instance?.Visible==true || _controls.Waiting.HasValue || !Input.GetKeyDown(KeyCode.Escape) || _session.Busy || WorldRuntimeGate.Loading || WorldGameSettingsPanel.Instance?.Visible==true || PopulationWorkbench.Instance?.Visible==true || RandomSpawnWorkbench.Instance?.Visible==true || WorldRuntimeGate.Recording) return;
             // ★ 修复（防Bug回归）：Esc先收起下拉，不能同帧打开暂停菜单、关闭HUD后留下独立排序的列表。
+            if(PlacementQuantityPopup.Visible){PlacementQuantityPopup.CloseAll();GameInputGate.ConsumeEscape();return;}
             if(RuntimeDropdownDismissal.CloseOpenPopups()){GameInputGate.ConsumeEscape();return;}
             if (!_visible && WorldRuntimeGate.Ready) ShowPause();
             else if (_visible && _page == "pause") Resume();
             else if (_visible && _page == "settings") ReturnFromSettings();
+            // ★ 新增：Esc先取消删除确认，再从详情返回列表，不穿透到主菜单或游戏。
+            else if (_visible && _page == "savedetails") {if(_saveDetails.Confirming)_saveDetails.CancelConfirmation();else _page="saves";}
             else if (_visible && _page == "multiplayer" && LanSession.Instance?.Online==true) LanSession.Instance.LeaveToMenu("已取消连接");
             else if (_visible && (_page == "saves" || _page == "create" || _page == "multiplayer")) _page = "main";
             GameInputGate.ConsumeEscape();
@@ -131,6 +137,7 @@ namespace DarwinPark.UI
         private void OnLoadFailed(string error) { _page = "saves"; _message = error; RefreshSaves(); }
         private void RefreshSaves()
         {
+            _saveCardRects.Clear();
             try { _saves = WorldSaveStore.List(); }
             catch (Exception ex) { _message = "无法读取存档目录：" + ex.Message; Debug.LogException(ex); }
         }
@@ -150,6 +157,8 @@ namespace DarwinPark.UI
             if (WorldRuntimeGate.Recording || !_visible) return;
             if(_page=="settings")_controls.HandleEvent(Event.current);else _controls.Cancel();
             GUI.depth = -1000; RuntimeMenuTheme.Apply();
+            // ★ 修复（防Bug回归）：在禁用/绘制任何按钮之前处理右键；使用上一绘制帧的真实屏幕区域，避开 GUILayout 输入阶段的占位矩形。
+            if(_page=="saves"&&HandleSaveContext(Event.current))return;
             bool inGame = _session.Current != null && WorldRuntimeGate.Ready;
             if (!inGame) _background.Draw(new Rect(0, 0, Screen.width, Screen.height));
             // ★ 适配：保持实时/预录星球背景，只降低遮罩浓度，让新主题与样图的太空背景融合。
@@ -158,12 +167,14 @@ namespace DarwinPark.UI
             // ★ 修复（防Bug回归）：设置恢复480×560，分页内容独立滚动；返回固定在滚动区之外，避免溢出内容抢占点击。
             if(_page=="settings"){DrawSettingsWindow();return;}
             if (_page == "tools") { _tools.Draw(new Rect(10, 10, Screen.width - 20, Screen.height - 20), () => { _tools.Close(); _page = "main"; }); return; }
-            float width = Mathf.Min(_page == "saves" ? 650 : _page == "main" ? 320 : 480, Screen.width - 32);
-            float height = Mathf.Min(_page == "create" || _page == "saves" ? 680 : 560, Screen.height - 32);
+            float width = Mathf.Min(_page == "saves" || _page=="savedetails" ? 650 : _page == "main" ? 320 : 480, Screen.width - 32);
+            float height = Mathf.Min(_page == "create" || _page == "saves" || _page=="savedetails" ? 680 : 560, Screen.height - 32);
             // ★ 适配：主菜单靠左留出星球动画，窄窗口保留居中与滚动，按钮不会裁掉。
             float left = _page == "main" && Screen.width >= 900 ? Screen.width * .06f : (Screen.width - width) / 2;
             // ★ 适配：严格沿用旧窗口的矩形；主菜单仅移除底板，不移动任何页面的屏幕位置。
-            GUILayout.BeginArea(new Rect(left, (Screen.height - height) / 2, width, height), _page=="main"?GUIStyle.none:GUI.skin.box);
+            var menuRect=new Rect(left,(Screen.height-height)/2,width,height);
+            // ★ 修复（防Bug回归）：滚动后屏幕外卡片仍有布局坐标，右键菜单背景不能误命中被裁掉的卡片。
+            GUILayout.BeginArea(menuRect, _page=="main"?GUIStyle.none:GUI.skin.box);
             _scroll = GUILayout.BeginScrollView(_scroll);
             GUILayout.Space(18);
             DrawPageHeading(); GUILayout.Space(22);
@@ -190,13 +201,26 @@ namespace DarwinPark.UI
                 GUILayout.Label("Esc  返回游戏",new GUIStyle(RuntimeMenuTheme.Muted){alignment=TextAnchor.MiddleCenter});
             }
             else if (_page == "multiplayer") {GetComponent<LanLobbyUI>().DrawJoin();Back("main");}
+            else if (_page == "savedetails") _saveDetails.Draw(_session.Current?.id,()=>{_page="saves";_scroll=Vector2.zero;},()=>{RefreshSaves();_page="saves";_scroll=Vector2.zero;_message="存档已删除，已保留恢复副本";},()=>{RefreshSaves();_page="saves";_scroll=Vector2.zero;_message="已从备份恢复为新存档，原存档保留";});
             if (!string.IsNullOrEmpty(_message)) GUILayout.Label(_message, new GUIStyle(GUI.skin.label) { wordWrap = true });
-            GUILayout.EndScrollView(); GUILayout.EndArea();
+            GUILayout.EndScrollView();
+            if(_page=="saves"&&Event.current.type==EventType.Repaint)_saveHitViewport=GUIUtility.GUIToScreenRect(GUILayoutUtility.GetLastRect());
+            GUILayout.EndArea();
+        }
+        private bool HandleSaveContext(Event evt)
+        {
+            // ★ 修复（防Bug回归）：非主键的控件事件可被 Unity 标记为 Ignore，原始 MouseDown 仍有效；已消费的事件仍不得重用。
+            if(evt.rawType!=EventType.MouseDown||evt.type==EventType.Used||evt.button!=1||_session.Busy)return false;
+            var screen=GUIUtility.GUIToScreenPoint(evt.mousePosition);if(!_saveHitViewport.Contains(screen))return false;
+            foreach(var entry in _saves)if(_saveCardRects.TryGetValue(entry.path,out var rect)&&rect.Contains(screen))
+            {_saveDetails.Open(entry);_page="savedetails";_scroll=Vector2.zero;evt.Use();return true;}
+            return false;
         }
         private void DrawPageHeading()
         {
             // ★ 新增：标题使用真实线条图标，页面标题与原品牌标题占用相同的区域。
             string title=_page=="main"?"达尔文乐园":_page=="pause"?(LanSession.Instance?.Online==true?"联机菜单":"游戏已暂停"):_page=="saves"?"选择存档":_page=="create"?"创建新世界":_page=="settings"?"设置":_page=="multiplayer"?"多人游戏":"正在准备世界";
+            if(_page=="savedetails")title="存档详细信息";
             string icon=_page=="settings"?"gear":_page=="multiplayer"?"network":"planet";
             var style=new GUIStyle(RuntimeMenuTheme.Title){fontSize=_page=="main"?30:26,alignment=TextAnchor.MiddleCenter,padding=new RectOffset(42,0,0,0)};
             GUILayout.Label(title,style,GUILayout.Height(38));var rect=GUILayoutUtility.GetLastRect();
@@ -206,7 +230,7 @@ namespace DarwinPark.UI
         }
         private void DrawSaves()
         {
-            GUILayout.Label("选择一个世界，继续演化",RuntimeMenuTheme.Muted);
+            GUILayout.Label("选择一个世界，继续演化 · 右键存档查看详情和删除",RuntimeMenuTheme.Muted);
             if (RuntimeMenuTheme.Button("创建新世界",null,true,44)) NewWorldForm();
             if (_saves.Count == 0) GUILayout.Label("还没有存档，创建一个新世界开始游戏。");
             foreach (var entry in _saves)
@@ -226,6 +250,12 @@ namespace DarwinPark.UI
                     if (RuntimeMenuTheme.Button("进入世界","play",true,38)) TryStart(() => _session.Open(WorldSaveStore.Read(entry.path)));
                 }
                 GUILayout.EndVertical();
+                // ★ 修复（防Bug回归）：只缓存 Repaint 完成后的整张卡片，标题、元数据和进入按钮共用同一点击区域。
+                if(Event.current.type==EventType.Repaint)
+                {
+                    var card=GUILayoutUtility.GetLastRect();card=Rect.MinMaxRect(Mathf.Min(card.xMin,nameRect.xMin),Mathf.Min(card.yMin,nameRect.yMin),Mathf.Max(card.xMax,nameRect.xMax),Mathf.Max(card.yMax,nameRect.yMax));
+                    _saveCardRects[entry.path]=GUIUtility.GUIToScreenRect(card);
+                }
             }
             if (RuntimeMenuTheme.Button("刷新列表","refresh",false,36)) RefreshSaves();
             Back("main");

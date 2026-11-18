@@ -7,10 +7,11 @@ namespace DarwinPark.Genetics
     // ★ 修复（防Bug回归）：旧世界快照只有旧基因，增量补库使新增基因可用，同时保留已有基因数值与自定义关系。
     public static class GeneCatalogExpansion
     {
-        public static int Expand(Dictionary<string,string> catalog,GeneTreeDocument tree)
+        public static int Expand(Dictionary<string,string> catalog,GeneTreeDocument tree,string onlyDefinitionId=null)
         {
+            if(onlyDefinitionId!=null&&catalog.ContainsKey(onlyDefinitionId))return 0;
             var available=GeneTreeStorage.ReadCatalog();
-            var missing=new HashSet<string>(available.Keys.Where(id=>!catalog.ContainsKey(id)));
+            var missing=new HashSet<string>(available.Keys.Where(id=>(onlyDefinitionId==null||onlyDefinitionId==id)&&!catalog.ContainsKey(id)));
             if(missing.Count==0)return 0;
             var merged=new Dictionary<string,string>(catalog);
             foreach(var id in missing)merged.Add(id,available[id]);

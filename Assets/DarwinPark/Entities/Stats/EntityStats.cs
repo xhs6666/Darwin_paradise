@@ -8,6 +8,7 @@ namespace DarwinPark.Entities.Stats
     public class EntityStats : MonoBehaviour
     {
         // ★ 新增：实际属性/容量变化使补给决策立即失效，不逐次重新读取多份字典。
+        public event System.Action<Renderer, Color> RenderTintChanged;
         public long ValueRevision {get;private set;}
         private Dictionary<string, float> _stats = new();
         private Dictionary<string, float> _maxStats = new();
@@ -50,7 +51,8 @@ namespace DarwinPark.Entities.Stats
                     for (int i = 0; i < materials.Length; i++)
                     {
                         r.GetPropertyBlock(_colorBlock,i);if(_colorBlock.isEmpty)r.GetPropertyBlock(_colorBlock);
-                        colors[i] = _colorBlock.HasColor("_BaseColor")?_colorBlock.GetColor("_BaseColor"):_colorBlock.HasColor("_Color")?_colorBlock.GetColor("_Color"):materials[i]!=null?materials[i].color:Color.white;
+                        // ★ 修复（防Bug回归）：部件着色器没有_Color；先查实际属性，避免每次出生报错并破坏部件固有颜色。
+                        colors[i] = _colorBlock.HasColor("_BaseColor")?_colorBlock.GetColor("_BaseColor"):_colorBlock.HasColor("_Color")?_colorBlock.GetColor("_Color"):materials[i]!=null&&materials[i].HasProperty("_BaseColor")?materials[i].GetColor("_BaseColor"):materials[i]!=null&&materials[i].HasProperty("_Color")?materials[i].GetColor("_Color"):Color.white;
                     }
                     _rendererOriginalColors[r] = colors;
                 }
@@ -74,8 +76,18 @@ namespace DarwinPark.Entities.Stats
                 {
                     Color body=_isFlashing?Color.red:sync?color:pair.Value[i];body.a=pair.Value[i].a;
                     // ★ 修复（防Bug回归）：逐实体/材质槽属性块保留其他属性，避免改写共享材质或每次受击实例化材质。
-                    pair.Key.GetPropertyBlock(_colorBlock,i);if(_colorBlock.isEmpty)pair.Key.GetPropertyBlock(_colorBlock);
-                    _colorBlock.SetColor("_BaseColor",body);_colorBlock.SetColor("_Color",body);pair.Key.SetPropertyBlock(_colorBlock,i);
+                    // ★ 修复（防Bug回归）：单材质部件使用同一个属性块，不能让材质槽副本遮盖后来更新的远景/身体颜色。
+                    if(pair.Value.Length==1)pair.Key.GetPropertyBlock(_colorBlock);else pair.Key.GetPropertyBlock(_colorBlock,i);
+                    var material=pair.Key.sharedMaterial;
+                    bool hasBaseColor=material!=null&&material.HasProperty("_BaseColor");
+                    if(hasBaseColor)_colorBlock.SetColor("_BaseColor",body);
+                    if(material!=null&&material.HasProperty("_Color"))_colorBlock.SetColor("_Color",body);
+                    if(pair.Value.Length==1)
+                    {
+                        pair.Key.SetPropertyBlock(_colorBlock);
+                        if(hasBaseColor)RenderTintChanged?.Invoke(pair.Key,body);
+                    }
+                    else pair.Key.SetPropertyBlock(_colorBlock,i);
                 }
             }
         }
@@ -91,6 +103,7 @@ namespace DarwinPark.Entities.Stats
         public void RestoreValues(List<DarwinPark.Entities.StatSaveValue> values)
         {foreach(var value in values){_stats[value.id]=value.value;_maxStats[value.id]=value.max;}ValueRevision++;Ecology.EntityNeighborhood.Changed(GetComponent<EntityGeneController>());}
         public bool TryGet(string id, out float value) => _stats.TryGetValue(id, out value);
+        public bool TryGetMaximum(string id,out float value)=>_maxStats.TryGetValue(id,out value);
         // ★ 适配：营养转移只需当前空位，不应每帧构造整份存档数值列表。
         public float CapacityRemaining(string id)=>_stats.TryGetValue(id,out float value)&&_maxStats.TryGetValue(id,out float maximum)?Mathf.Max(0,maximum-value):0;
 

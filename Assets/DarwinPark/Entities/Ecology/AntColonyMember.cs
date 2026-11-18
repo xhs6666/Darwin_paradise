@@ -24,6 +24,24 @@ namespace DarwinPark.Entities.Ecology
         public EntityTaskPlanSave plan;
         public Logic.MultipleBirthState litter;
         public bool HasData=>!string.IsNullOrEmpty(role);
+
+        internal AntColonyMemberSave Snapshot()
+        {
+            var copy=(AntColonyMemberSave)MemberwiseClone();
+            copy.supplyPoints=supplyPoints==null?new List<Vector3>():new List<Vector3>(supplyPoints);
+            copy.partnerGenome=Genome.Snapshot(partnerGenome);
+            copy.litter=Logic.MultipleBirthPolicy.Copy(litter);
+            if(startup!=null)copy.startup=new ColonyFoundingSave
+                {version=startup.version,collecting=startup.collecting,foodIssued=startup.foodIssued};
+            if(plan!=null)
+            {
+                copy.plan=new EntityTaskPlanSave{feeding=plan.feeding,supply=plan.supply};
+                if(plan.tasks!=null)
+                    foreach(var task in plan.tasks)
+                        copy.plan.tasks.Add(new PlannedEntityTask{kind=task.kind,target=task.target});
+            }
+            return copy;
+        }
     }
     public enum ColonyActivity { Rest,Patrol,Hunt,Collect,Transport,Feed,Reproduce,Founding,Young,Mate }
     // ★ 新增：固定出生分工与可持久化工作状态独立于基因倾向，不给原种群脚本堆叠蚁群流程。
@@ -98,6 +116,8 @@ namespace DarwinPark.Entities.Ecology
             ColonyResource.Feed(this,dt);
             if(OptionalComponent.Read<EggIncubation>(this)?.Incubating==true)return;
             if(Young){Activity=ColonyActivity.Young;return;}
+            // ★ 新增：用户计划接管行为时暂存原分工任务，不覆盖顺序或丢弃正在搬运的货物。
+            if(EntityActivityPlan.BlocksAutomatic(this))return;
             if(Role==AntRole.Reproductive){BeginFounding();return;}
             if(State.founding)
             {
@@ -128,7 +148,7 @@ namespace DarwinPark.Entities.Ecology
             // ★ 修复（防Bug回归）：持续可见的猎物不能永久占据饥饿士兵的补给优先级。
             if(ColonyFeeding.Destination(this,out _))return;
             if(!PerceivedTargets.Valid(Genes,HuntTarget,false,out _))HuntTarget=null;
-            if(State.scan<=0)
+            if(State.scan<=0&&Simulation.ActionDecisionCadence.RoutineTurn(Genes))
             {
                 State.scan=AntColonySettings.Current.scanInterval;
                 // ★ 适配：士兵从观察收件箱选择，不再为每次巡猎排序全体活体。
@@ -148,10 +168,13 @@ namespace DarwinPark.Entities.Ecology
         }
         public void AfterKill(){HuntTarget=null;State.scan=AntColonySettings.Current.soldierPatrolSeconds;State.patrolRemaining=AntColonySettings.Current.soldierPatrolSeconds;State.restRemaining=0;Activity=ColonyActivity.Patrol;}
         public bool Destination(out Vector3 point,out DarwinEntity target,out float multiplier)
+            =>Destination(out point,out target,out multiplier,true);
+
+        internal bool Destination(out Vector3 point,out DarwinEntity target,out float multiplier,bool checkSupply)
         {
             point=transform.position;target=null;multiplier=1;if(!Active||Role==AntRole.None)return false;
             // ★ 修复（防Bug回归）：所有分工包括迁居王后先寻可吃补给；专用点优先，备用块与危急改选由同一入口决定。
-            if(ColonyFeeding.Destination(this,out point))return true;
+            if(checkSupply&&ColonyFeeding.Destination(this,out point))return true;
             if(State.founding){point=EcologyQueries.ToWorld(State.foundingPoint);return true;}
             // ★ 修复（防Bug回归）：跟随终点是各自站位，不能让同群成员持续向王后的身体中心挤压。
             if(Young||Role==AntRole.Mate){point=ColonyFormation.Home(this,Center,AntColonySettings.Current.feedRadius*.8f);return true;}
@@ -162,7 +185,7 @@ namespace DarwinPark.Entities.Ecology
             {
                 // ★ 适配：巡逻路径与捕猎、图层使用同一批王后和补给活动中心。
                 var circle=ColonyActivityRange.PatrolCircle(this);
-                point=ColonyActivityRange.Boundary(circle,State.circleAngle,AntColonySettings.Current.soldierPatrolRadiusRatio);
+                point=ColonyFormation.Landward(this,ColonyActivityRange.Boundary(circle,State.circleAngle,AntColonySettings.Current.soldierPatrolRadiusRatio));
             }
             else if(Role==AntRole.Soldier)point=ColonyFormation.Home(this,Center,Radius*.75f);
             return true;
@@ -204,8 +227,8 @@ namespace DarwinPark.Entities.Ecology
             if(id=="moveSpeed")return value*(member.State.founding?1:rule.moveMultiplier);
             return value;
         }
-        public AntColonyMemberSave Capture()=>JsonUtility.FromJson<AntColonyMemberSave>(JsonUtility.ToJson(State));
+        public AntColonyMemberSave Capture()=>State.Snapshot();
         public void Suspend(){AntColonyWorker.Release(this);HuntTarget=null;}
-        public void Restore(AntColonyMemberSave state){if(state==null||!state.HasData)return;State=JsonUtility.FromJson<AntColonyMemberSave>(JsonUtility.ToJson(state));if(State.partnerGenome?.Genes?.Count==0)State.partnerGenome=null;_suppressionRole=null;PopulationGroupIndex.Invalidate();Genes.Recalculate();Population.EnsureMembership();if(GetComponent<ColonyMemberMarker>()==null)gameObject.AddComponent<ColonyMemberMarker>();}
+        public void Restore(AntColonyMemberSave state){if(state==null||!state.HasData)return;State=state.Snapshot();if(State.partnerGenome?.Genes?.Count==0)State.partnerGenome=null;_suppressionRole=null;PopulationGroupIndex.Invalidate();Genes.Recalculate();Population.EnsureMembership();if(GetComponent<ColonyMemberMarker>()==null)gameObject.AddComponent<ColonyMemberMarker>();}
     }
 }

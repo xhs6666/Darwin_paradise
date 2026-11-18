@@ -1,0 +1,500 @@
+{
+  "version": 2,
+  "id": "organism_basic",
+  "slots": [
+    {
+      "id": "body",
+      "partId": "body_basic",
+      "parent": "",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "attachment": "socket",
+      "surfaceOffset": 0,
+      "displayName": "身体"
+    },
+    {
+      "id": "head",
+      "partId": "head_basic",
+      "parent": "body",
+      "position": {
+        "x": 0,
+        "y": 0.22,
+        "z": 0.56
+      },
+      "scale": {
+        "x": 0.68,
+        "y": 0.52,
+        "z": 0.62
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "attachment": "socket",
+      "surfaceOffset": 0,
+      "displayName": "头部"
+    },
+    {
+      "id": "eye_left",
+      "partId": "eye_basic",
+      "parent": "head",
+      "position": {
+        "x": -0.4,
+        "y": 0.18,
+        "z": 1
+      },
+      "scale": {
+        "x": 0.13,
+        "y": 0.13,
+        "z": 0.13
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "attachment": "surface",
+      "surfaceOffset": 0.02,
+      "displayName": "左眼"
+    },
+    {
+      "id": "eye_right",
+      "partId": "eye_basic",
+      "parent": "head",
+      "position": {
+        "x": 0.4,
+        "y": 0.18,
+        "z": 1
+      },
+      "scale": {
+        "x": 0.13,
+        "y": 0.13,
+        "z": 0.13
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "attachment": "surface",
+      "surfaceOffset": 0.02,
+      "displayName": "右眼"
+    },
+    {
+      "id": "mouth",
+      "partId": "mouth_basic",
+      "parent": "head",
+      "position": {
+        "x": 0,
+        "y": -0.25,
+        "z": 1
+      },
+      "scale": {
+        "x": 0.32,
+        "y": 0.15,
+        "z": 0.12
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "attachment": "surface",
+      "surfaceOffset": 0.02,
+      "displayName": "口"
+    },
+    {
+      "id": "leaf_left",
+      "partId": "leaf_basic",
+      "parent": "body",
+      "position": {
+        "x": -0.48,
+        "y": 0.26,
+        "z": 0
+      },
+      "scale": {
+        "x": 0.76,
+        "y": 0.08,
+        "z": 0.42
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 25
+      },
+      "attachment": "socket",
+      "surfaceOffset": 0,
+      "displayName": "左受光叶片"
+    },
+    {
+      "id": "root_left",
+      "partId": "root_basic",
+      "parent": "body",
+      "position": {
+        "x": -0.2,
+        "y": -0.5,
+        "z": 0
+      },
+      "scale": {
+        "x": 0.1,
+        "y": 0.35,
+        "z": 0.1
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "attachment": "socket",
+      "surfaceOffset": 0,
+      "displayName": "左吸收根"
+    },
+    {
+      "id": "fin_left",
+      "partId": "fin_basic",
+      "parent": "body",
+      "position": {
+        "x": -0.47,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 0.48,
+        "y": 0.09,
+        "z": 0.4
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": -15
+      },
+      "attachment": "socket",
+      "surfaceOffset": 0,
+      "displayName": "左鳍"
+    },
+    {
+      "id": "leaf_right",
+      "partId": "leaf_basic",
+      "parent": "body",
+      "position": {
+        "x": 0.48,
+        "y": 0.26,
+        "z": 0
+      },
+      "scale": {
+        "x": 0.76,
+        "y": 0.08,
+        "z": 0.42
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": -25
+      },
+      "attachment": "socket",
+      "surfaceOffset": 0,
+      "displayName": "右受光叶片"
+    },
+    {
+      "id": "root_right",
+      "partId": "root_basic",
+      "parent": "body",
+      "position": {
+        "x": 0.2,
+        "y": -0.5,
+        "z": 0
+      },
+      "scale": {
+        "x": 0.1,
+        "y": 0.35,
+        "z": 0.1
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "attachment": "socket",
+      "surfaceOffset": 0,
+      "displayName": "右吸收根"
+    },
+    {
+      "id": "fin_right",
+      "partId": "fin_basic",
+      "parent": "body",
+      "position": {
+        "x": 0.47,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 0.48,
+        "y": 0.09,
+        "z": 0.4
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 15
+      },
+      "attachment": "socket",
+      "surfaceOffset": 0,
+      "displayName": "右鳍"
+    },
+    {
+      "id": "leg_fl",
+      "partId": "leg_basic",
+      "parent": "body",
+      "position": {
+        "x": -0.3,
+        "y": -0.35,
+        "z": 0.27
+      },
+      "scale": {
+        "x": 0.14,
+        "y": 0.32,
+        "z": 0.2
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": -20
+      },
+      "attachment": "socket",
+      "surfaceOffset": 0,
+      "displayName": "左前肢"
+    },
+    {
+      "id": "leg_bl",
+      "partId": "leg_basic",
+      "parent": "body",
+      "position": {
+        "x": -0.3,
+        "y": -0.35,
+        "z": -0.27
+      },
+      "scale": {
+        "x": 0.14,
+        "y": 0.32,
+        "z": 0.2
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": -20
+      },
+      "attachment": "socket",
+      "surfaceOffset": 0,
+      "displayName": "左后肢"
+    },
+    {
+      "id": "leg_fr",
+      "partId": "leg_basic",
+      "parent": "body",
+      "position": {
+        "x": 0.3,
+        "y": -0.35,
+        "z": 0.27
+      },
+      "scale": {
+        "x": 0.14,
+        "y": 0.32,
+        "z": 0.2
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 20
+      },
+      "attachment": "socket",
+      "surfaceOffset": 0,
+      "displayName": "右前肢"
+    },
+    {
+      "id": "leg_br",
+      "partId": "leg_basic",
+      "parent": "body",
+      "position": {
+        "x": 0.3,
+        "y": -0.35,
+        "z": -0.27
+      },
+      "scale": {
+        "x": 0.14,
+        "y": 0.32,
+        "z": 0.2
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 20
+      },
+      "attachment": "socket",
+      "surfaceOffset": 0,
+      "displayName": "右后肢"
+    },
+    {
+      "id": "tail",
+      "partId": "tail_basic",
+      "parent": "body",
+      "position": {
+        "x": 0,
+        "y": -0.05,
+        "z": -0.62
+      },
+      "scale": {
+        "x": 0.16,
+        "y": 0.48,
+        "z": 0.16
+      },
+      "rotation": {
+        "x": 65,
+        "y": 0,
+        "z": 0
+      },
+      "attachment": "socket",
+      "surfaceOffset": 0,
+      "displayName": "尾"
+    },
+    {
+      "id": "storage",
+      "partId": "storage_basic",
+      "parent": "body",
+      "position": {
+        "x": 0,
+        "y": 0.12,
+        "z": -0.24
+      },
+      "scale": {
+        "x": 0.76,
+        "y": 0.58,
+        "z": 0.67
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "attachment": "socket",
+      "surfaceOffset": 0,
+      "displayName": "储存结构"
+    },
+    {
+      "id": "cover",
+      "partId": "cover_basic",
+      "parent": "body",
+      "position": {
+        "x": 0,
+        "y": -0.12,
+        "z": -0.05
+      },
+      "scale": {
+        "x": 1.04,
+        "y": 0.52,
+        "z": 1.04
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "attachment": "socket",
+      "surfaceOffset": 0,
+      "displayName": "体表"
+    },
+    {
+      "id": "exchange",
+      "partId": "exchange_basic",
+      "parent": "body",
+      "position": {
+        "x": 0,
+        "y": -0.38,
+        "z": 0.1
+      },
+      "scale": {
+        "x": 0.4,
+        "y": 0.18,
+        "z": 0.4
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "attachment": "socket",
+      "surfaceOffset": 0,
+      "displayName": "营养接口"
+    },
+    {
+      "id": "parasite",
+      "partId": "parasite_basic",
+      "parent": "head",
+      "position": {
+        "x": 0,
+        "y": -0.25,
+        "z": 0.62
+      },
+      "scale": {
+        "x": 0.07,
+        "y": 0.2,
+        "z": 0.07
+      },
+      "rotation": {
+        "x": 90,
+        "y": 0,
+        "z": 0
+      },
+      "attachment": "socket",
+      "surfaceOffset": 0,
+      "displayName": "寄生口器"
+    },
+    {
+      "id": "gill_left",
+      "partId": "gill_basic",
+      "parent": "body",
+      "position": {
+        "x": -0.45,
+        "y": 0.15,
+        "z": 0.2
+      },
+      "scale": {
+        "x": 0.1,
+        "y": 0.26,
+        "z": 0.26
+      },
+      "attachment": "socket",
+      "displayName": "左呼吸结构"
+    },
+    {
+      "id": "gill_right",
+      "partId": "gill_basic",
+      "parent": "body",
+      "position": {
+        "x": 0.45,
+        "y": 0.15,
+        "z": 0.2
+      },
+      "scale": {
+        "x": 0.1,
+        "y": 0.26,
+        "z": 0.26
+      },
+      "attachment": "socket",
+      "displayName": "右呼吸结构"
+    }
+  ]
+}

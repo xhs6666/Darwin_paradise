@@ -8,12 +8,10 @@ namespace DarwinPark.Entities.Logic
     public class NutritionGeneLogic : IGeneLogic
     {
         private EntityGeneController _controller;
-        private GeneInstance _gene;
 
         public void Initialize(EntityGeneController controller, GeneInstance gene)
         {
             _controller = controller;
-            _gene = gene;
         }
 
         public void OnUpdate(float dt)
@@ -21,7 +19,7 @@ namespace DarwinPark.Entities.Logic
             // ★ 适配：按需区分重算、签名与实际行为成本。
             using var performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.Nutrition);
             // ★ 适配：生产由独立收支模块结算，避免直接夹掉溢出营养或复制基因重复结算。
-            Ecology.EcologyEnergyBudget.Produce(_controller,_gene,dt);
+            // ★ 新增：基础营养只提供代谢与底色，资源获取由各自的自养下级基因结算。
         }
 
         public string GetTooltipInfo()

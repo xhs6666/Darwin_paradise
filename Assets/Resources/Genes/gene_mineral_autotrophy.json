@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 2,
+  "id": "gene_mineral_autotrophy",
+  "displayName": "矿石自养基因",
+  "category": "Nutrition",
+  "parentGeneId": "gene_nutrition",
+  "isBaseGene": false,
+  "tier": 1,
+  "logicScriptId": "AutotrophyGeneLogic",
+  "aiModuleId": "",
+  "attributeCurves": [
+    {
+      "attributeId": "absorbEfficiency",
+      "minValue": 3,
+      "maxValue": 10
+    }
+  ],
+  "states": [
+    {
+      "stateId": "chemo",
+      "displayName": "矿石自养",
+      "center": 50,
+      "color": [
+        0.6,
+        0.4,
+        0.2
+      ]
+    }
+  ],
+  "attributeLinkages": [],
+  "suppressionRules": [],
+  "partBindings": [
+    {
+      "slotId": "root_left",
+      "partId": "root_basic",
+      "forbidGene": "gene_locomotion"
+    },
+    {
+      "slotId": "root_right",
+      "partId": "root_basic",
+      "forbidGene": "gene_locomotion"
+    },
+    {
+      "slotId": "exchange",
+      "partId": "exchange_basic",
+      "requireGene": "gene_locomotion"
+    }
+  ],
+  "partModifiers": [],
+  "requiresGenes": [
+    "gene_nutrition"
+  ],
+  "explicitState": false,
+  "defaultStateId": "",
+  "entityStateTagVersion": 1,
+  "entityStateTags": []
+}

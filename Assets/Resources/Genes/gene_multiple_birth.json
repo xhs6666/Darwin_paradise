@@ -60,5 +60,8 @@
   ],
   "parentGeneId": "gene_reproduction",
   "baseGeneId": "gene_reproduction",
-  "suppressionOnlyWhileGestating": true
+  "suppressionOnlyWhileGestating": true,
+  "schemaVersion": 2,
+  "partBindings": [],
+  "partModifiers": []
 }

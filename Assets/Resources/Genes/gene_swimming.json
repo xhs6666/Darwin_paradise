@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 2,
+  "id": "gene_swimming",
+  "displayName": "游泳基因",
+  "category": "Locomotion",
+  "isBaseGene": false,
+  "tier": 1,
+  "attributeCurves": [
+    {
+      "attributeId": "swimSpeed",
+      "minValue": 2,
+      "maxValue": 12
+    }
+  ],
+  "states": [
+    {
+      "stateId": "aquatic_propulsion",
+      "displayName": "水中推进",
+      "center": 50,
+      "color": [
+        0.12,
+        0.58,
+        0.84
+      ]
+    }
+  ]
+}

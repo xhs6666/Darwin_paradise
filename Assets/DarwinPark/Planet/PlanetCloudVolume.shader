@@ -3,6 +3,7 @@ Shader "DarwinPark/PlanetCloudVolume"
  Properties {
  _BottomRadius("Cloud base",Float)=350
  _TopRadius("Cloud top",Float)=355
+ [HideInInspector] _LightOccluderRadius("Light occluder radius",Float)=340
  _Coverage("Coverage",Range(0,1))=.48
  _Frequency("Weather scale",Float)=5
  _Detail("Cloud detail",Float)=28
@@ -21,8 +22,9 @@ Shader "DarwinPark/PlanetCloudVolume"
  #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
  #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
  #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
+ #include "Terrain/PlanetDayNight.hlsl"
  CBUFFER_START(UnityPerMaterial)
- float _BottomRadius,_TopRadius,_Coverage,_Frequency,_Detail,_Density,_Steps;
+ float _BottomRadius,_TopRadius,_LightOccluderRadius,_Coverage,_Frequency,_Detail,_Density,_Steps;
  CBUFFER_END
  struct A{float4 p:POSITION;};
  struct V{float4 p:SV_POSITION;float3 local:TEXCOORD0;};
@@ -64,8 +66,16 @@ Shader "DarwinPark/PlanetCloudVolume"
    float3 p=origin+dir*(start+(n+.5)*stride);
    float den=density(p);
    float shadow=density(p+light*(_TopRadius-_BottomRadius)*.65);
-   float sunlight=smoothstep(-.15,.45,dot(normalize(p),light));
-   float shade=lerp(.68,1.15,exp(-shadow*1.2))*lerp(.3,1,sunlight);
+   float elevation=dot(normalize(p),light);
+   float sunlight=smoothstep(-.15,.45,elevation);
+   float nightFloor=.3;
+   if(_PlanetDayNight.z>.5)
+   {
+    float horizon=-sqrt(saturate(1-_LightOccluderRadius*_LightOccluderRadius/dot(p,p)));
+    sunlight=smoothstep(-.012,.15,elevation-horizon);
+    nightFloor=_PlanetDayNight.x*.42;
+   }
+   float shade=lerp(.68,1.15,exp(-shadow*1.2))*lerp(nightFloor,1,sunlight);
    float a=1-exp(-den*_Density*stride/max(.01,_TopRadius-_BottomRadius));
    color+=(1-alpha)*a*float3(.94,.97,1)*shade;
    alpha+=(1-alpha)*a;

@@ -16,7 +16,8 @@ namespace DarwinPark.Entities.Simulation
             public void Refresh(EntityGeneController genes)
             {
                 if(revision==genes.LogicRevision)return;revision=genes.LogicRevision;supported=StationaryCohortKernel.Supported(genes);state=DarwinPark.Core.OptionalComponent.Read<EntityStateController>(genes);
-                genes.CopySimulationLogics(logics);useful.Clear();foreach(var logic in logics)if(!supported||logic is NutritionGeneLogic||logic is ReproductionGeneLogic)useful.Add(logic);
+                // ★ 修复（防Bug回归）：孤立植物批结算也必须执行拆出的光合逻辑，不能只运行已空的基础代谢。
+                genes.CopySimulationLogics(logics);useful.Clear();foreach(var logic in logics)if(!supported||logic is AutotrophyGeneLogic||logic is ReproductionGeneLogic)useful.Add(logic);
             }
         }
         private static readonly Dictionary<EntityGeneController,Context> Contexts=new();

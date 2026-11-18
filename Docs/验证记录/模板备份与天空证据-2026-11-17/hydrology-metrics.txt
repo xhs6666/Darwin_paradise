@@ -1,0 +1,4 @@
+syntheticBasins=4 newLakeCells=21
+seed=78031 generationMs=1657 oldRiver=271 newRiver=243 oldLake=136 newLake=154
+seed=742091 generationMs=1717 oldRiver=350 newRiver=375 oldLake=152 newLake=156
+defaultSubdivisions=320 vertices=614402 generationMs=9858 riverCells=230 lakeCells=144

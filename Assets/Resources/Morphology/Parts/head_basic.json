@@ -1,0 +1,16 @@
+{
+  "id": "head_basic",
+  "primitive": "sphere",
+  "modelResource": "",
+  "color": "#A9B78E",
+  "minimumScale": {
+    "x": 0.03,
+    "y": 0.03,
+    "z": 0.03
+  },
+  "maximumScale": {
+    "x": 4,
+    "y": 4,
+    "z": 4
+  }
+}

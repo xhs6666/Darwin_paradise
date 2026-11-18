@@ -34,29 +34,39 @@ namespace DarwinPark.Entities.Vitals
             // ★ 修复（防Bug回归）：代谢、修复及饥饿伤害随模拟倍率推进。
             float dt = clock != null ? clock.GameDeltaTime : Time.deltaTime;
             if (dt <= 0f) return;
-            // ★ 修复（防Bug回归）：高倍率也按小步结算容量、仓储与修复阈值，避免一次大步吞掉营养溢出。
-            // ★ 修复（防Bug回归）：整数子步避免高倍率固定0.5秒产生第六次浮点残差结算。
-            int steps=SimulationSubsteps.Count(dt);
-            for(int index=0;index<steps;index++)
-            {
-                float step=SimulationSubsteps.Slice(dt,index,steps);
-                AdvanceVitals(step);
-            }
+            AdvanceShared(dt);
         }
 
-        // ★ 适配：供代表和醒来补算使用，与普通Update共用小步逻辑。
-        public void AdvanceShared(float dt){/* ★ 适配：统一子步保留尾数，避免浮点残差多跑整轮结算。 */int steps=SimulationSubsteps.Count(dt);for(int i=0;i<steps;i++)AdvanceVitals(SimulationSubsteps.Slice(dt,i,steps));}
+        // ★ 适配：同一次生命结算内物理姿态不变，移动代谢只取样一次。饱食、修复和伤害仍按原小步结算。
+        public void AdvanceShared(float dt)
+        {
+            int steps=SimulationSubsteps.Count(dt);
+            if(steps==0)return;
+            if(IsIncubating()){AdvanceIncubating();return;}
+            using var performance=PerformanceTimings.Measure(PerformanceTimings.Area.Vitals);
+            float rate=Ecology.EcologyEnergyBudget.Consumption(_genes,baseMetabolism,moveMetabolism);
+            for(int i=0;i<steps&&gameObject.activeInHierarchy;i++)
+                ApplyVitalsStep(SimulationSubsteps.Slice(dt,i,steps),rate);
+        }
+
+        private bool IsIncubating()=>OptionalComponent.Read<Ecology.EggIncubation>(this)?.Incubating==true;
+        private void AdvanceIncubating()
+        {
+            if(_stats.TryGet("health",out float health)&&health<=0)
+                Ecology.EntityDeathSettlement.Die(GetComponent<DarwinEntity>());
+        }
 
         private void AdvanceVitals(float dt)
         {
-            // ★ 修复（防Bug回归）：普通Update与共享结算都在实际代谢入口采样，不能漏报绝大多数活体代谢。
-            using var performance=PerformanceTimings.Measure(PerformanceTimings.Area.Vitals);
-            // ★ 适配：卵不进行自主觅食/运动代谢，但保留生命值与可被攻击破坏的碰撞体。
-            if(OptionalComponent.Read<DarwinPark.Entities.Ecology.EggIncubation>(this)?.Incubating==true)
-            {if(_stats.TryGet("health",out var eggHealth)&&eggHealth<=0)Ecology.EntityDeathSettlement.Die(GetComponent<DarwinEntity>());return;}
+            if(IsIncubating()){AdvanceIncubating();return;}
+            ApplyVitalsStep(dt,Ecology.EcologyEnergyBudget.Consumption(_genes,baseMetabolism,moveMetabolism));
+        }
+
+        private void ApplyVitalsStep(float dt,float consumptionRate)
+        {
             // 1. 营养吸收与消耗
             // ★ 修复（防Bug回归）：营养基因已结算生产，此处重复凭空产粮会掩盖生态收支；这里只计算消耗。
-            float consumed = Ecology.EcologyEnergyBudget.Consumption(_genes,baseMetabolism,moveMetabolism)*dt;
+            float consumed = consumptionRate*dt;
             _stats.Modify("nutrient", -consumed);
 
             // 核心机制 2：饱食度低于 4 时，自动从仓库提取
@@ -79,7 +89,7 @@ namespace DarwinPark.Entities.Vitals
                 float repairCapability = _genes.GetAttribute("repairCapability");
                 // ★ 修复（防Bug回归）：缺氧溺水期间暂停自然修复，避免持续伤害被同帧修复抵消成“不掉血”。
                 if (hp < 100f && hp > repairCapability && nut2 > 5f && repairEfficiency > 0f &&
-                    GetComponent<EntityEnvironmentHazard>()?.IsDrowning != true)
+                    GetComponent<EntityEnvironmentHazard>()?.IsInWater != true)
                 {
                     float hpToRepair = repairEfficiency * dt;
                     _stats.Modify("health", hpToRepair);

@@ -21,7 +21,8 @@ namespace DarwinPark.Entities
         public static bool SetStat(DarwinEntity entity,string id,float value)
         {
             if(!WorldAuthority.CanEdit||WorldAuthority.IsReplica||!EcologyQueries.Alive(entity)||!float.IsFinite(value)||value<0||id!="health"&&id!="nutrient"&&id!="storedNutrient")return false;
-            var stats=entity.GetComponent<EntityStats>();if(stats==null||!stats.TryGet(id,out float old)||value>old+stats.CapacityRemaining(id))return false;
+            // ★ 修复（防Bug回归）：当前值加剩余容量会有浮点尾差，填写恰好上限时应比较真实上限而非反推。
+            var stats=entity.GetComponent<EntityStats>();if(stats==null||!stats.TryGet(id,out float old)||!stats.TryGetMaximum(id,out float maximum)||value>maximum)return false;
             stats.Modify(id,value-old,false);DarwinPark.Entities.Simulation.EntityWorkScheduler.Wake(entity.Genes);
             if(id=="health"&&value<=0)EntityDeathSettlement.Die(entity);return true;
         }

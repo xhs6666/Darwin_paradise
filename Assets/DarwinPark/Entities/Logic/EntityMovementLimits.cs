@@ -9,7 +9,16 @@ namespace DarwinPark.Entities.Logic
         public static float Speed(float value)=>Mathf.Clamp(value,0,LocomotionSettings.Load().maximumMoveSpeed);
         public static float Attribute(EntityGeneController genes,string id,float value)
         {
-            if(id=="moveSpeed")return Speed(value);
+            // ★ 修复（防Bug回归）：演化方向决定形态，不可凭“游泳”方向禁用陆地速度或跳跃；实际能力只读取属性。
+            if(id=="moveSpeed")
+            {
+                bool wet=DarwinPark.Core.OptionalComponent.Read<DarwinPark.Entities.Vitals.EntityEnvironmentHazard>(genes)?.IsSubmerged==true;
+                if(!wet)return Speed(value);
+                float swimming=genes.GetAttribute("swimSpeed");
+                if(swimming<=0)
+                    swimming=DarwinPark.Core.OptionalComponent.Read<EntityManualControl>(genes)?.SwimmingSpeed??0;
+                return Speed(swimming);
+            }
             if(id!="jumpAbility")return value;
             var settings=LocomotionSettings.Load();var stats=genes.GetComponent<EntityStats>();
             float size=stats!=null&&stats.TryGet("size",out float actual)?actual:1;

@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "maximumParts": 24,
+  "refreshMilliseconds": 2,
+  "farDistance": 100,
+  "parts": [
+    "body_basic",
+    "head_basic",
+    "eye_basic",
+    "mouth_basic",
+    "leaf_basic",
+    "root_basic",
+    "fin_basic",
+    "leg_basic",
+    "tail_basic",
+    "storage_basic",
+    "cover_basic",
+    "exchange_basic",
+    "parasite_basic",
+    "gill_basic"
+  ],
+  "bodies": [
+    "organism_basic"
+  ]
+}

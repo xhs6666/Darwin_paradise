@@ -41,9 +41,10 @@ Shader "DarwinPark/URP_PlanetSurface"
             #include "Terrain/PlanetSurfaceDetail.hlsl"
             #include "Terrain/PlanetNearSurfaceDetail.hlsl"
             #include "Terrain/PopulationRangeOverlay.hlsl"
+            #include "Terrain/PlanetDayNight.hlsl"
 
-            struct Attributes { float4 positionOS : POSITION; float3 normalOS : NORMAL; };
-            struct Varyings { float4 positionCS : SV_POSITION; float3 normalWS : TEXCOORD0; float3 viewDirWS : TEXCOORD1; float3 positionWS : TEXCOORD2; float3 positionOS : TEXCOORD3; };
+            struct Attributes { float4 positionOS : POSITION; float3 normalOS : NORMAL; half4 color : COLOR; };
+            struct Varyings { float4 positionCS : SV_POSITION; float3 normalWS : TEXCOORD0; float3 viewDirWS : TEXCOORD1; float3 positionWS : TEXCOORD2; float3 positionOS : TEXCOORD3; half lakeBed : TEXCOORD4; };
 
             CBUFFER_START(UnityPerMaterial)
                 float4 _LowlandColor, _HillColor, _RockColor, _PeakColor, _ElevationBands;
@@ -56,6 +57,7 @@ Shader "DarwinPark/URP_PlanetSurface"
                 float _MaxHeight;
                 float _LayerMode;
                 float _ClimateReady;
+                float _LakeBedReady;
             CBUFFER_END
 
             TEXTURE2D(_OreMap); SAMPLER(sampler_OreMap);
@@ -75,6 +77,7 @@ Shader "DarwinPark/URP_PlanetSurface"
                 // 横向压缩进一条窄带，形成一条笔直的“断层”。改为把物体空间
                 // 坐标传到片元，在片元里逐像素求 UV。
                 output.positionOS = input.positionOS.xyz;
+                output.lakeBed = input.color.r * _LakeBedReady;
                 return output;
             }
 
@@ -176,6 +179,12 @@ Shader "DarwinPark/URP_PlanetSurface"
                 if (_LayerMode < .5 && heightRatio >= seaLevel)
                     surfaceColor = ApplyNearSurfaceDetail(surfaceColor,input.positionOS,length(input.viewDirWS),
                         _NearDetailDensity,_NearDetailStrength,_NearDetailFade.xy);
+                if (_LayerMode < .5 && input.lakeBed > .001)
+                {
+                    float sediment = SurfaceDetail(normalize(input.positionOS), _DetailScale * 2.5);
+                    float3 bed = lerp(float3(.39,.30,.18),float3(.062,.18,.17),smoothstep(.12,.7,input.lakeBed));
+                    surfaceColor = lerp(surfaceColor,bed * lerp(.78,1.14,sediment),smoothstep(.01,.23,input.lakeBed));
+                }
                 Light mainLight = GetMainLight();
                 float ndl = saturate(dot(normalWS, mainLight.direction));
                 
@@ -189,6 +198,8 @@ Shader "DarwinPark/URP_PlanetSurface"
                 // ★ 修复（防Bug回归）：URP 光方向指向光源，旧符号反转把受光面变成黑坑。
                 // 地图风格保留可读的环境照明，同时让山脊坡度清楚可辨。
                 float3 litColor = surfaceColor * (0.60 + mainLight.color * ndl * 0.55);
+                // ★ 修复（防Bug回归）：固定0.60底光曾掩盖夜半球；地形坡度照明后再按球面太阳高度衰减。
+                litColor *= PlanetNightFactor(input.positionOS,mainLight.direction);
                 // ★ 适配：范围只在原地表最终颜色上透明混合，无额外球壳网格和共面闪烁。
                 return half4(ApplyPopulationRange(litColor,input.positionOS), 1.0);
             }

@@ -1,21 +1,23 @@
 {
-    "name": "DarwinPark.UI",
-    "rootNamespace": "DarwinPark.UI",
-    "references": [
-        "DarwinPark.Core",
-        "DarwinPark.Genetics",
-        "DarwinPark.Entities",
-        "DarwinPark.AI",
-        "DarwinPark.Planet",
-        "DarwinPark.Environment"
-    ],
-    "includePlatforms": [],
-    "excludePlatforms": [],
-    "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
-    "autoReferenced": true,
-    "defineConstraints": [],
-    "versionDefines": [],
-    "noEngineReferences": false
+  "name": "DarwinPark.UI",
+  "rootNamespace": "DarwinPark.UI",
+  "references": [
+    "DarwinPark.Core",
+    "DarwinPark.Genetics",
+    "DarwinPark.Entities",
+    "DarwinPark.AI",
+    "DarwinPark.Planet",
+    "DarwinPark.Environment",
+    "DarwinPark.ServerCore",
+    "DarwinPark.Gameplay"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
 }

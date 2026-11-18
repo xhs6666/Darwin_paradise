@@ -1,9 +1,20 @@
 {
   "name": "DarwinPark.Editor",
   "rootNamespace": "DarwinPark.EditorTools",
-  "references": ["DarwinPark.Core", "DarwinPark.Genetics", "DarwinPark.Entities",
-                 "DarwinPark.AI", "DarwinPark.Planet", "DarwinPark.Environment",
-                 "DarwinPark.UI"],
-  "includePlatforms": ["Editor"],
+  "references": [
+    "DarwinPark.Core",
+    "DarwinPark.Genetics",
+    "DarwinPark.Entities",
+    "DarwinPark.AI",
+    "DarwinPark.Planet",
+    "DarwinPark.Environment",
+    "DarwinPark.UI",
+    "DarwinPark.Server.Unity",
+    "DarwinPark.Gameplay",
+    "DarwinPark.ServerCore"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
   "autoReferenced": true
 }

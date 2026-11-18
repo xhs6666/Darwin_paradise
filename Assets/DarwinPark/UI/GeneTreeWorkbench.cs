@@ -57,6 +57,8 @@ namespace DarwinPark.UI
             GUILayout.Label("左侧拖入 · 拖动节点 · Shift左键源→目标建立下级 · 右键节点/连线编辑 · 红=抑制 / 绿=促进");
             GUILayout.BeginHorizontal();GUILayout.Label("导入文件夹",GUILayout.Width(90));_folder=GUILayout.TextField(_folder);
             if(GUILayout.Button("读取 JSON",GUILayout.Width(110)))Try(()=>{var imported=GeneTreeStorage.ReadCatalog(_folder);foreach(var item in imported)_catalog[item.Key]=item.Value;_dirty=true;_status="已读取 "+imported.Count+" 个基因";});GUILayout.EndHorizontal();
+            // ★ 新增：世界保留自定义基因快照；由用户显式载入新版内置定义到草稿，再保存应用，不安装自动迁移。
+            if(GUILayout.Button("读取内置定义到草稿（需保存并应用）",GUILayout.Width(300)))Try(()=>{foreach(var asset in Resources.LoadAll<TextAsset>("Genes")){var definition=JsonUtility.FromJson<GeneDefinitionJson>(asset.text);_catalog[definition.id]=asset.text;}_dirty=true;_status="已载入内置定义；保存前仍可放弃修改。";});
             GUILayout.Label((_dirty?"● 未保存  ":"")+_status);
             // ★ 适配：显式按钮和百分比解决大树只能滚动、无法缩小查看全貌的问题。
             GUILayout.BeginHorizontal();GUI.enabled=!_hierarchy;

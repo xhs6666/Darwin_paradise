@@ -27,6 +27,9 @@ namespace DarwinPark.Entities.Logic
                 case "EggParasiticGeneLogic": return new EggParasiticGeneLogic();
                 case "StorageGeneLogic": return new StorageGeneLogic();     // ★ 补上这个
                 case "LocomotionGeneLogic": return new LocomotionGeneLogic();
+                case "CentralGeneLogic": return new CentralGeneLogic();
+                case "AutotrophyGeneLogic": return new AutotrophyGeneLogic();
+                case "NutrientParasitismGeneLogic": return new NutrientParasitismGeneLogic();
                 case "ObservationGeneLogic": return new ObservationGeneLogic();
                 // ★ 适配：多胎沿用繁殖状态并接入独立胎数策略。
                 case "MultipleBirthGeneLogic": return new MultipleBirthGeneLogic();

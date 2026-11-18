@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "chance": 0.15,
+  "groups": [
+    {"id":"探测与中枢","genes":["gene_observation","gene_nervous_system"],"maximumDelta":10,"stateChangeChance":0},
+    {"id":"行动与适应","genes":["gene_locomotion","gene_environment"],"maximumDelta":10,"stateChangeChance":0.05},
+    {"id":"光合生长储存","genes":["gene_photosynthesis","gene_growth","gene_storage"],"maximumDelta":10,"stateChangeChance":0},
+    {"id":"异养与食性","genes":["gene_heterotrophy","gene_feeding_preference"],"maximumDelta":10,"stateChangeChance":0.05},
+    {"id":"中枢领地种群","genes":["gene_nervous_system","gene_territory","gene_population"],"maximumDelta":10,"stateChangeChance":0}
+  ]
+}

@@ -5,9 +5,9 @@ namespace DarwinPark.Entities
 {
     public readonly struct EntityGroundSample
     {
-        public readonly Vector3 position,center,up,point,normal;public readonly float distance,altitude;public readonly bool hasSurface,underwater;public readonly MeshCollider ground;
-        public EntityGroundSample(Vector3 position,Vector3 center,Vector3 up,Vector3 point,Vector3 normal,float distance,bool hasSurface,bool underwater,MeshCollider ground)
-        {this.position=position;this.center=center;this.up=up;this.point=point;this.normal=normal;this.distance=distance;this.hasSurface=hasSurface;this.underwater=underwater;this.ground=ground;altitude=hasSurface?Vector3.Dot(position-point,up):0;}
+        public readonly Vector3 position,center,up,point,normal;public readonly float distance,altitude,immersion;public readonly bool hasSurface,underwater;public readonly MeshCollider ground;
+        public EntityGroundSample(Vector3 position,Vector3 center,Vector3 up,Vector3 point,Vector3 normal,float distance,bool hasSurface,bool underwater,MeshCollider ground,float immersion=0)
+        {this.position=position;this.center=center;this.up=up;this.point=point;this.normal=normal;this.distance=distance;this.hasSurface=hasSurface;this.underwater=underwater;this.ground=ground;this.immersion=immersion;altitude=hasSurface?Vector3.Dot(position-point,up):0;}
     }
     // ★ 新增：重力、地表安全网和操控穿地修正共享同一物理位置的地形样本，传送/重建/缩放立即失效。
     public sealed class EntityGroundProbe
@@ -16,7 +16,19 @@ namespace DarwinPark.Entities
         private readonly Rigidbody _body;private readonly GravityProbeCache _legacy=new();private Transform _planet;private PlanetTerrainMeshBuilder _builder;private MeshCollider _ground;private PlanetTerrainData _data;private Mesh _mesh;private Matrix4x4 _matrix;private Vector3 _position;private float _stamp=float.NaN,_radius,_height,_water;private EntityGroundSample _sample;private bool _enabled,_direct;
         public static long CrossStepReused;
         public static long DirectSamples,Raycasts,ReusedSamples,RotationWrites,VelocityWrites,SkippedWrites,Steps;
+        internal PlanetTerrainMeshBuilder Builder => _builder;
+        private float _shoreClearance=float.PositiveInfinity;
+        internal bool NearWater(float distance)=>_sample.underwater||_shoreClearance<=distance;
         public EntityGroundProbe(Rigidbody body){_body=body;}
+        internal EntityGroundSample ReadForAnchor(Transform planet)
+        {
+            // Late physics callers share this step's sample, but teleports and terrain changes invalidate it.
+            if(_stamp==Time.fixedTime&&_planet==planet&&_body.position.Equals(_position)&&
+                _builder!=null&&ReferenceEquals(_builder.Data,_data)&&_ground!=null&&
+                _ground.sharedMesh==_mesh&&_ground.enabled==_enabled&&planet.localToWorldMatrix==_matrix)
+            {ReusedSamples++;return _sample;}
+            return Read(planet);
+        }
         public EntityGroundSample Read(Transform planet)
         {
             using var performance=PerformanceTimings.Measure(PerformanceTimings.Area.GroundQuery);
@@ -36,7 +48,20 @@ namespace DarwinPark.Entities
                 if(_ground!=null&&enabled){Raycasts++;found=_ground.Raycast(new Ray(center+up*(_ground.bounds.extents.magnitude+distance),-up),out var hit,_ground.bounds.extents.magnitude+distance*2);if(found){point=hit.point;normal=hit.normal;}}
             }
             _position=position;_matrix=matrix;_data=data;_mesh=mesh;_radius=radius;_height=height;_water=water;_enabled=enabled;_direct=direct;_stamp=Time.fixedTime;
-            return _sample=new EntityGroundSample(position,center,up,point,normal,distance,found,_builder!=null?_builder.IsSubmerged(position):distance<water,_ground);
+            float immersion=water-distance;
+            _shoreClearance=float.PositiveInfinity;
+            if(data!=null)
+            {
+                // ★ 适配：把水位与接地一并缓存。优先级沿用最近物理样本，无需让 AI 再做地理查询。
+                var inverse=planet.worldToLocalMatrix;
+                var local=inverse.MultiplyPoint3x4(position);
+                float localRadius=local.magnitude;
+                var direction=localRadius>1e-6f?local/localRadius:Vector3.up;
+                float localWater=data.Navigation?.WaterRadius(direction)??PlanetCoordinate.WaterSurfaceRadius(data,direction);
+                immersion=localWater-localRadius;
+                if(found)_shoreClearance=inverse.MultiplyPoint3x4(point).magnitude-localWater;
+            }
+            return _sample=new EntityGroundSample(position,center,up,point,normal,distance,found,immersion>0,_ground,immersion);
         }
         // ★ 适配：沿用原摩擦变更缓存，不再由多个组件各写一次相同材质。
         public void Friction(PhysicsMaterial material,float value)=>_legacy.Friction(material,value);

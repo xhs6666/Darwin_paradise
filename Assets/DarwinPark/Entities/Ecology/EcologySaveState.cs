@@ -16,6 +16,7 @@ namespace DarwinPark.Entities.Ecology
         public RtsOrderSave rts;
         // ★ 适配：普通实体的能量块/食腐计划也成对保存，资源稍后恢复后按ID继续。
         public EntityResourcePlanSave resourcePlan;
+        public EntityActivityPlanSave activityPlan;
         public Vector3 center,threat,commandPoint,hostOffset;
         public float evictionRemaining,commandRemaining,manualRemaining,duelRemaining,incubationRemaining;
         public PopulationCommand command;
@@ -26,7 +27,7 @@ namespace DarwinPark.Entities.Ecology
         public List<ForeignEggSave> foreignEggs;
         // ★ 修复（防Bug回归）：Unity 内联类缺字段时可能生成空对象；仅完全空的生态记录视作旧档无此字段。
         public bool IsEmpty=>string.IsNullOrEmpty(id)&&string.IsNullOrEmpty(groupId)&&string.IsNullOrEmpty(mode)&&string.IsNullOrEmpty(targetId)&&string.IsNullOrEmpty(hostId)&&
-            (resourcePlan==null||resourcePlan.IsEmpty)&&string.IsNullOrEmpty(entityStateId)&&joinOrder==0&&!leader&&!hasCenter&&!hostKinematic&&!hostDetected&&center==Vector3.zero&&threat==Vector3.zero&&commandPoint==Vector3.zero&&hostOffset==Vector3.zero&&
+            (activityPlan==null||activityPlan.tasks?.Count==0)&&(resourcePlan==null||resourcePlan.IsEmpty)&&string.IsNullOrEmpty(entityStateId)&&joinOrder==0&&!leader&&!hasCenter&&!hostKinematic&&!hostDetected&&center==Vector3.zero&&threat==Vector3.zero&&commandPoint==Vector3.zero&&hostOffset==Vector3.zero&&
             evictionRemaining==0&&commandRemaining==0&&manualRemaining==0&&duelRemaining==0&&incubationRemaining==0&&hostDetectionRemaining==0&&command==PopulationCommand.None&&ant?.HasData!=true&&string.IsNullOrEmpty(nutritionParasite?.host)&&nutritionParasiteCount==0&&(foreignEggs==null||foreignEggs.Count==0);
         // ★ 新增：先保存本体与稳定标识，再在所有实体创建后恢复群体目标和宿主引用，不依赖加载先后顺序。
         public static EcologySaveState Capture(DarwinEntity entity)
@@ -41,12 +42,14 @@ namespace DarwinPark.Entities.Ecology
             state.entityStateId=DarwinPark.Core.OptionalComponent.Read<EntityStateController>(entity)?.Current.id;
             state.ant=DarwinPark.Core.OptionalComponent.Read<AntColonyMember>(entity)?.Capture();state.patrol=DarwinPark.Core.OptionalComponent.Read<PatrolRhythm>(entity)?.Capture();state.combat=DarwinPark.Core.OptionalComponent.Read<CombatIntent>(entity)?.Capture();
             state.resourcePlan=EntityResourcePlan.Capture(entity.Genes);
+            state.activityPlan=DarwinPark.Core.OptionalComponent.Read<EntityActivityPlan>(entity)?.Capture();
             state.rts=DarwinPark.Core.OptionalComponent.Read<RtsOrderController>(entity)?.Capture();state.incubationRemaining=DarwinPark.Core.OptionalComponent.Read<EggIncubation>(entity)?.Remaining??0;return state;
         }
         public void Restore(DarwinEntity entity)
         {
             EcologyIdentity.Ensure(entity.gameObject).Restore(id);
             EntityResourcePlan.Restore(entity.Genes,resourcePlan);
+            if(activityPlan?.tasks?.Count>0)EntityActivityPlan.Ensure(entity).Restore(activityPlan);
             if(foreignEggs?.Count>0)(entity.GetComponent<EggHostPregnancy>()??entity.gameObject.AddComponent<EggHostPregnancy>()).Restore(foreignEggs);
             // ★ 适配：RTS目标使用持久ID和本地坐标，与实体按任意顺序恢复兼容。
             if(rts?.active==true)RtsOrderController.Ensure(entity).Restore(rts);

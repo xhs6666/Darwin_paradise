@@ -56,6 +56,26 @@ namespace DarwinPark.EditorTools
         private static ReproductionGeneLogic Reproduction(DarwinEntity entity)=>entity.Genes.Genome.Genes.Select(entity.Genes.GetLogic).OfType<ReproductionGeneLogic>().First();
         private static void Food(DarwinEntity entity,float food,float reserve)
         {var stats=entity.GetComponent<EntityStats>();stats.TryGet("nutrient",out var f);stats.TryGet("storedNutrient",out var r);stats.Modify("nutrient",food-f,false);stats.Modify("storedNutrient",reserve-r,false);}
+        // ★ 修复（防Bug回归）：单独验证觅食下限，避免受长流程中其他模拟断言影响。
+        private static void CheckMultipleBirthReserve(Vector3 home)
+        {
+            var genome = EcologyDefaults.Template("producer").CreateGenome();
+            genome.Genes.RemoveAll(gene => gene.DefinitionId == "gene_reproduction");
+            genome.Add(GeneInstance.Create(MultipleBirthEvolutionUpgrade.GeneId, 100, 1));
+            var parent = Spawn(genome, home);
+            var stats = parent.GetComponent<EntityStats>();
+            var balance = EcologyBalanceSettings.Current;
+            stats.TryGet(balance.sizeAttribute, out float size);
+            float oneBirth = LifeCycleSettings.Load().nutrientCost * Mathf.Max(balance.minimumReproductionSize, size);
+            float fullLitter = oneBirth * MultipleBirthPolicy.Count(parent.Genes);
+            float appetite = balance.reserveFeedingThreshold * .5f;
+            stats.SetMax(balance.reserveAttribute, fullLitter + 1);
+            Food(parent, appetite, oneBirth * 1.5f);
+            Check(EcologyEnergyBudget.WantsFood(parent.Genes, stats, appetite * .5f), "多胎实体有单胎储备仍继续觅食");
+            Food(parent, appetite, fullLitter + .5f);
+            Check(!EcologyEnergyBudget.WantsFood(parent.Genes, stats, appetite * .5f), "储粮达到整胎预算后停止额外觅食");
+        }
+
         private static IEnumerator Run()
         {
             var session=Object.FindFirstObjectByType<WorldSessionManager>();session.autoSaveInterval=36000;var planet=Object.FindFirstObjectByType<PlanetTerrainMeshBuilder>();planet.subdivisions=24;typeof(WorldSessionManager).GetField("_initialTerrain",Private).SetValue(session,JsonUtility.ToJson(planet));PlanetClimateMap.Instance.mapResolution=64;PlanetOreSystem.Instance.mapResolution=32;
@@ -71,6 +91,11 @@ namespace DarwinPark.EditorTools
             Check(deadlines.Count>=8,"相同基因分散空间格产生多批截止时间");
             bool invalidPhase=false;try{GameplayTuning.Parse("{\"version\":1,\"mergePhaseBuckets\":0}");}catch(InvalidDataException){invalidPhase=true;}Check(invalidPhase,"拒绝无效错峰批次数，避免除零");
             Check(GeneDatabase.Get(MultipleBirthEvolutionUpgrade.GeneId)?.LogicScriptId=="MultipleBirthGeneLogic"&&GeneTreeStorage.Active.edges.Any(e=>e.from==MultipleBirthEvolutionUpgrade.SourceGeneId&&e.to==MultipleBirthEvolutionUpgrade.GeneId&&e.kind=="error"),"多胎基因注册并接入繁殖出错树");
+            if (System.Environment.GetCommandLineArgs().Contains("-darwinReserveOnly"))
+            {
+                CheckMultipleBirthReserve(Land(planet));
+                yield break;
+            }
             var home=Land(planet);var producer=EcologyDefaults.Template("producer").CreateGenome();producer.Genes.RemoveAll(g=>g.DefinitionId=="gene_reproduction");
             var scheduler=Object.FindFirstObjectByType<EntityWorkScheduler>();Check(scheduler!=null,"游戏根节点实际安装全局调度");tuning.mergeQuietSeconds=0;
             var clones=new List<DarwinEntity>();for(int i=0;i<24;i++)clones.Add(Spawn(producer,home+Vector3.right*((i%6)*.35f)+Vector3.forward*(i/6*.35f)));

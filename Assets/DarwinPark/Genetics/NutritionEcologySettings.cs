@@ -9,6 +9,7 @@ namespace DarwinPark.Genetics
     [Serializable] public sealed class NutritionEcologySettings
     {
         public int version,maximumEggsPerHost;
+        public string nutrientParasiteGene;
         public string nutritionGene,heterotrophyGene,scavengerGene,eggGene,parasiteState,digestState,legacyEggLogic;
         public string parasiteDrainAttribute,digestionAttribute,scavengeAttribute;
         public float scanInterval,searchRadius,attachReach,minimumHostSizeRatio,hostProtectedNutrient,feedingReach,foodThreshold,eggHostRadius,eggIncubationSeconds;

@@ -1,0 +1,14 @@
+{
+  "name": "DarwinPark.Gameplay",
+  "rootNamespace": "DarwinPark.Gameplay",
+  "references": [
+    "DarwinPark.Core",
+    "DarwinPark.Genetics",
+    "DarwinPark.Entities",
+    "DarwinPark.AI",
+    "DarwinPark.Planet",
+    "DarwinPark.Environment",
+    "DarwinPark.ServerCore"
+  ],
+  "autoReferenced": true
+}

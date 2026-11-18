@@ -7,6 +7,8 @@ namespace DarwinPark.Planet
     {
         public bool enabled=true;public float solarWeight=.95f,equatorialRain=28,subtropicalDryness=31,frontRain=10,polarDryness=16;
         public float equatorialWidth=14,subtropicalLatitude=28,subtropicalWidth=11,frontLatitude=55,frontWidth=14;
+        public float circulationCoastReach=.14f,surfaceCurrentSpeed=1.1f,currentDeflection=.7f,currentHeatReach=.15f;
+        public float monsoonHumiditySwing=24,monsoonWindStrength=2.8f;
         public float tundraTemperature=2,taigaTemperature=9,steppeHumidity=40;
         public Color rainforest=new(.025f,.24f,.20f),forest=new(.13f,.43f,.19f),savanna=new(.77f,.64f,.23f),grassland=new(.42f,.65f,.29f),taiga=new(.16f,.31f,.35f),steppe=new(.66f,.62f,.40f),coldDesert=new(.69f,.65f,.56f);
     }

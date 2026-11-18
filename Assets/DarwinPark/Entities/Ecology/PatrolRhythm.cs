@@ -29,6 +29,8 @@ namespace DarwinPark.Entities.Ecology
         }
         public static bool Resting(EntityGeneController genes)
         {
+            // Group roles and commands have their own rest rules.
+            if(DarwinPark.Core.OptionalComponent.Read<PopulationBehavior>(genes)?.Active==true)return false;
             if(DarwinPark.Core.OptionalComponent.Read<TerritoryBehavior>(genes)?.Active!=true||Allows(genes)||DarwinPark.Core.OptionalComponent.Read<EntityStateController>(genes)?.Current.Behavior==Genetics.EntityStateBehavior.Hunt)return false;
             var stats=genes.GetComponent<Stats.EntityStats>();return stats!=null&&!EcologyEnergyBudget.WantsFood(genes,stats,AntColonySettings.Current.memberFeedThreshold);
         }

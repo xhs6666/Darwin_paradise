@@ -43,36 +43,10 @@ namespace DarwinPark.UI
             // ★ 适配：普通成员不能通过拖拽或调用放置入口绕过权限；作弊客户端交给房主生成。
             if(!WorldAuthority.CanEdit)return 0;
             if(LanSession.Instance?.IsClient==true)return LanEditActions.Submit(new LanCommand{kind="batch",genome=genome,point=point,value=height,count=count,scale=spacing})?count:0;
-            var builder=Object.FindFirstObjectByType<PlanetTerrainMeshBuilder>();
-            if(builder==null)return 0;
-            var ground=builder.GetComponent<MeshCollider>();if(ground==null)return 0;
-            var a=Vector3.Cross(outward,Mathf.Abs(outward.y)>.95f?Vector3.right:Vector3.up).normalized;
-            var b=Vector3.Cross(outward,a);int spawned=0;
-            float outer=ground.bounds.extents.magnitude+height;
-            for(int i=0;i<count&&EntityPopulationLimit.CanSpawn;i++)
-            {
-                float radius=spacing*Mathf.Sqrt(i), angle=i*2.39996323f;
-                var dir=(point-builder.transform.position+a*(Mathf.Cos(angle)*radius)+b*(Mathf.Sin(angle)*radius)).normalized;
-                if(ground.Raycast(new Ray(builder.transform.position+dir*outer,-dir),out var hit,outer) &&
-                    Spawn(genome,hit.point+dir*height))spawned++;
-            }
-            return spawned;
+            return WorldEntityActions.SpawnBatch(genome,point,outward,height,count,spacing);
         }
 
-        public static Genome CopyGenome(Genome source)
-        {
-            if (source == null) return null;
-            var copy = new Genome();
-            foreach (var gene in source.Genes)
-            {
-                var item = GeneInstance.Create(gene.DefinitionId, gene.Value, gene.Tier);
-                item.Enabled = gene.Enabled; item.CopyStrength = gene.CopyStrength;
-                item.OriginInstanceId = gene.OriginInstanceId;
-                item.MissingStateIds = new List<string>(gene.MissingStateIds);
-                copy.Add(item);
-            }
-            return copy;
-        }
+        public static Genome CopyGenome(Genome source)=>Genome.Copy(source);
 
         public static bool Spawn(Genome genome, Vector3 position)
         {

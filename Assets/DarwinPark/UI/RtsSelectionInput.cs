@@ -48,7 +48,7 @@ namespace DarwinPark.UI
             bool over=EntityPlacementUtility.IsPointerOverUI(Input.mousePosition)||IsOverCommandBar(Input.mousePosition);
             if(Input.GetMouseButtonDown(0)&&!over){_dragging=true;_start=Input.mousePosition;}
             if(Input.GetMouseButtonUp(0)&&_dragging){_dragging=false;if(!over)SelectRectangle(_start,Input.mousePosition,Input.GetKey(KeyCode.LeftShift)||Input.GetKey(KeyCode.RightShift));}
-            if(Input.GetMouseButtonDown(1)&&!over&&_selected.Count>0)
+            if(Input.GetMouseButtonDown(1)&&!Input.GetKey(KeyCode.LeftAlt)&&!Input.GetKey(KeyCode.RightAlt)&&!over&&_selected.Count>0)
             {
                 var camera=Camera.main;if(camera==null)return;DarwinEntity target=null;var ray=camera.ScreenPointToRay(Input.mousePosition);
                 if(Physics.Raycast(ray,out var hit,camera.farClipPlane,~0,QueryTriggerInteraction.Ignore))target=hit.collider.GetComponentInParent<DarwinEntity>();

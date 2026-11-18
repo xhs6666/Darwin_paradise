@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "locomotionGene": "gene_locomotion",
+  "centralGene": "gene_nervous_system",
+  "feedingGene": "gene_feeding_preference",
+  "photoGene": "gene_photosynthesis",
+  "mineralGene": "gene_mineral_autotrophy",
+  "swimmingState": "swimming",
+  "amphibiousState": "amphibious"
+}

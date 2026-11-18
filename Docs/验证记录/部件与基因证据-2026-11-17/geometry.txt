@@ -1,0 +1,1 @@
+parts=11 renderers=1 vertices=693
