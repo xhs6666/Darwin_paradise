@@ -38,6 +38,13 @@ namespace DarwinPark.Entities.Ecology
         public static void Advance(AntColonyMember worker,float dt)
         {
             var state=worker.State;var settings=AntColonySettings.Current;
+            // ★ 适配：空闲工匠只等待领下一轮任务，补给由个体实时吃取、王后单独派单。
+            if(state.scan>0&&!worker.Carrying&&string.IsNullOrEmpty(state.resourceTarget)&&
+                string.IsNullOrEmpty(state.livingTarget)&&!WorkerTaskQueue.HasWork(worker))
+            {
+                worker.Activity=ColonyActivity.Rest;
+                return;
+            }
             var carried=ColonyResource.Find(state.carriedResource);var live=Entity(state.carriedLiving);
             TrackTarget(worker);TrackCargo(worker,live);
             if(carried!=null||live!=null)

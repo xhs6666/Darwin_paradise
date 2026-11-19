@@ -15,12 +15,8 @@ namespace DarwinPark.Entities.Ecology
             // ★ 适配：补给插队先维持生命，原反击/运输命令仍保留，完成后恢复。
             var supplyMember=ActiveSimulationBatch.Read<AntColonyMember>(genes);
             if(supplyMember!=null&&supplyMember.Active&&supplyMember.TrySupplyDestination(out point))return true;
-            // ★ 适配：反击使用真实目标，固定分工随后接管意图，不落回普通随机漫游。
-            if(CombatIntent.Destination(genes,out point,out target))return true;
-            // ★ 适配：RTS接入同一行动器，指令不能绕过基因速度、伤害与搬运规则。
-            var rts=ActiveSimulationBatch.Read<RtsOrderController>(genes);if(rts!=null&&rts.Destination(out point,out target))return true;
+            if(OverrideDirective(genes,out point,out target))return true;
             var population=ActiveSimulationBatch.Read<PopulationBehavior>(genes);
-            if(population?.ManualRemaining>0&&population.Destination(out point,out target))return true;
             if(supplyMember!=null&&supplyMember.Destination(out point,out target,out multiplier,false))return true;
             // ★ 适配：普通实体获得独立营养利用基因后也能实际走向能量块，不只等待食物贴到身体旁。
             var energy=ActiveSimulationBatch.Read<EnergyBlockMetabolism>(genes);if(energy!=null&&energy.Destination(out point))return true;
@@ -40,6 +36,16 @@ namespace DarwinPark.Entities.Ecology
             if(PatrolRhythm.Resting(genes)){point=genes.transform.position;return true;}
             // ★ 适配：仅巡逻实体状态生成巡逻点，捕猎实体状态交给同一行动器追击。
             return EntityStateMotion.Directive(genes,out point,out target,out multiplier);
+        }
+
+        // ★ 适配：王后派工和独立中枢共用即时覆盖，受击、RTS、领袖手动命令无需等待普通派工刷新。
+        internal static bool OverrideDirective(EntityGeneController genes,out Vector3 point,out DarwinEntity target)
+        {
+            if(CombatIntent.Destination(genes,out point,out target))return true;
+            var rts=ActiveSimulationBatch.Read<RtsOrderController>(genes);
+            if(rts?.State.active==true&&rts.Destination(out point,out target))return true;
+            var population=ActiveSimulationBatch.Read<PopulationBehavior>(genes);
+            return population?.ManualRemaining>0&&population.Destination(out point,out target);
         }
         public static bool CanHunt(EntityGeneController genes,DarwinEntity target)
         {
@@ -68,6 +74,17 @@ namespace DarwinPark.Entities.Ecology
         internal static float MobileSpeed(EntityGeneController genes)
             => genes.Evaluation!=null&&genes.Evaluation.Attributes.TryGetValue("moveSpeed",out float value)&&value!=0
                 ? ApplyRoleAndPopulation(genes,"moveSpeed",value) : 0;
+
+        // ★ 适配：缓存表达和角色决定的陆地速度。是否入水仍按当前环境读取，避免用旧速度入水。
+        internal static float MobileLandSpeed(EntityGeneController genes)
+        {
+            if(genes.Evaluation==null||!genes.Evaluation.Attributes.TryGetValue("moveSpeed",out float value)||value<=0)return 0;
+            value=AntColonyMember.Attribute(genes,"moveSpeed",value);
+            var population=ActiveSimulationBatch.Read<PopulationBehavior>(genes);
+            return EntityMovementLimits.Speed(value*(population?.MoveMultiplier??1));
+        }
+        internal static float CurrentMobileSpeed(EntityGeneController genes,float landSpeed)
+            => landSpeed<=0?0:EntityMovementLimits.Attribute(genes,"moveSpeed",landSpeed);
 
         private static float ApplyRoleAndPopulation(EntityGeneController genes,string id,float value)
         {

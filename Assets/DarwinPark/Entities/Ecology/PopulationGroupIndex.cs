@@ -74,6 +74,9 @@ namespace DarwinPark.Entities.Ecology
             if(string.IsNullOrEmpty(owner.GroupId))return Empty;
             return AliveMembers(Get(owner).members,owner.GroupId,owner.Mode);
         }
+        // ★ 适配：王后同步派工复用成员索引。回调可变更成员归属，派工时再核对当前群体。
+        internal static IReadOnlyList<PopulationBehavior> DispatchMembers(PopulationBehavior owner)
+            =>string.IsNullOrEmpty(owner.GroupId)?Empty:Get(owner).members;
         private static IEnumerable<PopulationBehavior> AliveMembers(List<PopulationBehavior> members,string id,string mode)
         {foreach(var member in members)if(member!=null&&member.GroupId==id&&member.Mode==mode&&member.Active)yield return member;}
         public static AntColonyMember Queen(PopulationBehavior owner)

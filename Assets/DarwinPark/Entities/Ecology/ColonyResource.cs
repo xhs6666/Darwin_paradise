@@ -74,6 +74,8 @@ namespace DarwinPark.Entities.Ecology
         {
             // ★ 修复（防Bug回归）：中立/灭绝种群遗留尸体也能搬运，不能仅接收自己士兵标记的尸体。
             if(!ColonyCorpseAccess.Available(this,worker))return false;
+            // ★ 适配：同一工匠继续领取已有目标时，资源所有权和位置索引无需重复登记。
+            if(State.claim==worker.Id&&State.group==worker.GroupId)return true;
             if(!string.IsNullOrEmpty(State.claim)&&State.claim!=worker.Id)
             {
                 // ★ 适配：领取者按持久 ID 直接定位，竞争一具尸体时不再让每名工匠扫描全部种群。

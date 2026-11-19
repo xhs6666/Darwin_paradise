@@ -1,4 +1,5 @@
 using DarwinPark.Entities.Simulation; // ★ 适配：同步模拟批内复用组件，不缓存实时状态数值。
+using System.Collections.Generic;
 using DarwinPark.Core;
 using DarwinPark.Genetics;
 using DarwinPark.Entities.Stats;
@@ -19,6 +20,9 @@ namespace DarwinPark.Entities.Logic
         private bool _primary;
         private LocomotionGeneLogic _motor;
         private string _diet;
+        private bool _canDigest;
+        private bool _wasDispatched;
+        private float _speed;
         private float _actionCooldown, _wanderTimer;
         private Vector3 _wanderPoint;
         // ★ 适配：自主追逐经全局陆地路线，不改变玩家手动输入。
@@ -26,17 +30,69 @@ namespace DarwinPark.Entities.Logic
         private DarwinEntity _lastSeenTarget;
         private Vector3 _observedTarget;
         private readonly Simulation.ActionDecisionCadence _decision=new();
+        private long _staffingRevision=-1;
+        private float _staffingRemaining;
+        private int _adultMembers, _adultWorkers;
+        private AntColonyMember _relief;
 
         public virtual void Initialize(EntityGeneController controller, GeneInstance gene)
         {
             _controller = controller; _gene = gene;
             _settings = LocomotionSettings.Load();
         }
+
+        internal void DispatchColony(AntColonyMember queen,float dt)
+        {
+            var group=PopulationGroupIndex.DispatchMembers(queen.Population);
+            _staffingRemaining-=dt;
+            // ★ 适配：库存和成年工匠编制单独刷新，平时一次遍历下发任务，免去每帧为同组重复点名。
+            if(_staffingRevision!=PopulationGroupIndex.Revision||_staffingRemaining<=0)
+                RefreshStaffing(queen,group);
+            // ★ 适配：未成年王后同样能派工；她自己的成年分工仍由原资格约束。
+            queen.AdvanceRole(dt,_adultMembers==0&&_relief==null,_adultWorkers);
+            queen.AssignMovement(queen,dt);
+            foreach(var population in group)
+            {
+                var member=CurrentMember(population,queen);
+                if(member!=null)member.AdvanceDispatchedRole(queen,dt,member==_relief);
+            }
+        }
+
+        private void RefreshStaffing(AntColonyMember queen,IReadOnlyList<PopulationBehavior> group)
+        {
+            _staffingRemaining=SimulationOptimization.Current.decisionSeconds;
+            _staffingRevision=PopulationGroupIndex.Revision;
+            _adultMembers=_adultWorkers=0;
+            _relief=null;
+            foreach(var population in group)
+            {
+                var member=CurrentMember(population,queen);
+                if(member==null)continue;
+                bool worker=member.Role==AntRole.Worker;
+                if(!member.Young)
+                {
+                    _adultMembers++;
+                    if(worker)_adultWorkers++;
+                }
+                // ★ 修复（防Bug回归）：只允许已孵化、有行动能力的幼工临时采集；没有可用幼工则由王后接手。
+                else if(_adultMembers==0&&_relief==null&&worker&&!EcologyMotion.Immobilized(member.Genes)&&
+                    EcologyMotion.MobileSpeed(member.Genes)>0&&GeneBehaviorAuthority.Primary<CentralGeneLogic>(member.Genes)!=null)
+                    _relief=member;
+            }
+            if(_adultMembers>0)_relief=null;
+        }
+
+        private static AntColonyMember CurrentMember(PopulationBehavior population,AntColonyMember queen)
+        {
+            if(population==null||population==queen.Population||population.GroupId!=queen.GroupId||!population.Active)return null;
+            var member=population.ColonyMember;
+            return member!=null&&member.Role!=AntRole.None?member:null;
+        }
         public void OnUpdate(float dt)
         {
             // ★ 适配：按需采样独立列出行动逻辑，和其包含的队形/邻域子项区分。
             using var performance=PerformanceTimings.Measure(PerformanceTimings.Area.Locomotion);
-            if (dt <= 0) return;
+            if (dt <= 0||!_controller.gameObject.activeInHierarchy) return;
             // ★ 适配：行动授权和马达从当前表达快照读取，避免每次补算重新查找同一基因。
             if (_expressionRevision != _controller.LogicRevision || !ReferenceEquals(_expression, _controller.Evaluation))
             {
@@ -46,6 +102,8 @@ namespace DarwinPark.Entities.Logic
                 var action = GeneCapabilities.Active(_controller, BiologySettings.Current.locomotionGene);
                 _motor = action == null ? null : _controller.GetLogic(action.Gene) as LocomotionGeneLogic;
                 _diet = GeneCapabilities.Diet(_controller);
+                _canDigest = NutritionTransfer.CanDigest(_controller);
+                _speed = EcologyMotion.MobileLandSpeed(_controller);
             }
             if (!_primary || EcologyMotion.Immobilized(_controller)) return;
             _actionCooldown -= dt;
@@ -53,8 +111,6 @@ namespace DarwinPark.Entities.Logic
             if (motor == null) return;
             var stats = ActiveSimulationBatch.Read<EntityStats>(_controller);
             if (stats == null || !stats.TryGet("health", out float hp) || hp <= 0) return;
-            float speed = EcologyMotion.MobileSpeed(_controller);
-            if (speed <= 0) return;
             // ★ 适配：使用重算时建立的实例索引，行动子步不重复扫描和分配查询闭包。
             // ★ 修复（防Bug回归）：行为状态共用面板评估结果，失效基因不执行行动。
             // ★ 适配：手动控制期间 AI 不再抢写速度，只有玩家按攻击键才执行近距离进食。
@@ -76,6 +132,14 @@ namespace DarwinPark.Entities.Logic
                 }
                 return;
             }
+            var member=ActiveSimulationBatch.Read<AntColonyMember>(_controller);
+            bool colonyMember=member!=null&&member.Active;
+            AntColonyMember queen=null;
+            bool dispatched=colonyMember&&member.Dispatcher(out queen)!=null;
+            if(dispatched!=_wasDispatched){_decision.Reset();_target=null;_lastSeenTarget=null;_wasDispatched=dispatched;}
+            float speed=dispatched?EcologyMotion.CurrentMobileSpeed(_controller,member.AssignedLandSpeed(queen)):
+                colonyMember?EcologyMotion.MobileSpeed(_controller):EcologyMotion.CurrentMobileSpeed(_controller,_speed);
+            if(speed<=0)return;
             // ★ 适配：查询/任务决策按模拟节奏缓存，持续移动与咬合冷却保持逐步推进。
             // ★ 新增：用户顺序任务具有实际目标和完成条件，不能被普通巡逻/随机觅食覆盖。
             var plan=ActiveSimulationBatch.Read<EntityActivityPlan>(_controller);
@@ -84,23 +148,31 @@ namespace DarwinPark.Entities.Logic
                 _decision.Reset();plan.Destination(out var plannedPoint,out _target);motor.Move(plannedPoint,speed,dt);
                 if(_target!=null)TryBite(stats,_diet=="herbivore");return;
             }
+            if(dispatched)
+            {
+                // ★ 新增：成员中枢不运行个体感知、觅食与巡逻决策。即时指令和物理执行仍由本实体处理。
+                bool assigned=member.AssignedMovement(queen,out var point,out var target,out float multiplier,out bool supply);
+                if(!supply&&EcologyMotion.OverrideDirective(_controller,out var urgentPoint,out var urgentTarget))
+                    MoveDirective(stats,urgentPoint,urgentTarget,speed,dt);
+                else
+                    MoveDirective(stats,assigned?point:_controller.transform.position,assigned?target:null,speed*multiplier,dt);
+                return;
+            }
             bool decide=_decision.Due(_controller,dt);
-            if(decide)_decision.directive=EcologyMotion.Directive(_controller,out _decision.point,out _decision.target,out _decision.multiplier);
+            // ★ 适配：状态迁移从逐小步移到意图刷新。食物容量和饱食度仍由各结算入口实时读取。
+            if(decide)
+            {
+                if(!colonyMember)_controller.RefreshMovementState(dt);
+                _decision.directive=EcologyMotion.Directive(_controller,out _decision.point,out _decision.target,out _decision.multiplier);
+            }
             if(_decision.directive)
             {
-                _target=_decision.target;
-                if(_target!=null){var explicitOrder=ActiveSimulationBatch.Read<RtsOrderController>(_controller);var pop=ActiveSimulationBatch.Read<PopulationBehavior>(_controller);if(explicitOrder?.State.active==true&&explicitOrder.State.kind==RtsOrderKind.Attack||pop?.ManualRemaining>0)EntityNeighborhood.TryPosition(_target,out _decision.point);else if(!EntityPerceptionHub.TryLocate(_controller,_target,out _decision.point))
-                {
-                    if(EntityPerceptionHub.TryRecall(_controller,_target,out var known)&&LandReachability.CanReach(_controller,_target,known.position))
-                    {motor.Move(known.position,speed*_decision.multiplier,dt);return;}
-                    _decision.Reset();_target=null;return;
-                }}
-                motor.Move(_decision.point,speed*_decision.multiplier,dt);
-                if(_target!=null)TryBite(stats,false);return;
+                if(!MoveDirective(stats,_decision.point,_decision.target,speed*_decision.multiplier,dt))_decision.Reset();
+                return;
             }
             // ★ 适配：由生态预算决定是否需补充繁殖储备，仓储充足后避免过度捕食。
             if ((_diet == "hunt" || _diet == "herbivore") &&
-                NutritionTransfer.CanHuntForFood(_controller) &&
+                (_canDigest||colonyMember&&member.Role==AntRole.Soldier) &&
                 EcologyEnergyBudget.WantsFood(_controller,stats,_settings.hungerThreshold))
             {
                 bool graze = _diet == "herbivore";
@@ -125,6 +197,28 @@ namespace DarwinPark.Entities.Logic
                 _wanderPoint = EcologyQueries.ToLocal(motor.WanderDestination(Random.onUnitSphere,_settings.wanderDistance));
             }
             motor.Move(EcologyQueries.ToWorld(_wanderPoint), speed * _settings.wanderSpeedRatio, dt);
+        }
+
+        private bool MoveDirective(EntityStats stats,Vector3 point,DarwinEntity target,float speed,float dt)
+        {
+            _target=target;
+            if(target!=null)
+            {
+                var explicitOrder=ActiveSimulationBatch.Read<RtsOrderController>(_controller);
+                var pop=ActiveSimulationBatch.Read<PopulationBehavior>(_controller);
+                if(explicitOrder?.State.active==true&&explicitOrder.State.kind==RtsOrderKind.Attack||pop?.ManualRemaining>0)
+                    EntityNeighborhood.TryPosition(target,out point);
+                else if(!EntityPerceptionHub.TryLocate(_controller,target,out point))
+                {
+                    if(EntityPerceptionHub.TryRecall(_controller,target,out var known)&&LandReachability.CanReach(_controller,target,known.position))
+                    {_motor.Move(known.position,speed,dt);return true;}
+                    _target=null;
+                    return false;
+                }
+            }
+            _motor.Move(point,speed,dt);
+            if(_target!=null)TryBite(stats,false);
+            return true;
         }
         private void TryBite(EntityStats stats, bool graze)
         {
@@ -155,6 +249,15 @@ namespace DarwinPark.Entities.Logic
             // ★ 适配：保留食性/体型/同群/寄生资格，只把全表搜索替换为视野内坐标投递。
             _target=PerceivedTargets.Nearest(_controller,graze,_target,out _observedTarget);
         }
-        public virtual string GetTooltipInfo() => _target != null ? "正在追击：" + _target.DisplayName : "中枢选择目标和行为，行动基因执行移动，口部异养基因提供伤害与消化。";
+        public virtual string GetTooltipInfo()
+        {
+            var member=ActiveSimulationBatch.Read<AntColonyMember>(_controller);
+            AntColonyMember queen=null;
+            bool dispatched=member!=null&&member.Active&&member.Dispatcher(out queen)!=null;
+            if(dispatched&&queen!=member)
+                return "个体自主决策已抑制，由王后中枢派工。";
+            if(queen!=null&&queen==member)return "王后中枢统一分配种群的补给、运输和巡逻。";
+            return _target!=null?"正在追击："+_target.DisplayName:"中枢负责当前状态与移动意图。营养和伤害由独立系统结算。";
+        }
     }
 }

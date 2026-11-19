@@ -63,7 +63,7 @@ namespace DarwinPark.Entities.Ecology
         {
             // ★ 适配：同群避让作为行动子项单独采样，便于优先优化密集种群。
             using var performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.Formation);
-            var member=DarwinPark.Core.OptionalComponent.Read<AntColonyMember>(genes);if(member==null||!member.Active||member.Role==AntRole.Queen||member.Young||speed<=0)return desired;
+            var member=Simulation.ActiveSimulationBatch.Read<AntColonyMember>(genes);if(member==null||!member.Active||member.Role==AntRole.Queen||member.Young&&!member.ReliefWorker||speed<=0)return desired;
             var here=genes.transform.position;var up=EcologyQueries.Up(here);var away=Vector3.zero;float radius=BodyRadius(member.Entity);EntityNeighborhood.Query(here,Settings.avoidanceRadius,Neighbors);
             foreach(var other in Neighbors)
             {

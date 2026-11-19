@@ -20,6 +20,8 @@ namespace DarwinPark.Entities.Ecology
             if(feeding)tasks.Insert(0,new PlannedEntityTask{kind=PlannedTaskKind.Feed});
         }
         private static int WorkIndex(List<PlannedEntityTask> tasks)=>tasks.Count>0&&tasks[0].kind==PlannedTaskKind.Feed?1:0;
+        // ★ 适配：纯查询不为等待批次的空闲工匠创建计划。
+        internal static bool HasWork(AntColonyMember worker)=>worker.State.plan?.tasks is List<PlannedEntityTask> tasks&&WorkIndex(tasks)<tasks.Count;
         public static void Complete(AntColonyMember worker)
         {var tasks=Tasks(worker);int i=WorkIndex(tasks);if(i<tasks.Count)tasks.RemoveAt(i);}
         public static void PickedUp(AntColonyMember worker)

@@ -33,12 +33,14 @@ namespace DarwinPark.EditorTools
         private static IEnumerator Guard()
         {
             Directory.CreateDirectory(Folder);Passed.Clear();File.WriteAllText(Path.Combine(Folder,"result.txt"),"RUNNING");string error=null;var stack=new Stack<IEnumerator>();stack.Push(Run());
+            if(SessionState.GetBool(Key+".Dispatch",false)){stack.Clear();stack.Push(VerifyDispatch());SessionState.SetBool(Key+".Dispatch",false);}
             while(stack.Count>0){bool next=false;object current=null;try{next=stack.Peek().MoveNext();if(next)current=stack.Peek().Current;}catch(Exception ex){error=ex.ToString();Debug.LogException(ex);break;}if(!next){stack.Pop();continue;}if(current is IEnumerator nested)stack.Push(nested);else yield return current;}
             if(_externalExisted)File.WriteAllText(EcologyDefaults.ConfigurationPath,_externalBackup);else if(File.Exists(EcologyDefaults.ConfigurationPath))File.Delete(EcologyDefaults.ConfigurationPath);
             ColonyTaskStressAudit.Finish();
             File.WriteAllText(Path.Combine(Folder,"result.txt"),(error==null?"PASS":"FAIL")+"\n"+error+"\n"+string.Join("\n",Passed));SessionState.SetBool(Key,false);EditorApplication.Exit(error==null?0:1);
         }
         public static void RunShortBatch(){SessionState.SetBool(Key+".Short",true);RunBatch();}
+        public static void RunDispatchBatch(){SessionState.SetBool(Key+".Dispatch",true);RunBatch();}
         private static IEnumerator Wait(Func<bool> done,string name,float timeout=45)
         {double start=EditorApplication.timeSinceStartup;while(!done()){if(EditorApplication.timeSinceStartup-start>timeout)throw new TimeoutException(name);yield return null;}}
         private static void Clear(){foreach(var entity in EntityRegistry.All.ToArray())Object.DestroyImmediate(entity.gameObject);ColonyResource.ClearWorld();}
@@ -54,6 +56,65 @@ namespace DarwinPark.EditorTools
             for(int i=0;i<512;i++){float y=1-2*(i+.5f)/512,angle=i*2.399963f;var direction=new Vector3(Mathf.Sqrt(1-y*y)*Mathf.Cos(angle),y,Mathf.Sqrt(1-y*y)*Mathf.Sin(angle));var point=EcologyQueries.Surface(planet.transform.position+direction*(planet.radius+planet.heightScale));if((point-planet.transform.position).magnitude>planet.WaterRadius+3)return point;}throw new InvalidOperationException("测试世界没有合适陆地");
         }
         private static IEnumerator Capture(string name){yield return new WaitForSecondsRealtime(.3f);Canvas.ForceUpdateCanvases();yield return null;yield return new WaitForEndOfFrame();ScreenCapture.CaptureScreenshot(Path.Combine(Folder,name+".png"));yield return null;}
+
+        private static IEnumerator VerifyDispatch()
+        {
+            // ★ 新增：关闭创业发粮，真实推进种群入口，验证幼体能通过领取、运输、进食延续补给链。
+            _externalExisted=File.Exists(EcologyDefaults.ConfigurationPath);
+            if(_externalExisted)_externalBackup=File.ReadAllText(EcologyDefaults.ConfigurationPath);
+            var session=Object.FindFirstObjectByType<WorldSessionManager>();
+            var planet=Object.FindFirstObjectByType<PlanetTerrainMeshBuilder>();
+            planet.subdivisions=32;
+            typeof(WorldSessionManager).GetField("_initialTerrain",Private).SetValue(session,JsonUtility.ToJson(planet));
+            PlanetClimateMap.Instance.mapResolution=64;PlanetOreSystem.Instance.mapResolution=32;
+            session.Create("王后调度与幼体接续",742091,.5f,20,44);
+            yield return Wait(()=>!session.Busy,"生成王后调度测试世界");
+            ServiceLocator.Get<SimulationClock>().Pause();
+            Clear();
+            var settings=JsonUtility.FromJson<EcologyDefaultsSettings>(EcologyDefaults.CurrentJson);
+            settings.enableFoundingSupport=false;EcologyDefaults.UseSnapshot(JsonUtility.ToJson(settings));
+            var founder=EcologyDefaults.Template("ant_founder");
+            var home=Home(planet);
+            var queen=Spawn(founder,home).GetComponent<AntColonyMember>();
+            string group=Guid.NewGuid().ToString("N");
+            queen.Assign(AntRole.Queen,group);
+            var worker=Spawn(founder,home,false).GetComponent<AntColonyMember>();
+            worker.Assign(AntRole.Worker,group);
+            var egg=Spawn(founder,home,false).GetComponent<AntColonyMember>();
+            egg.Assign(AntRole.Worker,group);egg.gameObject.AddComponent<EggIncubation>().Begin(30);
+            queen.Entity.GetComponent<EntityStats>().Feed(10000);
+            worker.Entity.GetComponent<EntityStats>().Feed(10000);
+
+            var cargo=ColonyResource.Create(new ColonyResourceSave{id=Guid.NewGuid().ToString("N"),group=group,
+                kind=ColonyResourceKind.Corpse,energy=20,local=EcologyQueries.ToLocal(worker.transform.position),scale=Vector3.one});
+            worker.State.resourceTarget=cargo.State.id;
+            worker.Population.Advance(.1f);
+            Check(string.IsNullOrEmpty(worker.State.carriedResource),"普通成员不自行领取任务");
+            queen.Population.Advance(.1f);
+            Check(worker.State.carriedResource==cargo.State.id&&cargo.State.claim==worker.Id,"仅有幼体时，王后派已孵化幼工领取真实货物");
+            Check(string.IsNullOrEmpty(egg.State.carriedResource)&&egg.GroupId==group,"未孵化的卵仍属同群并保持静止");
+            var brain=worker.Genes.Genome.Genes.Select(worker.Genes.GetLogic).OfType<Entities.Logic.CentralGeneLogic>().Single();
+            Check(brain.GetTooltipInfo().Contains("已抑制"),"幼工面板显示自主中枢由王后接管");
+
+            var adult=Spawn(founder,home).GetComponent<AntColonyMember>();adult.Assign(AntRole.Worker,group);
+            worker.transform.position=EcologyQueries.ToWorld(worker.State.deliveryPoint);
+            queen.Population.Advance(.1f);
+            Check(ColonyResource.Find(cargo.State.id)==null&&ColonyResource.All.Any(r=>r.State.group==group&&r.State.kind==ColonyResourceKind.Nursery&&r.State.energy==20),"成年工匠就位后，幼工把原货物完整交付一次");
+            queen.Population.Advance(.1f);
+            Check(worker.Activity==ColonyActivity.Young,"交付完成后幼工恢复育幼分工");
+
+            adult.gameObject.SetActive(false);worker.gameObject.SetActive(false);
+            var nearby=ColonyResource.Create(new ColonyResourceSave{id=Guid.NewGuid().ToString("N"),group=group,
+                kind=ColonyResourceKind.Corpse,energy=12,local=EcologyQueries.ToLocal(queen.transform.position),scale=Vector3.one});
+            queen.State.resourceTarget=nearby.State.id;
+            queen.Population.Advance(.1f);
+            Check(queen.State.carriedResource==nearby.State.id&&queen.State.startup?.foodIssued==0,"没有可用幼工且关闭创业发粮时，王后仍自行搬运");
+            ColonyFoundingSupport.Validate(queen.Capture().startup);
+            Check(queen.Capture().startup.collecting,"保底采集状态通过既有存档校验");
+            queen.transform.position=EcologyQueries.ToWorld(queen.State.deliveryPoint);
+            queen.Population.Advance(.1f);
+            Check(ColonyResource.Find(nearby.State.id)==null&&ColonyResource.All.Where(r=>r.State.group==group).Sum(r=>r.State.energy)==32,"王后也完成真实转换，补给能量守恒");
+        }
         private static IEnumerator Run()
         {
             // ★ 适配：此链路回归显式开启比例抑制；所有种源通过手动请求创建。

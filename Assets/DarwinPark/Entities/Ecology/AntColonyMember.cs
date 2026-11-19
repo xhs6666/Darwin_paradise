@@ -2,6 +2,7 @@ using DarwinPark.Core; // ★ 适配：实时可选组件查询避免空查找�
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using DarwinPark.Entities.Logic;
 using DarwinPark.Genetics;
 using UnityEngine;
 
@@ -70,6 +71,45 @@ namespace DarwinPark.Entities.Ecology
         public ColonyActivity Activity {get=>EntityTaskPlan.Feeding(this)&&ColonyResource.Find(State.plan?.supply)!=null?ColonyActivity.Feed:_activity;internal set{_activity=value;MemberTaskSequence.Record(this,value);}}
         public int TaskPriority=>EntityTaskPlan.Priority(Activity);
         internal DarwinEntity HuntTarget;
+        private AntColonyMember _orderQueen;
+        private float _orderRemaining, _orderMultiplier;
+        private Vector3 _orderPoint;
+        private DarwinEntity _orderTarget, _orderHunt;
+        private string _orderSupply, _orderCargo, _orderWork;
+        private ColonyActivity _orderActivity;
+        private int _orderRevision;
+        private bool _orderValid, _orderFeeding, _orderHasSupply;
+        private long _dispatchRevision=-1;
+        private int _dispatchGeneRevision=-1;
+        private AntColonyMember _dispatchQueen, _roleQueen;
+        private CentralGeneLogic _dispatcher;
+        private float _roleElapsed, _roleRemaining;
+        private string _roleWork;
+        private bool _roleYoung, _roleRelief, _roleFeeding;
+        internal bool ReliefWorker {get;set;}
+        private float _assignedLandSpeed;
+        internal float AssignedLandSpeed(AntColonyMember queen)=>_orderQueen==queen&&_orderRevision==Genes.LogicRevision
+            ?_assignedLandSpeed:EcologyMotion.MobileLandSpeed(Genes);
+
+        // ★ 适配：派工者按群关系和王后表达版本失效，子步无需重复选择同一个中枢。
+        internal CentralGeneLogic Dispatcher(out AntColonyMember queen)
+        {
+            if(_dispatchRevision!=PopulationGroupIndex.Revision||_dispatchQueen!=null&&!_dispatchQueen.gameObject.activeInHierarchy)
+            {
+                _dispatchQueen=Queen;
+                _dispatchRevision=PopulationGroupIndex.Revision;
+                _dispatchGeneRevision=-1;
+                _dispatcher=null;
+            }
+            queen=_dispatchQueen;
+            if(queen!=null&&_dispatchGeneRevision!=queen.Genes.LogicRevision)
+            {
+                _dispatchGeneRevision=queen.Genes.LogicRevision;
+                _dispatcher=GeneBehaviorAuthority.Primary<CentralGeneLogic>(queen.Genes);
+            }
+            return queen!=null?_dispatcher:null;
+        }
+        internal bool Carrying=>!string.IsNullOrEmpty(State.carriedResource)||!string.IsNullOrEmpty(State.carriedLiving);
         private readonly Dictionary<string,float> _suppression=new Dictionary<string,float>();
         private string _suppressionRole;
         private void Awake(){Genes=GetComponent<EntityGeneController>();Entity=GetComponent<DarwinEntity>();Population=DarwinPark.Core.OptionalComponent.Read<PopulationBehavior>(this);}
@@ -108,14 +148,25 @@ namespace DarwinPark.Entities.Ecology
         }
         public void Advance(float dt)
         {
+            if(!Active||dt<=0||WorldAuthority.IsReplica||!AdvanceNeeds(dt))return;
+            AdvanceRole(dt);
+        }
+
+        internal bool AdvanceNeeds(float dt)
+        {
+            if(Role==AntRole.None)Assign(Population.LeaderFlag?AntRole.Queen:ChooseBirthRole());
+            if(Simulation.ActiveSimulationBatch.Read<EggIncubation>(Genes)?.Incubating==true)return false;
+            ColonyResource.Feed(this,dt);
+            return true;
+        }
+
+        internal void AdvanceRole(float dt,bool emergencyCollector=false,int adultWorkers=-1)
+        {
             // ★ 适配：只在主动性能采样期间计时，定位完整场景的实际消耗。
             using var performance=DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.ColonyTasks);
-            if(!Active||dt<=0)return;
-            if(Role==AntRole.None)Assign(Population.LeaderFlag?AntRole.Queen:ChooseBirthRole());
             State.scan-=dt;State.reproductionCooldown=Mathf.Max(0,State.reproductionCooldown-dt);
-            ColonyResource.Feed(this,dt);
             if(OptionalComponent.Read<EggIncubation>(this)?.Incubating==true)return;
-            if(Young){Activity=ColonyActivity.Young;return;}
+            if(Young&&!ReliefWorker){Activity=ColonyActivity.Young;return;}
             // ★ 新增：用户计划接管行为时暂存原分工任务，不覆盖顺序或丢弃正在搬运的货物。
             if(EntityActivityPlan.BlocksAutomatic(this))return;
             if(Role==AntRole.Reproductive){BeginFounding();return;}
@@ -128,10 +179,84 @@ namespace DarwinPark.Entities.Ecology
                 {State.founding=false;EnsureSupplyPoints();DarwinPark.Core.OptionalComponent.Read<TerritoryBehavior>(this)?.Restore(EcologyQueries.ToLocal(transform.position),true,0,Vector3.zero);}
                 return;
             }
-            if(Role==AntRole.Queen){Activity=ColonyActivity.Reproduce;ColonyFoundingSupport.Advance(this,dt);AntColonyReproduction.Advance(this,dt);return;}
+            if(Role==AntRole.Queen){Activity=ColonyActivity.Reproduce;ColonyFoundingSupport.Advance(this,dt,emergencyCollector,adultWorkers);AntColonyReproduction.Advance(this,dt);return;}
             if(Role==AntRole.Worker){AntColonyWorker.Advance(this,dt);return;}
             if(Role==AntRole.Mate){Activity=ColonyActivity.Mate;return;}
             AdvanceSoldier(dt);
+        }
+
+        internal void AdvanceLocalRole(float dt)
+        {
+            ReliefWorker=Young&&Role==AntRole.Worker&&Carrying;
+            AdvanceRole(dt+_roleElapsed);
+            _roleElapsed=0;
+            _roleQueen=null;
+        }
+
+        // ★ 新增：派工间隔按游戏时间累加。携带与交付保持实时，空闲成员无需每帧重查分工。
+        internal void AdvanceDispatchedRole(AntColonyMember queen,float dt,bool relief)
+        {
+            bool young=Young;
+            bool carrying=Carrying;
+            ReliefWorker=relief||young&&Role==AntRole.Worker&&carrying;
+            string work=WorkTarget;
+            _roleElapsed+=dt;
+            _roleRemaining-=dt;
+            bool changed=_roleQueen!=queen||_roleYoung!=young||_roleRelief!=ReliefWorker||
+                _roleWork!=work||_roleFeeding!=(State.plan?.feeding==true)||_orderRevision!=Genes.LogicRevision;
+            if(!changed&&!carrying&&_roleRemaining>0)return;
+            var settings=SimulationOptimization.Current;
+            if(_roleQueen!=queen)
+            {
+                float phase=((uint)GetInstanceID()%(uint)settings.decisionFrameBuckets)/(float)settings.decisionFrameBuckets;
+                _roleRemaining=settings.decisionSeconds*(1+phase);
+            }
+            else if(_roleRemaining<=0)_roleRemaining=settings.decisionSeconds;
+            _roleQueen=queen;_roleYoung=young;_roleRelief=ReliefWorker;
+            AdvanceRole(_roleElapsed);
+            if(this!=null&&GroupId==queen.GroupId)AssignMovement(queen,_roleElapsed);
+            _roleElapsed=0;
+            _roleWork=WorkTarget;_roleFeeding=State.plan?.feeding==true;
+        }
+
+        private string WorkTarget=>string.IsNullOrEmpty(State.resourceTarget)?State.livingTarget:State.resourceTarget;
+
+        // ★ 新增：群体意图由王后发布。成员只消费目的地，分工、补给、货物或猎物变化时立即换单。
+        internal void AssignMovement(AntColonyMember queen,float dt)
+        {
+            _orderRemaining-=dt;
+            bool feeding=ColonyFeeding.WantsFood(this);
+            string supply=State.plan?.supply;
+            string cargo=string.IsNullOrEmpty(State.carriedResource)?State.carriedLiving:State.carriedResource;
+            string work=WorkTarget;
+            if(_orderQueen==queen&&_orderRevision==Genes.LogicRevision&&_orderRemaining>0&&_orderActivity==_activity&&_orderFeeding==feeding&&
+                _orderSupply==supply&&_orderCargo==cargo&&_orderWork==work&&_orderHunt==HuntTarget&&
+                (!_orderHasSupply||ColonyResource.Find(_orderSupply)!=null))return;
+            if(_orderQueen!=queen)
+            {
+                var config=SimulationOptimization.Current;
+                float phase=((uint)GetInstanceID()%(uint)config.decisionFrameBuckets)/(float)config.decisionFrameBuckets;
+                _orderRemaining=config.decisionSeconds*(1+phase);
+            }
+            else if(_orderRemaining<=0)_orderRemaining=SimulationOptimization.Current.decisionSeconds;
+            _orderQueen=queen;_orderFeeding=feeding;_orderCargo=cargo;_orderWork=work;_orderHunt=HuntTarget;
+            Vector3 point;
+            bool supplyOrder=false;
+            if(feeding&&TrySupplyDestination(out point))supplyOrder=true;
+            else _orderValid=Destination(out point,out _orderTarget,out _orderMultiplier,false);
+            if(supplyOrder){_orderTarget=null;_orderMultiplier=1;_orderValid=true;}
+            _orderActivity=_activity;_orderHasSupply=supplyOrder;_orderRevision=Genes.LogicRevision;
+            _assignedLandSpeed=EcologyMotion.MobileLandSpeed(Genes);
+            _orderSupply=State.plan?.supply;_orderPoint=EcologyQueries.ToLocal(point);
+        }
+
+        internal bool AssignedMovement(AntColonyMember queen,out Vector3 point,out DarwinEntity target,out float multiplier,out bool supply)
+        {
+            bool current=queen!=null&&_orderQueen==queen&&_orderRevision==Genes.LogicRevision&&_orderValid;
+            point=current?EcologyQueries.ToWorld(_orderPoint):transform.position;
+            target=current?_orderTarget:null;multiplier=current?_orderMultiplier:1;
+            supply=current&&_orderHasSupply&&ColonyResource.Find(_orderSupply)!=null;
+            return current&&(!_orderHasSupply||supply);
         }
         private void BeginFounding()
         {
@@ -177,7 +302,7 @@ namespace DarwinPark.Entities.Ecology
             if(checkSupply&&ColonyFeeding.Destination(this,out point))return true;
             if(State.founding){point=EcologyQueries.ToWorld(State.foundingPoint);return true;}
             // ★ 修复（防Bug回归）：跟随终点是各自站位，不能让同群成员持续向王后的身体中心挤压。
-            if(Young||Role==AntRole.Mate){point=ColonyFormation.Home(this,Center,AntColonySettings.Current.feedRadius*.8f);return true;}
+            if(Young&&!ReliefWorker||Role==AntRole.Mate){point=ColonyFormation.Home(this,Center,AntColonySettings.Current.feedRadius*.8f);return true;}
             // ★ 适配：工匠成年前王后可以临时执行采集/运输，继续共用原有实际货物与扣粮路径。
             if(Role==AntRole.Worker||ColonyFoundingSupport.Collecting(this)){point=AntColonyWorker.Destination(this);return true;}
             if(Role==AntRole.Soldier&&PerceivedTargets.Valid(Genes,HuntTarget,false,out point)){target=HuntTarget;return true;}
@@ -228,7 +353,7 @@ namespace DarwinPark.Entities.Ecology
             return value;
         }
         public AntColonyMemberSave Capture()=>State.Snapshot();
-        public void Suspend(){AntColonyWorker.Release(this);HuntTarget=null;}
+        public void Suspend(){AntColonyWorker.Release(this);HuntTarget=null;_orderQueen=null;_roleQueen=null;_roleElapsed=0;ReliefWorker=false;}
         public void Restore(AntColonyMemberSave state){if(state==null||!state.HasData)return;State=state.Snapshot();if(State.partnerGenome?.Genes?.Count==0)State.partnerGenome=null;_suppressionRole=null;PopulationGroupIndex.Invalidate();Genes.Recalculate();Population.EnsureMembership();if(GetComponent<ColonyMemberMarker>()==null)gameObject.AddComponent<ColonyMemberMarker>();}
     }
 }

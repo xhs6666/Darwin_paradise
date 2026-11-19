@@ -51,6 +51,7 @@ namespace DarwinPark.Entities
         private static NamePoolJson _namePool;private static bool _namePoolLoaded,_nameAssetMissing;
         private bool _isRecalculating = false;
         private EntityLifeCycle _life;private Ecology.CombatIntent _combat;private Ecology.EntityStateController _state;
+        private Logic.CentralGeneLogic _frameCentral;
         private int _mutatedStages;
         public int StageMutationChecks {get;private set;}
         // ★ 适配：恢复已登记的阶段，读档不重复触发生命阶段事件。
@@ -106,18 +107,40 @@ namespace DarwinPark.Entities
                 // ★ 适配：反击记忆随模拟步长推进，暂停或倍率切换不会消耗真实秒数。
                 _combat.Advance(step);
                 // ★ 适配：独立状态机先按配置选择意图，所有复制行动基因随后共用一个行为写入者。
-                _state?.Advance(step);
+                if(_snapshotRevision==LogicRevision&&_frameCentral==null)_state?.Advance(step);
                 // ★ 新增：显式任务按模拟时间推进，暂停不消耗计划；植物的补给/休息无需安装大脑。
                 Simulation.ActiveSimulationBatch.Read<Ecology.EntityActivityPlan>(this)?.Advance(step);
                 // ★ 修复（防Bug回归）：仍使用逻辑快照防止重算时修改集合，但复用缓冲区，避免每个实体每个子步分配新列表。
                 // ★ 适配：优化重复计算，只在逻辑重算后重建快照；回调中的重算仅标记失效，不能修改正在遍历的列表。
-                if(_snapshotRevision!=LogicRevision){_simulationLogics.Clear();_simulationLogics.AddRange(_activeLogics.Values);_snapshotRevision=LogicRevision;_activePlan.Invalidate();LogicSnapshotBuilds++;}
+                if(_snapshotRevision!=LogicRevision)
+                {
+                    _simulationLogics.Clear();
+                    _frameCentral=null;
+                    foreach(var logic in _activeLogics.Values)
+                    {
+                        // ★ 适配：仅内置中枢移出子步。扩展逻辑继续按原小步运行。
+                        if(logic.GetType()==typeof(Logic.CentralGeneLogic))
+                        {
+                            _frameCentral??=Logic.GeneBehaviorAuthority.Primary<Logic.CentralGeneLogic>(this);
+                            if(_frameCentral?.GetType()==typeof(Logic.CentralGeneLogic))continue;
+                            _frameCentral=null;
+                        }
+                        _simulationLogics.Add(logic);
+                    }
+                    _snapshotRevision=LogicRevision;_activePlan.Invalidate();LogicSnapshotBuilds++;
+                    if(_frameCentral==null)_state?.Advance(step);
+                }
                 if(planned)_activePlan.Run(this,_simulationLogics,step);
                 else foreach(var logic in _simulationLogics)logic.OnUpdate(step);
             }
+            // ★ 适配：位置与刚体只在这批最后写一次；代谢、寿命、显式任务保留实际模拟步长。
+            var central=_snapshotRevision==LogicRevision?_frameCentral:Logic.GeneBehaviorAuthority.Primary<Logic.CentralGeneLogic>(this);
+            if(central?.GetType()==typeof(Logic.CentralGeneLogic))central.OnUpdate(dt);
             }
             finally{if(reuse)Simulation.ActiveSimulationBatch.End(this);Simulation.ActionMotionBatch.End(this);}
         }
+
+        internal void RefreshMovementState(float dt)=>_state?.Advance(dt);
 
         public void Recalculate()
         {

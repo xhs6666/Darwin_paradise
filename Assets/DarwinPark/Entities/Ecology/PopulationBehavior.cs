@@ -19,6 +19,8 @@ namespace DarwinPark.Entities.Ecology
         internal static IReadOnlyList<PopulationBehavior> RegisteredMembers=>Members;
         private EntityGeneController _genes;private DarwinEntity _entity;private EcologySettings _settings;
         private EntityStats _stats;
+        private AntColonyMember _ant;
+        internal AntColonyMember ColonyMember=>_ant!=null?_ant:_ant=OptionalComponent.Read<AntColonyMember>(this);
         private string _mode;private float _scan,_manualRemaining,_duelRemaining;
         public string GroupId {get;private set;}="";
         public long JoinOrder {get;private set;}
@@ -103,7 +105,16 @@ namespace DarwinPark.Entities.Ecology
             _duelRemaining=Mathf.Max(0,_duelRemaining-dt);_manualRemaining=Mathf.Max(0,_manualRemaining-dt);
             CommandRemaining=Mathf.Max(0,CommandRemaining-dt);
             if(CommandRemaining<=0||Command==PopulationCommand.Hunt&&(!EcologyQueries.Alive(Target)||SameGroup(Target))){Command=PopulationCommand.None;Target=null;}
-            if(Mode==_settings.antState){AntColonyMember.Ensure(this).Advance(dt);return;}
+            if(Mode==_settings.antState)
+            {
+                var member=ColonyMember??(_ant=AntColonyMember.Ensure(this));
+                if(!member.AdvanceNeeds(dt))return;
+                var central=member.Dispatcher(out var queen);
+                // ★ 适配：饱食由各自实时结算；有王后中枢时只由它派工。失去中枢的过渡期保留可工作的成员。
+                if(central==null)member.AdvanceLocalRole(dt);
+                else if(member==queen)central.DispatchColony(queen,dt);
+                return;
+            }
             var leader=Leader;if(leader!=null&&!leader.LeaderFlag)leader.LeaderFlag=true;
             if(leader!=this&&leader!=null&&_duelRemaining<=0&&leader._duelRemaining<=0&&EcologyQueries.Distance(transform.position,leader.transform.position)<=_settings.arrivalDistance&&Score()>leader.Score()*_settings.duelAdvantage)
                 ChallengeLeadership(out _);

@@ -11,6 +11,16 @@ namespace DarwinPark.Entities.Logic
         private sealed class Selection {public GenomeEvaluation evaluation;public int revision;public GeneInstance gene;}
         private static readonly ConditionalWeakTable<EntityGeneController,Dictionary<Type,Selection>> Cache=new ConditionalWeakTable<EntityGeneController,Dictionary<Type,Selection>>();
         public static bool IsPrimary<T>(EntityGeneController controller,GeneInstance gene) where T:class,IGeneLogic
+            => Select<T>(controller)==gene;
+
+        // ★ 适配：王后调度和实体调度共用已有的主表达选择。
+        internal static T Primary<T>(EntityGeneController controller) where T:class,IGeneLogic
+        {
+            var gene=Select<T>(controller);
+            return gene==null?null:controller.GetLogic(gene) as T;
+        }
+
+        private static GeneInstance Select<T>(EntityGeneController controller) where T:class,IGeneLogic
         {
             var values=Cache.GetValue(controller,_=>new Dictionary<Type,Selection>());var key=typeof(T);
             if(!values.TryGetValue(key,out var value)){value=new Selection{revision=-1};values.Add(key,value);}
@@ -21,7 +31,7 @@ namespace DarwinPark.Entities.Logic
                     if(candidate.IsActive&&controller.GetLogic(candidate.Gene) is T&&(selected==null||candidate.Definition.Tier>selected.Definition.Tier||candidate.Definition.Tier==selected.Definition.Tier&&string.CompareOrdinal(candidate.Gene.InstanceId,selected.Gene.InstanceId)<0))selected=candidate;
                 value.evaluation=controller.Evaluation;value.revision=controller.LogicRevision;value.gene=selected?.Gene;
             }
-            return value.gene==gene;
+            return value.gene;
         }
     }
 }
