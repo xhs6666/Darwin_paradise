@@ -75,7 +75,7 @@ namespace DarwinPark.EditorTools
                     manual.Release();body.linearVelocity=Vector3.zero;
                     var action=genes.Genome.Genes.First(g=>g.DefinitionId=="gene_locomotion");genes.GetLogic(action).OnUpdate(.1f);
                     Check(body.linearVelocity.sqrMagnitude<.001f,"AI 在水中仍推进");
-                    Call(entity.GetComponent<PlanetGravity>(),"FixedUpdate");
+                    entity.GetComponent<PlanetGravity>().AdvancePhysicsStep();
                     Check(Vector3.Dot(body.GetAccumulatedForce(),-moved)>10,"入水仍享受无条件的十分之一重力");
                     Check(!entity.transform.Find("SwimLight").GetComponent<Light>().enabled && !jump.TryJump(true),"无游泳能力获得光效或海底跳跃");
                     typeof(EntityEnvironmentHazard).GetField("_config",Private).SetValue(hazard,cfg);

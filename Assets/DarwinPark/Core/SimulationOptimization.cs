@@ -21,9 +21,13 @@ namespace DarwinPark.Core
         public float groundProbeMoveTolerance=.1f,groundProbeVerticalSpeed=.1f;
         // ★ 新增：接地直接查询可独立回退；角度和速度阈值仅跳过近乎相同的物理写入。
         public bool directGroundQueries=true;public float groundNormalAngleDegrees=.15f,groundVelocityEpsilon=.0001f;
+        // ★ 新增：每物理步可独立关闭星球数据共享，用于同一发布版内对照直接取样。
+        public bool sharePlanetPhysicsFrame=true;
         // ★ 新增：活跃执行与批内组件缓存可分别热关闭，便于同场景因果对照。
         public bool activeExecutionPlan=true,activeComponentReuse=true;
         public bool staggerRoutineDecisions=true,shoreSampleReuse=true,farBodyBatches=true;
+        // ★ 新增：普通中枢改用游戏时间错峰，岸线保守水位上界可独立关闭用于对照。
+        public bool gameTimeDecisionStagger=true,shoreWaterUpperBounds=true;
         public int decisionFrameBuckets=3;
         public float farBodyScreenPixels=24,shorePriorityDistance=2;
         public float entitySkyDensityMultiplier=8;

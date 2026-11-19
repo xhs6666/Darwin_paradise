@@ -1,8 +1,10 @@
 {
   // 顺序计划的后续目标上限；当前货物和补给不因查询节奏改变而丢失。
   "staggerRoutineDecisions": true,
+  "gameTimeDecisionStagger": true,
   "decisionFrameBuckets": 3,
   "shoreSampleReuse": true,
+  "shoreWaterUpperBounds": true,
   "shorePriorityDistance": 2,
   "farBodyBatches": true,
   "farBodyScreenPixels": 24,
@@ -23,6 +25,7 @@
   "groundProbeSeconds": 0.2,
   // 生成星球直接定位真实三角形；不支持的碰撞网格回退射线。角度为度，速度差为世界单位/秒。
   "directGroundQueries": true,
+  "sharePlanetPhysicsFrame": true,
   "groundNormalAngleDegrees": 0.15,
   "groundVelocityEpsilon": 0.0001,
   "groundProbeMoveTolerance": 0.1,

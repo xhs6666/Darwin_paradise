@@ -137,7 +137,7 @@ namespace DarwinPark.EditorTools
                 for(int step=0;step<300;step++)
                 {
                     foreach(var m in workers){EntityNeighborhood.ObservePosition(m.Genes);m.Advance(.02f);var gene=m.Genes.Genome.Genes.First(g=>m.Genes.GetLogic(g) is LocomotionGeneLogic&&GeneBehaviorAuthority.IsPrimary<LocomotionGeneLogic>(m.Genes,g));m.Genes.GetLogic(gene).OnUpdate(.02f);}
-                    foreach(var e in EntityRegistry.All)typeof(PlanetGravity).GetMethod("FixedUpdate",Private).Invoke(e.GetComponent<PlanetGravity>(),null);Physics.SyncTransforms();Physics.Simulate(.02f);if(step%5==0)yield return null;
+                    foreach(var e in EntityRegistry.All)e.GetComponent<PlanetGravity>().AdvancePhysicsStep();Physics.SyncTransforms();Physics.Simulate(.02f);if(step%5==0)yield return null;
                 }
                 Check(workers.Count(m=>EcologyQueries.Distance(m.transform.position,queen.transform.position)>1.2f)>=6,"真实刚体模拟后大多数堆叠成员走离王后头顶");
             }

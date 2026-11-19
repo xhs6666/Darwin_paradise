@@ -17,6 +17,8 @@ namespace DarwinPark.Entities
         private EntityGroundProbe _grounding;private EntityGeneController _genes;
         internal EntityManualControl ManualControl;
         internal bool ShoreBlocked;
+        internal int BatchIndex = -1;
+        internal bool HasDynamicBody => _rb != null && !_rb.isKinematic;
         public EntityGroundProbe Grounding=>_grounding??=new EntityGroundProbe(GetComponent<Rigidbody>());
 
         void Start()
@@ -40,13 +42,27 @@ namespace DarwinPark.Entities
                 _col.material = mat;
                 _surfaceMaterial=mat;
             }
+            PlanetGravityBatch.Register(this);
         }
 
-        void FixedUpdate()
+        private void OnEnable()
         {
-            // ★ 适配：独立物理入口共享接地样本；原Inspector重力/半径和材质保持兼容。
-            if(_genes==null)_genes=GetComponent<EntityGeneController>();
-            PlanetGroundPhysics.Advance(this,_rb,_col,_surfaceMaterial,_genes,Grounding);
+            if (_rb != null) PlanetGravityBatch.Register(this);
+        }
+
+        private void OnDisable() => PlanetGravityBatch.Unregister(this);
+
+        // ★ 适配：手动 Physics.Simulate 的入口在外部驱动物理步前显式调用。
+        public void AdvancePhysicsStep()
+        {
+            bool paused = ServiceLocator.TryGet<SimulationClock>(out var clock) && !clock.IsRunning;
+            AdvancePhysics(paused);
+        }
+
+        internal void AdvancePhysics(bool paused, PlanetGroundFrame? frame = null)
+        {
+            if (_genes == null) _genes = OptionalComponent.Read<EntityGeneController>(this);
+            PlanetGroundPhysics.Advance(this, _rb, _col, _surfaceMaterial, _genes, Grounding, paused, frame);
         }
 
         private void OnDestroy(){if(_surfaceMaterial!=null)Destroy(_surfaceMaterial);}

@@ -43,10 +43,44 @@ namespace DarwinPark.EditorTools
                     Check(old.FaceHeights.SelectMany(v=>v).SequenceEqual(restored.FaceHeights.SelectMany(v=>v))&&old.Hydrology.Downstream.SequenceEqual(restored.Hydrology.Downstream),seed+" 第三版生成不污染旧版世界结果");
                 }
                 var production=builder.CaptureConfiguration();production.seed=78031;production.landforms=new LandformSettings();var productionWatch=System.Diagnostics.Stopwatch.StartNew();var full=PlanetTerrainGenerator.Generate(production,builder.seaLevelRatio,builder.continentRatio);productionWatch.Stop();Validate(full,78031320);Export(full,"after-default-78031");
+                ShoreBounds(full.Navigation);
                 Metrics.AppendLine("defaultSubdivisions="+production.subdivisions+" vertices="+full.Vertices.Length+" generationMs="+productionWatch.ElapsedMilliseconds+" riverCells="+full.Hydrology.RiverCells+" lakeCells="+full.Hydrology.LakeCells);
                 File.WriteAllText(Path.Combine(Folder,"metrics.txt"),Metrics.ToString());File.WriteAllText(Path.Combine(Folder,"result.txt"),"PASS\n"+string.Join("\n",Passed));EditorApplication.Exit(0);
             }
             catch(Exception error){File.WriteAllText(Path.Combine(Folder,"result.txt"),"FAIL\n"+error+"\n"+string.Join("\n",Passed));Debug.LogException(error);EditorApplication.Exit(1);}
+        }
+
+        private static void ShoreBounds(LandNavigationGraph graph)
+        {
+            var options=DarwinPark.Core.SimulationOptimization.Current;
+            bool previous=options.shoreWaterUpperBounds;
+            bool cache=options.shoreSampleReuse;
+            try
+            {
+                // ★ 适配：采样覆盖经线接缝、格边和南北极，并比较完整路段结果。
+                options.shoreSampleReuse=true;
+                var directions=new List<Vector3>();
+                for(int i=0;i<4096;i++)
+                    directions.Add(PlanetTerrainSampler.DirectionFromUV(i*.61803398875f%1,(i+.5f)/4096));
+                foreach(float longitude in new[]{0f,.000001f,.5f,.999999f})
+                    for(int row=0;row<=graph.Terrain.Hydrology.Height;row++)
+                        directions.Add(PlanetTerrainSampler.DirectionFromUV(longitude,row/(float)graph.Terrain.Hydrology.Height));
+                foreach(var direction in directions)
+                {
+                    Vector3 end=(direction+.003f*Vector3.Cross(direction,Vector3.right)).normalized;
+                    options.shoreWaterUpperBounds=true;
+                    bool dry=graph.Dry(direction), segment=graph.Segment(direction,end);
+                    options.shoreWaterUpperBounds=false;
+                    if(dry!=graph.Dry(direction)||segment!=graph.Segment(direction,end))
+                        throw new InvalidOperationException("岸线水位上界改变了原查询结果 "+direction);
+                }
+                Check(true,$"{directions.Count} 个方向及移动段的保守岸线结果与精确查询一致");
+            }
+            finally
+            {
+                options.shoreWaterUpperBounds=previous;
+                options.shoreSampleReuse=cache;
+            }
         }
         private static void Validate(PlanetTerrainData data,int seed)
         {

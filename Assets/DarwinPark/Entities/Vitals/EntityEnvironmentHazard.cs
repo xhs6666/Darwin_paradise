@@ -192,6 +192,8 @@ namespace DarwinPark.Entities.Vitals
                 if (_planetBuilder == null || _planetBuilder.Data == null) return 0;
                 // ✦ 修复（Bug回归）：中心仍在水面之上的实体也可能已入水；取碰撞体靠近球心的实际表面。
                 var coordinate = Geography;
+                // ★ 适配：原规则在干地总是返回零；先判地理水体，普通陆地不再逐帧调用物理 ClosestPoint。
+                if (!coordinate.IsWater) return 0f;
                 float scale = _planetBuilder.transform.TransformVector(coordinate.Direction).magnitude;
                 float depth = coordinate.Immersion * scale;
                 if (_bodyCollider != null && _bodyCollider.enabled)
@@ -201,7 +203,7 @@ namespace DarwinPark.Entities.Vitals
                     depth = coordinate.WaterRadius * scale - bottomRadius;
                 }
                 // 地表下方的水位不产生伤害，空中飞越海面也不会因下方是海洋而受伤。
-                return coordinate.IsWater ? Mathf.Min(depth, coordinate.WaterDepth * scale) : 0f;
+                return Mathf.Min(depth, coordinate.WaterDepth * scale);
             }
         }
 

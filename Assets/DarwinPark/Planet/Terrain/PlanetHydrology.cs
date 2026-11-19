@@ -12,6 +12,7 @@ namespace DarwinPark.Planet
         private bool[] _possibleRiver;
         private int[] _nextRiverColumn;
         private bool[] _possibleLake;
+        private float[] _waterUpperBound;
         public int RiverCells{get;private set;}public int LakeCells{get;private set;}
         internal float MaximumWaterLevel { get; private set; }
         public Vector3[] ChannelDirections {get;private set;}
@@ -59,6 +60,8 @@ namespace DarwinPark.Planet
             _possibleRiver=new bool[River.Length];
             _nextRiverColumn=new int[Height*(Width+1)];
             _possibleLake=new bool[Lake.Length];
+            _waterUpperBound=new float[Lake.Length];
+            Array.Fill(_waterUpperBound,_sea);
             // ★ 适配：按原纬度/经度顺序直达范围内的下一条河，避免每次水位查询扫描大量无河格。
             for (int row = 0; row < Height; row++)
             {
@@ -79,7 +82,11 @@ namespace DarwinPark.Planet
                     MaximumWaterLevel=Mathf.Max(MaximumWaterLevel,Spill[cell]);
                     for (int y = Mathf.Max(0, row - 1); y <= Mathf.Min(Height - 1, row + 1); y++)
                         for (int x = -1; x <= 1; x++)
-                            _possibleLake[y * Width + (column + x + Width) % Width] = true;
+                        {
+                            int sample=y*Width+(column+x+Width)%Width;
+                            _possibleLake[sample]=true;
+                            _waterUpperBound[sample]=Mathf.Max(_waterUpperBound[sample],Spill[cell]);
+                        }
                 }
             }
             SearchRange(Vector3.right,out _,out int latitudeReach);
@@ -96,9 +103,14 @@ namespace DarwinPark.Planet
             {
                 if(!River[cell])continue;
                 int column=cell%Width,row=cell/Width;
+                float highest=Mathf.Max(Spill[cell],Spill[Downstream[cell]])-Settings.riverSurfaceInset/_scale;
                 for(int y=Mathf.Max(0,row-latitudeReach);y<=Mathf.Min(Height-1,row+latitudeReach);y++)
                 for(int x=-longitudeReach[y];x<=longitudeReach[y];x++)
-                    _possibleRiver[y*Width+(column+x+Width)%Width]=true;
+                {
+                    int sample=y*Width+(column+x+Width)%Width;
+                    _possibleRiver[sample]=true;
+                    _waterUpperBound[sample]=Mathf.Max(_waterUpperBound[sample],highest);
+                }
             }
         }
 
@@ -109,14 +121,38 @@ namespace DarwinPark.Planet
         private int Cell(Vector2 uv){return Mathf.Min(Height-1,(int)(uv.y*Height))*Width+Mathf.Min(Width-1,(int)(uv.x*Width));}
         public float Water(Vector3 dir)
         {float level=SurfaceWater(dir,out float coverage);return coverage>=0?level:_sea;}
+
+        // ★ 新增：地面高过本格所涉海面、湖泊和所有候选河段时，岸线守卫只需水位上界。
+        // 需要真实水位时复用同一经纬转换，不能用上界代替浸没深度。
+        internal bool WaterForShore(Vector3 direction,float radius,float height,float ground,float clearance,out float water)
+        {
+            var uv=PlanetTerrainSampler.DirectionToUV(direction);
+            int cell=Cell(uv);
+            float upper=radius+_waterUpperBound[cell]*height;
+            if(height>0&&Mathf.Abs(direction.sqrMagnitude-1)<.00001f&&
+                ground-upper>clearance+Mathf.Max(.001f,Mathf.Abs(upper)*.000002f))
+            {
+                water=upper;
+                return false;
+            }
+            float level=SurfaceWater(direction,uv,cell,out float coverage,out _,out _);
+            water=radius+(coverage>=0?level:_sea)*height;
+            return true;
+        }
         // ★ 修复（防Bug回归）：岸外采样仍保留相邻河面的高度，用单独覆盖距离裁切；否则边缘插值会把高处河面拉向海平面，形成斜三角。
         public float SurfaceWater(Vector3 dir,out float coverage) =>
             SurfaceWater(dir,out coverage,out _,out _);
 
         internal float SurfaceWater(Vector3 dir,out float coverage,out int river,out float along)
         {
+            var uv=PlanetTerrainSampler.DirectionToUV(dir);
+            return SurfaceWater(dir,uv,Cell(uv),out coverage,out river,out along);
+        }
+
+        private float SurfaceWater(Vector3 dir,Vector2 uv,int cell,out float coverage,out int river,out float along)
+        {
             river=-1;along=0;
-            var uv=PlanetTerrainSampler.DirectionToUV(dir);int cell=Cell(uv);float water=LakeWater(uv,cell);
+            float water=LakeWater(uv,cell);
             if(_possibleRiver!=null&&!_possibleRiver[cell]&&Mathf.Abs(dir.sqrMagnitude-1)<.00001f)
             {
                 coverage=water>_sea?float.PositiveInfinity:-_radius;

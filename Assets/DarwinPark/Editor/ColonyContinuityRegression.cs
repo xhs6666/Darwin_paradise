@@ -116,14 +116,14 @@ namespace DarwinPark.EditorTools
             float dt=.05f;const int steps=14000;var prepared=new HashSet<DarwinEntity>();var seenAnts=new HashSet<string>{queen.Id};var firstRoles=new List<AntRole>();var trace=new List<string>();bool queenCollected=false,workerCollected=false;int peak=1;
             var spawner=Object.FindFirstObjectByType<RandomPlanetSpawner>();spawner.enabled=false;clock.enabled=false;ServiceLocator.Register(clock);float startTime=clock.GameTime;clock.RestoreState(startTime,1);clock.Play();GameInputGate.Blocked=false;EntityPopulationLimit.UseSnapshot(new WorldGameSettings{entityLimit=180});
             var simulation=Physics.simulationMode;Physics.simulationMode=SimulationMode.Script;var gameTime=typeof(SimulationClock).GetField("<GameTime>k__BackingField",Private);var delta=typeof(SimulationClock).GetField("<GameDeltaTime>k__BackingField",Private);var budget=typeof(SimulationClock).GetField("_budgetedFrame",Private);
-            var vitals=typeof(EntityVitals).GetMethod("AdvanceVitals",Private);var gravity=typeof(PlanetGravity).GetMethod("FixedUpdate",Private);
+            var vitals=typeof(EntityVitals).GetMethod("AdvanceVitals",Private);
             try
             {
                 for(int step=0;step<steps;step++)
                 {
                     float time=step*dt;gameTime.SetValue(clock,startTime+time);delta.SetValue(clock,dt);budget.SetValue(clock,false);
                     foreach(var entity in EntityRegistry.All.ToArray())if(EcologyQueries.Alive(entity)&&prepared.Add(entity))Freeze(entity);
-                    foreach(var entity in EntityRegistry.All.ToArray())if(EcologyQueries.Alive(entity)){ColonyTaskStressAudit.BeforeTick(entity,time);entity.GetComponent<PopulationBehavior>()?.Advance(dt);entity.Genes.AdvanceSimulation(dt);if(EcologyQueries.Alive(entity))vitals.Invoke(entity.GetComponent<EntityVitals>(),new object[]{dt});if(EcologyQueries.Alive(entity))gravity.Invoke(entity.GetComponent<PlanetGravity>(),null);}
+                    foreach(var entity in EntityRegistry.All.ToArray())if(EcologyQueries.Alive(entity)){ColonyTaskStressAudit.BeforeTick(entity,time);entity.GetComponent<PopulationBehavior>()?.Advance(dt);entity.Genes.AdvanceSimulation(dt);if(EcologyQueries.Alive(entity))vitals.Invoke(entity.GetComponent<EntityVitals>(),new object[]{dt});if(EcologyQueries.Alive(entity))entity.GetComponent<PlanetGravity>().AdvancePhysicsStep();}
                     foreach(var member in AntColonyMember.All.ToArray())
                     {
                         if(seenAnts.Add(member.Id))firstRoles.Add(member.Role);

@@ -85,23 +85,30 @@ namespace DarwinPark.Planet
         }
         public static Vector3 SafeVelocity(PlanetTerrainMeshBuilder planet, Vector3 point, Vector3 velocity, float bodyRadius = 0)
         {
-            using var measuredCost = DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.ShoreGuard);
             if (velocity.sqrMagnitude < 1e-8f) return velocity;
             var graph = planet?.Data?.Navigation;
             if (graph == null) return Vector3.zero;
 
             // ★ 适配：一次坐标变换共用起点、终点和侧向检查；预测距离只用当前物理步。
             var transform = planet.transform;
-            var matrix = transform.worldToLocalMatrix;
-            var start = matrix.MultiplyPoint3x4(point);
-            var motion = matrix.MultiplyVector(velocity);
+            return SafeVelocity(graph,transform.worldToLocalMatrix,transform.localToWorldMatrix,point,velocity,bodyRadius);
+        }
+
+        // ★ 适配：批量重力复用星球变换，同一套岸线、坡度和身体侧向检查继续用于精确路径。
+        public static Vector3 SafeVelocity(LandNavigationGraph graph,in Matrix4x4 toLocal,in Matrix4x4 toWorld,
+            Vector3 point,Vector3 velocity,float bodyRadius)
+        {
+            using var measuredCost = DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.ShoreGuard);
+            if (graph == null) return Vector3.zero;
+            var start = toLocal.MultiplyPoint3x4(point);
+            var motion = toLocal.MultiplyVector(velocity);
             var end = start + motion * Mathf.Max(.0001f, Time.fixedDeltaTime);
             if (!graph.Segment(start, end)) return Vector3.zero;
             if (bodyRadius <= 0) return velocity;
 
             // 身体两侧也要留在岸上，防止中心仍在陆地时碰撞体横跨浅滩。
             var axis = Vector3.Cross(end, motion).normalized;
-            var side = axis * (bodyRadius / Mathf.Max(.0001f, transform.TransformVector(axis).magnitude));
+            var side = axis * (bodyRadius / Mathf.Max(.0001f, toWorld.MultiplyVector(axis).magnitude));
             return graph.Dry((end + side).normalized) && graph.Dry((end - side).normalized)
                 ? velocity : Vector3.zero;
         }

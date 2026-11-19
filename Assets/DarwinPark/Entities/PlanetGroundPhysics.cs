@@ -7,13 +7,17 @@ namespace DarwinPark.Entities
     public static class PlanetGroundPhysics
     {
         public static void Advance(PlanetGravity owner,Rigidbody body,Collider collider,PhysicsMaterial material,EntityGeneController genes,EntityGroundProbe probe)
+            => Advance(owner,body,collider,material,genes,probe,ServiceLocator.TryGet<SimulationClock>(out var clock)&&!clock.IsRunning,null);
+
+        internal static void Advance(PlanetGravity owner,Rigidbody body,Collider collider,PhysicsMaterial material,
+            EntityGeneController genes,EntityGroundProbe probe,bool paused,PlanetGroundFrame? frame)
         {
             using var performance=PerformanceTimings.Measure(PerformanceTimings.Area.Gravity);
             if(body==null||body.isKinematic)return;
-            if(ServiceLocator.TryGet<SimulationClock>(out var clock)&&!clock.IsRunning)
+            if(paused)
             {EntityGroundProbe.Velocity(body,Vector3.zero);if(body.angularVelocity!=Vector3.zero)body.angularVelocity=Vector3.zero;return;}
             if(owner.planet==null||StationaryBodyRest.RemainsAsleep(body,genes))return;
-            var ground=probe.Read(owner.planet);var inward=-ground.up;
+            var ground=frame.HasValue?probe.Read(frame.Value):probe.Read(owner.planet);var inward=-ground.up;
             Vector3? contactExtents=null;
             // 基础表达为0时所有移动修饰仍为0，不必为静止实体遍历群体、角色和附着组件。
             float moveSpeed=GroundMotionSnapshot.Speed(genes);
@@ -40,7 +44,9 @@ namespace DarwinPark.Entities
                 if(tangent.sqrMagnitude>=1e-8f)
                 {
                     if(collider!=null)contactExtents=collider.bounds.extents;
-                    var safe=DarwinPark.Planet.LandRoutePlan.SafeVelocity(probe.Builder,ground.position,tangent,contactExtents?.magnitude??0);
+                    var safe=frame.HasValue
+                        ? DarwinPark.Planet.LandRoutePlan.SafeVelocity(frame.Value.data?.Navigation,frame.Value.toLocal,frame.Value.toWorld,ground.position,tangent,contactExtents?.magnitude??0)
+                        : DarwinPark.Planet.LandRoutePlan.SafeVelocity(probe.Builder,ground.position,tangent,contactExtents?.magnitude??0);
                     owner.ShoreBlocked=safe.sqrMagnitude==0;
                     EntityGroundProbe.Velocity(body,safe+ground.up*Vector3.Dot(velocity,ground.up));
                 }

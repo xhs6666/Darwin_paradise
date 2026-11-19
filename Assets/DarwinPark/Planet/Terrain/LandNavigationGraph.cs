@@ -78,7 +78,12 @@ namespace DarwinPark.Planet
             if (ground-_highestWaterRadius>Settings.shoreClearance) return true;
             if(!slot.hasWater)
             {
-                slot.water=Terrain.Hydrology==null?_surfaceRadius:PlanetCoordinate.WaterSurfaceRadius(Terrain,direction);
+                if(Terrain.Hydrology!=null&&DarwinPark.Core.SimulationOptimization.Current.shoreWaterUpperBounds)
+                {
+                    if(!Terrain.Hydrology.WaterForShore(direction,Terrain.Radius,Terrain.HeightScale,
+                        ground,Settings.shoreClearance,out slot.water)) return true;
+                }
+                else slot.water=Terrain.Hydrology==null?_surfaceRadius:PlanetCoordinate.WaterSurfaceRadius(Terrain,direction);
                 slot.hasWater=true;
             }
             return ground-slot.water>Settings.shoreClearance;

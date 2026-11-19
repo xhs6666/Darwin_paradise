@@ -33,14 +33,32 @@ namespace DarwinPark.Entities.Simulation
             bool immediate=!_ready||lost||combat?.Target!=_retaliation||order!=_order||
                 orderActive!=_orderActive||genes.LogicRevision!=_revision||stateId!=_stateId||
                 manualCommand!=_manualCommand||manualPoint!=_manualPoint||manualTarget!=_manualTarget;
-            if(!immediate&&(_remaining>0||!RoutineTurn(genes)))return false;
+            var settings=SimulationOptimization.Current;
+            if(!immediate&&(_remaining>0||!settings.gameTimeDecisionStagger&&!RoutineTurn(genes)))return false;
             _manualCommand=manualCommand;_manualPoint=manualPoint;_manualTarget=manualTarget;
             _retaliation=combat?.Target;
             _order=order;
             _orderActive=orderActive;
             _revision=genes.LogicRevision;
             _stateId=stateId;
-            _ready=true;_remaining=SimulationOptimization.Current.decisionSeconds;Decisions++;return true;
+            float interval=settings.decisionSeconds;
+            // ★ 适配：普通意图的首次复查按游戏秒错开，后续按累计时间到期。
+            // 慢帧下继续等待渲染帧编号会使任务超期；即时指令沿用独立中断，保留普通刷新相位。
+            if(!settings.gameTimeDecisionStagger)
+                _remaining=interval;
+            else if(!_ready)
+            {
+                int buckets=settings.decisionFrameBuckets;
+                float phase=settings.staggerRoutineDecisions&&buckets>1
+                    ? ((uint)genes.GetInstanceID()%(uint)buckets)/(float)buckets : 0;
+                _remaining=interval*(1+phase);
+            }
+            else if(_remaining<=0)
+            {
+                // 一次刷新已获得当前世界的结果，跨过多个过期点时直接推进到下一有效时刻。
+                _remaining=interval-(-_remaining%interval);
+            }
+            _ready=true;Decisions++;return true;
         }
         // ★ 新增：仅推迟普通决策刷新，受击、手控、近岸、显式任务和基因变更仍立即处理。
         internal static bool RoutineTurn(EntityGeneController genes)

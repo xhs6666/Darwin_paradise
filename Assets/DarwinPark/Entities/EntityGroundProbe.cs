@@ -30,38 +30,87 @@ namespace DarwinPark.Entities
             return Read(planet);
         }
         public EntityGroundSample Read(Transform planet)
+            => planet == null ? default : Read(new PlanetGroundFrame(planet,SimulationOptimization.Current));
+
+        internal EntityGroundSample Read(in PlanetGroundFrame frame)
         {
             using var performance=PerformanceTimings.Measure(PerformanceTimings.Area.GroundQuery);
-            Steps++;if(_planet!=planet||_builder==null||_ground==null){_planet=planet;_builder=planet!=null?planet.GetComponent<PlanetTerrainMeshBuilder>():null;_ground=planet!=null?planet.GetComponent<MeshCollider>():null;_stamp=float.NaN;}
-            var position=_body.position;if(planet==null)return default;var matrix=planet.localToWorldMatrix;var data=_builder?.Data;var mesh=_ground!=null?_ground.sharedMesh:null;float radius=_builder!=null?_builder.radius:0,height=_builder!=null?_builder.heightScale:0,water=_builder!=null?_builder.WaterRadius:0;bool enabled=_ground!=null&&_ground.enabled,direct=SimulationOptimization.Current.directGroundQueries;
-            if(_stamp==Time.fixedTime&&position==_position&&matrix==_matrix&&ReferenceEquals(data,_data)&&mesh==_mesh&&radius==_radius&&height==_height&&water==_water&&enabled==_enabled&&direct==_direct){ReusedSamples++;return _sample;}
-            var center=planet.position;var offset=position-center;float distance=offset.magnitude;var up=distance>0?offset/distance:Vector3.up;bool found=false;Vector3 point=default,normal=up;
-            // ★ 修复（防Bug回归）：原先只缓存同一FixedUpdate，0.2秒降频未实际生效；复用限于真实三角形内，并核对所有地形身份。
-            var tuning=SimulationOptimization.Current;
-            bool unchanged=matrix==_matrix&&ReferenceEquals(data,_data)&&mesh==_mesh&&radius==_radius&&height==_height&&water==_water&&enabled==_enabled&&direct==_direct;
-            bool reuse=unchanged&&direct&&_sample.hasSurface&&Time.fixedTime<_next&&(position-_samplePosition).sqrMagnitude<=tuning.groundProbeMoveTolerance*tuning.groundProbeMoveTolerance&&Mathf.Abs(Vector3.Dot(_body.linearVelocity,up))<=tuning.groundProbeVerticalSpeed;
-            if(reuse&&_patch.TryRead(center,up,out point,out normal)){found=true;ReusedSamples++;CrossStepReused++;}
-            else if(direct&&RadialTerrainSurface.TrySample(_builder,_ground,position,out var surface)){DirectSamples++;found=true;point=surface.point;normal=surface.normal;_patch.Capture(_builder,surface.triangle);_next=Time.fixedTime+tuning.groundProbeSeconds;_samplePosition=position;}
+            Steps++;
+            var position=_body.position;
+            bool unchanged=ReferenceEquals(_planet,frame.planet)&&ReferenceEquals(_builder,frame.builder)&&
+                ReferenceEquals(_ground,frame.ground)&&ReferenceEquals(frame.data,_data)&&ReferenceEquals(frame.mesh,_mesh)&&
+                frame.toWorld.Equals(_matrix)&&frame.radius==_radius&&frame.height==_height&&frame.water==_water&&
+                frame.enabled==_enabled&&frame.direct==_direct;
+            if(unchanged&&_stamp==frame.fixedTime&&position.Equals(_position))
+            {
+                ReusedSamples++;
+                return _sample;
+            }
+
+            var offset=position-frame.center;
+            float distance=offset.magnitude;
+            Vector3 up=distance>0?offset/distance:Vector3.up;
+            var local=frame.toLocal.MultiplyPoint3x4(position);
+            float localRadius=local.magnitude;
+            Vector3 direction=localRadius>1e-6f?local/localRadius:Vector3.up;
+            float localWater=frame.data!=null
+                ? frame.data.Navigation?.WaterRadius(direction)??PlanetCoordinate.WaterSurfaceRadius(frame.data,direction)
+                : 0;
+            bool found=false;
+            Vector3 point=default,normal=up;
+            var tuning=frame.options;
+            // ★ 适配：近乎不动的身体继续复用当前三角形；每个物理步共享同一网格及坐标变换。
+            bool reuse=unchanged&&frame.direct&&_sample.hasSurface&&frame.fixedTime<_next&&
+                (position-_samplePosition).sqrMagnitude<=tuning.groundProbeMoveTolerance*tuning.groundProbeMoveTolerance&&
+                Mathf.Abs(Vector3.Dot(_body.linearVelocity,up))<=tuning.groundProbeVerticalSpeed;
+            if(reuse&&_patch.TryRead(frame.center,up,out point,out normal))
+            {
+                found=true;
+                ReusedSamples++;
+                CrossStepReused++;
+            }
+            else if(frame.direct&&RadialTerrainSurface.TrySampleLocal(frame.data,local,out var surface))
+            {
+                found=true;
+                DirectSamples++;
+                point=frame.toWorld.MultiplyPoint3x4(surface.point);
+                normal=(frame.rotation*surface.normal).normalized;
+                _patch.Capture(frame.data,frame.toWorld,frame.center,surface.triangle);
+                _next=frame.fixedTime+tuning.groundProbeSeconds;
+                _samplePosition=position;
+            }
             else
             {
-                // 自定义/不支持的地形沿原射线规则；高空或穿地安全网另从球外探测，不把无命中当成接地。
-                if(_ground!=null&&enabled){Raycasts++;found=_ground.Raycast(new Ray(center+up*(_ground.bounds.extents.magnitude+distance),-up),out var hit,_ground.bounds.extents.magnitude+distance*2);if(found){point=hit.point;normal=hit.normal;}}
+                _patch.Clear();
+                // ★ 适配：自定义网格、非均匀缩放与无效三角形继续经过原射线路径。
+                if(frame.enabled)
+                {
+                    Raycasts++;
+                    var ray=new Ray(frame.center+up*(frame.boundsRadius+distance),-up);
+                    found=frame.ground.Raycast(ray,out var hit,frame.boundsRadius+distance*2);
+                    point=found?hit.point:default;
+                    normal=found?hit.normal:up;
+                }
             }
-            _position=position;_matrix=matrix;_data=data;_mesh=mesh;_radius=radius;_height=height;_water=water;_enabled=enabled;_direct=direct;_stamp=Time.fixedTime;
-            float immersion=water-distance;
-            _shoreClearance=float.PositiveInfinity;
-            if(data!=null)
-            {
-                // ★ 适配：把水位与接地一并缓存。优先级沿用最近物理样本，无需让 AI 再做地理查询。
-                var inverse=planet.worldToLocalMatrix;
-                var local=inverse.MultiplyPoint3x4(position);
-                float localRadius=local.magnitude;
-                var direction=localRadius>1e-6f?local/localRadius:Vector3.up;
-                float localWater=data.Navigation?.WaterRadius(direction)??PlanetCoordinate.WaterSurfaceRadius(data,direction);
-                immersion=localWater-localRadius;
-                if(found)_shoreClearance=inverse.MultiplyPoint3x4(point).magnitude-localWater;
-            }
-            return _sample=new EntityGroundSample(position,center,up,point,normal,distance,found,immersion>0,_ground,immersion);
+
+            _planet=frame.planet;
+            _builder=frame.builder;
+            _ground=frame.ground;
+            _position=position;
+            _matrix=frame.toWorld;
+            _data=frame.data;
+            _mesh=frame.mesh;
+            _radius=frame.radius;
+            _height=frame.height;
+            _water=frame.water;
+            _enabled=frame.enabled;
+            _direct=frame.direct;
+            _stamp=frame.fixedTime;
+            float immersion=frame.data!=null?localWater-localRadius:frame.water-distance;
+            _shoreClearance=found&&frame.data!=null
+                ? frame.toLocal.MultiplyPoint3x4(point).magnitude-localWater
+                : float.PositiveInfinity;
+            return _sample=new EntityGroundSample(position,frame.center,up,point,normal,distance,found,immersion>0,frame.ground,immersion);
         }
         // ★ 适配：沿用原摩擦变更缓存，不再由多个组件各写一次相同材质。
         public void Friction(PhysicsMaterial material,float value)=>_legacy.Friction(material,value);

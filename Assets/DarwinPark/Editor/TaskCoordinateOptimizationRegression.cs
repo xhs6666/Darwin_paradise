@@ -116,6 +116,11 @@ namespace DarwinPark.EditorTools
             var observation=Spawn(here,("gene_locomotion",50),("gene_nervous_system",50));
             var cadence=new ActionDecisionCadence();
             Check(cadence.Due(observation.Genes,.01f)&&!cadence.Due(observation.Genes,.01f),"普通目标在决策间隔内复用");
+            var options=SimulationOptimization.Current;
+            float elapsed=options.decisionSeconds*2;
+            // ★ 适配：在同一个渲染帧内推进多段游戏时间，普通任务到期不会等待下一个渲染帧。
+            Check(cadence.Due(observation.Genes,elapsed)&&!cadence.Due(observation.Genes,.00001f),
+                "普通意图按游戏时间到期，慢帧跨过多个节拍只刷新一次");
             // ★ 适配：普通决策已降频，验证真实显式命令和命令撤销均可在同帧打断等待。
             var order=RtsOrderController.Ensure(observation);
             Check(order.Issue(RtsOrderKind.Stop,here)&&cadence.Due(observation.Genes,.001f),"显式停止同帧打断普通决策节奏");
