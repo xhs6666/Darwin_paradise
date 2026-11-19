@@ -96,13 +96,15 @@ namespace DarwinPark.Planet
 
         // ★ 适配：批量重力复用星球变换，同一套岸线、坡度和身体侧向检查继续用于精确路径。
         public static Vector3 SafeVelocity(LandNavigationGraph graph,in Matrix4x4 toLocal,in Matrix4x4 toWorld,
-            Vector3 point,Vector3 velocity,float bodyRadius)
+            Vector3 point,Vector3 velocity,float bodyRadius,float? localSweepRadius=null)
         {
             using var measuredCost = DarwinPark.Core.PerformanceTimings.Measure(DarwinPark.Core.PerformanceTimings.Area.ShoreGuard);
             if (graph == null) return Vector3.zero;
             var start = toLocal.MultiplyPoint3x4(point);
             var motion = toLocal.MultiplyVector(velocity);
             var end = start + motion * Mathf.Max(.0001f, Time.fixedDeltaTime);
+            // ★ 适配：尝试整段扫掠与精确回退共用局部起终点，接缝/近水拒绝后不重复转换。
+            if(localSweepRadius.HasValue&&graph.ContainsDryMotionSweep(start,end,localSweepRadius.Value))return velocity;
             if (!graph.Segment(start, end)) return Vector3.zero;
             if (bodyRadius <= 0) return velocity;
 

@@ -1,5 +1,6 @@
 using DarwinPark.Core;
 using DarwinPark.Entities.Logic;
+using DarwinPark.Planet;
 using UnityEngine;
 namespace DarwinPark.Entities
 {
@@ -43,10 +44,12 @@ namespace DarwinPark.Entities
                 var tangent = Vector3.ProjectOnPlane(velocity, ground.up);
                 if(tangent.sqrMagnitude>=1e-8f)
                 {
-                    if(collider!=null)contactExtents=collider.bounds.extents;
+                    Bounds? bounds=collider!=null?collider.bounds:null;
+                    contactExtents=bounds?.extents;
+                    float bodyRadius=contactExtents?.magnitude??0;
                     var safe=frame.HasValue
-                        ? DarwinPark.Planet.LandRoutePlan.SafeVelocity(frame.Value.data?.Navigation,frame.Value.toLocal,frame.Value.toWorld,ground.position,tangent,contactExtents?.magnitude??0)
-                        : DarwinPark.Planet.LandRoutePlan.SafeVelocity(probe.Builder,ground.position,tangent,contactExtents?.magnitude??0);
+                        ? GuardVelocity(owner,body,ground,tangent,frame.Value,bounds,bodyRadius)
+                        : LandRoutePlan.SafeVelocity(probe.Builder,ground.position,tangent,bodyRadius);
                     owner.ShoreBlocked=safe.sqrMagnitude==0;
                     EntityGroundProbe.Velocity(body,safe+ground.up*Vector3.Dot(velocity,ground.up));
                 }
@@ -62,6 +65,24 @@ namespace DarwinPark.Entities
             }
             else EntityGroundProbe.Align(body,ground.up,5);
         }
+
+        private static Vector3 GuardVelocity(PlanetGravity owner,Rigidbody body,EntityGroundSample ground,
+            Vector3 tangent,in PlanetGroundFrame frame,Bounds? bounds,float radius)
+        {
+            var graph=frame.data?.Navigation;
+            float? localSweepRadius=null;
+            if(graph!=null&&frame.options.certifiedLandMotion&&frame.direct&&ground.hasSurface&&
+                bounds.HasValue&&radius>0&&ground.altitude>=0&&ground.altitude<=bounds.Value.extents.y+.5f&&
+                owner.ManualControl?.IsControlled!=true)
+            {
+                // ★ 适配：从刚体中心计算整个身体扫掠，异形碰撞体与偏心旋转需要额外保守余量。
+                float envelope=radius+(bounds.Value.center-ground.position).magnitude+
+                    2*(body.worldCenterOfMass-ground.position).magnitude;
+                localSweepRadius=envelope*frame.localRadiusScale;
+            }
+            return LandRoutePlan.SafeVelocity(graph,frame.toLocal,frame.toWorld,ground.position,tangent,radius,localSweepRadius);
+        }
+
 
         // ★ 新增：操控实体的穿地修正与引力共用真实接触面，不重复从球外发射长射线。
         public static bool ResolvePenetration(Rigidbody body,Collider collider,EntityGroundSample sample,out bool cancelJump)

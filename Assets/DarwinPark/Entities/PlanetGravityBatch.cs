@@ -41,6 +41,7 @@ namespace DarwinPark.Entities
         private void FixedUpdate()
         {
             if (Physics.simulationMode == SimulationMode.Script) return;
+            using var performance = PerformanceTimings.Measure(PerformanceTimings.Area.GravityBatch);
             _frames.Clear();
             var options = SimulationOptimization.Current;
             bool paused = ServiceLocator.TryGet<SimulationClock>(out var clock) && !clock.IsRunning;
@@ -84,7 +85,7 @@ namespace DarwinPark.Entities
         internal readonly Matrix4x4 toWorld, toLocal;
         internal readonly Quaternion rotation;
         internal readonly Vector3 center;
-        internal readonly float radius, height, water, boundsRadius, fixedTime;
+        internal readonly float radius, height, water, boundsRadius, fixedTime, localRadiusScale;
         internal readonly bool enabled, direct;
         internal readonly SimulationOptimization options;
 
@@ -109,6 +110,18 @@ namespace DarwinPark.Entities
             var scale = planet.lossyScale;
             direct = options.directGroundQueries && enabled && data != null && mesh == builder.GeneratedMesh &&
                 scale.x > 0 && Mathf.Abs(scale.x - scale.y) <= .00001f && Mathf.Abs(scale.x - scale.z) <= .00001f;
+            // ★ 适配：使用 Gram 矩阵最大绝对行和限制逆变换的伸长，即使父对象链带来斜切也不会缩小身体范围。
+            localRadiusScale=options.certifiedLandMotion&&direct?MaximumScale(toLocal):0;
+        }
+
+        private static float MaximumScale(in Matrix4x4 matrix)
+        {
+            var x=matrix.MultiplyVector(Vector3.right);
+            var y=matrix.MultiplyVector(Vector3.up);
+            var z=matrix.MultiplyVector(Vector3.forward);
+            float xy=Mathf.Abs(Vector3.Dot(x,y)),xz=Mathf.Abs(Vector3.Dot(x,z)),yz=Mathf.Abs(Vector3.Dot(y,z));
+            return Mathf.Sqrt(Mathf.Max(x.sqrMagnitude+xy+xz,
+                Mathf.Max(y.sqrMagnitude+xy+yz,z.sqrMagnitude+xz+yz)))*1.00001f;
         }
     }
 }

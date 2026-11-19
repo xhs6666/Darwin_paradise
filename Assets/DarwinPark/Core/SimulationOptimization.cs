@@ -23,6 +23,8 @@ namespace DarwinPark.Core
         public bool directGroundQueries=true;public float groundNormalAngleDegrees=.15f,groundVelocityEpsilon=.0001f;
         // ★ 新增：每物理步可独立关闭星球数据共享，用于同一发布版内对照直接取样。
         public bool sharePlanetPhysicsFrame=true;
+        // ★ 新增：只有完整身体扫掠可证安全时跳过重复岸线采样，关闭后走逐段精确路径。
+        public bool certifiedLandMotion=true;
         // ★ 新增：活跃执行与批内组件缓存可分别热关闭，便于同场景因果对照。
         public bool activeExecutionPlan=true,activeComponentReuse=true;
         public bool staggerRoutineDecisions=true,shoreSampleReuse=true,farBodyBatches=true;

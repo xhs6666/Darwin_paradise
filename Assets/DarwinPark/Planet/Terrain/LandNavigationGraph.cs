@@ -20,9 +20,13 @@ namespace DarwinPark.Planet
             public bool hasGround,hasWater;
         }
         private ShoreSample[] _shoreSamples;
+        private readonly LandMotionCorridors _motionCorridors;
+        private readonly float _motionClearance;
+        public static long CorridorChecks { get; private set; }
+        public static long CorridorAccepted { get; private set; }
         private readonly float _surfaceRadius,_segmentStep,_slopeLimit,_highestWaterRadius;
         public static readonly int[] DX={-1,0,1,-1,1,-1,0,1},DY={-1,-1,-1,0,0,1,1,1};
-        public LandNavigationGraph(PlanetTerrainData data,LandNavigationSettings settings)
+        public LandNavigationGraph(PlanetTerrainData data,LandNavigationSettings settings,bool generatedMesh=false)
         {
             _surfaceRadius=data.Radius+data.SeaLevel*data.HeightScale;
             _highestWaterRadius=data.HeightScale>0
@@ -35,6 +39,17 @@ namespace DarwinPark.Planet
             for(int i=0;i<n;i++)if(Walkable[i])for(int edge=0;edge<8;edge++){int next=Neighbour(i,edge);if(next<0||!Walkable[next])continue;if(Segment(Directions[i],Directions[next]))_edges[i]|=(byte)(1<<edge);}
             int region=0;var queue=new Queue<int>();for(int i=0;i<n;i++)if(Walkable[i]&&Regions[i]==0){Regions[i]=++region;queue.Enqueue(i);while(queue.Count>0){int node=queue.Dequeue();for(int e=0;e<8;e++)if(Linked(node,e)){int next=Neighbour(node,e);if(Regions[next]==0){Regions[next]=region;queue.Enqueue(next);}}}}
             _shoreSamples=new ShoreSample[8192];
+            _motionClearance=settings.shoreClearance;
+            if(generatedMesh)_motionCorridors=new LandMotionCorridors(data,_surfaceRadius,_slopeLimit,_motionClearance);
+        }
+
+        public bool ContainsDryMotionSweep(Vector3 start,Vector3 end,float bodyRadius)
+        {
+            CorridorChecks++;
+            if(_motionCorridors==null||Settings.shoreClearance!=_motionClearance||
+                !_motionCorridors.ContainsSweep(start,end,bodyRadius))return false;
+            CorridorAccepted++;
+            return true;
         }
 
         // ★ 适配：只按精确方向缓存实测地形和水位；格子碰撞覆盖，不拿相邻点的水位替代细河。

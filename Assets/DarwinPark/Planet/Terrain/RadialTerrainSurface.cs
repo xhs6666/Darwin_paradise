@@ -23,16 +23,27 @@ namespace DarwinPark.Planet
         public static bool TrySampleLocal(PlanetTerrainData data,Vector3 local,out RadialSurfaceHit hit)
         {
             hit=default;if(data?.Triangles==null||data.Vertices==null||data.Subdivisions<2||data.Triangles.Length!=36*data.Subdivisions*data.Subdivisions)return false;
-            float ax=Mathf.Abs(local.x),ay=Mathf.Abs(local.y),az=Mathf.Abs(local.z),largest;int face;float u,v;
-            if(ax>=ay&&ax>=az){largest=ax;face=local.x>=0?0:1;u=local.z;v=local.y;}
-            else if(ay>=az){largest=ay;face=local.y>=0?2:3;u=local.x;v=local.z;}
-            else{largest=az;face=local.z>=0?4:5;u=local.x;v=local.y;}
-            if(largest<.00001f)return false;
+            if(!TryFace(local,out int face,out float u,out float v,out float largest))return false;
             int n=data.Subdivisions,x=Mathf.Clamp(Mathf.FloorToInt((u/largest+1)*.5f*n),0,n-1),y=Mathf.Clamp(Mathf.FloorToInt((v/largest+1)*.5f*n),0,n-1),index=(face*n*n+y*n+x)*6;
             var direction=local.normalized;
             for(int i=0;i<2;i++)if(Triangle(data,index+i*3,direction,out var surface,out var normal))
             {hit=new RadialSurfaceHit(surface,normal,index/3+i);return true;}
             return false;
+        }
+        // ★ 适配：接地定位和运动范围使用相同的立方球面投影，接缝归属一致。
+        internal static bool TryFace(Vector3 local,out int face,out float u,out float v,out float depth)
+        {
+            float ax=Mathf.Abs(local.x),ay=Mathf.Abs(local.y),az=Mathf.Abs(local.z);
+            face=ax>=ay&&ax>=az?(local.x>=0?0:1):ay>=az?(local.y>=0?2:3):(local.z>=0?4:5);
+            ProjectFace(face,local,out u,out v,out depth);
+            return depth>=.00001f;
+        }
+
+        internal static void ProjectFace(int face,Vector3 local,out float u,out float v,out float depth)
+        {
+            if(face<2){u=local.z;v=local.y;depth=face==0?local.x:-local.x;}
+            else if(face<4){u=local.x;v=local.z;depth=face==2?local.y:-local.y;}
+            else{u=local.x;v=local.y;depth=face==4?local.z:-local.z;}
         }
         private static bool Triangle(PlanetTerrainData data,int index,Vector3 direction,out Vector3 point,out Vector3 normal)
         {

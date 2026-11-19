@@ -17,7 +17,7 @@ namespace DarwinPark.Core
         public PerformanceMetric Finish()
         {
             var metric=new PerformanceMetric{name="GPU Frame Time",unit="ms",source=Enabled?"FrameTimingManager":"FrameTimingManager disabled/unsupported",available=_count>0,samples=_count};if(_count==0)return metric;
-            Array.Sort(_values,0,_count);double sum=0;for(int i=0;i<_count;i++)sum+=_values[i];metric.mean=sum/_count;metric.p95=_values[Math.Min(_count-1,(int)(_count*.95))];metric.maximum=_values[_count-1];return metric;
+            Array.Sort(_values,0,_count);double sum=0;for(int i=0;i<_count;i++)sum+=_values[i];metric.mean=sum/_count;metric.p95=_values[Math.Min(_count-1,(int)(_count*.95))];metric.p99=_values[(int)Math.Ceiling(_count*.99)-1];metric.maximum=_values[_count-1];return metric;
         }
     }
     // ★ 新增：报告记录最慢帧的镜头，区分控制/拉近、裁剪面与模拟倍率，不要求用户凭记忆描述现场。

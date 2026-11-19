@@ -12,7 +12,7 @@ namespace DarwinPark.Core
     public static class PerformanceTimings
     {
         // ★ 适配：把活体大项继续细分，避免把行动、邻域重建和补给开销都误归因为合并算法。
-        public enum Area { Scheduler,Genes,StatePerception,Vitals,Environment,Population,ColonyTasks,GroundAnchor,Gravity,BottomUI,ResourceVisuals,GeneSignature,GeneRecalculation,Nutrition,Reproduction,Locomotion,Neighborhood,Feeding,Formation,Perception,MutationRounds,ResourceSearch,SingletonSettlement,CorpseCleanup,BirthFactory,BirthIdentity,BirthPlacement,BreedingMaintenance,MateSearch,CoordinateGrid,ManualAim,CameraGround,AutomaticSpawn,ProducerPlacement,GroundQuery,FoodCandidates,FeedDecision,CorpseBatches,LandPathSearch,LandRouteFollow,ShoreGuard,ParasiteHostSearch,PopulationArchive,PopulationOverlay,WorldSave,BodyQueue,BodyRebuild,BodyResolve,BodyMeshBuild,BodyFarDraw,BodyDirty,Count }
+        public enum Area { Scheduler,Genes,StatePerception,Vitals,Environment,Population,ColonyTasks,GroundAnchor,Gravity,BottomUI,ResourceVisuals,GeneSignature,GeneRecalculation,Nutrition,Reproduction,Locomotion,Neighborhood,Feeding,Formation,Perception,MutationRounds,ResourceSearch,SingletonSettlement,CorpseCleanup,BirthFactory,BirthIdentity,BirthPlacement,BreedingMaintenance,MateSearch,CoordinateGrid,ManualAim,CameraGround,AutomaticSpawn,ProducerPlacement,GroundQuery,FoodCandidates,FeedDecision,CorpseBatches,LandPathSearch,LandRouteFollow,ShoreGuard,ParasiteHostSearch,PopulationArchive,PopulationOverlay,WorldSave,BodyQueue,BodyRebuild,BodyResolve,BodyMeshBuild,BodyFarDraw,BodyDirty,GravityBatch,Count }
         private static readonly long[] Ticks=new long[(int)Area.Count],Calls=new long[(int)Area.Count];
         public static bool Capturing {get;private set;}
         public readonly struct Scope:IDisposable
@@ -29,7 +29,7 @@ namespace DarwinPark.Core
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]private static void Reset(){Capturing=false;Array.Clear(Ticks,0,Ticks.Length);Array.Clear(Calls,0,Calls.Length);}
     }
     [Serializable]public sealed class PerformanceMetric
-    {public string name,unit,source;public bool available;public int samples;public long calls;public double mean,p95,maximum;}
+    {public string name,unit,source;public bool available;public int samples;public long calls;public double mean,p95,p99,maximum;}
     [Serializable]public sealed class PerformanceReport
     {public int version=2,frames,droppedDetailScopes;public string coverageNote;public List<PerformanceHotspot> hotspots=new();public List<PerformanceScriptCost> scripts=new();public string context;public bool truncated;public PerformanceViewState viewStart,viewEnd,viewWorst;public bool gpuTimingEnabled;public List<PerformanceMetric> metrics=new List<PerformanceMetric>();}
     // ★ 新增：采样期间只写预分配缓冲，结束后才排序/序列化；引擎计数不可用时明确缺省，不把0伪装成零成本。
@@ -38,20 +38,36 @@ namespace DarwinPark.Core
         // ★ 适配：GPU与镜头上下文只随主动采样创建，日常逐帧不安装额外采样回调。
         private readonly GpuPerformanceSample _gpu;private readonly PerformanceViewState _viewStart;private PerformanceViewState _viewWorst;private double _worst;
         private readonly double[][] _areas;private readonly long[] _calls;private readonly double[] _frames;
+        private readonly long[] _gravitySteps;
         private readonly List<(string name,ProfilerRecorder recorder)> _engine=new List<(string,ProfilerRecorder)>();private bool _closed;private int _count;
         private static readonly string[] EngineNames={"Main Thread","Render Thread","PlayerLoop","BehaviourUpdate","FixedBehaviourUpdate","Physics.Simulate","Physics.Processing","Physics.FetchResults","GC.Collect","GC Allocated In Frame","Gfx.WaitForPresentOnGfxThread","Gfx.WaitForRenderThread","Gfx.PresentFrame","Gfx.ProcessCommands","WaitForTargetFPS","Draw Calls Count","Triangles Count","SetPass Calls Count","Camera.Render","RenderPipelineManager.DoRenderLoop_Internal","RenderLoop.Draw","Canvas.BuildBatch","Canvas.SendWillRenderCanvases","GUI.Repaint","EditorLoop","SceneView.Repaint"};
         public PerformanceSampleSession(int capacity=8192)
         {
             _gpu=new GpuPerformanceSample(capacity);_viewStart=PerformanceViewState.Capture();
-            _frames=new double[capacity];int count=(int)PerformanceTimings.Area.Count;_areas=new double[count][];_calls=new long[count];for(int i=0;i<count;i++)_areas[i]=new double[capacity];
+            _frames=new double[capacity];_gravitySteps=new long[capacity];int count=(int)PerformanceTimings.Area.Count;_areas=new double[count][];_calls=new long[count];for(int i=0;i<count;i++)_areas[i]=new double[capacity];
             PerformanceTimings.Begin();RuntimeCostBreakdown.Begin(capacity);
             try{var available=new List<ProfilerRecorderHandle>();ProfilerRecorderHandle.GetAvailable(available);var names=new HashSet<string>(EngineNames);foreach(var handle in available){var description=ProfilerRecorderHandle.GetDescription(handle);if(names.Remove(description.Name))_engine.Add((description.Name,ProfilerRecorder.StartNew(description.Category,description.Name,capacity,ProfilerRecorderOptions.Default)));}}
             catch{Dispose();throw;}
         }
         public void RecordFrame(double milliseconds)
-        {if(_closed)return;_gpu.Record();if(milliseconds>_worst){_worst=milliseconds;_viewWorst=PerformanceViewState.Capture();}for(int i=0;i<_areas.Length;i++){double value=PerformanceTimings.Take(i,out long calls);_calls[i]+=calls;if(_count<_frames.Length)_areas[i][_count]=value;}if(_count<_frames.Length)_frames[_count]=milliseconds;RuntimeCostBreakdown.RecordFrame();_count++;}
+        {
+            if(_closed)return;
+            _gpu.Record();
+            if(milliseconds>_worst){_worst=milliseconds;_viewWorst=PerformanceViewState.Capture();}
+            for(int i=0;i<_areas.Length;i++)
+            {
+                double value=PerformanceTimings.Take(i,out long calls);
+                _calls[i]+=calls;
+                if(_count>=_frames.Length)continue;
+                _areas[i][_count]=value;
+                if(i==(int)PerformanceTimings.Area.GravityBatch)_gravitySteps[_count]=calls;
+            }
+            if(_count<_frames.Length)_frames[_count]=milliseconds;
+            RuntimeCostBreakdown.RecordFrame();
+            _count++;
+        }
         private static PerformanceMetric Metric(string name,string unit,string source,double[] values,int frames,long calls=0)
-        {Array.Sort(values);return new PerformanceMetric{name=name,unit=unit,source=source,available=true,samples=values.Length,calls=calls,mean=values.Sum()/Math.Max(1,frames),p95=values.Length>0?values[Math.Min(values.Length-1,(int)(values.Length*.95))]:0,maximum=values.Length>0?values[values.Length-1]:0};}
+        {Array.Sort(values);return new PerformanceMetric{name=name,unit=unit,source=source,available=true,samples=values.Length,calls=calls,mean=values.Sum()/Math.Max(1,frames),p95=values.Length>0?values[Math.Min(values.Length-1,(int)(values.Length*.95))]:0,p99=values.Length>0?values[(int)Math.Ceiling(values.Length*.99)-1]:0,maximum=values.Length>0?values[values.Length-1]:0};}
         public PerformanceReport Finish(string context)
         {
             if(_closed)throw new ObjectDisposedException(nameof(PerformanceSampleSession));
@@ -59,6 +75,13 @@ namespace DarwinPark.Core
             report.metrics.Add(_gpu.Finish());
             report.metrics.Add(Metric("Frame elapsed","ms","wall",_frames.Take(used).ToArray(),used));
             for(int i=0;i<_areas.Length;i++)report.metrics.Add(Metric(((PerformanceTimings.Area)i).ToString(),"ms","game inclusive",_areas[i].Take(used).ToArray(),used,_calls[i]));
+            // ★ 适配：按同帧重力批次数拆分峰值，双固定步预算不能用单步或没有物理步的平均值代替。
+            var gravity=_areas[(int)PerformanceTimings.Area.GravityBatch];
+            foreach(var group in Enumerable.Range(0,used).Where(i=>_gravitySteps[i]>0).GroupBy(i=>_gravitySteps[i]).OrderBy(g=>g.Key))
+            {
+                var times=group.Select(i=>gravity[i]).ToArray();
+                report.metrics.Add(Metric($"Gravity batch ({group.Key} steps)","ms","game gravity batch, excludes PhysX",times,times.Length,group.Key*times.Length));
+            }
             foreach(var entry in _engine){var recorder=entry.recorder;recorder.Stop();bool time=recorder.UnitType==ProfilerMarkerDataUnit.TimeNanoseconds;var samples=recorder.ToArray();var values=samples.Select(s=>s.Value*(time?1e-6:1)).ToArray();var metric=Metric(entry.name,time?"ms":recorder.UnitType.ToString(),"engine",values,Math.Max(1,values.Length));metric.available=recorder.Valid&&values.Length>0;report.metrics.Add(metric);if(recorder.WrappedAround)report.truncated=true;}
             foreach(var name in EngineNames)if(!report.metrics.Exists(m=>m.name==name))report.metrics.Add(new PerformanceMetric{name=name,source="engine",available=false});
             RuntimeCostBreakdown.Finish(report,report.metrics.First(m=>m.name=="Frame elapsed").mean);Dispose();return report;

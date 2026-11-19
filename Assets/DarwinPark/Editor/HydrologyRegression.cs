@@ -44,10 +44,63 @@ namespace DarwinPark.EditorTools
                 }
                 var production=builder.CaptureConfiguration();production.seed=78031;production.landforms=new LandformSettings();var productionWatch=System.Diagnostics.Stopwatch.StartNew();var full=PlanetTerrainGenerator.Generate(production,builder.seaLevelRatio,builder.continentRatio);productionWatch.Stop();Validate(full,78031320);Export(full,"after-default-78031");
                 ShoreBounds(full.Navigation);
+                MotionCorridors(full.Navigation);
                 Metrics.AppendLine("defaultSubdivisions="+production.subdivisions+" vertices="+full.Vertices.Length+" generationMs="+productionWatch.ElapsedMilliseconds+" riverCells="+full.Hydrology.RiverCells+" lakeCells="+full.Hydrology.LakeCells);
                 File.WriteAllText(Path.Combine(Folder,"metrics.txt"),Metrics.ToString());File.WriteAllText(Path.Combine(Folder,"result.txt"),"PASS\n"+string.Join("\n",Passed));EditorApplication.Exit(0);
             }
             catch(Exception error){File.WriteAllText(Path.Combine(Folder,"result.txt"),"FAIL\n"+error+"\n"+string.Join("\n",Passed));Debug.LogException(error);EditorApplication.Exit(1);}
+        }
+
+        private static void MotionCorridors(LandNavigationGraph graph)
+        {
+            // ★ 适配：用真实网格和精确水位重放批量路径获准的中心、两侧及扫掠中间点。
+            int accepted=0, wetRejected=0;
+            Vector3 verifiedStart=default,verifiedEnd=default;
+            const float width=1;
+            for(int i=0;i<8192;i++)
+            {
+                var direction=PlanetTerrainSampler.DirectionFromUV(i*.61803398875f%1,(i+.5f)/8192);
+                float surface=PlanetCoordinate.SurfaceRadius(graph.Terrain,direction);
+                var start=direction*surface;
+                var offset=Vector3.Cross(direction,Vector3.right).normalized*.24f;
+                var end=start+offset;
+                bool approved=graph.ContainsDryMotionSweep(start,end,width);
+                if(!approved)
+                {
+                    if(surface<PlanetCoordinate.WaterSurfaceRadius(graph.Terrain,direction))wetRejected++;
+                    continue;
+                }
+                accepted++;
+                verifiedStart=start;
+                verifiedEnd=end;
+                if(!graph.Segment(start,end))
+                    throw new InvalidOperationException("批量路径接受了精确路段拒绝的坡度 "+direction);
+                var side=Vector3.Cross(direction,offset).normalized;
+                for(int step=0;step<=4;step++)
+                {
+                    var point=Vector3.Lerp(start,end,step*.25f);
+                    for(int edge=-1;edge<=1;edge++)
+                    {
+                        var sample=(point+side*(width*edge)).normalized;
+                        float ground=PlanetCoordinate.SurfaceRadius(graph.Terrain,sample);
+                        float water=PlanetCoordinate.WaterSurfaceRadius(graph.Terrain,sample);
+                        if(ground-water<=graph.Settings.shoreClearance)
+                            throw new InvalidOperationException("批量路径接受了水体内的身体扫掠 "+sample);
+                    }
+                }
+            }
+            Check(accepted>0&&wetRejected>0,$"8192 条陆地运动扫掠中 {accepted} 条通过保守检查，{wetRejected} 条水体内运动被拒绝");
+            Check(!graph.ContainsDryMotionSweep(Vector3.one * 320,new Vector3(320,320,321),width),
+                "立方球接缝整段回退精确岸线");
+            Check(!graph.ContainsDryMotionSweep(Vector3.right * 320,Vector3.left * 320,width),
+                "离开经验证块的运动回退精确岸线");
+            float clearance=graph.Settings.shoreClearance;
+            try
+            {
+                graph.Settings.shoreClearance=clearance+1;
+                Check(!graph.ContainsDryMotionSweep(verifiedStart,verifiedEnd,width),"岸线安全余量改动立即使旧认证回退");
+            }
+            finally{graph.Settings.shoreClearance=clearance;}
         }
 
         private static void ShoreBounds(LandNavigationGraph graph)

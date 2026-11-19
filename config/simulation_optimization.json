@@ -26,6 +26,7 @@
   // 生成星球直接定位真实三角形；不支持的碰撞网格回退射线。角度为度，速度差为世界单位/秒。
   "directGroundQueries": true,
   "sharePlanetPhysicsFrame": true,
+  "certifiedLandMotion": true,
   "groundNormalAngleDegrees": 0.15,
   "groundVelocityEpsilon": 0.0001,
   "groundProbeMoveTolerance": 0.1,

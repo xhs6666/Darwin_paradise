@@ -122,6 +122,26 @@ namespace DarwinPark.Planet
         public float Water(Vector3 dir)
         {float level=SurfaceWater(dir,out float coverage);return coverage>=0?level:_sea;}
 
+        // ★ 新增：取覆盖球冠的整片水文格上界，跨经线和含极点的范围都按完整区域处理。
+        internal float MaximumWaterInCap(Vector3 axis, float angle)
+        {
+            var uv=PlanetTerrainSampler.DirectionToUV(axis);
+            float latitude=Mathf.Asin(Mathf.Clamp(axis.y,-1,1));
+            float halfPi=Mathf.PI*.5f;
+            int firstRow=Mathf.Clamp(Mathf.FloorToInt((uv.y-angle/Mathf.PI)*Height)-1,0,Height-1);
+            int lastRow=Mathf.Clamp(Mathf.FloorToInt((uv.y+angle/Mathf.PI)*Height)+1,0,Height-1);
+            int column=Mathf.Min(Width-1,(int)(uv.x*Width));
+            int reach=Mathf.Abs(latitude)+angle>=halfPi
+                ? Width/2
+                : Mathf.Min(Width/2,Mathf.CeilToInt(Mathf.Asin(Mathf.Clamp01(Mathf.Sin(angle)/Mathf.Cos(latitude)))*
+                    Width/(2*Mathf.PI))+1);
+            float upper=_sea;
+            for(int row=firstRow;row<=lastRow;row++)
+                for(int offset=-reach;offset<=reach;offset++)
+                    upper=Mathf.Max(upper,_waterUpperBound[row*Width+(column+offset+Width)%Width]);
+            return upper;
+        }
+
         // ★ 新增：地面高过本格所涉海面、湖泊和所有候选河段时，岸线守卫只需水位上界。
         // 需要真实水位时复用同一经纬转换，不能用上界代替浸没深度。
         internal bool WaterForShore(Vector3 direction,float radius,float height,float ground,float clearance,out float water)
